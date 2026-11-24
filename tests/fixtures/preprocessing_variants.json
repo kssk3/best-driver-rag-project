@@ -1,0 +1,36 @@
+{
+  "is_synthetic": true,
+  "description": "같은 합성 표 내용을 HTML/JSON으로 표현한 계약 검증 자료. 실제 전처리 결과나 품질 비교 결과가 아니며 JSON 내부 키는 설명용 예시다.",
+  "documents": [
+    {
+      "document_id": "synthetic-format-comparison-001",
+      "version": "v1",
+      "title": "합성 품목 안내",
+      "source_url": "https://example.org/format-comparison.pdf",
+      "raw_path": "data/raw/synthetic/format-comparison.pdf",
+      "scope_type": "district",
+      "districts": [
+        "송파구"
+      ],
+      "parent_document_id": null,
+      "parent_document_version": null,
+      "content_format": "html",
+      "content": "<table><caption>합성 품목 안내</caption><thead><tr><th>품목</th><th>조건</th><th>안내</th></tr></thead><tbody><tr><td>품목 A</td><td>조건 X</td><td>안내 Y</td></tr></tbody></table>\n<p>각주: 실제 분리배출 규칙이 아닌 합성 검증 자료다.</p>\n<p>예외: 조건 Z에서는 별도 안내를 확인한다.</p>"
+    },
+    {
+      "document_id": "synthetic-format-comparison-001",
+      "version": "v1",
+      "title": "합성 품목 안내",
+      "source_url": "https://example.org/format-comparison.pdf",
+      "raw_path": "data/raw/synthetic/format-comparison.pdf",
+      "scope_type": "district",
+      "districts": [
+        "송파구"
+      ],
+      "parent_document_id": null,
+      "parent_document_version": null,
+      "content_format": "json",
+      "content": "{\n  \"title\": \"합성 품목 안내\",\n  \"headers\": [\n    \"품목\",\n    \"조건\",\n    \"안내\"\n  ],\n  \"rows\": [\n    [\n      \"품목 A\",\n      \"조건 X\",\n      \"안내 Y\"\n    ]\n  ],\n  \"notes\": [\n    \"실제 분리배출 규칙이 아닌 합성 검증 자료다.\"\n  ],\n  \"exceptions\": [\n    \"조건 Z에서는 별도 안내를 확인한다.\"\n  ]\n}"
+    }
+  ]
+}

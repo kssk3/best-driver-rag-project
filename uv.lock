@@ -1637,6 +1637,7 @@ dependencies = [
     { name = "ragas" },
     { name = "rank-bm25" },
     { name = "streamlit" },
+    { name = "tiktoken" },
     { name = "uvicorn" },
 ]
 
@@ -1663,6 +1664,7 @@ requires-dist = [
     { name = "ragas", specifier = ">=0.4.4" },
     { name = "rank-bm25", specifier = ">=0.2.2" },
     { name = "streamlit", specifier = ">=1.67.0" },
+    { name = "tiktoken", specifier = ">=0.14.0" },
     { name = "uvicorn" },
 ]
 

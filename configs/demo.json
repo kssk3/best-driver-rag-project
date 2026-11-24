@@ -1,0 +1,18 @@
+{
+  "index_path": "data/indexes/demo.json",
+  "runs_path": "results/local/runs",
+  "max_document_characters": 20000,
+  "demo_dimensions": 128,
+  "pipeline": {
+    "variant": "A",
+    "rewrite_enabled": false,
+    "top_k": 5,
+    "max_context_chars": 12000,
+    "run_kind": "demo",
+    "versions": {
+      "data": "synthetic-handoff-v1",
+      "generation": "demo-quote-v1",
+      "region": "demo-explicit-district-v1"
+    }
+  }
+}

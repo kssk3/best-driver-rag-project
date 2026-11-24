@@ -1,0 +1,48 @@
+{
+  "is_synthetic": true,
+  "description": "sources.json의 본문과 첨부 관계를 설명하는 합성 예시. 실제 조례 내용이나 추출 결과가 아니며 원문 경로도 예시다.",
+  "documents": [
+    {
+      "document_id": "synthetic-ordinance-001",
+      "version": "v2",
+      "effective_date": "2025-12-31",
+      "title": "합성 폐기물 관리 조례",
+      "content_format": "html",
+      "content": "<p>합성 조례 본문: 품목 안내는 별표 1, 이용 조건은 별표 2를 참조한다.</p>",
+      "source_url": "https://example.org/ordinances/001",
+      "raw_path": "data/raw/synthetic/ordinance-001.xml",
+      "scope_type": "district",
+      "districts": ["서대문구"],
+      "parent_document_id": null,
+      "parent_document_version": null
+    },
+    {
+      "document_id": "synthetic-ordinance-001-attachment-1",
+      "version": "v1",
+      "effective_date": null,
+      "title": "[별표 1] 합성 품목 안내",
+      "content_format": "html",
+      "content": "<table><caption>합성 별표 1</caption><tr><th>품목</th><th>안내</th></tr><tr><td>품목 A</td><td>안내 X</td></tr></table><p>각주: 실제 분리배출 규칙이 아닌 검증 자료다.</p>",
+      "source_url": "https://example.org/ordinances/001/attachment-1.hwp",
+      "raw_path": null,
+      "scope_type": "district",
+      "districts": ["서대문구"],
+      "parent_document_id": "synthetic-ordinance-001",
+      "parent_document_version": "v2"
+    },
+    {
+      "document_id": "synthetic-ordinance-001-attachment-2",
+      "version": "v3",
+      "effective_date": "2025-12-31",
+      "title": "[별표 2] 합성 이용 조건",
+      "content_format": "json",
+      "content": "{\"title\": \"합성 별표 2\", \"headers\": [\"대상\", \"이용 조건\"], \"rows\": [[\"대상 B\", \"조건 Y\"]], \"notes\": [\"실제 분리배출 규칙이 아닌 검증 자료다.\"]}",
+      "source_url": "https://example.org/ordinances/001/attachment-2.pdf",
+      "raw_path": "data/raw/synthetic/attachment-2.pdf",
+      "scope_type": "district",
+      "districts": ["서대문구"],
+      "parent_document_id": "synthetic-ordinance-001",
+      "parent_document_version": "v2"
+    }
+  ]
+}
