@@ -11,20 +11,23 @@ from pathlib import Path
 
 import streamlit as st
 
-from src.interface.adapter import to_view_response
+from src.interface.adapter import to_place_result, to_view_response
 from src.interface.chat import render_response
+from src.interface.map import render_places
 
 
 # [임시] 예시(합성) 응답을 읽는다. 
 SAMPLE_PATH = Path(__file__).parent / 'tests' / 'fixtures' / 'interface' / 'sample_responses.json'
+PLACE_SAMPLE_PATH = Path(__file__).parent / 'tests' / 'fixtures' / 'interface' / 'sample_places.json'
 
 
-def load_samples() -> dict:
-    data = json.loads(SAMPLE_PATH.read_text(encoding='utf-8'))
+def load_samples(path: Path = SAMPLE_PATH) -> dict:
+    data = json.loads(path.read_text(encoding='utf-8'))
     return {key: value for key, value in data.items() if not key.startswith('_')}
 
 
 samples = load_samples()
+place_samples = load_samples(PLACE_SAMPLE_PATH)
 
 
 FAVICON_PATH = Path(__file__).parent / '.streamlit' / 'favicon.png'
@@ -48,6 +51,11 @@ with user_tab:
     view = st.session_state.get('view')
     if view is not None:
         render_response(view, question=question, district=district)
+
+    st.divider()
+    st.subheader('장소')
+    place_name = st.selectbox('예시 장소 고르기 (합성)', list(place_samples))
+    render_places(to_place_result(place_samples[place_name], kind='fixture'))
 
 
 with inspection_tab:
