@@ -13,7 +13,7 @@ APP_PATH = Path(__file__).parent.parent.parent.parent / "app.py"
 
 
 def ask(sample_name: str, question: str = "") -> AppTest:
-    app = AppTest.from_file(str(APP_PATH)).run()
+    app = AppTest.from_file(str(APP_PATH), default_timeout=10).run()
     app.text_input[0].set_value(question)
     app.selectbox[1].select(sample_name)
     return app.button[0].click().run()

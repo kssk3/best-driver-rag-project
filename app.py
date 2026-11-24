@@ -13,6 +13,7 @@ import streamlit as st
 
 from src.interface.adapter import to_place_result, to_view_response
 from src.interface.chat import render_response
+from src.interface.inspection import render_inspection
 from src.interface.map import render_places
 
 
@@ -47,6 +48,7 @@ with user_tab:
     st.caption('지금은 입력한 구와 질문에 상관없이 선택한 예시가 표현됩니다.')
     if st.button('질문하기'):
         st.session_state['view'] = to_view_response(samples[sample_name], kind='fixture')
+        st.session_state['asked_district'] = district
 
     view = st.session_state.get('view')
     if view is not None:
@@ -59,7 +61,7 @@ with user_tab:
 
 
 with inspection_tab:
-    st.info('나중에 구현합니다~~~~~')
+    render_inspection(st.session_state.get('view'), st.session_state.get('asked_district'))
 
 
 with comparison_tab:

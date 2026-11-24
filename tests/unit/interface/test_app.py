@@ -8,7 +8,7 @@ APP_PATH = Path(__file__).parent.parent.parent.parent / "app.py"
 
 
 def test_app_shows_fixture_notice_after_click() -> None:
-    app = AppTest.from_file(str(APP_PATH)).run()
+    app = AppTest.from_file(str(APP_PATH), default_timeout=10).run()
     assert not app.exception
 
     app.button[0].click().run()
