@@ -1,35 +1,46 @@
-# 서울시 분리배출 안내 지식 에이전트
+# 서울 분리배출 RAG
 
-“서대문구인데 생활쓰레기를 언제 내놓나요?” 안내 담당자가 이 질문을 받으면 품목을 확인하고, 구청 원문을 찾아 동·주택 유형·적용 기간까지 대조해야 합니다. 이 프로젝트의 목표는 **담당자가 어떤 근거로 안내했는지 다시 확인할 수 있고, 조건이 부족하면 필요한 정보만 되묻는 것**입니다. 현재 공유하는 내용은 개발 계획, 모듈 간 데이터 형식, 개발 환경과 자동 검사 설정입니다.
+서대문구와 송파구 주민이 품목과 배출 상황을 질문하면 공식 문서의 근거와 출처를 안내하는 Knowledge Agent를 만든다. 필요한 조건은 되묻고, 자료에 답이 없으면 정보 부족을 알린다.
 
-## Python 개발 환경
+확정 범위는 Streamlit 화면, A/B/C 검색, 동 이름 인식, 질문 다듬기와 getSpot 장소 지도다. 화면과 평가 실행기는 같은 Python RAG 함수를 호출한다.
 
-팀원은 [uv 설치 안내](https://docs.astral.sh/uv/getting-started/installation/)에 따라 **uv 0.13.9 이상**을 한 번 설치한 뒤 저장소 루트에서 실행합니다. 첫 설치에는 Python 배포 서버와 PyPI에 접속할 수 있어야 합니다.
+**현재는 폴더 구조, Python 파일 뼈대와 개발 환경을 준비한 단계다.** 시작 파일에는 역할과 담당만 표시되어 있으며 수집, 검색, 생성, 지도와 평가 실행 기능은 아직 구현하지 않았다. 각 담당자가 내부 파일을 확장하고 구현 순서를 정한다.
+
+## 개발 환경
+
+저장소 루트에서 실행한다. Python `3.13.14`, uv `0.13.9` 이상과 `uv.lock`을 사용한다.
 
 ```sh
 git clone https://github.com/kssk3/best-driver-rag-project.git
 cd best-driver-rag-project
-uv sync
+uv sync --locked
+uv run --locked python --version
+uv run --locked python -m pytest --version
 ```
 
-`.python-version`은 Python **3.15.2**를 지정합니다. [pyproject.toml](pyproject.toml)은 실행 의존성 15개와 개발 도구(pytest, pytest-cov)를 선언하고, [uv.lock](uv.lock)은 간접 의존성까지 실제 설치 버전을 고정합니다. `uv sync`는 필요한 Python을 확보하고 루트 `.venv/`에 두 그룹을 함께 설치합니다. DB 연결 정보 없이 설치할 수 있습니다.
+로컬 uv가 요구 버전보다 낮으면 전역 설치를 바꾸지 않고 `uv tool run --from uv==0.13.9 uv sync --locked`로 같은 환경을 준비할 수 있다. 첫 설치는 Python 배포 서버와 PyPI 연결이 필요하다. 이 방식으로 설치했다면 실행도 `uv tool run --from uv==0.13.9 uv run --locked python --version`처럼 같은 uv 버전을 사용한다. 기존 Python 3.15 가상환경도 동기화하면 `.python-version`에 맞는 3.13.14 환경으로 다시 생성한다.
 
-| 용도 | 실행 패키지 |
+현재 의존성 파일은 루트의 공용 Python 환경을 관리한다. Streamlit, Selenium과 Langfuse 등 구현에 필요한 패키지는 해당 기능을 처음 연결하는 PR에서 의존성과 잠금 파일을 함께 갱신한다. 기존 FastAPI 의존성이 남아 있어도 별도 HTTP 서버 구현을 요구하지 않는다. 현재 `app.py`는 문서 문자열만 있는 뼈대이며 앱 실행 명령은 실제 화면 구현과 함께 추가한다.
+
+## 작업 위치
+
+| 경로 | 용도 |
 | --- | --- |
-| API·데이터 검증·환경 변수 | `fastapi`, `uvicorn`, `pydantic`, `python-dotenv` |
-| RAG 구성·모델·문서 분할 | `langchain`, `langchain-core`, `langchain-community`, `langchain-openai`, `langchain-text-splitters` |
-| PostgreSQL·문서 읽기·키워드 검색 | `langchain-postgres`, `psycopg[binary,pool]`, `pypdf`, `rank-bm25` |
-| 평가·데이터셋 | `ragas`, `datasets` |
+| `src/` | 공통 실행 기반과 담당별 Python 모듈 |
+| `configs/`, `prompts/`, `.streamlit/` | 공통 설정, 프롬프트와 화면 설정 |
+| `scripts/` | 수집, 색인과 평가 실행 진입점 |
+| `data/` | 수집 원문, 정제 자료와 색인 |
+| `eval/` | 개발 10문항과 최종 20문항, 정답 및 허용 근거 |
+| `results/` | 실행 원본, 평가와 비교 결과 |
+| `tests/` | 단위 검사, 연동 검사와 작은 검증 자료 |
 
-설치 결과는 `uv run python --version`과 `uv run pytest --version`으로 확인합니다. 새 변경을 받은 뒤에는 다시 `uv sync`를 실행합니다. 앱 코드는 `backend/`에 작성하고 프론트엔드 패키지는 `frontend/`에서 npm으로 관리합니다.
+상세 파일 목록, 담당 경로와 연결 원칙은 [구조와 책임](docs/architecture.md)에 있다. 파일별 구현 항목과 플로우 차트는 [Notion 구조 문서](https://app.notion.com/p/422dc8b0e1638150b62acfe703074f30?pvs=204)에서 확인한다. 폴더의 `.gitkeep`은 빈 작업 위치를 Git에 보존하기 위한 파일이다.
 
-Python 3.15.2로 macOS Apple Silicon에서 처음 설치할 때 `jiter`, `scikit-network`, `zstandard`는 소스에서 빌드됩니다. 이 단계에서는 OS의 C/C++ 빌드 도구와 Rust 도구가 필요할 수 있습니다. 같은 환경의 재동기화에서는 설치된 패키지를 재사용합니다.
+## 팀 공통 문서
 
-## 팀원은 이렇게 시작합니다
+- [문제와 평가 기준](docs/problem.md): 지원 범위, 평가 분리와 완료 기준
+- [공동 진행 단계](ROADMAP.md): 7단계와 병렬 작업 흐름
+- [개발 환경과 연결 기준](docs/TEAM-SETUP.md): 공용 규격과 인계 방식
+- [검사와 의존성 관리](docs/CI-AND-DEPENDENCIES.md): pytest, Codecov, Dependabot과 Gitleaks
 
-| 시점 | 읽을 문서 | 읽고 할 일 |
-| --- | --- | --- |
-| 작업을 고르기 전 | [해결할 문제와 과제 평가 기준](docs/problem.md) | 사용자 질문 하나를 골라 어떤 원문이면 답할 수 있는지, 어느 조건에서는 보류할지 설명합니다. |
-| 당일 작업을 정할 때 | [4일 팀 로드맵](ROADMAP.md) | 내 담당 행에서 오늘 넘길 산출물과 받는 사람을 확인합니다. 수업의 5일차 재현·발표 준비도 확인합니다. |
-| 다른 모듈과 연결할 때 | [팀 개발 환경과 API 계약](docs/TEAM-SETUP.md) | 같은 예시 요청·응답으로 먼저 개발하고, 실제 검색 결과를 연결한 뒤 청크 ID와 원문 위치를 대조합니다. |
-| 테스트와 PR을 준비할 때 | [커버리지·의존성·비밀정보 검사 가이드](docs/CI-AND-DEPENDENCIES.md) | 언어별 테스트 실행 경로와 의존성 변경을 확인합니다. 검색 성능과 답변 정확도는 고정 평가셋으로 별도 측정합니다. |
+통합 기준 브랜치는 `dev`다. 작업 브랜치는 `feature/<작성자>/<작업명>`으로 만들고, 검증 후 `dev`를 대상으로 PR을 연다. 초기 구조에는 실제 평가셋과 실행 결과가 포함되어 있지 않다.

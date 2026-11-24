@@ -2,7 +2,7 @@ name: Coverage
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, dev]
 
 permissions:
   contents: read
@@ -17,41 +17,19 @@ jobs:
           python-version-file: .python-version
       - run: python -m pip install uv==0.13.9
       - run: uv sync --locked
-      - name: Report pending backend implementation
-        if: hashFiles('backend/**/*.py') == ''
-        run: echo 'Python environment synced. Coverage will start with the first backend Python files.' >> "$GITHUB_STEP_SUMMARY"
-      - run: uv run --locked python -m pytest backend/tests --cov --cov-config=.coveragerc --cov-report=xml:backend/coverage.xml
-        if: hashFiles('backend/**/*.py') != ''
+      - name: Check Python syntax
+        if: hashFiles('src/**/*.py', 'scripts/**/*.py', 'app.py') != ''
+        run: uv run --locked python -m compileall -q src scripts app.py
+      - name: Report pending tests
+        if: hashFiles('tests/**/test_*.py', 'tests/**/*_test.py') == ''
+        run: echo 'Python environment synced. No test files exist yet; functional tests and coverage were not run.' >> "$GITHUB_STEP_SUMMARY"
+      - run: uv run --locked python -m pytest tests --cov --cov-config=.coveragerc --cov-report=xml:coverage.xml
+        if: hashFiles('tests/**/test_*.py', 'tests/**/*_test.py') != ''
       - uses: codecov/codecov-action@v7.1.1
-        if: hashFiles('backend/**/*.py') != '' && github.actor != 'dependabot[bot]' && (github.event_name == 'push' || (github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.user.login != 'dependabot[bot]'))
+        if: hashFiles('tests/**/test_*.py', 'tests/**/*_test.py') != '' && github.actor != 'dependabot[bot]' && (github.event_name == 'push' || (github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.user.login != 'dependabot[bot]'))
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: backend/coverage.xml
-          flags: backend
-          disable_search: true
-          fail_ci_if_error: true
-
-  frontend:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7.0.1
-      - name: Report pending frontend setup
-        if: hashFiles('frontend/package.json') == ''
-        run: echo 'frontend/package.json is pending. Frontend coverage was skipped.' >> "$GITHUB_STEP_SUMMARY"
-      - uses: actions/setup-node@v7.1.0
-        if: hashFiles('frontend/package.json') != ''
-        with:
-          node-version: '26.13.1'
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-      - run: npm ci && npm run test:coverage
-        if: hashFiles('frontend/package.json') != ''
-        working-directory: frontend
-      - uses: codecov/codecov-action@v7.1.1
-        if: hashFiles('frontend/package.json') != '' && github.actor != 'dependabot[bot]' && (github.event_name == 'push' || (github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.user.login != 'dependabot[bot]'))
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: frontend/coverage/lcov.info
-          flags: frontend
+          files: coverage.xml
+          flags: python
           disable_search: true
           fail_ci_if_error: true

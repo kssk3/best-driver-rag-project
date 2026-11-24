@@ -5,3 +5,17 @@
 __pycache__/
 .pytest_cache/
 .coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.ruff_cache/
+.cache/
+
+# 수집 원문과 재생성 가능한 산출물은 검토한 표본만 별도로 공유한다.
+/data/raw/**
+!/data/raw/.gitkeep
+/data/processed/**
+!/data/processed/.gitkeep
+/data/indexes/**
+!/data/indexes/.gitkeep
+/results/local/

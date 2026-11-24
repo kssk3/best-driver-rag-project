@@ -4,5 +4,7 @@ relative_files = True
 branch = True
 
 [report]
-include = backend/*
-omit = backend/tests/*
+include =
+    src/*
+    app.py
+omit = tests/*

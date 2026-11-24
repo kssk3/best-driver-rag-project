@@ -1,9 +1,5 @@
-fixes:
-  - "src/::frontend/src/"
 flags:
-  backend:
+  python:
     paths:
-      - backend/
-  frontend:
-    paths:
-      - frontend/src/
+      - src/
+      - app.py
