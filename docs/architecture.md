@@ -38,21 +38,22 @@ Streamlit 진입점인 루트 `app.py`와 `src/interface/`는 아직 docstring�
 
 ## 담당 경로
 
-| 담당 업무 | 주요 위치 | 다른 담당자와 맞출 경계 |
-| --- | --- | --- |
-| 데이터 수집과 질문 정제 담당자(이정은) | `src/ingestion/`의 수집과 정제, `src/query/`, 수집 설정과 별칭 자료 | 문서와 getSpot 원자료, 원질문 및 변환 질의의 인계 |
-| 검색과 지역 및 장소 조회 담당자(이명지) | `src/retrieval/`, `src/evaluation/`의 검색 지표 | 지역 해석, A/B/C 후보, 장소 DB 저장과 조회, Hit@5 |
-| 답변 생성과 품질 추적 담당자(강성수) | `src/generation/`, `src/evaluation/`의 Ragas 평가, `src/observability/`의 Langfuse 연결 | 응답 정책, 실제 입력과 인용, 개발문항 초안과 답변 평가 |
-| 화면과 관찰 검증 담당자(이승주) | `src/interface/`, `app.py`, `.streamlit/`, 공용 검증과 비교 분석 | 지도, 상태 표시, 순위와 인용 관찰, 최종 평가셋 관리 |
-| 공통 기반과 통합 담당자(양석호) | `src/` 공통 기반, `src/ingestion/`의 로더/청킹/색인, `src/infrastructure/`, 공통 평가 실행기와 원본 저장 | 호출 규격, 런타임과 버전, 전체 파이프라인과 재현 |
+[현재 4인 역할표](../ROADMAP.md#업무-분담과-인계)의 작업을 시작할 때 확인할 파일이다. 공유 폴더는 기능별로 나누어 관리한다.
 
-`src/ingestion/`, `src/evaluation/`와 `src/observability/`는 책임이 나뉜 공유 영역이다. 같은 폴더의 모든 기능을 한 담당자의 업무로 보지 않는다. 코드를 만들 때 파일별 책임을 구분하고 각 담당자의 내부 로직을 통합 코드에 복제하지 않는다.
+| 담당자 | 작업별 참고 파일 | 인계·검증 기준 |
+| --- | --- | --- |
+| 이승주 | [일반 문서 청킹](../src/ingestion/chunking.py), [P04 조문·표 청킹](../src/ingestion/preprocessed_chunking.py), [화면 진입점](../app.py), [화면 모듈](../src/interface/), [최종 평가셋](../eval/README.md) | 청킹 버전과 근거 위치 변경을 검색·답변 담당에게 공유하고, 화면에는 후보 순위와 최종 인용을 구분해 표시한다. |
+| 이정은 | [수집·정제 인계](jungeun/README.md), [질문 다듬기](../src/query/rewrite.py), [프롬프트 위치](../prompts/), [질의 전달 규격](TEAM-SETUP.md#질문-지역과-답변) | 원문 근거를 교차 확인하고, 프롬프트 변경은 원질문·조건·변환 질의로 비교한다. |
+| 이명지 | [지역 해석](../src/retrieval/regions.py), [팀 검색 진입점](../src/retrieval/search.py), [기존 색인 생성](../src/ingestion/indexing.py), [저장소 구현](../src/infrastructure/stores.py), [검색 평가 기준](problem.md#지표와-실패-기록) | 검색 시스템 v2에서 OpenSearch 연결을 추진한다. 청크 출처와 지역을 보존한 순위 목록을 답변 담당에게 전달한다. |
+| 강성수 | [답변 정책](../src/generation/answer.py), [공통 생성 어댑터](../src/generation/pipeline_adapter.py), [답변·검색 실험](../src/evaluation/answer_experiments/), [실행 기록](../src/observability/records.py), [결과 비교](../results/testData.md) | 개발 문항의 허용 근거를 갱신하고, 실제 생성 입력과 최종 인용을 구분해 검증한다. |
+
+공통 입출력 변경은 [계약](../src/contracts.py)과 [파이프라인](../src/pipeline.py)을 함께 확인한다. 예를 들어 청크 형식은 이승주가 변경을 주도하고 이명지·강성수가 검색과 인용에서 확인한다. 최초 구현 내역은 아래 공통 기반 인계 항목에 보존한다.
 
 ## 파일별 구현 상태
 
 아래 표에는 담당자별 구현 상태와 후속 연결 작업을 정리했다. 지역 해석 결과가 검색에 쓰이는 방식과 생성기가 받는 입력은 [지역 해석과 답변 생성 연결](TEAM-SETUP.md#p04-지역-해석과-답변-생성-연결)에서 확인할 수 있다.
 
-### 데이터 수집과 질문 정제 (이정은)
+### 데이터 수집·정제와 프롬프트 개선 (이정은)
 
 수집/전처리는 [PR 8](https://github.com/kssk3/best-driver-rag-project/pull/8)에서 구현돼 현재 `dev`에 포함됐다. `data/handoff/jungeun/p04-2026-11-24/`의 원본과 전처리 산출물은 공통 로더에 연결했다. 다음 표의 구현 여부는 수집/전처리 코드와 질의 시점 기능을 구분한다.
 
@@ -89,10 +90,11 @@ Streamlit 진입점인 루트 `app.py`와 `src/interface/`는 아직 docstring�
 | `src/evaluation/answer_metrics.py` | 답변 품질 자동 평가를 연결할 위치다. |
 | `src/observability/tracing.py` | Langfuse 추적을 연결할 위치다. |
 
-### 화면과 관찰 검증 (이승주, 구현 예정)
+### 청킹 개선과 화면·관찰 검증 (이승주)
 
 | 파일 | 역할 |
 | --- | --- |
+| `src/ingestion/preprocessed_chunking.py`, `src/ingestion/chunking.py` | 인계된 청커의 후속 개선. P04 표·비고·예외가 원문 위치와 함께 보존되는지 확인 |
 | `app.py` | Streamlit 진입점 |
 | `src/interface/chat.py` | 질문과 답변 화면 |
 | `src/interface/map.py` | 장소 목록과 지도 |
@@ -100,7 +102,7 @@ Streamlit 진입점인 루트 `app.py`와 `src/interface/`는 아직 docstring�
 | `src/validation.py` | UI 독립 공용 검증 |
 | `src/evaluation/comparison.py` | 구성 비교와 실패 분석 |
 
-### 공통 기반과 통합 (양석호, 최소 구현)
+### 공통 기반의 최초 구현과 인계 (양석호)
 
 | 파일 | 역할 |
 | --- | --- |

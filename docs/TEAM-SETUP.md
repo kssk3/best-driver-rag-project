@@ -12,7 +12,7 @@ UI는 Streamlit으로 구현하고 공통 Python RAG 함수를 직접 호출하�
 
 ## 공동 입출력
 
-공통 기반과 통합 담당자(양석호)가 공용 규격을 정리하고 사용하는 담당자가 검토한다. 현재 타입은 `src/contracts.py`, 함수 연결 예시는 [최소 구현 인계](seokho-handoff.md)를 따른다. 아래는 공용 경계에서 보존해야 할 정보다.
+양석호가 인계한 공용 규격은 [현재 역할표](../ROADMAP.md#업무-분담과-인계)에 따라 변경하는 담당자와 그 결과를 사용하는 담당자가 함께 확인한다. 현재 타입은 `src/contracts.py`, 함수 연결 예시는 [최소 구현 인계](seokho-handoff.md)를 따른다. 아래는 공용 경계에서 보존해야 할 정보다.
 
 | 전달 데이터 | 반드시 구분하거나 보존할 내용 |
 | --- | --- |
@@ -27,15 +27,15 @@ UI는 Streamlit으로 구현하고 공통 Python RAG 함수를 직접 호출하�
 
 ### P04 지역 해석과 답변 생성 연결
 
-`create_runtime`의 지역 해석기로 `src.retrieval.regions.resolve_request`를, 생성기로 `make_answer_generator(draft_p04_answer, decode_conditions=decode_p04_conditions)`를 전달한다. 검색기는 순위순으로 정렬한 `SearchCandidate` 목록을 반환해야 한다. 최종 응답은 `runtime.run(request).response`에서 읽는다. [고정 근거 테스트](../tests/unit/answer_experiments/test_p04_pipeline_answers.py)는 지역 해석 결과와 검색 근거를 미리 지정해 요청·청크·인용을 검증한다. 아래 표는 PR #11의 실제 지역 해석기를 연결하고 같은 색상 근거를 제공했을 때의 결과다.
+`create_runtime`의 지역 해석기로 `src.retrieval.regions.resolve_request`를, 생성기로 `make_answer_generator(draft_p04_answer, decode_conditions=decode_p04_conditions)`를 전달한다. 검색기는 순위순으로 정렬한 `SearchCandidate` 목록을 반환해야 한다. 최종 응답은 `runtime.run(request).response`에서 읽는다. [고정 근거 테스트](../tests/unit/answer_experiments/test_p04_pipeline_answers.py)는 지역 해석 결과와 검색 근거를 미리 지정해 요청·청크·인용을 검증한다. 아래 표는 연희동 질문에서 선택한 구에 따른 검색·생성 입력을 설명한다. PR #13의 [지역 전달 테스트](../tests/unit/test_pipeline_region_handoff.py)는 생성기에 전달된 구·동과 실행 기록에 보존된 원래 요청을 확인한다.
 
 | 연희동 수거용기 색상 질문의 입력 조건 | 공통 런타임에서 확인한 결과 |
 | --- | --- |
 | 사용자가 서대문구를 선택 | 검색기는 서대문구로 검색한다. 생성기는 원문에 적힌 색상으로 답하고 전달받은 청크를 인용한다. |
-| 질문에 연희동만 입력하고 구는 선택하지 않음 | 검색기는 연희동에서 추론한 서대문구로 검색한다. 생성기는 구가 비어 있는 원래 요청을 받으므로, 같은 근거를 주어도 `insufficient_evidence`를 반환한다. |
+| 질문에 연희동만 입력하고 구는 선택하지 않음 | 검색기와 생성기 모두 해석된 서대문구·연희동을 받는다. 실행 기록의 원래 요청에는 사용자가 구를 선택하지 않았다는 사실이 남는다. |
 | 사용자가 송파구를 선택 | 선택한 구와 연희동에서 추론한 구가 달라 검색과 생성 전에 지역을 다시 묻는다. |
 
-현재 P04 색상 답변을 확인할 때는 구를 명시한다. 생성기에서도 추론한 지역을 사용하려면 원질문을 보존하면서 해석된 구·동을 전달하는 방식을 팀에서 정해야 한다. 연습용 매핑표에는 동 4곳이 들어 있다. 위례동 일정 충돌은 송파구를 명시하고 근거를 고정한 별도 관찰 사례다.
+연습용 매핑표에는 동 4곳이 들어 있다. 위례동 일정 충돌은 송파구를 명시하고 근거를 고정한 별도 관찰 사례다.
 
 ## 질문, 지역과 답변
 
