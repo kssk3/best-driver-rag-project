@@ -1,0 +1,72 @@
+{
+  "_note": "합성(가상) 예시 응답. 실제 분리배출 규칙·근거가 아니다. 화면 형식 확인용이며 실제 RAG 실행이 아니다.",
+  "answered": {
+    "request_id": "fx-req-001",
+    "status": "answered",
+    "answer": "[가상] 예시 품목은 예시 요일에 내놓는다는 가상의 안내입니다.",
+    "sources": [
+      {
+        "chunk_id": "fx-chunk-001",
+        "source_url": "https://example.invalid/fx-doc-1"
+      }
+    ],
+    "required_fields": [],
+    "debug_trace": {
+      "candidates": [
+        {
+          "chunk_id": "fx-chunk-001",
+          "district": "서대문구",
+          "score": 0.82,
+          "text": "[가상] 예시 본문 1"
+        },
+        {
+          "chunk_id": "fx-chunk-002",
+          "district": "서대문구",
+          "score": 0.74,
+          "text": "[가상] 예시 본문 2"
+        },
+        {
+          "chunk_id": "fx-chunk-003",
+          "district": "송파구",
+          "score": 0.61,
+          "text": "[가상] 예시 본문 3"
+        }
+      ],
+      "model_inputs": ["fx-chunk-001", "fx-chunk-002"]
+    }
+  },
+  "needs_clarification": {
+    "request_id": "fx-req-002",
+    "status": "needs_clarification",
+    "answer": null,
+    "sources": [],
+    "required_fields": ["housing_type"],
+    "debug_trace": { "candidates": [] }
+  },
+  "insufficient_evidence": {
+    "request_id": "fx-req-003",
+    "status": "insufficient_evidence",
+    "answer": "[가상] 확인한 자료로는 안내할 수 없습니다.",
+    "sources": [],
+    "required_fields": [],
+    "debug_trace": {
+      "candidates": [
+        {
+          "chunk_id": "fx-chunk-009",
+          "district": "송파구",
+          "score": 0.33,
+          "text": "[가상] 관련 낮은 예시 본문"
+        }
+      ]
+    }
+  },
+  "error": {
+    "request_id": "fx-req-004",
+    "status": "error",
+    "answer": null,
+    "sources": [],
+    "required_fields": [],
+    "error": "[가상] 검색 호출 실패",
+    "debug_trace": { "candidates": [] }
+  }
+}
