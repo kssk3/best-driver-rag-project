@@ -27,7 +27,9 @@ def load_samples() -> dict:
 samples = load_samples()
 
 
-st.set_page_config(page_title='분리당', layout='wide')
+FAVICON_PATH = Path(__file__).parent / '.streamlit' / 'favicon.png'
+
+st.set_page_config(page_title='분리당', page_icon=str(FAVICON_PATH), layout='wide')
 st.title('분리당 -- 서울시 분리배출 안내 시스템')
 
 
