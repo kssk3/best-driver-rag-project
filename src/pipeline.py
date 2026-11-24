@@ -167,8 +167,21 @@ class RAGPipeline:
                     return selected
 
                 evidence = stage("context", select_context)
+                # 생성기는 원질문 기준으로 답하되, 지역은 해석된 구·동을 받는다.
+                # 질문에 동만 쓴 경우(예: 연희동) 원래 요청에는 구가 비어 있어서
+                # 검색과 같은 근거를 받아도 지역 조건을 확인하지 못하기 때문이다.
+                # 실행 기록(record.request)에는 원래 요청을 그대로 남긴다.
+                generation_request = original.model_copy(
+                    update={
+                        # 해석된 구/동(resolved)이 있으면 그걸 쓰고,
+                        # 없으면 사용자가 화면에서 고른 값(original)을 씀.
+                        "district": resolved.district or original.district,
+                        "dong": resolved.dong or original.dong,
+                    },
+                    deep=True,
+                )
                 generated = stage("generate", lambda: _validate_callback_result(GenerationResult,
-                    self.generator(original.model_copy(deep=True), [item.model_copy(deep=True) for item in evidence])
+                    self.generator(generation_request, [item.model_copy(deep=True) for item in evidence])
                 ))
 
                 def citations() -> list[Citation]:
