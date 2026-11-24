@@ -50,7 +50,7 @@ Streamlit 진입점인 루트 `app.py`와 `src/interface/`는 아직 docstring�
 
 ## 파일별 구현 상태
 
-수집/전처리와 공통 기반은 아래에 구현된 범위를 적었다. 질문 정제, 검색/지역/장소, 답변 생성과 화면/관찰 검증에는 아직 역할만 표시한 뼈대가 남아 있다. 타입은 `src/contracts.py`, 실제 함수 시그니처와 실행 방법은 [인계 문서](seokho-handoff.md)를 기준으로 한다. 담당자는 내부 파일을 확장할 수 있으며 공용 호출 경계 변경은 사용하는 담당자와 맞춘다.
+아래 표에는 담당자별 구현 상태와 후속 연결 작업을 정리했다. 지역 해석 결과가 검색에 쓰이는 방식과 생성기가 받는 입력은 [지역 해석과 답변 생성 연결](TEAM-SETUP.md#p04-지역-해석과-답변-생성-연결)에서 확인할 수 있다.
 
 ### 데이터 수집과 질문 정제 (이정은)
 
@@ -70,22 +70,24 @@ Streamlit 진입점인 루트 `app.py`와 `src/interface/`는 아직 docstring�
 
 공통 청커는 전처리 JSON의 원문 `text`를 사용하며 `search_text` 정규화는 아직 검색 입력에 적용하지 않는다. 새 HWP를 다시 추출하려면 `annexes.py`가 사용하는 별도 `hwp5proc` 환경이 필요하지만, 저장소 인계 자료를 읽는 준비/색인 명령에는 필요하지 않다.
 
-### 검색과 지역 및 장소 조회 (이명지, 구현 예정)
+### 검색과 지역 및 장소 조회 (이명지)
 
 | 파일 | 역할 |
 | --- | --- |
-| `src/retrieval/regions.py` | 구와 동 이름 해석 |
+| `src/retrieval/regions.py` | PR #11에서 구현했다. `resolve_request`는 사용자가 선택한 구, 질문에 적힌 구, 동 4곳의 연습용 매핑표를 사용한다. 지역이 모호하거나 선택한 구와 충돌하면 다시 묻는다. |
 | `src/retrieval/search.py` | A/B/C 검색 |
 | `src/retrieval/spots.py` | 장소 저장과 조회 |
 | `src/evaluation/retrieval_metrics.py` | 검색 지표 |
 
-### 답변 생성과 품질 추적 (강성수, 구현 예정)
+### 답변 생성과 품질 추적 (강성수)
 
 | 파일 | 역할 |
 | --- | --- |
-| `src/generation/answer.py` | 근거 기반 답변과 응답 정책 |
-| `src/evaluation/answer_metrics.py` | 답변 자동 평가 |
-| `src/observability/tracing.py` | Langfuse 추적 |
+| `src/generation/answer.py` | 답변 가능·재질문·근거 부족·오류를 구분하고, 인용할 때 원문 출처와 문서 버전을 확인한다. |
+| `src/generation/pipeline_adapter.py` | 공통 요청과 선택된 청크를 생성 입력으로 변환하고, 검증한 인용 청크 ID를 반환한다. |
+| `src/evaluation/answer_experiments/` | 벡터 단독과 BM25+벡터 앙상블의 검색 순위 비교, P04 답변 검증, CSV 저장을 담당한다. |
+| `src/evaluation/answer_metrics.py` | 답변 품질 자동 평가를 연결할 위치다. |
+| `src/observability/tracing.py` | Langfuse 추적을 연결할 위치다. |
 
 ### 화면과 관찰 검증 (이승주, 구현 예정)
 
@@ -121,7 +123,7 @@ Streamlit 진입점인 루트 `app.py`와 `src/interface/`는 아직 docstring�
 | `scripts/index.py` | 명시한 공용 문서의 색인 생성, HTML/JSON 형식 선택 |
 | `scripts/evaluate.py` | 데모 또는 팀 연결 함수로 평가 실행, 결과 파일 저장 |
 
-원문 수집과 HWP 전처리는 PR 8 담당 범위이며 공통 기반은 제공된 산출물을 사용한다. 실제 구조 청킹과 임베딩 색인, 근거 조회는 연결됐지만 팀 A/B/C 검색, 질문 변환 모델, 동 이름 추론, 답변 LLM, 장소 DB와 지도는 연결되지 않았다. 데모의 해시 검색과 본문 인용은 공통 흐름 확인용이며 실제 RAG 품질을 입증하지 않는다. 단위/통합 테스트와 CLI 실행 검증 결과는 [최소 구현 인계](seokho-handoff.md#구현-경계와-검증)에 기록한다.
+PR #8과 #10에서 검토한 전처리 자료를 사용한다. 공통 런타임에는 지역 해석기와 답변 생성기를 콜백으로 연결할 수 있다. 팀 A/B/C 검색기, 운영용 답변 모델, 질문 변환 모델, 장소 DB와 지도 연결은 남아 있다. [P04 결과표](../results/testData.md)는 로컬 합성 실험에서 측정한 값이다.
 
 초기 파일별 구현 항목과 플로우 차트는 [Notion 구조 문서](https://app.notion.com/p/422dc8b0e1638150b62acfe703074f30?pvs=204)에 있다. 현재 구현된 규격과 동작은 저장소 코드와 최소 구현 인계 문서를 기준으로 확인한다.
 
