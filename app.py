@@ -40,9 +40,14 @@ with user_tab:
     district = st.selectbox('지역', ['서대문구', '송파구'])
     question = st.text_input('질문')
     sample_name = st.selectbox('예시 응답 고르기 (합성)', list(samples))
+    
     st.caption('지금은 입력한 구와 질문에 상관없이 선택한 예시가 표현됩니다.')
     if st.button('질문하기'):
-        render_response(to_view_response(samples[sample_name], kind='fixture'))
+        st.session_state['view'] = to_view_response(samples[sample_name], kind='fixture')
+
+    view = st.session_state.get('view')
+    if view is not None:
+        render_response(view, question=question, district=district)
 
 
 with inspection_tab:
