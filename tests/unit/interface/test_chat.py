@@ -8,7 +8,7 @@ from streamlit.testing.v1 import AppTest
 
 from src.interface.chat import build_followup_request, is_safe_url
 
-APP_PATH = Path(__file__).parent.parent.parent / "app.py"
+APP_PATH = Path(__file__).parent.parent.parent.parent / "app.py"
 
 
 def ask(sample_name: str, question: str = "") -> AppTest:

@@ -4,7 +4,7 @@ from pathlib import Path
 
 from streamlit.testing.v1 import AppTest
 
-APP_PATH = Path(__file__).parent.parent.parent / "app.py"
+APP_PATH = Path(__file__).parent.parent.parent.parent / "app.py"
 
 
 def test_app_shows_fixture_notice_after_click() -> None:

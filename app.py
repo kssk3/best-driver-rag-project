@@ -16,7 +16,7 @@ from src.interface.chat import render_response
 
 
 # [임시] 예시(합성) 응답을 읽는다. 
-SAMPLE_PATH = Path(__file__).parent / 'tests' / 'fixtures' / 'sample_responses.json'
+SAMPLE_PATH = Path(__file__).parent / 'tests' / 'fixtures' / 'interface' / 'sample_responses.json'
 
 
 def load_samples() -> dict:
