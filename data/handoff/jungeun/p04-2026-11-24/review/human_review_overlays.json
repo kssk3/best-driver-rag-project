@@ -1,0 +1,77 @@
+{
+  "records": [
+    {
+      "parent_mst": "2101297",
+      "attachment_id": "160319461",
+      "raw_sha256": "d08c312e4a9b67131117d477451475f41af268af0a2dd7be7cdfc60e844f0957",
+      "updates": {
+        "retrieval_decision": "exclude_from_item_disposal_search",
+        "content_role": "signage_specification",
+        "human_review": {
+          "item_id": "2101297_160319461_signage",
+          "parent_mst": "2101297",
+          "attachment_id": "160319461",
+          "reviewer": "이정은",
+          "checked_at": "2026-11-24T11:17:11.345896+09:00",
+          "source": "사용자에게 별표6 원문 미리보기를 제시하고 분류를 확인함",
+          "user_response": "응 그리고 이데이터를 석호님한테 넘겨야해",
+          "decision": "규격봉투판매소 표지판으로 원본 보관. 품목별 분리배출 방법 검색에서 제외.",
+          "scope": "이 첨부의 분류만 확인. 전체 표나 이용권한 승인으로 확장하지 않음"
+        },
+        "human_review_status": "classification_confirmed"
+      }
+    },
+    {
+      "parent_mst": "2101385",
+      "attachment_id": "160561037",
+      "raw_sha256": "8a82ad6c18d75506ba9bc4e232e7083f003717f6ab9f89270921e43fff58f3a6",
+      "updates": {
+        "content_role": "annex",
+        "human_review": {
+          "item_id": "2101385_160561037_bin_colors",
+          "parent_mst": "2101385",
+          "attachment_id": "160561037",
+          "reviewer": "이정은",
+          "checked_at": "2026-11-24T11:18:40.142004+09:00",
+          "source": "시행규칙 별표1 원문 미리보기 1쪽의 글·그림과 색상표 6개 대조",
+          "user_response": "어 맞아",
+          "decision": "공동주택 일반용기 설치의 품목별 색상 6개 일치 확인",
+          "scope": "이 그림의 품목·색상과 공동주택 적용 구획만 확인. 전체 부칙·일정·모든 셀 승인 아님"
+        },
+        "structured_image_summary": {
+          "source_location": "별표1 1. 공동주택의 경우 / 가. 일반용기 설치 / 품목별 색상(표기방법-영문병기)",
+          "applicability": "공동주택 일반용기 설치 기준",
+          "colors": [
+            {
+              "item": "캔",
+              "color": "회색"
+            },
+            {
+              "item": "유리병",
+              "color": "주황색"
+            },
+            {
+              "item": "종이팩",
+              "color": "녹색"
+            },
+            {
+              "item": "PET병",
+              "color": "노랑색"
+            },
+            {
+              "item": "플라스틱",
+              "color": "파랑색"
+            },
+            {
+              "item": "비닐",
+              "color": "보라색"
+            }
+          ],
+          "validation": "이정은이 원문 글·그림과 6개 색상표의 일치 확인",
+          "does_not_establish": "실제 설치된 수거함 현황이나 수거시설 위치를 확인한 데이터가 아님"
+        },
+        "human_review_status": "image_colors_confirmed"
+      }
+    }
+  ]
+}

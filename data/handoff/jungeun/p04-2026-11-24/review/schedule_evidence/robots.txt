@@ -1,0 +1,44 @@
+# robots.txt for https://www.songpa.go.kr
+
+# ==========================
+# Googlebot 전용 규칙
+# ==========================
+User-agent: Googlebot
+Crawl-delay: 3600
+Allow: /www
+Allow: /ehealth
+Allow: /child
+Allow: /hanseong
+Allow: /job
+Allow: /map
+Disallow: /neo
+Disallow: /staff
+Disallow: /search
+Disallow: /www/evpwcList.do
+Disallow: /www/evpwcView.do
+Disallow: /www/downloadEvpwcAtchmnflFileStr.do
+Disallow: /upload/DATA/evpwc
+Disallow: /www/selectBbsNttList.do
+Disallow: /www/selectBbsNttView.do
+
+
+# ==========================
+# Googlebot 외 모든 검색엔진
+# ==========================
+User-agent: *
+Crawl-delay: 3600
+Allow: /www
+Allow: /ehealth
+Allow: /child
+Allow: /hanseong
+Allow: /job
+Allow: /map
+Disallow: /neo
+Disallow: /staff
+Disallow: /search
+Disallow: /www/evpwcList.do
+Disallow: /www/evpwcView.do
+Disallow: /www/downloadEvpwcAtchmnflFileStr.do
+Disallow: /upload/DATA/evpwc
+Disallow: /www/selectBbsNttList.do
+Disallow: /www/selectBbsNttView.do

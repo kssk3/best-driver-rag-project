@@ -1,0 +1,39 @@
+{
+  "source_run_id": "e783d23192ac49dc82ba05f5b31b0667",
+  "processed_at": "2026-11-24T02:54:26.143827+00:00",
+  "processing_status": "body_and_supplements_extracted_pending_manual_review",
+  "skipped_documents": [],
+  "documents": [
+    {
+      "document_id": "seodaemun-ordinance",
+      "output_file": "seodaemun-ordinance.json",
+      "unit_count": 59,
+      "article_count": 52,
+      "raw_sha256": "5524d61d2fad077dfc5769556771c23f3dc0eefc558573d0be91b5ce65fd4f39"
+    },
+    {
+      "document_id": "seodaemun-rules",
+      "output_file": "seodaemun-rules.json",
+      "unit_count": 9,
+      "article_count": 9,
+      "raw_sha256": "c7f62e610f424ece1391c3727a326f282e42f1c363361ac93cd45b9af8654c08"
+    },
+    {
+      "document_id": "songpa-ordinance",
+      "output_file": "songpa-ordinance.json",
+      "unit_count": 45,
+      "article_count": 38,
+      "raw_sha256": "b3171a82574303d5562c7921d9c37f21e6117b14c4aaa5c67126be0eabccca53"
+    },
+    {
+      "document_id": "songpa-rules",
+      "output_file": "songpa-rules.json",
+      "unit_count": 8,
+      "article_count": 8,
+      "raw_sha256": "ebc4311f0a762120e810d19edea410c1025304cf73346f7b213749a677b23634"
+    }
+  ],
+  "unprocessed_sections": [
+    "별표 (annexes 별도 결과 확인)"
+  ]
+}

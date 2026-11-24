@@ -1,0 +1,113 @@
+{
+  "parent_mst": "2101297",
+  "attachment_id": "160319461",
+  "annex_key": "21288015",
+  "title": "[별표 6] 규격봉투판매소 표지판(제30조제3항 관련)",
+  "source_url": "http://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=160319461&flNm=%5B%EB%B3%84%ED%91%9C+6%5D+%EA%B7%9C%EA%B2%A9%EB%B4%89%ED%88%AC%ED%8C%90%EB%A7%A4%EC%86%8C+%ED%91%9C%EC%A7%80%ED%8C%90%28%EC%A0%9C30%EC%A1%B0%EC%A0%9C3%ED%95%AD+%EA%B4%80%EB%A0%A8%29",
+  "deleted_marker": false,
+  "usage_status": "index_and_model_use_unreviewed",
+  "document_id": "seodaemun-ordinance",
+  "district": "서대문구",
+  "effective_date": "20251231",
+  "download_review": {
+    "reviewer": "Codex",
+    "checked_at": "2026-11-24",
+    "authorization": "사용자의 별표·부칙 전처리 요청",
+    "scope": "수집된 조례·규칙의 공식 첨부를 로컬 원문 대조용으로 확보",
+    "conditions": "출처 보존, 삭제 자료와 행정 서식 분리, 외부 모델·색인 미사용",
+    "evidence_url": "https://open.law.go.kr/LSO/information/guide.do"
+  },
+  "download_status": "downloaded",
+  "raw_path": "attachments/2101297_160319461.hwp",
+  "raw_sha256": "d08c312e4a9b67131117d477451475f41af268af0a2dd7be7cdfc60e844f0957",
+  "size_bytes": 241664,
+  "schema_version": "jungeun-annex-draft-v2",
+  "xml_listing": {
+    "scope": "lawService XML attachment entry only",
+    "collection_status": "link_only",
+    "content_present": false
+  },
+  "extracted_text_present": true,
+  "extracted_table_count": 0,
+  "human_review_status": "classification_confirmed",
+  "blocks": [
+    {
+      "type": "paragraph",
+      "text": "〔별표 6〕 <개정 2011. 8. 10.>\n",
+      "section_title": "〔별표 6〕 <개정 2011. 8. 10.>",
+      "deleted_section": false
+    },
+    {
+      "type": "paragraph",
+      "text": "",
+      "section_title": "〔별표 6〕 <개정 2011. 8. 10.>",
+      "deleted_section": false
+    },
+    {
+      "type": "paragraph",
+      "text": "규격봉투판매소 표지판(제30조제3항 관련)\n",
+      "section_title": "〔별표 6〕 <개정 2011. 8. 10.>",
+      "deleted_section": false
+    },
+    {
+      "type": "paragraph",
+      "text": "",
+      "section_title": "〔별표 6〕 <개정 2011. 8. 10.>",
+      "deleted_section": false
+    },
+    {
+      "type": "paragraph",
+      "text": "",
+      "section_title": "〔별표 6〕 <개정 2011. 8. 10.>",
+      "deleted_section": false
+    },
+    {
+      "type": "paragraph",
+      "text": "                 \n",
+      "section_title": "〔별표 6〕 <개정 2011. 8. 10.>",
+      "deleted_section": false
+    },
+    {
+      "type": "paragraph",
+      "text": " \n",
+      "section_title": "〔별표 6〕 <개정 2011. 8. 10.>",
+      "deleted_section": false
+    },
+    {
+      "type": "paragraph",
+      "text": "  주 : 1. 글씨 위치는 표시의 하단 접점으로부터 표시 지름의 1/10만큼 띄어서 중심 맞춤으로 표기한다.\n",
+      "section_title": "〔별표 6〕 <개정 2011. 8. 10.>",
+      "deleted_section": false
+    },
+    {
+      "type": "paragraph",
+      "text": "        2. 글씨체는 견출고딕 평2체를 쓰도록 하며, 글씨의 크기는 표시 지름의 1/10을 초과할 수 없다.\n",
+      "section_title": "〔별표 6〕 <개정 2011. 8. 10.>",
+      "deleted_section": false
+    },
+    {
+      "type": "paragraph",
+      "text": "        3. 표시의 색은 상기와 같이 청색(DIC:137), 녹색(DIC:92)으로 2도 표현하거나 청색(DIC:579), 녹색(DIC:643), 검정색, 흰색, 금색 또는 은색의 단색으로 표현할 수 있다. \n",
+      "section_title": "〔별표 6〕 <개정 2011. 8. 10.>",
+      "deleted_section": false
+    }
+  ],
+  "tables": [],
+  "embedded_object_count": 1,
+  "content_role": "signage_specification",
+  "processing_status": "structure_extracted_pending_review",
+  "extracted_xml": "2101297_160319461.xml",
+  "extracted_xml_sha256": "43d203a86786588ec9030e084ea55087c3a5668689e1500bd50bd87d3d215b22",
+  "retrieval_decision": "exclude_from_item_disposal_search",
+  "human_review": {
+    "item_id": "2101297_160319461_signage",
+    "parent_mst": "2101297",
+    "attachment_id": "160319461",
+    "reviewer": "이정은",
+    "checked_at": "2026-11-24T11:17:11.345896+09:00",
+    "source": "사용자에게 별표6 원문 미리보기를 제시하고 분류를 확인함",
+    "user_response": "응 그리고 이데이터를 석호님한테 넘겨야해",
+    "decision": "규격봉투판매소 표지판으로 원본 보관. 품목별 분리배출 방법 검색에서 제외.",
+    "scope": "이 첨부의 분류만 확인. 전체 표나 이용권한 승인으로 확장하지 않음"
+  }
+}

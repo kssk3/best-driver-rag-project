@@ -1,0 +1,152 @@
+{
+  "source_run_id": "e783d23192ac49dc82ba05f5b31b0667",
+  "automated_review": {
+    "body_units": 121,
+    "articles": 107,
+    "supplementary_sections": 4,
+    "downloaded_attachments": 19,
+    "excluded_deleted_attachments": 2,
+    "tables": 32,
+    "cells": 2643,
+    "checks": [
+      "본문 전체 XML 문자열 대조",
+      "문서명·MST·시행일·원본 해시 대조",
+      "부칙 전체 문자열 대조",
+      "셀 좌표·rowspan·colspan·Text 순서 대조",
+      "XML 목록 상태와 실제 HWP 추출 상태 분리",
+      "19개 HWP 재추출 결과의 원문 셀·문단·구조 XML 불변 대조",
+      "검색용 행 555개의 병합 원점·출처 ID·문맥 참조 확인",
+      "명시 용어 복원과 일반 공백 정리를 원문과 분리",
+      "임시 Ruff 0.14.10 명시 옵션 검사와 서식 검사 통과"
+    ],
+    "unit_tests_passed": 37,
+    "deleted_articles": 17,
+    "search_rows": 555
+  },
+  "agent_review": {
+    "reviewer": "Codex",
+    "status": "key_conditions_compared_not_exhaustive_manual_audit",
+    "confirmed": [
+      "종이팩 품목별·통합 배출 구분과 비고1 조건",
+      "송파구 첨부 내부 별표·삭제 구획 구분",
+      "송파구 별표4 지역·주택유형·요일·시간·장소의 같은 행 보존",
+      "부칙의 과거 경과조치와 현행 본문 분리"
+    ],
+    "limitations": [
+      "2643개 셀의 모든 수치·문구를 사람이 개별 승인한 상태가 아님",
+      "HOP 대형 표 렌더링 일부 겹침 경고",
+      "현재 동별 운영 일정과의 대조는 별도"
+    ],
+    "resolved_image_items": [
+      "2101297_160319461 판매소 표지판 분류 확인",
+      "2101385_160561037 공동주택 수거용기 색상6개 확인"
+    ]
+  },
+  "human_review": {
+    "status": "in_progress",
+    "reviewer": "이정은",
+    "checked_items": [
+      {
+        "item_id": "2101297_160319461_signage",
+        "parent_mst": "2101297",
+        "attachment_id": "160319461",
+        "reviewer": "이정은",
+        "checked_at": "2026-11-24T11:17:11.345896+09:00",
+        "source": "사용자에게 별표6 원문 미리보기를 제시하고 분류를 확인함",
+        "user_response": "응 그리고 이데이터를 석호님한테 넘겨야해",
+        "decision": "규격봉투판매소 표지판으로 원본 보관. 품목별 분리배출 방법 검색에서 제외.",
+        "scope": "이 첨부의 분류만 확인. 전체 표나 이용권한 승인으로 확장하지 않음"
+      },
+      {
+        "item_id": "2101385_160561037_bin_colors",
+        "parent_mst": "2101385",
+        "attachment_id": "160561037",
+        "reviewer": "이정은",
+        "checked_at": "2026-11-24T11:18:40.142004+09:00",
+        "source": "시행규칙 별표1 원문 미리보기 1쪽의 글·그림과 색상표 6개 대조",
+        "user_response": "어 맞아",
+        "decision": "공동주택 일반용기 설치의 품목별 색상 6개 일치 확인",
+        "scope": "이 그림의 품목·색상과 공동주택 적용 구획만 확인. 전체 부칙·일정·모든 셀 승인 아님"
+      },
+      {
+        "item_id": "songpa_food_waste_hours_source_difference",
+        "reviewer": "이정은",
+        "checked_at": "2026-11-24T11:21:21.980287+09:00",
+        "user_response": "ㅇㅇ 둘다 전달하는 걸로하고 송파구 공식 안내 정보도 일치해",
+        "decision": "송파구 일반주택 음식물 시간: 시행규칙 별표4 18~23시, 구청 음식물 안내18~22시의 차이 확인. 원문별 수치 보존.",
+        "source_refs": [
+          {
+            "mst": "1481479",
+            "attachment_id": "121237861",
+            "location": "별표4 일반지역 시간열",
+            "value": "18~23시"
+          },
+          {
+            "url": "https://www.songpa.go.kr/www/contents.do?key=3161",
+            "last_modified_display": "2026-11-18",
+            "location": "일반주택 음식물쓰레기 배출시간 안내",
+            "value": "지정요일18~22시"
+          }
+        ],
+        "scope": "출처별 시간 차이 확인. 다른 품목·주택유형·동별 일정까지 확대하지 않음"
+      },
+      {
+        "item_id": "songpa_wirye_official_source_conflict",
+        "reviewer": "이정은",
+        "checked_at": "2026-11-24T11:24:55.869153+09:00",
+        "user_response": "네가 말한데로요",
+        "review_type": "handling_decision_confirmed",
+        "decision": "위례동 일반주택 일정의 공식 웹 안내·지도(월수금)와 첨부PDF(화목일) 간 충돌로 분류. 일방을 자동 정답으로 선택하지 않음.",
+        "scope": "제시한 충돌 처리 방침에 동의. 위례동의 실제 현장 수거요일을 확인한 기록이 아님",
+        "source_refs": [
+          "https://www.songpa.go.kr/www/contents.do?key=3153",
+          "https://www.songpa.go.kr/www/resourceCirculationMap.do?key=6275",
+          "schedule_evidence/official-20261014.pdf"
+        ]
+      }
+    ]
+  },
+  "handoff_status": "pending_human_review",
+  "index_and_model_use_status": "unreviewed",
+  "scope": "자료 추출·원문 대조와 항목별 사람 검수. 전체 검색 검증 미포함",
+  "delivery_plan": {
+    "recipient": "양석호",
+    "include": [
+      "원본 XML·HWP",
+      "전처리 JSON",
+      "출처·변경·검수 기록"
+    ],
+    "status": "prepared_for_user_file_review_not_sent_to_seokho",
+    "archive_status": "이 검수 상태를 반영한 새 파일 묶음"
+  },
+  "schedule_review": {
+    "time_difference": "user_confirmed",
+    "remaining_source_conflicts": [
+      "화목일 권역 재활용 품목별 요일"
+    ],
+    "status": "awaiting_user_conflict_classification",
+    "wirye_conflict_handling": "user_confirmed"
+  },
+  "latest_body_output": "processed/body",
+  "reproduction_check": {
+    "annex_files": 19,
+    "human_overlays_reapplied": 2,
+    "network_used": false
+  },
+  "search_preparation_review": {
+    "schema_version": "jungeun-annex-draft-v2",
+    "status": "local_derived_representation_verified_not_integrated",
+    "stats": {
+      "attachments": 19,
+      "tables": 32,
+      "cells": 2643,
+      "search_rows": 555,
+      "changed_cells": 322,
+      "joined_term_cells": 24,
+      "hangul_adjacent_linebreak_cells": 57,
+      "inherited_cell_values": 1127
+    },
+    "lexical_check": "합성 토큰화와 로컬 BM25 예시 1건 통과. 실제 B/C 검색기 검증 아님",
+    "remaining": "명시 목록 밖 단어 분할·조건 및 각주 연결·실제 청킹과 B/C 검색은 후속 검증 필요"
+  }
+}

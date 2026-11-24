@@ -1,0 +1,31 @@
+{
+  "source_url": "https://www.songpa.go.kr/robots.txt",
+  "checked_at": "2026-11-24",
+  "sha256": "eda2ab2095a0692d56c76355ee1dc0066dd36fe76483b7bbfbd77aea27a4d2ad",
+  "user_agent_group": "*",
+  "crawl_delay_seconds": 3600,
+  "paths": [
+    {
+      "path": "/www/contents.do?key=3153",
+      "can_fetch": true
+    },
+    {
+      "path": "/www/contents.do?key=3161",
+      "can_fetch": true
+    },
+    {
+      "path": "/www/resourceCirculationMap.do?key=6275",
+      "can_fetch": true
+    },
+    {
+      "path": "/www/resourceCirculationMapData.do",
+      "can_fetch": true
+    },
+    {
+      "path": "/common/downloadAttch2.jsp",
+      "can_fetch": true
+    }
+  ],
+  "action_after_check": "No further content HTTP requests. Prior observed response excerpts only.",
+  "history_limit": "Earlier investigation fetched multiple content pages before checking this Crawl-delay. No claim of historical crawl-delay compliance."
+}
