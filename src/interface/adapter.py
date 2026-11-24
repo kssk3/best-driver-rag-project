@@ -25,6 +25,9 @@ class Candidate:
 class Citation:
     chunk_id: str
     source_url: str | None
+    title: str | None = None
+    source_location: str | None = None
+    document_version: str | None = None
 
 
 @dataclass(frozen=True)
@@ -60,7 +63,14 @@ def to_view_response(raw: dict, kind: Literal['fixture', 'real']) -> ViewRespons
         ],
         model_inputs=None if model_inputs is None else list(model_inputs),
         citations=[
-            Citation(s['chunk_id'], s.get('source_url')) for s in raw.get('sources', [])
+            Citation(
+                s['chunk_id'],
+                s.get('source_url'),
+                s.get('title'),
+                s.get('source_location'),
+                s.get('document_version'),
+            )
+            for s in raw.get('sources', [])
         ],
         error=raw.get('error'),
     )

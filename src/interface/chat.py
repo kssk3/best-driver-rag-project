@@ -1,14 +1,13 @@
 """질문과 답변 화면.
 
 담당: 이승주
-상태: 구현 전 파일 뼈대. 세부 구현 항목은 Notion 구조 문서를 참고한다.
-공용 입출력과 함수 규격은 사용하는 담당자와 합의한 뒤 추가한다.
+상태별 모양 구분은 U05에서 추가한다.
 """
 
 
 import streamlit as st
 
-from src.interface.adapter import ViewResponse
+from src.interface.adapter import Citation, ViewResponse
 
 
 REQUIRED_FIELD_LABELS = {
@@ -35,6 +34,25 @@ def is_safe_url(url: str | None) -> bool:
 
     # 우선 값이 있는지 확인하고 접두사 튜플을 받아 구분
     return bool(url) and url.startswith(('https://', 'http://'))
+
+
+def format_citation(citation: Citation) -> str:
+    '''인용 한 건을 출처를 구별할 수 있는 한 줄로 만든다.
+
+    제목, 원문 위치, 문서 버전이 있으면 함께 보여 준다. 같은 질문에 서로 다른 문서가
+    인용될 때(예: 웹페이지와 PDF의 일정이 다름) 사용자가 어느 출처인지 알 수 있어야 한다.
+    '''
+    # 제목에 대괄호가 있어도 마크다운 링크가 깨지지 않게 막는다.
+    label = (citation.title or citation.chunk_id).replace('[', '\\[').replace(']', '\\]')
+    if is_safe_url(citation.source_url):
+        line = f'- [{label}]({citation.source_url})'
+    else:
+        line = f'- {label} (원문 링크 없음)'
+    if citation.source_location:
+        line += f' · 위치: {citation.source_location}'
+    if citation.document_version:
+        line += f' · 문서 버전: {citation.document_version}'
+    return line
 
 
 def render_response(view: ViewResponse, question: str = '', district: str = '') -> None:
@@ -68,10 +86,7 @@ def _render_answered(view: ViewResponse) -> None:
         return 
     
     for citation in view.citations:
-        if is_safe_url(citation.source_url):
-            st.markdown(f'- [{citation.chunk_id}]({citation.source_url})')
-        else:
-            st.markdown(f'- {citation.chunk_id} (원문 링크 없음)')
+        st.markdown(format_citation(citation))
 
 
 def _render_clarification(view: ViewResponse, question: str, district: str) -> None:
@@ -94,6 +109,16 @@ def _render_clarification(view: ViewResponse, question: str, district: str) -> N
 def _render_insufficient_evidence(view: ViewResponse) -> None:
 
     st.info('질문하신 내용은 답변이 어렵습니다.')
+
+    # 근거는 찾았지만 답을 하나로 정할 수 없는 경우(출처끼리 내용이 다름)에는
+    # 안내 문장과 출처를 함께 보여 준다. 근거가 없으면 위 안내 한 줄만 보인다.
+    if view.citations:
+        for line in (view.answer or '').splitlines():
+            if line.strip():
+                st.write(line)
+        st.markdown('확인한 출처')
+        for citation in view.citations:
+            st.markdown(format_citation(citation))
 
 
 def _render_error() -> None:

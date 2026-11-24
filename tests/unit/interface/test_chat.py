@@ -6,7 +6,8 @@ from pathlib import Path
 import pytest
 from streamlit.testing.v1 import AppTest
 
-from src.interface.chat import build_followup_request, is_safe_url
+from src.interface.adapter import Citation
+from src.interface.chat import build_followup_request, format_citation, is_safe_url
 
 APP_PATH = Path(__file__).parent.parent.parent.parent / "app.py"
 
@@ -78,3 +79,35 @@ def test_followup_form_keeps_original_question_and_district() -> None:
         "district": "서대문구",
         "conditions": {"housing_type": "아파트"},
     }
+
+
+def test_format_citation_escapes_brackets_and_shows_details() -> None:
+    citation = Citation("c1", "https://example.invalid/a", "[가상] 안내", "표 > 행", "v1")
+    assert format_citation(citation) == (
+        "- [\\[가상\\] 안내](https://example.invalid/a) · 위치: 표 > 행 · 문서 버전: v1"
+    )
+
+
+@pytest.mark.parametrize("url", ["", None, "javascript:alert(1)"])
+def test_format_citation_without_safe_link(url: str | None) -> None:
+    assert format_citation(Citation("c1", url)) == "- c1 (원문 링크 없음)"
+
+
+def test_conflicting_sources_are_both_shown_for_insufficient_evidence() -> None:
+    app = ask("insufficient_evidence_conflict")
+    assert not app.exception
+    assert not app.error
+    assert any("답변이 어렵습니다" in item.value for item in app.info)
+    shown = " ".join(item.value for item in app.markdown)
+    assert "월·수·금" in shown
+    assert "화·목·일" in shown
+    assert "예시 안내 웹페이지(가상)" in shown
+    assert "예시 안내 PDF(가상)" in shown
+    assert "PDF 3쪽 > 마지막 예시동 행" in shown
+    assert "문서 버전: fx-v1" in shown
+    assert "문서 버전: fx-v2" in shown
+
+
+def test_plain_insufficient_evidence_shows_no_source_list() -> None:
+    app = ask("insufficient_evidence")
+    assert not any("확인한 출처" in item.value for item in app.markdown)

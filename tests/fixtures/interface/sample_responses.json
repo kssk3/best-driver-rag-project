@@ -60,6 +60,35 @@
       ]
     }
   },
+  "insufficient_evidence_conflict": {
+    "request_id": "fx-req-005",
+    "status": "insufficient_evidence",
+    "answer": "확인한 출처의 안내가 서로 다릅니다.\n[1] [가상] 예시 안내문은 월·수·금\n[2] [가상] 예시 PDF는 화·목·일\n현재 적용되는 내용을 하나로 확정하기 어렵습니다.",
+    "sources": [
+      {
+        "chunk_id": "fx-chunk-101",
+        "source_url": "https://example.invalid/fx-conflict-html",
+        "title": "예시 안내 웹페이지(가상)",
+        "source_location": "일반주택 표 > 예시동 행",
+        "document_version": "fx-v1"
+      },
+      {
+        "chunk_id": "fx-chunk-102",
+        "source_url": "",
+        "title": "예시 안내 PDF(가상)",
+        "source_location": "PDF 3쪽 > 마지막 예시동 행",
+        "document_version": "fx-v2"
+      }
+    ],
+    "required_fields": [],
+    "debug_trace": {
+      "candidates": [
+        {"chunk_id": "fx-chunk-101", "district": "송파구", "score": 0.81, "text": "[가상] 예시 본문 월·수·금"},
+        {"chunk_id": "fx-chunk-102", "district": "송파구", "score": 0.79, "text": "[가상] 예시 본문 화·목·일"}
+      ],
+      "model_inputs": ["fx-chunk-101", "fx-chunk-102"]
+    }
+  },
   "error": {
     "request_id": "fx-req-004",
     "status": "error",
