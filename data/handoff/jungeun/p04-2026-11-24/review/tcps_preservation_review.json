@@ -1,0 +1,588 @@
+{
+  "schema_version": "jungeun-tcps-preservation-v1",
+  "checked_at": "2026-11-24T15:04:40.197665+09:00",
+  "scope": "기존 HWP 구조 XML의 TCPSControl.textlength에 담긴 원문 문자열 보존. 숫자나 글리프 의미로 추정 변환하지 않음.",
+  "runner": {
+    "python": "main repository venv Python binary",
+    "module_source": "team-repo-schedule-review PYTHONPATH",
+    "network_used": false,
+    "hwp_reparsed": false,
+    "existing_structural_xml_read": 19
+  },
+  "results": {
+    "affected_attachments": [
+      "2053883_154690993",
+      "2101297_160319463"
+    ],
+    "unaffected_attachments": 17,
+    "tcps_controls": 20,
+    "changed_cells": 10,
+    "changed_body_paragraphs": 7,
+    "table_count": 32,
+    "search_row_count": 555,
+    "html_updates": {
+      "2053883_154690993": {
+        "updated_cells": 7,
+        "updated_paragraphs": 4
+      },
+      "2101297_160319463": {
+        "updated_cells": 3,
+        "updated_paragraphs": 3
+      }
+    },
+    "original_files_unchanged": true,
+    "cell_coordinates_merged_ranges_sections_and_ids_unchanged": true,
+    "human_checked_items_unchanged": true,
+    "index_and_model_use_status": "unreviewed"
+  },
+  "control_payloads": [
+    {
+      "attachment_key": "2053883_154690993",
+      "control_index": 1,
+      "source_xml": "processed/annex/2053883_154690993.xml",
+      "source_location": "HwpDoc/BodyText[1]/SectionDef[1]/ColumnSet[1]/Paragraph[8]/LineSeg[1]/TableControl[1]/TableBody[1]/TableRow[9]/TableCell[4]/Paragraph[1]/LineSeg[1]/TCPSControl[1]",
+      "source_attribute": "textlength",
+      "raw_payload": "ꊉꊘ",
+      "raw_payload_ascii": "\\ua289\\ua298",
+      "codepoints": [
+        "U+A289",
+        "U+A298"
+      ],
+      "unicode_names_ascii": [
+        "YI SYLLABLE WOP",
+        "YI SYLLABLE ZUOX"
+      ],
+      "meaning": "Raw BSTR character payload; no numeric-length or glyph interpretation"
+    },
+    {
+      "attachment_key": "2053883_154690993",
+      "control_index": 2,
+      "source_xml": "processed/annex/2053883_154690993.xml",
+      "source_location": "HwpDoc/BodyText[1]/SectionDef[1]/ColumnSet[1]/Paragraph[8]/LineSeg[1]/TableControl[1]/TableBody[1]/TableRow[10]/TableCell[1]/Paragraph[1]/LineSeg[1]/TCPSControl[1]",
+      "source_attribute": "textlength",
+      "raw_payload": "ꊉꊙ",
+      "raw_payload_ascii": "\\ua289\\ua299",
+      "codepoints": [
+        "U+A289",
+        "U+A299"
+      ],
+      "unicode_names_ascii": [
+        "YI SYLLABLE WOP",
+        "YI SYLLABLE ZUO"
+      ],
+      "meaning": "Raw BSTR character payload; no numeric-length or glyph interpretation"
+    },
+    {
+      "attachment_key": "2053883_154690993",
+      "control_index": 3,
+      "source_xml": "processed/annex/2053883_154690993.xml",
+      "source_location": "HwpDoc/BodyText[1]/SectionDef[1]/ColumnSet[1]/Paragraph[8]/LineSeg[1]/TableControl[1]/TableBody[1]/TableRow[11]/TableCell[1]/Paragraph[1]/LineSeg[1]/TCPSControl[1]",
+      "source_attribute": "textlength",
+      "raw_payload": "ꊉꊚ",
+      "raw_payload_ascii": "\\ua289\\ua29a",
+      "codepoints": [
+        "U+A289",
+        "U+A29A"
+      ],
+      "unicode_names_ascii": [
+        "YI SYLLABLE WOP",
+        "YI SYLLABLE ZUOP"
+      ],
+      "meaning": "Raw BSTR character payload; no numeric-length or glyph interpretation"
+    },
+    {
+      "attachment_key": "2053883_154690993",
+      "control_index": 4,
+      "source_xml": "processed/annex/2053883_154690993.xml",
+      "source_location": "HwpDoc/BodyText[1]/SectionDef[1]/ColumnSet[1]/Paragraph[8]/LineSeg[1]/TableControl[1]/TableBody[1]/TableRow[11]/TableCell[3]/Paragraph[1]/LineSeg[1]/TCPSControl[1]",
+      "source_attribute": "textlength",
+      "raw_payload": "ꊉꊛ",
+      "raw_payload_ascii": "\\ua289\\ua29b",
+      "codepoints": [
+        "U+A289",
+        "U+A29B"
+      ],
+      "unicode_names_ascii": [
+        "YI SYLLABLE WOP",
+        "YI SYLLABLE ZOT"
+      ],
+      "meaning": "Raw BSTR character payload; no numeric-length or glyph interpretation"
+    },
+    {
+      "attachment_key": "2053883_154690993",
+      "control_index": 5,
+      "source_xml": "processed/annex/2053883_154690993.xml",
+      "source_location": "HwpDoc/BodyText[1]/SectionDef[1]/ColumnSet[1]/Paragraph[8]/LineSeg[1]/TableControl[1]/TableBody[1]/TableRow[12]/TableCell[1]/Paragraph[1]/LineSeg[1]/TCPSControl[1]",
+      "source_attribute": "textlength",
+      "raw_payload": "ꊊꊒ",
+      "raw_payload_ascii": "\\ua28a\\ua292",
+      "codepoints": [
+        "U+A28A",
+        "U+A292"
+      ],
+      "unicode_names_ascii": [
+        "YI SYLLABLE WEX",
+        "YI SYLLABLE ZIE"
+      ],
+      "meaning": "Raw BSTR character payload; no numeric-length or glyph interpretation"
+    },
+    {
+      "attachment_key": "2053883_154690993",
+      "control_index": 6,
+      "source_xml": "processed/annex/2053883_154690993.xml",
+      "source_location": "HwpDoc/BodyText[1]/SectionDef[1]/ColumnSet[1]/Paragraph[8]/LineSeg[1]/TableControl[1]/TableBody[1]/TableRow[12]/TableCell[3]/Paragraph[1]/LineSeg[1]/TCPSControl[1]",
+      "source_attribute": "textlength",
+      "raw_payload": "ꊊꊓ",
+      "raw_payload_ascii": "\\ua28a\\ua293",
+      "codepoints": [
+        "U+A28A",
+        "U+A293"
+      ],
+      "unicode_names_ascii": [
+        "YI SYLLABLE WEX",
+        "YI SYLLABLE ZIEP"
+      ],
+      "meaning": "Raw BSTR character payload; no numeric-length or glyph interpretation"
+    },
+    {
+      "attachment_key": "2053883_154690993",
+      "control_index": 7,
+      "source_xml": "processed/annex/2053883_154690993.xml",
+      "source_location": "HwpDoc/BodyText[1]/SectionDef[1]/ColumnSet[1]/Paragraph[8]/LineSeg[1]/TableControl[1]/TableBody[1]/TableRow[13]/TableCell[1]/Paragraph[1]/LineSeg[1]/TCPSControl[1]",
+      "source_attribute": "textlength",
+      "raw_payload": "ꊊꊔ",
+      "raw_payload_ascii": "\\ua28a\\ua294",
+      "codepoints": [
+        "U+A28A",
+        "U+A294"
+      ],
+      "unicode_names_ascii": [
+        "YI SYLLABLE WEX",
+        "YI SYLLABLE ZAT"
+      ],
+      "meaning": "Raw BSTR character payload; no numeric-length or glyph interpretation"
+    },
+    {
+      "attachment_key": "2053883_154690993",
+      "control_index": 8,
+      "source_xml": "processed/annex/2053883_154690993.xml",
+      "source_location": "HwpDoc/BodyText[1]/SectionDef[1]/ColumnSet[1]/Paragraph[37]/LineSeg[1]/TCPSControl[1]",
+      "source_attribute": "textlength",
+      "raw_payload": "ꊉꊘ",
+      "raw_payload_ascii": "\\ua289\\ua298",
+      "codepoints": [
+        "U+A289",
+        "U+A298"
+      ],
+      "unicode_names_ascii": [
+        "YI SYLLABLE WOP",
+        "YI SYLLABLE ZUOX"
+      ],
+      "meaning": "Raw BSTR character payload; no numeric-length or glyph interpretation"
+    },
+    {
+      "attachment_key": "2053883_154690993",
+      "control_index": 9,
+      "source_xml": "processed/annex/2053883_154690993.xml",
+      "source_location": "HwpDoc/BodyText[1]/SectionDef[1]/ColumnSet[1]/Paragraph[37]/LineSeg[1]/TCPSControl[2]",
+      "source_attribute": "textlength",
+      "raw_payload": "ꊉꊙ",
+      "raw_payload_ascii": "\\ua289\\ua299",
+      "codepoints": [
+        "U+A289",
+        "U+A299"
+      ],
+      "unicode_names_ascii": [
+        "YI SYLLABLE WOP",
+        "YI SYLLABLE ZUO"
+      ],
+      "meaning": "Raw BSTR character payload; no numeric-length or glyph interpretation"
+    },
+    {
+      "attachment_key": "2053883_154690993",
+      "control_index": 10,
+      "source_xml": "processed/annex/2053883_154690993.xml",
+      "source_location": "HwpDoc/BodyText[1]/SectionDef[1]/ColumnSet[1]/Paragraph[38]/LineSeg[1]/TCPSControl[1]",
+      "source_attribute": "textlength",
+      "raw_payload": "ꊉꊚ",
+      "raw_payload_ascii": "\\ua289\\ua29a",
+      "codepoints": [
+        "U+A289",
+        "U+A29A"
+      ],
+      "unicode_names_ascii": [
+        "YI SYLLABLE WOP",
+        "YI SYLLABLE ZUOP"
+      ],
+      "meaning": "Raw BSTR character payload; no numeric-length or glyph interpretation"
+    },
+    {
+      "attachment_key": "2053883_154690993",
+      "control_index": 11,
+      "source_xml": "processed/annex/2053883_154690993.xml",
+      "source_location": "HwpDoc/BodyText[1]/SectionDef[1]/ColumnSet[1]/Paragraph[38]/LineSeg[1]/TCPSControl[2]",
+      "source_attribute": "textlength",
+      "raw_payload": "ꊊꊒ",
+      "raw_payload_ascii": "\\ua28a\\ua292",
+      "codepoints": [
+        "U+A28A",
+        "U+A292"
+      ],
+      "unicode_names_ascii": [
+        "YI SYLLABLE WEX",
+        "YI SYLLABLE ZIE"
+      ],
+      "meaning": "Raw BSTR character payload; no numeric-length or glyph interpretation"
+    },
+    {
+      "attachment_key": "2053883_154690993",
+      "control_index": 12,
+      "source_xml": "processed/annex/2053883_154690993.xml",
+      "source_location": "HwpDoc/BodyText[1]/SectionDef[1]/ColumnSet[1]/Paragraph[39]/LineSeg[1]/TCPSControl[1]",
+      "source_attribute": "textlength",
+      "raw_payload": "ꊉꊛ",
+      "raw_payload_ascii": "\\ua289\\ua29b",
+      "codepoints": [
+        "U+A289",
+        "U+A29B"
+      ],
+      "unicode_names_ascii": [
+        "YI SYLLABLE WOP",
+        "YI SYLLABLE ZOT"
+      ],
+      "meaning": "Raw BSTR character payload; no numeric-length or glyph interpretation"
+    },
+    {
+      "attachment_key": "2053883_154690993",
+      "control_index": 13,
+      "source_xml": "processed/annex/2053883_154690993.xml",
+      "source_location": "HwpDoc/BodyText[1]/SectionDef[1]/ColumnSet[1]/Paragraph[39]/LineSeg[1]/TCPSControl[2]",
+      "source_attribute": "textlength",
+      "raw_payload": "ꊊꊓ",
+      "raw_payload_ascii": "\\ua28a\\ua293",
+      "codepoints": [
+        "U+A28A",
+        "U+A293"
+      ],
+      "unicode_names_ascii": [
+        "YI SYLLABLE WEX",
+        "YI SYLLABLE ZIEP"
+      ],
+      "meaning": "Raw BSTR character payload; no numeric-length or glyph interpretation"
+    },
+    {
+      "attachment_key": "2053883_154690993",
+      "control_index": 14,
+      "source_xml": "processed/annex/2053883_154690993.xml",
+      "source_location": "HwpDoc/BodyText[1]/SectionDef[1]/ColumnSet[1]/Paragraph[40]/LineSeg[1]/TCPSControl[1]",
+      "source_attribute": "textlength",
+      "raw_payload": "ꊊꊔ",
+      "raw_payload_ascii": "\\ua28a\\ua294",
+      "codepoints": [
+        "U+A28A",
+        "U+A294"
+      ],
+      "unicode_names_ascii": [
+        "YI SYLLABLE WEX",
+        "YI SYLLABLE ZAT"
+      ],
+      "meaning": "Raw BSTR character payload; no numeric-length or glyph interpretation"
+    },
+    {
+      "attachment_key": "2101297_160319463",
+      "control_index": 1,
+      "source_xml": "processed/annex/2101297_160319463.xml",
+      "source_location": "HwpDoc/BodyText[1]/SectionDef[1]/ColumnSet[1]/Paragraph[7]/LineSeg[1]/TableControl[1]/TableBody[1]/TableRow[10]/TableCell[1]/Paragraph[1]/LineSeg[1]/TCPSControl[1]",
+      "source_attribute": "textlength",
+      "raw_payload": "󰊉󰊘",
+      "raw_payload_ascii": "\\U000f0289\\U000f0298",
+      "codepoints": [
+        "U+F0289",
+        "U+F0298"
+      ],
+      "unicode_names_ascii": [
+        "PRIVATE USE OR UNNAMED CODE POINT",
+        "PRIVATE USE OR UNNAMED CODE POINT"
+      ],
+      "meaning": "Raw BSTR character payload; no numeric-length or glyph interpretation"
+    },
+    {
+      "attachment_key": "2101297_160319463",
+      "control_index": 2,
+      "source_xml": "processed/annex/2101297_160319463.xml",
+      "source_location": "HwpDoc/BodyText[1]/SectionDef[1]/ColumnSet[1]/Paragraph[7]/LineSeg[1]/TableControl[1]/TableBody[1]/TableRow[10]/TableCell[3]/Paragraph[1]/LineSeg[1]/TCPSControl[1]",
+      "source_attribute": "textlength",
+      "raw_payload": "󰊉󰊙",
+      "raw_payload_ascii": "\\U000f0289\\U000f0299",
+      "codepoints": [
+        "U+F0289",
+        "U+F0299"
+      ],
+      "unicode_names_ascii": [
+        "PRIVATE USE OR UNNAMED CODE POINT",
+        "PRIVATE USE OR UNNAMED CODE POINT"
+      ],
+      "meaning": "Raw BSTR character payload; no numeric-length or glyph interpretation"
+    },
+    {
+      "attachment_key": "2101297_160319463",
+      "control_index": 3,
+      "source_xml": "processed/annex/2101297_160319463.xml",
+      "source_location": "HwpDoc/BodyText[1]/SectionDef[1]/ColumnSet[1]/Paragraph[7]/LineSeg[1]/TableControl[1]/TableBody[1]/TableRow[11]/TableCell[1]/Paragraph[1]/LineSeg[1]/TCPSControl[1]",
+      "source_attribute": "textlength",
+      "raw_payload": "󰊉󰊚",
+      "raw_payload_ascii": "\\U000f0289\\U000f029a",
+      "codepoints": [
+        "U+F0289",
+        "U+F029A"
+      ],
+      "unicode_names_ascii": [
+        "PRIVATE USE OR UNNAMED CODE POINT",
+        "PRIVATE USE OR UNNAMED CODE POINT"
+      ],
+      "meaning": "Raw BSTR character payload; no numeric-length or glyph interpretation"
+    },
+    {
+      "attachment_key": "2101297_160319463",
+      "control_index": 4,
+      "source_xml": "processed/annex/2101297_160319463.xml",
+      "source_location": "HwpDoc/BodyText[1]/SectionDef[1]/ColumnSet[1]/Paragraph[31]/LineSeg[1]/TCPSControl[1]",
+      "source_attribute": "textlength",
+      "raw_payload": "󰊉󰊘",
+      "raw_payload_ascii": "\\U000f0289\\U000f0298",
+      "codepoints": [
+        "U+F0289",
+        "U+F0298"
+      ],
+      "unicode_names_ascii": [
+        "PRIVATE USE OR UNNAMED CODE POINT",
+        "PRIVATE USE OR UNNAMED CODE POINT"
+      ],
+      "meaning": "Raw BSTR character payload; no numeric-length or glyph interpretation"
+    },
+    {
+      "attachment_key": "2101297_160319463",
+      "control_index": 5,
+      "source_xml": "processed/annex/2101297_160319463.xml",
+      "source_location": "HwpDoc/BodyText[1]/SectionDef[1]/ColumnSet[1]/Paragraph[32]/LineSeg[1]/TCPSControl[1]",
+      "source_attribute": "textlength",
+      "raw_payload": "󰊉󰊙",
+      "raw_payload_ascii": "\\U000f0289\\U000f0299",
+      "codepoints": [
+        "U+F0289",
+        "U+F0299"
+      ],
+      "unicode_names_ascii": [
+        "PRIVATE USE OR UNNAMED CODE POINT",
+        "PRIVATE USE OR UNNAMED CODE POINT"
+      ],
+      "meaning": "Raw BSTR character payload; no numeric-length or glyph interpretation"
+    },
+    {
+      "attachment_key": "2101297_160319463",
+      "control_index": 6,
+      "source_xml": "processed/annex/2101297_160319463.xml",
+      "source_location": "HwpDoc/BodyText[1]/SectionDef[1]/ColumnSet[1]/Paragraph[33]/LineSeg[1]/TCPSControl[1]",
+      "source_attribute": "textlength",
+      "raw_payload": "󰊉󰊚",
+      "raw_payload_ascii": "\\U000f0289\\U000f029a",
+      "codepoints": [
+        "U+F0289",
+        "U+F029A"
+      ],
+      "unicode_names_ascii": [
+        "PRIVATE USE OR UNNAMED CODE POINT",
+        "PRIVATE USE OR UNNAMED CODE POINT"
+      ],
+      "meaning": "Raw BSTR character payload; no numeric-length or glyph interpretation"
+    }
+  ],
+  "changes": [
+    {
+      "attachment_key": "2053883_154690993",
+      "old_json_sha256": "ab9566ad3c506c4b6f902ce86b2b25111d7044105357e118790d103d0c5fed39",
+      "cell_changes": [
+        {
+          "table_id": "table-1",
+          "cell_id": "table-1-r8-c5",
+          "before_text": "허가(신고)\n   번      호",
+          "after_text": "ꊉꊘ 허가(신고)\n   번      호",
+          "before_paragraphs": [
+            " 허가(신고)\n",
+            "   번      호\n"
+          ],
+          "after_paragraphs": [
+            "ꊉꊘ 허가(신고)\n",
+            "   번      호\n"
+          ]
+        },
+        {
+          "table_id": "table-1",
+          "cell_id": "table-1-r9-c1",
+          "before_text": "시설소재지",
+          "after_text": "ꊉꊙ 시설소재지",
+          "before_paragraphs": [
+            " 시설소재지\n"
+          ],
+          "after_paragraphs": [
+            "ꊉꊙ 시설소재지\n"
+          ]
+        },
+        {
+          "table_id": "table-1",
+          "cell_id": "table-1-r10-c1",
+          "before_text": "시 설 명",
+          "after_text": "ꊉꊚ 시 설 명",
+          "before_paragraphs": [
+            " 시 설 명\n"
+          ],
+          "after_paragraphs": [
+            "ꊉꊚ 시 설 명\n"
+          ]
+        },
+        {
+          "table_id": "table-1",
+          "cell_id": "table-1-r10-c5",
+          "before_text": "반입일자",
+          "after_text": "ꊉꊛ 반입일자",
+          "before_paragraphs": [
+            " 반입일자\n"
+          ],
+          "after_paragraphs": [
+            "ꊉꊛ 반입일자\n"
+          ]
+        },
+        {
+          "table_id": "table-1",
+          "cell_id": "table-1-r11-c1",
+          "before_text": "처리방법",
+          "after_text": "ꊊꊒ 처리방법",
+          "before_paragraphs": [
+            " 처리방법\n"
+          ],
+          "after_paragraphs": [
+            "ꊊꊒ 처리방법\n"
+          ]
+        },
+        {
+          "table_id": "table-1",
+          "cell_id": "table-1-r11-c5",
+          "before_text": "반 입 량",
+          "after_text": "ꊊꊓ 반 입 량",
+          "before_paragraphs": [
+            " 반 입 량\n"
+          ],
+          "after_paragraphs": [
+            "ꊊꊓ 반 입 량\n"
+          ]
+        },
+        {
+          "table_id": "table-1",
+          "cell_id": "table-1-r12-c0",
+          "before_text": "확인",
+          "after_text": "ꊊꊔ 확인",
+          "before_paragraphs": [
+            " 확인\n"
+          ],
+          "after_paragraphs": [
+            "ꊊꊔ 확인\n"
+          ]
+        }
+      ],
+      "paragraph_changes": [
+        {
+          "block_index": 37,
+          "before_text": " 타. ⑮, ,  : 처리업체(건설폐기물중간처리, 재활용, 폐기물처리업) 허가증에 기재되어 있는 사항\n",
+          "after_text": " 타. ⑮, ꊉꊘ, ꊉꊙ : 처리업체(건설폐기물중간처리, 재활용, 폐기물처리업) 허가증에 기재되어 있는 사항\n"
+        },
+        {
+          "block_index": 38,
+          "before_text": " 파. ,  : 시설의 명칭, 처리방법\n",
+          "after_text": " 파. ꊉꊚ, ꊊꊒ : 시설의 명칭, 처리방법\n"
+        },
+        {
+          "block_index": 39,
+          "before_text": " 하. ,  : 반입일자와 반입량(계근하여 기록)\n",
+          "after_text": " 하. ꊉꊛ, ꊊꊓ : 반입일자와 반입량(계근하여 기록)\n"
+        },
+        {
+          "block_index": 40,
+          "before_text": " 거.  배출자, 운반자 및 처리업소는 공사장생활폐기물의 수집․운반시 기재사항을 확인하고 서명\n",
+          "after_text": " 거. ꊊꊔ 배출자, 운반자 및 처리업소는 공사장생활폐기물의 수집․운반시 기재사항을 확인하고 서명\n"
+        }
+      ],
+      "changed_preceding_context_tables": [
+        "table-2",
+        "table-3"
+      ],
+      "new_json_sha256": "9f1c852076d0e61d4e8d73c9ecbaf1a32ca1f0348420483f9da982b368f2825d"
+    },
+    {
+      "attachment_key": "2101297_160319463",
+      "old_json_sha256": "8018c5dd4005a5664750e53d3a3bd73ade0c1dfe63912842cea9c430090bc681",
+      "cell_changes": [
+        {
+          "table_id": "table-1",
+          "cell_id": "table-1-r9-c1",
+          "before_text": "처리방법",
+          "after_text": "󰊉󰊘처리방법",
+          "before_paragraphs": [
+            " 처리방법\n"
+          ],
+          "after_paragraphs": [
+            " 󰊉󰊘처리방법\n"
+          ]
+        },
+        {
+          "table_id": "table-1",
+          "cell_id": "table-1-r9-c4",
+          "before_text": "반입량",
+          "after_text": "󰊉󰊙 반입량",
+          "before_paragraphs": [
+            " 반입량\n"
+          ],
+          "after_paragraphs": [
+            "󰊉󰊙 반입량\n"
+          ]
+        },
+        {
+          "table_id": "table-1",
+          "cell_id": "table-1-r10-c0",
+          "before_text": "확인",
+          "after_text": "󰊉󰊚확인",
+          "before_paragraphs": [
+            "확인\n"
+          ],
+          "after_paragraphs": [
+            "󰊉󰊚확인\n"
+          ]
+        }
+      ],
+      "paragraph_changes": [
+        {
+          "block_index": 31,
+          "before_text": "   차. ⑭,  : 해당 공사장생활폐기물을 처리하는 시설의 명칭 및 처리방법을 기재\n",
+          "after_text": "   차. ⑭, 󰊉󰊘 : 해당 공사장생활폐기물을 처리하는 시설의 명칭 및 처리방법을 기재\n"
+        },
+        {
+          "block_index": 32,
+          "before_text": "   카. ⑮,  : 해당 공사장생활폐기물을 운반자로부터 반입받은 일자 및 반입량을 기재\n",
+          "after_text": "   카. ⑮, 󰊉󰊙 : 해당 공사장생활폐기물을 운반자로부터 반입받은 일자 및 반입량을 기재\n"
+        },
+        {
+          "block_index": 33,
+          "before_text": "   타.  확인 : 운반자․처리업소는 공사장생활폐기물의 수집․운반 시 기재상황을 확인하여 서명\n",
+          "after_text": "   타. 󰊉󰊚 확인 : 운반자․처리업소는 공사장생활폐기물의 수집․운반 시 기재상황을 확인하여 서명\n"
+        }
+      ],
+      "changed_preceding_context_tables": [],
+      "new_json_sha256": "1637269c9ce67ec3a1b3e00e24394cdfa75b8d0e05d7712cae0e5dee14fcaddb"
+    }
+  ],
+  "limitations": [
+    "코드포인트·원문 payload 보존만 확인. 글리프 폰트와 시각적 의미는 미검증.",
+    "Windows 네이티브 실행은 미실행. UTF-8 저장과 코드포인트 왕복은 확인.",
+    "TCPS의 textlength는 이 자료에서 BSTR 원문 속성이며 숫자 길이로 변환하지 않음.",
+    "사람 검수4항목과 날짜·일정의 미확인 상태를 확대하거나 승인 상태로 바꾸지 않음."
+  ]
+}

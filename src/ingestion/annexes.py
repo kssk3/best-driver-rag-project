@@ -186,6 +186,15 @@ def _text(node: ET.Element) -> str:
         return "\t"
     if node.tag == "TableControl":
         return ""
+    if node.tag == "TCPSControl":
+        # 글자 겹침의 textlength는 길이가 아닌 BSTR 원문. 숫자·글리프 변환 제외
+        parts = [node.text or ""]
+        for child in node:
+            parts.extend((_text(child), child.tail or ""))
+        rendered = "".join(parts)
+        if rendered.strip():
+            return rendered
+        return node.get("textlength", "") or rendered
     if node.tag == "ControlChar":
         name = node.get("name", "")
         if name == "PARAGRAPH_BREAK":
@@ -273,14 +282,19 @@ def extract_hwp_xml(xml_path: Path) -> dict:
         table["rows_for_search"] = prepare_table_rows(table)
         tables.append(table)
         blocks.append({"type": "table", "table_id": table_id})
-    # 한 첨부 안의 여러 별표와 삭제 구획 구분
+    # 별표·별지 제목에서 구획을 바꾸고 본문 속 참조는 제외
     section = ""
     section_deleted = False
     table_map = {t["table_id"]: t for t in tables}
     for block in blocks:
         if block["type"] == "paragraph":
             text = block["text"].strip()
-            if re.match(r"^[〔【\[]\s*별표\s*\d+", text):
+            if re.match(
+                r"^(?:[〔【\[]\s*)?별(?:표|지)\s*(?:제\s*)?\d+"
+                r"(?:\s*의\s*\d+)?(?:\s*호\s*서식)?"
+                r"(?:\s*[〕】\]])?(?=\s*(?:$|<|삭제|신설|개정))",
+                text,
+            ):
                 section = text
                 section_deleted = "삭제" in text
             elif text.startswith("<삭제"):

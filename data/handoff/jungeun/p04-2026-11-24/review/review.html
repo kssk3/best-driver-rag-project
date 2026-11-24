@@ -5,7 +5,22 @@
 <p class="warning">항목별 사람 검수 진행 중. 확인 결과와 남은 항목은 아래 최신 기록 참고. 본문 107조문(장 제목 포함121단위), 부칙4구획, 첨부19개 구조 추출.
 삭제 첨부2개 제외. 행정 서식8개는 별도 분류. 그림 검수: 판매소 표지판의 검색 제외 분류와 공동주택 수거용기 색상6개를 이정은이 확인.
 현재는 색인·외부 모델 입력용 최종 승인본이 아니다.</p>
-<section><h2>최신 사람 검수 기록</h2><ul><li>규격봉투판매소 표지판으로 원본 보관. 품목별 분리배출 방법 검색에서 제외.</li><li>공동주택 일반용기 설치의 품목별 색상 6개 일치 확인</li><li>송파구 일반주택 음식물 시간: 시행규칙 별표4 18~23시, 구청 음식물 안내18~22시의 차이 확인. 원문별 수치 보존.</li><li>위례동 일반주택 일정의 공식 웹 안내·지도(월수금)와 첨부PDF(화목일) 간 충돌로 분류. 일방을 자동 정답으로 선택하지 않음.</li></ul><p class="warning">남은 확인: 화목일 권역의 기타 재활용·비닐·투명PET 요일이 공식 자료마다 다름. 사용자의 처리 방침 확인 대기. 전체 셀의 개별 사람 검수를 완료한 상태는 아님.</p><p><a href="review_status.json">전체 검수 상태 JSON</a></p></section><h2>최종 확인할 핵심 조건</h2>
+<section><h2>최신 사람 검수 기록</h2><ul><li>규격봉투판매소 표지판으로 원본 보관. 품목별 분리배출 방법 검색에서 제외.</li><li>공동주택 일반용기 설치의 품목별 색상 6개 일치 확인</li><li>송파구 일반주택 음식물 시간: 시행규칙 별표4 18~23시, 구청 음식물 안내18~22시의 차이 확인. 원문별 수치 보존.</li><li>위례동 일반주택 일정의 공식 웹 안내·지도(월수금)와 첨부PDF(화목일) 간 충돌로 분류. 일방을 자동 정답으로 선택하지 않음.</li></ul><p class="warning">남은 확인: 화목일 권역의 기타 재활용·비닐·투명PET 요일이 공식 자료마다 다름. 날짜의 의미 구분은 사용자 지시로 반영했으며 정책 적용일·자료 대체 관계 확인이 남음. 전체 셀의 개별 사람 검수를 완료한 상태는 아님.</p><p><a href="review_status.json">전체 검수 상태 JSON</a></p></section><section id="schedule-date-review"><h2>송파구 일정 자료의 날짜 확인</h2>
+<table><thead><tr><th>자료</th><th>확인한 날짜</th><th>뜻</th></tr></thead><tbody>
+<tr><td>공식 PDF 목차</td><td>2025-09</td><td>인쇄 발행일. PDF 2쪽 시각 확인</td></tr>
+<tr><td>공식 PDF 메타데이터</td><td>2026-10-14 09:11:41 KST</td><td>파일 생성·수정일</td></tr>
+<tr><td>공식 배출안내 HTML3153</td><td>2026-11-19</td><td>페이지 최종수정 표시. 2026-11-24 재조회 확인</td></tr>
+<tr><td>공식 지도 공개 데이터</td><td>2026-11-23 15:32</td><td>기존 저장 응답의 데이터 생성표시. 화면 코드 수정일·정책 시행일 아님</td></tr>
+</tbody></table>
+<p>PDF는2025-09 발행 자료다. 서로 다른 날짜 유형만으로 웹·지도 우선순위와 실제 요일을 확정하지 않는다.
+기존 출처별 요일은 보존하며 적용일·자료 대체 관계 확인이 남아 있다.</p>
+<p>사용자 지시 ‘적용해’: 날짜의 의미·출처 시점 구분만 승인. 요일 사실 확정 아님.
+사람 검수4개 항목과 전체 검수 진행 중·색인/외부 모델 이용 미검토 상태를 유지한다.</p>
+<p><a href="schedule_evidence/date_check.json">날짜 확인 기록</a> · <a href="schedule_evidence/official-20261014.pdf#page=2">공식 PDF 2쪽 발행정보</a> (목차 왼쪽 녹색 상자)</p></section><section id="tcps-preservation-review"><h2>HWP 겹침문자 원문 보존</h2>
+<p>행정서식2건의 TCPSControl 원문 문자열20개를 복원했다. 변경 범위는 셀10개·본문 문단7개이며,
+숫자로 추정하거나 글리프를 정규화하지 않았다. 기존 셀 좌표·병합·출처·사람 검수 범위는 유지한다. 별지 구획 정정은 별도 기록한다.</p>
+<p>UTF-8 코드포인트 보존을 확인했지만 글리프 폰트의 시각적 의미와 Windows 네이티브 실행은 미검증이다.
+<a href="tcps_preservation_review.json">원문 payload·코드포인트와 변경 전후 대조 기록</a></p></section><section id="annex-section-review"><h2>별지 구획·삭제 분류 정정</h2><p>행정서식8건의 별지 제목과 삭제 표시를 정정했다. 표10개의 구획 제목과 문단 구획 정보만 변경했으며 원문·좌표·병합·ID는 유지했다. 사람이 확인한4항목과 이용 상태는 변경하지 않았다.</p><p><a href="annex_section_review.json">필드별 변경 전후 기록</a> · <a href="source_character_review.json">문자 처리 기록</a> · <a href="pr9_integration_review.json">최신 dev 연결 검증</a>. 이 검수 화면과 공통 XML→HTML 변환 경로는 별개다. 공통 경로의 TCPS·별지 구획 차이는 담당자의 추가 작업을 전제하지 않는 미해결 참고사항이다.</p></section><h2>최종 확인할 핵심 조건</h2>
 <ol><li>서대문구 종이팩: 품목별 배출4개 요령과 통합배출2개 요령을 구분한다.
 통합배출은 분리배출이 어려운 단독주택 지역 등이라는 비고1을 함께 보존한다.</li>
 <li>부칙: 과거 시행일·경과조치를 현행 일반 배출 기준에 일괄 적용하지 않는다.</li>
@@ -1706,7 +1721,7 @@ HOP 변환본은 공식 배포 PDF가 아니다. 일부 대형 표는 변환 과
 </pre>
 <pre>〈원본 녹색: 운반자용 / 사본 황색: 처리자용&gt;
 </pre>
-<h4>table-1 </h4><table>
+<h4>table-1 [별지 제1호서식]  &lt;개정 2011. 8. 10.&gt;</h4><table>
 <tr>
 <td rowspan="1" colspan="1" title="table-1-r0-c0">1</td>
 <td rowspan="1" colspan="1" title="table-1-r0-c1">① 일련번호</td>
@@ -1761,13 +1776,13 @@ HOP 변환본은 공식 배포 PDF가 아니다. 일부 대형 표는 변환 과
 <td rowspan="1" colspan="1" title="table-1-r8-c5">년    월    일</td>
 </tr>
 <tr>
-<td rowspan="1" colspan="1" title="table-1-r9-c1">처리방법</td>
+<td rowspan="1" colspan="1" title="table-1-r9-c1">󰊉󰊘처리방법</td>
 <td rowspan="1" colspan="2" title="table-1-r9-c2"></td>
-<td rowspan="1" colspan="1" title="table-1-r9-c4">반입량</td>
+<td rowspan="1" colspan="1" title="table-1-r9-c4">󰊉󰊙 반입량</td>
 <td rowspan="1" colspan="1" title="table-1-r9-c5">kg</td>
 </tr>
 <tr>
-<td rowspan="2" colspan="1" title="table-1-r10-c0">확인</td>
+<td rowspan="2" colspan="1" title="table-1-r10-c0">󰊉󰊚확인</td>
 <td rowspan="1" colspan="3" title="table-1-r10-c1">운반자</td>
 <td rowspan="1" colspan="2" title="table-1-r10-c4">처리업소</td>
 </tr>
@@ -1822,11 +1837,11 @@ HOP 변환본은 공식 배포 PDF가 아니다. 일부 대형 표는 변환 과
 </pre>
 <pre>   자. ⑪, ⑫, ⑬ : 건설폐기물처리업 허가증에 기재되어 있는 상호, 허가번호 및 소재지를 기재
 </pre>
-<pre>   차. ⑭,  : 해당 공사장생활폐기물을 처리하는 시설의 명칭 및 처리방법을 기재
+<pre>   차. ⑭, 󰊉󰊘 : 해당 공사장생활폐기물을 처리하는 시설의 명칭 및 처리방법을 기재
 </pre>
-<pre>   카. ⑮,  : 해당 공사장생활폐기물을 운반자로부터 반입받은 일자 및 반입량을 기재
+<pre>   카. ⑮, 󰊉󰊙 : 해당 공사장생활폐기물을 운반자로부터 반입받은 일자 및 반입량을 기재
 </pre>
-<pre>   타.  확인 : 운반자․처리업소는 공사장생활폐기물의 수집․운반 시 기재상황을 확인하여 서명
+<pre>   타. 󰊉󰊚 확인 : 운반자․처리업소는 공사장생활폐기물의 수집․운반 시 기재상황을 확인하여 서명
 </pre>
 <pre>210mm×297mm[일반용지 60g/㎡(재활용품)]
 </pre>
@@ -1841,7 +1856,7 @@ HOP 변환본은 공식 배포 PDF가 아니다. 일부 대형 표는 변환 과
 </pre>
 <pre>  (보관장소명 :            )
 </pre>
-<h4>table-1 </h4><table>
+<h4>table-1 [별지 제2호서식] &lt;개정 2011. 8. 10.&gt;</h4><table>
 <tr>
 <td rowspan="3" colspan="1" title="table-1-r0-c0">일련번호</td>
 <td rowspan="1" colspan="9" title="table-1-r0-c1">반  입  내  역</td>
@@ -2067,7 +2082,7 @@ HOP 변환본은 공식 배포 PDF가 아니다. 일부 대형 표는 변환 과
 </pre>
 <pre>  (처리업소명 :            )
 </pre>
-<h4>table-1 </h4><table>
+<h4>table-1 [별지 제3호서식] &lt;개정 2011. 8. 10.&gt;</h4><table>
 <tr>
 <td rowspan="2" colspan="1" title="table-1-r0-c0">일련
 번호</td>
@@ -2644,7 +2659,7 @@ HOP 변환본은 공식 배포 PDF가 아니다. 일부 대형 표는 변환 과
 <p>행정 서식: 답변용 배출 기준과 분리.</p>
 <pre>〔별지 제1호서식〕
 </pre>
-<h4>table-1 </h4><table>
+<h4>table-1 〔별지 제1호서식〕</h4><table>
 <tr>
 <td rowspan="1" colspan="6" title="table-1-r0-c0">이 봉투에는 가내공업폐기물만 들어 있습니다.</td>
 </tr>
@@ -2684,7 +2699,7 @@ HOP 변환본은 공식 배포 PDF가 아니다. 일부 대형 표는 변환 과
 <p>행정 서식: 답변용 배출 기준과 분리.</p>
 <pre>〔별지 제2호서식〕
 </pre>
-<h4>table-1 </h4><table>
+<h4>table-1 〔별지 제2호서식〕</h4><table>
 <tr>
 <td rowspan="2" colspan="7" title="table-1-r0-c0">대형폐기물 환불신고서
    (신고필증번호:               )</td>
@@ -2776,7 +2791,7 @@ HOP 변환본은 공식 배포 PDF가 아니다. 일부 대형 표는 변환 과
 </pre>
 <pre>환불 접수(처리) 관리 대장
 </pre>
-<h4>table-1 </h4><table>
+<h4>table-1 〔별지 제3호서식〕</h4><table>
 <tr>
 <td rowspan="2" colspan="1" title="table-1-r0-c0">연번</td>
 <td rowspan="1" colspan="3" title="table-1-r0-c1">환 불 자  인 적 사 항</td>
@@ -2865,7 +2880,7 @@ HOP 변환본은 공식 배포 PDF가 아니다. 일부 대형 표는 변환 과
 </pre>
 <pre>폐기물 무단투기 신고(접수)․처리대장
 </pre>
-<h4>table-1 </h4><table>
+<h4>table-1 〔별지 제4호서식〕</h4><table>
 <tr>
 <td rowspan="6" colspan="1" title="table-1-r0-c0">신고
 연월일</td>
@@ -3139,9 +3154,9 @@ HOP 변환본은 공식 배포 PDF가 아니다. 일부 대형 표는 변환 과
 <pre>{&#x27;content_role&#x27;: &#x27;administrative_form&#x27;, &#x27;raw_sha256&#x27;: &#x27;64cef7217e6c5d6ec19ffe34b7e83949168c3f4d50895cc18e9488bcf5f88441&#x27;, &#x27;embedded_object_count&#x27;: 0, &#x27;usage_status&#x27;: &#x27;index_and_model_use_unreviewed&#x27;}</pre>
 <p><a href="../raw/attachments/2053883_154690993.hwp">HWP 원본</a> | <a href="../processed/annex/2053883_154690993.json">추출 JSON</a></p>
 <p>행정 서식: 답변용 배출 기준과 분리.</p>
-<pre>별지1 &lt;삭제 2014.9.25.&gt;                          
+<p class="warning">삭제 구획: 원문 보관, 현행 서식과 구분.</p><pre>별지1 &lt;삭제 2014.9.25.&gt;                          
 </pre>
-<pre>별지1의2 &lt;삭제 2014.9.25.&gt;
+<p class="warning">삭제 구획: 원문 보관, 현행 서식과 구분.</p><pre>별지1의2 &lt;삭제 2014.9.25.&gt;
 </pre>
 <pre>[별지 2] &lt;신설 2009. 11. 9&gt;
 </pre>
@@ -3149,7 +3164,7 @@ HOP 변환본은 공식 배포 PDF가 아니다. 일부 대형 표는 변환 과
 </pre>
 <pre>공사장생활폐기물인계서
 </pre>
-<h4>table-1 </h4><table>
+<h4>table-1 [별지 2] &lt;신설 2009. 11. 9&gt;</h4><table>
 <tr>
 <td rowspan="1" colspan="1" title="table-1-r0-c0">1</td>
 <td rowspan="1" colspan="1" title="table-1-r0-c1">① 일련번호</td>
@@ -3208,28 +3223,28 @@ HOP 변환본은 공식 배포 PDF가 아니다. 일부 대형 표는 변환 과
 매립 등)</td>
 <td rowspan="1" colspan="1" title="table-1-r8-c1">⑮ 상    호</td>
 <td rowspan="1" colspan="3" title="table-1-r8-c2"></td>
-<td rowspan="1" colspan="3" title="table-1-r8-c5">허가(신고)
+<td rowspan="1" colspan="3" title="table-1-r8-c5">ꊉꊘ 허가(신고)
    번      호</td>
 <td rowspan="1" colspan="1" title="table-1-r8-c8"></td>
 </tr>
 <tr>
-<td rowspan="1" colspan="1" title="table-1-r9-c1">시설소재지</td>
+<td rowspan="1" colspan="1" title="table-1-r9-c1">ꊉꊙ 시설소재지</td>
 <td rowspan="1" colspan="7" title="table-1-r9-c2">(전화번호 :          )</td>
 </tr>
 <tr>
-<td rowspan="1" colspan="1" title="table-1-r10-c1">시 설 명</td>
+<td rowspan="1" colspan="1" title="table-1-r10-c1">ꊉꊚ 시 설 명</td>
 <td rowspan="1" colspan="3" title="table-1-r10-c2"></td>
-<td rowspan="1" colspan="1" title="table-1-r10-c5">반입일자</td>
+<td rowspan="1" colspan="1" title="table-1-r10-c5">ꊉꊛ 반입일자</td>
 <td rowspan="1" colspan="3" title="table-1-r10-c6">년    월    일</td>
 </tr>
 <tr>
-<td rowspan="1" colspan="1" title="table-1-r11-c1">처리방법</td>
+<td rowspan="1" colspan="1" title="table-1-r11-c1">ꊊꊒ 처리방법</td>
 <td rowspan="1" colspan="3" title="table-1-r11-c2"></td>
-<td rowspan="1" colspan="1" title="table-1-r11-c5">반 입 량</td>
+<td rowspan="1" colspan="1" title="table-1-r11-c5">ꊊꊓ 반 입 량</td>
 <td rowspan="1" colspan="3" title="table-1-r11-c6">kg</td>
 </tr>
 <tr>
-<td rowspan="2" colspan="1" title="table-1-r12-c0">확인</td>
+<td rowspan="2" colspan="1" title="table-1-r12-c0">ꊊꊔ 확인</td>
 <td rowspan="1" colspan="2" title="table-1-r12-c1">배   출   자</td>
 <td rowspan="1" colspan="3" title="table-1-r12-c3">운   반   자</td>
 <td rowspan="1" colspan="3" title="table-1-r12-c6">처 리 업 소</td>
@@ -3293,13 +3308,13 @@ HOP 변환본은 공식 배포 PDF가 아니다. 일부 대형 표는 변환 과
 </pre>
 <pre> 카. ⑭ : 임시보관 장소, 처리업체로 바로 가는 경우는 기록하지 않음
 </pre>
-<pre> 타. ⑮, ,  : 처리업체(건설폐기물중간처리, 재활용, 폐기물처리업) 허가증에 기재되어 있는 사항
+<pre> 타. ⑮, ꊉꊘ, ꊉꊙ : 처리업체(건설폐기물중간처리, 재활용, 폐기물처리업) 허가증에 기재되어 있는 사항
 </pre>
-<pre> 파. ,  : 시설의 명칭, 처리방법
+<pre> 파. ꊉꊚ, ꊊꊒ : 시설의 명칭, 처리방법
 </pre>
-<pre> 하. ,  : 반입일자와 반입량(계근하여 기록)
+<pre> 하. ꊉꊛ, ꊊꊓ : 반입일자와 반입량(계근하여 기록)
 </pre>
-<pre> 거.  배출자, 운반자 및 처리업소는 공사장생활폐기물의 수집․운반시 기재사항을 확인하고 서명
+<pre> 거. ꊊꊔ 배출자, 운반자 및 처리업소는 공사장생활폐기물의 수집․운반시 기재사항을 확인하고 서명
 </pre>
 <pre>[별지 3] &lt;신설 2009. 11. 9&gt;
 </pre>
@@ -3309,7 +3324,7 @@ HOP 변환본은 공식 배포 PDF가 아니다. 일부 대형 표는 변환 과
 </pre>
 <pre>      (임시보관장소명 :            )
 </pre>
-<h4>table-2 </h4><table>
+<h4>table-2 [별지 3] &lt;신설 2009. 11. 9&gt;</h4><table>
 <tr>
 <td rowspan="3" colspan="1" title="table-2-r0-c0">일련번호</td>
 <td rowspan="1" colspan="9" title="table-2-r0-c1">반  입  내  역</td>
@@ -3527,7 +3542,7 @@ HOP 변환본은 공식 배포 PDF가 아니다. 일부 대형 표는 변환 과
 </pre>
 <pre>   (수집운반, 처리업소명 :              )
 </pre>
-<h4>table-3 </h4><table>
+<h4>table-3 [별지 4] &lt;신설 2009. 11. 9&gt;</h4><table>
 <tr>
 <td rowspan="2" colspan="1" title="table-3-r0-c0">일련 번호</td>
 <td rowspan="1" colspan="4" title="table-3-r0-c1">배    출    자</td>
@@ -5237,4 +5252,4 @@ HOP 변환본은 공식 배포 PDF가 아니다. 일부 대형 표는 변환 과
 <pre>3. 다량배출사업장 폐기물은 수거대상에서 제외
 </pre>
 </details>
-<p>검수 결과는 확인한 항목과 보류 항목을 채팅으로 전달. 파일을 보는 것만으로 승인 상태가 바뀌지 않는다.</p><section><h2>검색 준비 수정 사항</h2><p>원문 XML·HWP·셀 텍스트 보존. XML 목록의 link_only/content_present와 실제 첨부 추출 상태를 분리했다. 첨부19건을 다시 추출했으며 표32개·셀2643개는 원문과 같다.</p><p>별도 rows_for_search에 검색용 행555개를 추가했다. 병합된 상위 품목을 행마다 연결하고 원래 좌표·출처 ID·정규화 전후를 기록한다. 확인한16개 용어의 내부 공백만 복원한다. 원문57개 셀의 줄바꿈을 전부 단어 오류로 간주하지 않는다.</p><p>단위테스트37개·임시 Ruff 검사 통과. 로컬 BM25 예시 검사와 실제 B/C 검색 통합은 구분하며 실제 청킹·검색 연동은 미실행이다. 비고·조건·예외를 포함한 문서 문맥과 함께 읽어야 한다.</p><p><a href="../README.md">상태 필드와 검색용 행 설명</a></p></section></html>
+<p>검수 결과는 확인한 항목과 보류 항목을 채팅으로 전달. 파일을 보는 것만으로 승인 상태가 바뀌지 않는다.</p><section><h2>검색 준비 수정 사항</h2><p>원문 XML·HWP·셀 텍스트 보존. XML 목록의 link_only/content_present와 실제 첨부 추출 상태를 분리했다. 첨부19건을 다시 추출했으며 표32개·셀2643개는 원문과 같다.</p><p>별도 rows_for_search에 검색용 행555개를 추가했다. 병합된 상위 품목을 행마다 연결하고 원래 좌표·출처 ID·정규화 전후를 기록한다. 확인한16개 용어의 내부 공백만 복원한다. 원문57개 셀의 줄바꿈을 전부 단어 오류로 간주하지 않는다.</p><p>전처리 테스트65개·저장소 전체335개·임시 Ruff 검사 통과. 로컬 BM25 예시 검사와 실제 B/C 검색 통합은 구분하며 공통 로딩·청킹은 오프라인 확인했으며 실제 검색·외부 모델 호출은 미실행이다. 비고·조건·예외를 포함한 문서 문맥과 함께 읽어야 한다.</p><p><a href="../README.md">상태 필드와 검색용 행 설명</a></p></section></html>

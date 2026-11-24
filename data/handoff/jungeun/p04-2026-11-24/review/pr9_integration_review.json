@@ -1,0 +1,49 @@
+{
+  "base_dev": "0328e8fd04ffe4fd79cd397809cac69748024d22",
+  "source_snapshot": "e783d23192ac49dc82ba05f5b31b0667",
+  "execution": "offline in-memory loader/chunker; no external model or API calls",
+  "documents_loaded": 46,
+  "logical_sources": 23,
+  "index_eligible_logical_sources": 14,
+  "eligible_chunks": {
+    "html": 557,
+    "json": 557
+  },
+  "source_document_ids_versions_formats_unchanged": true,
+  "eligible_chunk_ids_unchanged": {
+    "html": true,
+    "json": true
+  },
+  "eligible_source_locations_unchanged": {
+    "html": true,
+    "json": true
+  },
+  "colors": {
+    "attachment_id": "160561037",
+    "count": 6,
+    "applicability": "공동주택 일반용기 설치 기준",
+    "source_location": "별표1 1. 공동주택의 경우 / 가. 일반용기 설치 / 품목별 색상(표기방법-영문병기)",
+    "record_unchanged": true
+  },
+  "signage": {
+    "attachment_id": "160319461",
+    "source_preserved": true,
+    "index_eligible": false
+  },
+  "human_review_items": 4,
+  "human_review_and_usage_status_unchanged": true,
+  "changed_review_status_targets": [],
+  "common_files_unchanged_from_dev": [
+    "src/ingestion/xml_adapter.py",
+    "src/ingestion/preprocessed_bundle.py",
+    "src/ingestion/preprocessed_chunking.py",
+    "src/ingestion/loaders.py",
+    "src/ingestion/chunking.py",
+    "src/ingestion/indexing.py",
+    "src/contracts.py",
+    "pyproject.toml",
+    "uv.lock"
+  ],
+  "common_html_tcps_and_section_limitations": "unresolved; common code not modified; no follow-up owner assigned",
+  "p05_files_preserved": true
+}

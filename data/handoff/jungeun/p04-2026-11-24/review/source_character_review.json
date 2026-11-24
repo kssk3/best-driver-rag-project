@@ -1,0 +1,371 @@
+{
+  "schema_version": "jungeun-source-character-review-v1",
+  "scope": "원문 문자열 변환 정책 기록. 공통 JSON 스키마와 색상 검수 값 변경 없음",
+  "raw_codepoint_policy": "legacy Yi 음절과 PUA를 분리 표기하며 원문 코드포인트 보존. 숫자·구분기호 의미 추정 제외",
+  "records": [
+    {
+      "attachment_key": "2053883_154690993",
+      "location": "blocks[37]",
+      "codepoint": "U+A289",
+      "category": "Lo",
+      "count": 2,
+      "policy": "원문 보존; 시각 의미 및 숫자 치환 미검증"
+    },
+    {
+      "attachment_key": "2053883_154690993",
+      "location": "blocks[37]",
+      "codepoint": "U+A298",
+      "category": "Lo",
+      "count": 1,
+      "policy": "원문 보존; 시각 의미 및 숫자 치환 미검증"
+    },
+    {
+      "attachment_key": "2053883_154690993",
+      "location": "blocks[37]",
+      "codepoint": "U+A299",
+      "category": "Lo",
+      "count": 1,
+      "policy": "원문 보존; 시각 의미 및 숫자 치환 미검증"
+    },
+    {
+      "attachment_key": "2053883_154690993",
+      "location": "blocks[38]",
+      "codepoint": "U+A289",
+      "category": "Lo",
+      "count": 1,
+      "policy": "원문 보존; 시각 의미 및 숫자 치환 미검증"
+    },
+    {
+      "attachment_key": "2053883_154690993",
+      "location": "blocks[38]",
+      "codepoint": "U+A28A",
+      "category": "Lo",
+      "count": 1,
+      "policy": "원문 보존; 시각 의미 및 숫자 치환 미검증"
+    },
+    {
+      "attachment_key": "2053883_154690993",
+      "location": "blocks[38]",
+      "codepoint": "U+A292",
+      "category": "Lo",
+      "count": 1,
+      "policy": "원문 보존; 시각 의미 및 숫자 치환 미검증"
+    },
+    {
+      "attachment_key": "2053883_154690993",
+      "location": "blocks[38]",
+      "codepoint": "U+A29A",
+      "category": "Lo",
+      "count": 1,
+      "policy": "원문 보존; 시각 의미 및 숫자 치환 미검증"
+    },
+    {
+      "attachment_key": "2053883_154690993",
+      "location": "blocks[39]",
+      "codepoint": "U+A289",
+      "category": "Lo",
+      "count": 1,
+      "policy": "원문 보존; 시각 의미 및 숫자 치환 미검증"
+    },
+    {
+      "attachment_key": "2053883_154690993",
+      "location": "blocks[39]",
+      "codepoint": "U+A28A",
+      "category": "Lo",
+      "count": 1,
+      "policy": "원문 보존; 시각 의미 및 숫자 치환 미검증"
+    },
+    {
+      "attachment_key": "2053883_154690993",
+      "location": "blocks[39]",
+      "codepoint": "U+A293",
+      "category": "Lo",
+      "count": 1,
+      "policy": "원문 보존; 시각 의미 및 숫자 치환 미검증"
+    },
+    {
+      "attachment_key": "2053883_154690993",
+      "location": "blocks[39]",
+      "codepoint": "U+A29B",
+      "category": "Lo",
+      "count": 1,
+      "policy": "원문 보존; 시각 의미 및 숫자 치환 미검증"
+    },
+    {
+      "attachment_key": "2053883_154690993",
+      "location": "blocks[40]",
+      "codepoint": "U+A28A",
+      "category": "Lo",
+      "count": 1,
+      "policy": "원문 보존; 시각 의미 및 숫자 치환 미검증"
+    },
+    {
+      "attachment_key": "2053883_154690993",
+      "location": "blocks[40]",
+      "codepoint": "U+A294",
+      "category": "Lo",
+      "count": 1,
+      "policy": "원문 보존; 시각 의미 및 숫자 치환 미검증"
+    },
+    {
+      "attachment_key": "2053883_154690993",
+      "location": "blocks[49]",
+      "codepoint": "U+F0832",
+      "category": "Co",
+      "count": 40,
+      "policy": "원문 보존; 시각 의미 및 숫자 치환 미검증"
+    },
+    {
+      "attachment_key": "2053883_154690993",
+      "location": "blocks[58]",
+      "codepoint": "U+F0832",
+      "category": "Co",
+      "count": 37,
+      "policy": "원문 보존; 시각 의미 및 숫자 치환 미검증"
+    },
+    {
+      "attachment_key": "2053883_154690993",
+      "location": "table-1-r8-c5",
+      "codepoint": "U+A289",
+      "category": "Lo",
+      "count": 1,
+      "policy": "원문 보존; 시각 의미 및 숫자 치환 미검증"
+    },
+    {
+      "attachment_key": "2053883_154690993",
+      "location": "table-1-r8-c5",
+      "codepoint": "U+A298",
+      "category": "Lo",
+      "count": 1,
+      "policy": "원문 보존; 시각 의미 및 숫자 치환 미검증"
+    },
+    {
+      "attachment_key": "2053883_154690993",
+      "location": "table-1-r9-c1",
+      "codepoint": "U+A289",
+      "category": "Lo",
+      "count": 1,
+      "policy": "원문 보존; 시각 의미 및 숫자 치환 미검증"
+    },
+    {
+      "attachment_key": "2053883_154690993",
+      "location": "table-1-r9-c1",
+      "codepoint": "U+A299",
+      "category": "Lo",
+      "count": 1,
+      "policy": "원문 보존; 시각 의미 및 숫자 치환 미검증"
+    },
+    {
+      "attachment_key": "2053883_154690993",
+      "location": "table-1-r10-c1",
+      "codepoint": "U+A289",
+      "category": "Lo",
+      "count": 1,
+      "policy": "원문 보존; 시각 의미 및 숫자 치환 미검증"
+    },
+    {
+      "attachment_key": "2053883_154690993",
+      "location": "table-1-r10-c1",
+      "codepoint": "U+A29A",
+      "category": "Lo",
+      "count": 1,
+      "policy": "원문 보존; 시각 의미 및 숫자 치환 미검증"
+    },
+    {
+      "attachment_key": "2053883_154690993",
+      "location": "table-1-r10-c5",
+      "codepoint": "U+A289",
+      "category": "Lo",
+      "count": 1,
+      "policy": "원문 보존; 시각 의미 및 숫자 치환 미검증"
+    },
+    {
+      "attachment_key": "2053883_154690993",
+      "location": "table-1-r10-c5",
+      "codepoint": "U+A29B",
+      "category": "Lo",
+      "count": 1,
+      "policy": "원문 보존; 시각 의미 및 숫자 치환 미검증"
+    },
+    {
+      "attachment_key": "2053883_154690993",
+      "location": "table-1-r11-c1",
+      "codepoint": "U+A28A",
+      "category": "Lo",
+      "count": 1,
+      "policy": "원문 보존; 시각 의미 및 숫자 치환 미검증"
+    },
+    {
+      "attachment_key": "2053883_154690993",
+      "location": "table-1-r11-c1",
+      "codepoint": "U+A292",
+      "category": "Lo",
+      "count": 1,
+      "policy": "원문 보존; 시각 의미 및 숫자 치환 미검증"
+    },
+    {
+      "attachment_key": "2053883_154690993",
+      "location": "table-1-r11-c5",
+      "codepoint": "U+A28A",
+      "category": "Lo",
+      "count": 1,
+      "policy": "원문 보존; 시각 의미 및 숫자 치환 미검증"
+    },
+    {
+      "attachment_key": "2053883_154690993",
+      "location": "table-1-r11-c5",
+      "codepoint": "U+A293",
+      "category": "Lo",
+      "count": 1,
+      "policy": "원문 보존; 시각 의미 및 숫자 치환 미검증"
+    },
+    {
+      "attachment_key": "2053883_154690993",
+      "location": "table-1-r12-c0",
+      "codepoint": "U+A28A",
+      "category": "Lo",
+      "count": 1,
+      "policy": "원문 보존; 시각 의미 및 숫자 치환 미검증"
+    },
+    {
+      "attachment_key": "2053883_154690993",
+      "location": "table-1-r12-c0",
+      "codepoint": "U+A294",
+      "category": "Lo",
+      "count": 1,
+      "policy": "원문 보존; 시각 의미 및 숫자 치환 미검증"
+    },
+    {
+      "attachment_key": "2101297_160319453",
+      "location": "table-2-r6-c1",
+      "codepoint": "U+F09E",
+      "category": "Co",
+      "count": 2,
+      "policy": "원문 보존; 시각 의미 및 숫자 치환 미검증"
+    },
+    {
+      "attachment_key": "2101297_160319453",
+      "location": "table-3-r5-c2",
+      "codepoint": "U+F09E",
+      "category": "Co",
+      "count": 2,
+      "policy": "원문 보존; 시각 의미 및 숫자 치환 미검증"
+    },
+    {
+      "attachment_key": "2101297_160319463",
+      "location": "blocks[31]",
+      "codepoint": "U+F0289",
+      "category": "Co",
+      "count": 1,
+      "policy": "원문 보존; 시각 의미 및 숫자 치환 미검증"
+    },
+    {
+      "attachment_key": "2101297_160319463",
+      "location": "blocks[31]",
+      "codepoint": "U+F0298",
+      "category": "Co",
+      "count": 1,
+      "policy": "원문 보존; 시각 의미 및 숫자 치환 미검증"
+    },
+    {
+      "attachment_key": "2101297_160319463",
+      "location": "blocks[32]",
+      "codepoint": "U+F0289",
+      "category": "Co",
+      "count": 1,
+      "policy": "원문 보존; 시각 의미 및 숫자 치환 미검증"
+    },
+    {
+      "attachment_key": "2101297_160319463",
+      "location": "blocks[32]",
+      "codepoint": "U+F0299",
+      "category": "Co",
+      "count": 1,
+      "policy": "원문 보존; 시각 의미 및 숫자 치환 미검증"
+    },
+    {
+      "attachment_key": "2101297_160319463",
+      "location": "blocks[33]",
+      "codepoint": "U+F0289",
+      "category": "Co",
+      "count": 1,
+      "policy": "원문 보존; 시각 의미 및 숫자 치환 미검증"
+    },
+    {
+      "attachment_key": "2101297_160319463",
+      "location": "blocks[33]",
+      "codepoint": "U+F029A",
+      "category": "Co",
+      "count": 1,
+      "policy": "원문 보존; 시각 의미 및 숫자 치환 미검증"
+    },
+    {
+      "attachment_key": "2101297_160319463",
+      "location": "table-1-r9-c1",
+      "codepoint": "U+F0289",
+      "category": "Co",
+      "count": 1,
+      "policy": "원문 보존; 시각 의미 및 숫자 치환 미검증"
+    },
+    {
+      "attachment_key": "2101297_160319463",
+      "location": "table-1-r9-c1",
+      "codepoint": "U+F0298",
+      "category": "Co",
+      "count": 1,
+      "policy": "원문 보존; 시각 의미 및 숫자 치환 미검증"
+    },
+    {
+      "attachment_key": "2101297_160319463",
+      "location": "table-1-r9-c4",
+      "codepoint": "U+F0289",
+      "category": "Co",
+      "count": 1,
+      "policy": "원문 보존; 시각 의미 및 숫자 치환 미검증"
+    },
+    {
+      "attachment_key": "2101297_160319463",
+      "location": "table-1-r9-c4",
+      "codepoint": "U+F0299",
+      "category": "Co",
+      "count": 1,
+      "policy": "원문 보존; 시각 의미 및 숫자 치환 미검증"
+    },
+    {
+      "attachment_key": "2101297_160319463",
+      "location": "table-1-r10-c0",
+      "codepoint": "U+F0289",
+      "category": "Co",
+      "count": 1,
+      "policy": "원문 보존; 시각 의미 및 숫자 치환 미검증"
+    },
+    {
+      "attachment_key": "2101297_160319463",
+      "location": "table-1-r10-c0",
+      "codepoint": "U+F029A",
+      "category": "Co",
+      "count": 1,
+      "policy": "원문 보존; 시각 의미 및 숫자 치환 미검증"
+    }
+  ],
+  "tab_representation": {
+    "attachment_key": "2101385_160561037",
+    "source_control": "ControlChar[name=TAB]",
+    "source_count": 6,
+    "json_locations": [
+      "blocks[8]",
+      "blocks[9]",
+      "blocks[10]"
+    ],
+    "json_representation": "U+0020 SPACE",
+    "behavior": "기존 추출 동작 유지; 실제 수평탭 문자와 구분하여 기록",
+    "colors_applicability_and_source_location_unchanged": true
+  },
+  "usage_status_values": {
+    "body_attachment": "unreviewed",
+    "processed_annex": "index_and_model_use_unreviewed",
+    "interpretation": "각 처리 단계의 미검토 상태. 사람 내용 검수 승인과 별개. 기존 이름 유지"
+  },
+  "numeric_glyph_mapping_performed": false,
+  "search_normalization_mapping_added": false
+}

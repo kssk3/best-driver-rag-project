@@ -30,7 +30,9 @@ def source_and_overlay(tmp_path: Path) -> tuple[Path, Path, dict]:
         "title": "합성 별표",
     }
     manifest = folder / "manifest.json"
-    manifest.write_text(json.dumps({"source_run_id": "test", "records": [record]}))
+    manifest.write_text(
+        json.dumps({"source_run_id": "test", "records": [record]}), encoding="utf-8"
+    )
     overlay = {
         **{k: record[k] for k in ("parent_mst", "attachment_id", "raw_sha256")},
         "updates": {
@@ -42,7 +44,9 @@ def source_and_overlay(tmp_path: Path) -> tuple[Path, Path, dict]:
         },
     }
     path = tmp_path / "review-overlays.json"
-    path.write_text(json.dumps({"records": [overlay]}, ensure_ascii=False))
+    path.write_text(
+        json.dumps({"records": [overlay]}, ensure_ascii=False), encoding="utf-8"
+    )
     return manifest, path, overlay
 
 
@@ -64,7 +68,7 @@ def test_reextraction_reapplies_reviews_without_changing_inputs(
     for name in ("first", "again"):
         output = tmp_path / name
         summary = preprocess_attachments(manifest, output, overlay_path)
-        result = json.loads((output / "123_456.json").read_text())
+        result = json.loads((output / "123_456.json").read_text(encoding="utf-8"))
         for field, expected in overlay["updates"].items():
             assert result[field] == expected
             assert summary["records"][0][field] == expected
@@ -80,7 +84,7 @@ def test_optional_overlay_keeps_original_pending_behavior(
     monkeypatch.setattr("src.ingestion.annexes.subprocess.run", fake_conversion)
     output = tmp_path / "unreviewed"
     preprocess_attachments(manifest, output)
-    result = json.loads((output / "123_456.json").read_text())
+    result = json.loads((output / "123_456.json").read_text(encoding="utf-8"))
     assert result["human_review_status"] == "pending"
     assert result["content_role"] == "annex"
     assert "human_review" not in result
@@ -105,7 +109,7 @@ def test_invalid_overlay_stops_before_output_or_conversion(
         overlay["updates"]["usage_status"] = "approved"
     else:
         overlay["updates"]["human_review"] = "not-a-record"
-    overlay_path.write_text(json.dumps({"records": records}))
+    overlay_path.write_text(json.dumps({"records": records}), encoding="utf-8")
     output = tmp_path / "invalid-output"
 
     def unexpected_conversion(*_args, **_kwargs):
@@ -119,7 +123,7 @@ def test_invalid_overlay_stops_before_output_or_conversion(
 
 def test_apply_returns_independent_copy(source_and_overlay):
     manifest, overlay_path, _ = source_and_overlay
-    source = json.loads(manifest.read_text())["records"][0]
+    source = json.loads(manifest.read_text(encoding="utf-8"))["records"][0]
     original = deepcopy(source)
     overlay = load_review_overlays(overlay_path, [source])["123", "456"]
     original_overlay = deepcopy(overlay)

@@ -1,0 +1,1013 @@
+{
+  "schema_version": "jungeun-annex-section-review-v1",
+  "base_dev": "0328e8fd04ffe4fd79cd397809cac69748024d22",
+  "before_data_commit": "3fe57caa05533bb0b412df03b21962c4b6481927",
+  "scope": "별지·별표 구획 및 삭제 메타데이터만 정정; 원문과 필드 이름·자료형 유지",
+  "affected_attachments": 8,
+  "changed_metadata": {
+    "blocks.section_title": 142,
+    "blocks.deleted_section": 3,
+    "tables.section_title": 10
+  },
+  "source_text_cells_rows_coordinates_and_ids_unchanged": true,
+  "field_names_or_types_changed": false,
+  "human_review_changed": false,
+  "usage_status_changed": false,
+  "common_html_adapter_modified": false,
+  "records": [
+    {
+      "parent_mst": "2053883",
+      "attachment_id": "154690993",
+      "file": "processed/annex/2053883_154690993.json",
+      "raw_sha256": "64cef7217e6c5d6ec19ffe34b7e83949168c3f4d50895cc18e9488bcf5f88441",
+      "changes": [
+        {
+          "location": "blocks[0]",
+          "field": "section_title",
+          "before": "",
+          "after": "별지1 <삭제 2014.9.25.>"
+        },
+        {
+          "location": "blocks[0]",
+          "field": "deleted_section",
+          "before": false,
+          "after": true
+        },
+        {
+          "location": "blocks[1]",
+          "field": "section_title",
+          "before": "",
+          "after": "별지1의2 <삭제 2014.9.25.>"
+        },
+        {
+          "location": "blocks[1]",
+          "field": "deleted_section",
+          "before": false,
+          "after": true
+        },
+        {
+          "location": "blocks[2]",
+          "field": "section_title",
+          "before": "",
+          "after": "별지1의2 <삭제 2014.9.25.>"
+        },
+        {
+          "location": "blocks[2]",
+          "field": "deleted_section",
+          "before": false,
+          "after": true
+        },
+        {
+          "location": "blocks[3]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[4]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[5]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[6]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[7]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[8]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[9]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[10]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[11]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[12]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[13]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[14]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[15]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[16]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[17]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[18]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[19]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[20]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[21]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[22]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[23]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[24]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[25]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[26]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[27]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[28]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[29]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[30]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[31]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[32]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[33]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[34]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[35]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[36]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[37]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[38]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[39]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[40]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[41]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[42]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[43]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[44]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[45]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[46]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[47]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 3] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[48]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 3] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[49]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 3] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[50]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 3] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[51]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 3] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[52]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 3] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[53]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 3] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[54]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 3] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[55]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 3] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[56]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 4] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[57]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 4] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[58]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 4] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[59]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 4] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[60]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 4] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "blocks[61]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 4] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "tables[0]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 2] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "tables[1]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 3] <신설 2009. 11. 9>"
+        },
+        {
+          "location": "tables[2]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 4] <신설 2009. 11. 9>"
+        }
+      ]
+    },
+    {
+      "parent_mst": "2101297",
+      "attachment_id": "160319463",
+      "file": "processed/annex/2101297_160319463.json",
+      "raw_sha256": "6332b9a77402205c7924f9288f74d0c6593a1292715d669f571c779416b1e155",
+      "changes": [
+        {
+          "location": "blocks[0]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제1호서식]  <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[1]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제1호서식]  <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[2]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제1호서식]  <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[3]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제1호서식]  <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[4]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제1호서식]  <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[5]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제1호서식]  <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[6]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제1호서식]  <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[7]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제1호서식]  <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[8]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제1호서식]  <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[9]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제1호서식]  <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[10]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제1호서식]  <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[11]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제1호서식]  <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[12]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제1호서식]  <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[13]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제1호서식]  <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[14]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제1호서식]  <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[15]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제1호서식]  <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[16]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제1호서식]  <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[17]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제1호서식]  <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[18]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제1호서식]  <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[19]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제1호서식]  <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[20]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제1호서식]  <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[21]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제1호서식]  <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[22]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제1호서식]  <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[23]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제1호서식]  <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[24]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제1호서식]  <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[25]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제1호서식]  <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[26]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제1호서식]  <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[27]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제1호서식]  <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[28]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제1호서식]  <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[29]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제1호서식]  <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[30]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제1호서식]  <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[31]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제1호서식]  <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[32]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제1호서식]  <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[33]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제1호서식]  <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[34]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제1호서식]  <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[35]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제1호서식]  <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "tables[0]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제1호서식]  <개정 2011. 8. 10.>"
+        }
+      ]
+    },
+    {
+      "parent_mst": "2101297",
+      "attachment_id": "160319465",
+      "file": "processed/annex/2101297_160319465.json",
+      "raw_sha256": "4e630e0618c1ad41f9675d898a4313bf7ea15c6192d1fac9cf6b40c17d96b84a",
+      "changes": [
+        {
+          "location": "blocks[0]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제2호서식] <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[1]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제2호서식] <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[2]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제2호서식] <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[3]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제2호서식] <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[4]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제2호서식] <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[5]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제2호서식] <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[6]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제2호서식] <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[7]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제2호서식] <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[8]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제2호서식] <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[9]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제2호서식] <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "tables[0]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제2호서식] <개정 2011. 8. 10.>"
+        }
+      ]
+    },
+    {
+      "parent_mst": "2101297",
+      "attachment_id": "160319467",
+      "file": "processed/annex/2101297_160319467.json",
+      "raw_sha256": "79fbcbfb0d3803e21063d64d961533c16cee5cabd4baf76d1e7c37c2105ca06b",
+      "changes": [
+        {
+          "location": "blocks[0]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제3호서식] <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[1]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제3호서식] <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[2]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제3호서식] <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[3]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제3호서식] <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[4]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제3호서식] <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[5]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제3호서식] <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "blocks[6]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제3호서식] <개정 2011. 8. 10.>"
+        },
+        {
+          "location": "tables[0]",
+          "field": "section_title",
+          "before": "",
+          "after": "[별지 제3호서식] <개정 2011. 8. 10.>"
+        }
+      ]
+    },
+    {
+      "parent_mst": "2101385",
+      "attachment_id": "160561047",
+      "file": "processed/annex/2101385_160561047.json",
+      "raw_sha256": "c929c4cdf3e89cf9259a230a31a472ac38ce62149f0b1db92f5c1db4d555d639",
+      "changes": [
+        {
+          "location": "blocks[0]",
+          "field": "section_title",
+          "before": "",
+          "after": "〔별지 제1호서식〕"
+        },
+        {
+          "location": "blocks[1]",
+          "field": "section_title",
+          "before": "",
+          "after": "〔별지 제1호서식〕"
+        },
+        {
+          "location": "blocks[2]",
+          "field": "section_title",
+          "before": "",
+          "after": "〔별지 제1호서식〕"
+        },
+        {
+          "location": "blocks[3]",
+          "field": "section_title",
+          "before": "",
+          "after": "〔별지 제1호서식〕"
+        },
+        {
+          "location": "blocks[4]",
+          "field": "section_title",
+          "before": "",
+          "after": "〔별지 제1호서식〕"
+        },
+        {
+          "location": "tables[0]",
+          "field": "section_title",
+          "before": "",
+          "after": "〔별지 제1호서식〕"
+        }
+      ]
+    },
+    {
+      "parent_mst": "2101385",
+      "attachment_id": "160561049",
+      "file": "processed/annex/2101385_160561049.json",
+      "raw_sha256": "87287703e38436a86983a934d60af18aedfc608d0b0db3342d343ce0d1458d63",
+      "changes": [
+        {
+          "location": "blocks[0]",
+          "field": "section_title",
+          "before": "",
+          "after": "〔별지 제2호서식〕"
+        },
+        {
+          "location": "blocks[1]",
+          "field": "section_title",
+          "before": "",
+          "after": "〔별지 제2호서식〕"
+        },
+        {
+          "location": "blocks[2]",
+          "field": "section_title",
+          "before": "",
+          "after": "〔별지 제2호서식〕"
+        },
+        {
+          "location": "blocks[3]",
+          "field": "section_title",
+          "before": "",
+          "after": "〔별지 제2호서식〕"
+        },
+        {
+          "location": "blocks[4]",
+          "field": "section_title",
+          "before": "",
+          "after": "〔별지 제2호서식〕"
+        },
+        {
+          "location": "blocks[5]",
+          "field": "section_title",
+          "before": "",
+          "after": "〔별지 제2호서식〕"
+        },
+        {
+          "location": "tables[0]",
+          "field": "section_title",
+          "before": "",
+          "after": "〔별지 제2호서식〕"
+        }
+      ]
+    },
+    {
+      "parent_mst": "2101385",
+      "attachment_id": "160561051",
+      "file": "processed/annex/2101385_160561051.json",
+      "raw_sha256": "edbcc7681900ac728405cff935a8e40ae8f691ed04d789fb052989c39cf5b2cf",
+      "changes": [
+        {
+          "location": "blocks[0]",
+          "field": "section_title",
+          "before": "",
+          "after": "〔별지 제3호서식〕"
+        },
+        {
+          "location": "blocks[1]",
+          "field": "section_title",
+          "before": "",
+          "after": "〔별지 제3호서식〕"
+        },
+        {
+          "location": "blocks[2]",
+          "field": "section_title",
+          "before": "",
+          "after": "〔별지 제3호서식〕"
+        },
+        {
+          "location": "blocks[3]",
+          "field": "section_title",
+          "before": "",
+          "after": "〔별지 제3호서식〕"
+        },
+        {
+          "location": "blocks[4]",
+          "field": "section_title",
+          "before": "",
+          "after": "〔별지 제3호서식〕"
+        },
+        {
+          "location": "blocks[5]",
+          "field": "section_title",
+          "before": "",
+          "after": "〔별지 제3호서식〕"
+        },
+        {
+          "location": "blocks[6]",
+          "field": "section_title",
+          "before": "",
+          "after": "〔별지 제3호서식〕"
+        },
+        {
+          "location": "blocks[7]",
+          "field": "section_title",
+          "before": "",
+          "after": "〔별지 제3호서식〕"
+        },
+        {
+          "location": "blocks[8]",
+          "field": "section_title",
+          "before": "",
+          "after": "〔별지 제3호서식〕"
+        },
+        {
+          "location": "tables[0]",
+          "field": "section_title",
+          "before": "",
+          "after": "〔별지 제3호서식〕"
+        }
+      ]
+    },
+    {
+      "parent_mst": "2101385",
+      "attachment_id": "160561053",
+      "file": "processed/annex/2101385_160561053.json",
+      "raw_sha256": "3ceb0c0b0143b35ef74f0ab89dcf8a24e44186f48eb85b5905ea23af006be375",
+      "changes": [
+        {
+          "location": "blocks[0]",
+          "field": "section_title",
+          "before": "",
+          "after": "〔별지 제4호서식〕"
+        },
+        {
+          "location": "blocks[1]",
+          "field": "section_title",
+          "before": "",
+          "after": "〔별지 제4호서식〕"
+        },
+        {
+          "location": "blocks[2]",
+          "field": "section_title",
+          "before": "",
+          "after": "〔별지 제4호서식〕"
+        },
+        {
+          "location": "blocks[3]",
+          "field": "section_title",
+          "before": "",
+          "after": "〔별지 제4호서식〕"
+        },
+        {
+          "location": "blocks[4]",
+          "field": "section_title",
+          "before": "",
+          "after": "〔별지 제4호서식〕"
+        },
+        {
+          "location": "blocks[5]",
+          "field": "section_title",
+          "before": "",
+          "after": "〔별지 제4호서식〕"
+        },
+        {
+          "location": "blocks[6]",
+          "field": "section_title",
+          "before": "",
+          "after": "〔별지 제4호서식〕"
+        },
+        {
+          "location": "tables[0]",
+          "field": "section_title",
+          "before": "",
+          "after": "〔별지 제4호서식〕"
+        }
+      ]
+    }
+  ]
+}

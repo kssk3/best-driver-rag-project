@@ -17,11 +17,18 @@
       "19개 HWP 재추출 결과의 원문 셀·문단·구조 XML 불변 대조",
       "검색용 행 555개의 병합 원점·출처 ID·문맥 참조 확인",
       "명시 용어 복원과 일반 공백 정리를 원문과 분리",
-      "임시 Ruff 0.14.10 명시 옵션 검사와 서식 검사 통과"
+      "임시 Ruff 0.14.10 명시 옵션 검사와 서식 검사 통과",
+      "기존 HWP 구조 XML19개 재읽기: TCPS 원문 보존 영향2문서 확인",
+      "TCPSControl 원문 payload20개와 셀10개·문단7개 복원 대조",
+      "원본 셀 좌표·병합·구획·사람 검수 범위와 다른17문서 불변 확인",
+      "별표·별지 실제 구획 형식 및 삭제 상태 회귀19개 통과",
+      "행정서식8건 구획 정정·원문/셀/행/식별자 불변 대조",
+      "PR #9 기준 공통 코드 변경 없이 전체335개 검사 통과"
     ],
-    "unit_tests_passed": 37,
+    "unit_tests_passed": 65,
     "deleted_articles": 17,
-    "search_rows": 555
+    "search_rows": 555,
+    "repository_tests_passed": 335
   },
   "agent_review": {
     "reviewer": "Codex",
@@ -124,8 +131,24 @@
     "remaining_source_conflicts": [
       "화목일 권역 재활용 품목별 요일"
     ],
-    "status": "awaiting_user_conflict_classification",
-    "wirye_conflict_handling": "user_confirmed"
+    "status": "effective_date_verification_pending",
+    "wirye_conflict_handling": "user_confirmed",
+    "date_review": {
+      "user_instruction": "적용해",
+      "scope": "날짜의 의미·출처 시점 구분만 승인, 요일 사실 확정 아님",
+      "status": "date_meanings_applied_effective_date_pending",
+      "date_check": "schedule_evidence/date_check.json",
+      "pdf_printed_publication_date": "2025-09",
+      "pdf_metadata_created_at": "2026-10-14T09:11:41+09:00",
+      "pdf_metadata_modified_at": "2026-10-14T09:11:41+09:00",
+      "html3153_last_modified_display": "2026-11-19",
+      "html3153_verification": "2026-11-24 공식 페이지 재조회로 표시 확인",
+      "map_data_generated_at_display": "2026-11-23 15:32",
+      "map_data_verification": "기존 저장 응답에서 확인. 이번 적용 시 지도 재조회 없음",
+      "map_date_meaning": "데이터 생성시각이며 화면 코드 수정일·정책 시행일이 아님",
+      "finding": "PDF는 2025-09 발행 자료. 웹·지도 우선순위와 실제 요일은 적용일 미확인으로 확정하지 않음",
+      "next_evidence_needed": "요일 변경 공지의 적용일·대체 관계 또는 담당부서 확인"
+    }
   },
   "latest_body_output": "processed/body",
   "reproduction_check": {
@@ -148,5 +171,65 @@
     },
     "lexical_check": "합성 토큰화와 로컬 BM25 예시 1건 통과. 실제 B/C 검색기 검증 아님",
     "remaining": "명시 목록 밖 단어 분할·조건 및 각주 연결·실제 청킹과 B/C 검색은 후속 검증 필요"
+  },
+  "tcps_preservation_review": {
+    "status": "raw_payload_preservation_verified_glyph_meaning_unverified",
+    "audit_file": "tcps_preservation_review.json",
+    "controls": 20,
+    "affected_attachments": [
+      "2053883_154690993",
+      "2101297_160319463"
+    ],
+    "affected_cells": 10,
+    "affected_body_paragraphs": 7,
+    "unaffected_attachments": 17,
+    "windows_native_tested": false,
+    "glyph_font_meaning_verified": false,
+    "numeric_or_glyph_conversion_performed": false
+  },
+  "encoding_review": {
+    "audit_file": "windows_encoding_check.json",
+    "status": "explicit_utf8_verified_cp949_simulation_passed",
+    "normal_tests_passed": 46,
+    "cp949_simulated_tests_passed": 65,
+    "native_windows_tested": false,
+    "normal_ingestion_tests_passed": 65
+  },
+  "annex_section_review": {
+    "audit_file": "annex_section_review.json",
+    "affected_attachments": 8,
+    "human_review_changed": false,
+    "usage_status_changed": false
+  },
+  "source_character_review": {
+    "audit_file": "source_character_review.json",
+    "tab_controls_documented": 6,
+    "numeric_glyph_mapping_performed": false
+  },
+  "common_html_observation": {
+    "status": "unresolved_not_modified",
+    "tcps_attachments": 2,
+    "tcps_controls": 20,
+    "missing_codepoints": 40,
+    "form_section_attachments": 8,
+    "affected_attachments_index_eligible": false,
+    "followup_owner_assigned": false
+  },
+  "external_distribution_review": {
+    "status": "unreviewed",
+    "targets": [
+      "schedule_evidence/official-20261014.pdf",
+      "schedule_evidence/page3.png"
+    ],
+    "scope": "구청 소책자 원본·쪽 이미지의 공개 공유 조건은 미확인. 로컬 보관이나 robots 허용을 공유 승인으로 해석하지 않음.",
+    "local_only_evidence": "PDF 2쪽 발행정보 캡처는 로컬 검토본에 보관"
+  },
+  "pr9_integration_review": {
+    "audit_file": "pr9_integration_review.json",
+    "status": "offline_load_and_chunk_verified",
+    "documents_loaded": 46,
+    "eligible_chunks_per_format": 557,
+    "common_html_equivalence": "unresolved",
+    "followup_owner_assigned": false
   }
 }

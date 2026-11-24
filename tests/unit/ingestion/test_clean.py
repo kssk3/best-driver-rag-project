@@ -68,7 +68,9 @@ def test_run_preserves_original_and_rejects_overwrite(tmp_path):
     path, record = source(tmp_path)
     original = path.read_bytes()
     manifest = tmp_path / "manifest.json"
-    manifest.write_text(json.dumps({"run_id": "test-run", "records": [record]}))
+    manifest.write_text(
+        json.dumps({"run_id": "test-run", "records": [record]}), encoding="utf-8"
+    )
     output = tmp_path / "processed"
     summary = preprocess_run(manifest, output)
     assert summary["documents"][0]["article_count"] == 1
@@ -80,7 +82,7 @@ def test_run_preserves_original_and_rejects_overwrite(tmp_path):
 def test_supplements_preserve_historical_transition_separately(tmp_path):
     path, record = source(tmp_path)
     raw = (
-        path.read_text()
+        path.read_text(encoding="utf-8")
         .replace(
             "</LawService>",
             """<부칙>

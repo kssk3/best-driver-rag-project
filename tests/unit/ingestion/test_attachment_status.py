@@ -25,7 +25,10 @@ def test_download_and_extraction_do_not_inherit_ambiguous_xml_flags(
         "raw_sha256": hashlib.sha256(raw).hexdigest(),
     }
     path = attachments / "manifest.json"
-    path.write_text(json.dumps({"source_run_id": "synthetic", "records": [source]}))
+    path.write_text(
+        json.dumps({"source_run_id": "synthetic", "records": [source]}),
+        encoding="utf-8",
+    )
     before = path.read_bytes()
 
     def convert(_args, *, stdout, **_kwargs):
@@ -37,7 +40,7 @@ def test_download_and_extraction_do_not_inherit_ambiguous_xml_flags(
     monkeypatch.setattr("src.ingestion.annexes.subprocess.run", convert)
     output = tmp_path / "processed"
     summary = preprocess_attachments(path, output)
-    result = json.loads((output / "123_456.json").read_text())
+    result = json.loads((output / "123_456.json").read_text(encoding="utf-8"))
     assert "collection_status" not in result
     assert "content_present" not in result
     assert result["xml_listing"]["collection_status"] == "link_only"
