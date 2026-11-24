@@ -217,6 +217,10 @@ class ResolvedQuery(BaseModel):
     dong: str | None = None
     status: Literal["resolved", "needs_clarification"] = "resolved"
     clarification_question: str | None = None
+    # 팀이 정한 지역 해석 4상태. 파이프라인 분기용 status(2개)와 따로 전달한다.
+    # None = 지역 해석 안 함
+    region_status: Literal["ok", "ambiguous", "unsupported", "no_dong"] | None = None
+    candidate_districts: list[str] = Field(default_factory=list)
 
 
 class PipelineOptions(BaseModel):
