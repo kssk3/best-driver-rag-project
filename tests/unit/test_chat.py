@@ -50,8 +50,8 @@ def test_is_safe_url(url: str | None, expected: bool) -> None:
     "sample_name, element, expected_text",
     [
         ("answered", "success", "가상"),
-        ("needs_clarification", "warning", "추가 정보 필요"),
-        ("insufficient_evidence", "info", "정상 근거 부족"),
+        ("needs_clarification", "warning", "추가 정보가 필요"),
+        ("insufficient_evidence", "info", "답변이 어렵습니다"),
         ("error", "error", "처리 중 오류"),
     ],
 )
@@ -65,7 +65,7 @@ def test_each_status_has_its_own_message(
 
 def test_error_is_not_shown_as_normal_refusal() -> None:
     app = ask("error")
-    assert not any("정상 근거 부족" in item.value for item in app.info)
+    assert not any("답변이 어렵습니다" in item.value for item in app.info)
 
 
 def test_followup_form_keeps_original_question_and_district() -> None:

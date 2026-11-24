@@ -60,7 +60,7 @@ def render_response(view: ViewResponse, question: str = '', district: str = '') 
 
 def _render_answered(view: ViewResponse) -> None:
 
-    st.success(view.answer or '(답변 내용이 없습니다.)')
+    st.success(view.answer or '(답변 내용 없음)')
     st.markdown('근거')
 
     if not view.citations:
@@ -76,7 +76,7 @@ def _render_answered(view: ViewResponse) -> None:
 
 def _render_clarification(view: ViewResponse, question: str, district: str) -> None:
 
-    st.warning('답변하려면 추가 정보가 필요합니다.')
+    st.warning('질문하신 내용은 추가 정보가 필요합니다.')
 
     with st.form('followup'):
         extra_conditions = {
@@ -93,9 +93,7 @@ def _render_clarification(view: ViewResponse, question: str, district: str) -> N
 
 def _render_insufficient_evidence(view: ViewResponse) -> None:
 
-    st.info(
-        '[NoneError] 근거가 부족해 응답할 수 없습니다.'
-    )
+    st.info('질문하신 내용은 답변이 어렵습니다.')
 
 
 def _render_error() -> None:
