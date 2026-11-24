@@ -51,8 +51,8 @@ with user_tab:
 
 
 with inspection_tab:
-    st.info('나중에 구현합니다~~~')
+    st.info('나중에 구현합니다~~~~~')
 
 
 with comparison_tab:
-    st.info('나중에 구현합니다~~~')
+    st.info('나중에 구현합니다~~~~~')
