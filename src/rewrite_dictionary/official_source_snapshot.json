@@ -1,0 +1,443 @@
+{
+  "schema_version": 1,
+  "use": "review_only",
+  "sources": {
+    "songpa_recycling_guide": {
+      "district": "송파구",
+      "title": "송파구 재활용품 분리배출 방법",
+      "url": "https://www.songpa.go.kr/www/contents.do?key=3164",
+      "kind": "district_guide",
+      "checked_on": "2026-11-25",
+      "format": "html",
+      "capture_sha256": "fa250ce4c4bb9fe706ad4d554ba81c11bbd010a9be9b0ef641db71d8ef65e12d",
+      "reuse_status": "공공누리 미지정",
+      "last_modified": "2026-08-26"
+    },
+    "seodaemun_lamp_booklet": {
+      "district": "서대문구",
+      "title": "서대문마당 2026년 4월호",
+      "url": "https://www.sdm.go.kr/fileUpload/board/92/20260331_10515825024738851.pdf",
+      "kind": "district_guide",
+      "checked_on": "2026-11-25",
+      "format": "pdf",
+      "capture_sha256": "ab00fd996354cf65f90c8a2ee5772450b067c9f4b76168cee526f7f149d3b700",
+      "reuse_status": "개별 공공누리 미확인",
+      "published_on": "2026-03-25",
+      "index_url": "https://www.sdm.go.kr/news/media/madang.do"
+    },
+    "keco_ecoas_appliance": {
+      "district": null,
+      "title": "한국환경공단 환경성보장제도 폐가전 배출 안내",
+      "url": "https://www.keco.or.kr/web/lay1/S1T183C1048/contents.do",
+      "kind": "official_reference",
+      "checked_on": "2026-11-25",
+      "format": "html",
+      "capture_sha256": "10eb3a3cec00d6bd7b0dcd5d429220a3b7b24a1f798990bcef5dee341d0774e2",
+      "reuse_status": "개별 공공누리 미확인",
+      "usage_policy_url": "https://www.keco.or.kr/web/lay1/S1T6C1349/contents.do"
+    },
+    "ecycle_guide": {
+      "district": null,
+      "title": "이순환거버넌스 폐가전 무상방문수거 이용안내",
+      "url": "https://www.15990903.or.kr/portal/cnts/userGuide.do",
+      "kind": "official_reference",
+      "checked_on": "2026-11-25",
+      "format": "html",
+      "capture_sha256": "ee9169238b674e1ddecfe3b5a93603f63862b3ced4bb06c5fd04bdb1f10f42a3",
+      "reuse_status": "사이트 저작권 유보 표시"
+    },
+    "mfds_packaging_standard": {
+      "district": null,
+      "title": "식품의약품안전처 기구 및 용기·포장의 기준 및 규격 제2026-72호",
+      "url": "https://www.law.go.kr/LSW/flDownload.do?flSeq=171063955",
+      "kind": "official_reference",
+      "checked_on": "2026-11-25",
+      "format": "pdf",
+      "capture_sha256": "6e4d308e6a9a3f54b824f3455868031fdc5f373948d77ca19f7aca945cc0b6de",
+      "reuse_status": "고시의 재질명·약어 표 확인",
+      "published_on": "2026-10-30",
+      "index_url": "https://www.mfds.go.kr/brd/m_211/view.do?seq=14991"
+    },
+    "mafra_farm_waste": {
+      "district": null,
+      "title": "농림축산식품부 2026년도 기본형 공익직불사업 시행지침서",
+      "url": "https://www.mafra.go.kr/bbs/home/795/595641/download.do",
+      "kind": "official_reference",
+      "checked_on": "2026-11-25",
+      "format": "pdf",
+      "capture_sha256": "a59bdaaf7a46e12906965ba87dee85a6b4b86984fd9c20c57985f37b7b802f7f",
+      "reuse_status": "게시물 공공누리 제2유형, 출처표시 및 비상업적 이용",
+      "published_on": "2026-03-13",
+      "index_url": "https://www.mafra.go.kr/bbs/home/795/577305/artclView.do"
+    },
+    "songpa_food_guide": {
+      "district": "송파구",
+      "title": "송파구 음식물류 폐기물 배출 안내",
+      "url": "https://www.songpa.go.kr/www/contents.do?key=3161",
+      "kind": "district_guide",
+      "checked_on": "2026-11-25",
+      "format": "html",
+      "capture_sha256": "3ed2a99bd1ff9d76c5fe96bf217b43711bb3fc6d5600528bb0c9a577489f4f93",
+      "reuse_status": "공공누리 미지정",
+      "last_modified": "2026-11-18"
+    },
+    "seodaemun_household_medicine": {
+      "district": "서대문구",
+      "title": "서대문구보건소 폐의약품 배출관련 안내",
+      "url": "https://www.sdm.go.kr/health/board/1/10410?activeMenu=0104010000",
+      "kind": "district_guide",
+      "checked_on": "2026-11-25",
+      "format": "html",
+      "capture_sha256": "2a2d82b8628e33d4790d1927b6689c407b1b7d0e5fde6eb86c75630b5dd044fb",
+      "reuse_status": "개별 공공누리 미확인",
+      "published_on": "2023-06-16"
+    }
+  },
+  "records": {
+    "songpa_paper_cup": {
+      "source_id": "songpa_recycling_guide",
+      "scope": "district_guidance",
+      "group": "재활용품",
+      "location": "기타 재활용가능자원 > 종이류 > 종이컵 / 생산자재활용의무 대상 포장재 > 종이팩 > 비해당품목",
+      "items": [
+        "종이컵"
+      ],
+      "conditions": [
+        "내용물과 이물질을 제거한 종이컵"
+      ],
+      "summary": "송파구 표는 종이컵을 종이류 항목에 두고 내용물을 비운 뒤 헹구도록 안내한다."
+    },
+    "seodaemun_paper_cup": {
+      "source_id": "seodaemun_recycling",
+      "district": "서대문구",
+      "scope": "district_guidance",
+      "group": "재활용품",
+      "location": "서대문구 폐기물 관리 조례 별표 2 > 골판지 외 종이류 > 종이컵 (table-1/row[5])",
+      "items": [
+        "종이컵"
+      ],
+      "conditions": [
+        "내용물을 비우고 물로 헹군 종이컵"
+      ],
+      "summary": "서대문구 별표 2는 종이컵을 비우고 헹군 뒤 압착해 봉투에 넣거나 묶어 배출하도록 안내한다."
+    },
+    "songpa_colored_opaque_containers": {
+      "source_id": "songpa_recycling_guide",
+      "scope": "district_guidance",
+      "group": "재활용품",
+      "location": "생산자재활용의무 대상 포장재 > 합성수지류 > 용기·트레이류 > 해당품목",
+      "items": [
+        "유색 음료 용기",
+        "불투명 음료 용기",
+        "불투명 페트병",
+        "불투명 패트병",
+        "합성수지 용기"
+      ],
+      "conditions": [
+        "색상 또는 불투명 여부",
+        "음료 용기",
+        "오염·다른 재질 부속품"
+      ],
+      "summary": "유색·불투명 음료 용기는 용기·트레이류 예시에 포함된다. 불투명 페트병은 해당 행을 찾기 위한 검색어다."
+    },
+    "songpa_clear_drink_bottle": {
+      "source_id": "songpa_recycling_guide",
+      "scope": "district_guidance",
+      "group": "재활용품",
+      "location": "생산자재활용의무 대상 포장재 > 합성수지류 > 투명(음료·생수) 페트병",
+      "items": [
+        "투명 페트병",
+        "무색 투명 페트병"
+      ],
+      "conditions": [
+        "투명한 음료·생수용 페트병",
+        "제품 용도"
+      ],
+      "summary": "투명한 음료·생수용 페트병에는 비우기, 라벨 제거, 압착과 뚜껑 닫기가 안내된다."
+    },
+    "seodaemun_broken_lamp": {
+      "source_id": "seodaemun_lamp_booklet",
+      "scope": "district_guidance",
+      "group": "전구·조명",
+      "location": "PDF 16쪽 · 인쇄 31쪽 알쓸신잡 > 폐형광등·폐건전지 > 예외",
+      "items": [
+        "깨진 형광등",
+        "깨진 폐형광등",
+        "평판형 LED 등",
+        "십자형 LED 등",
+        "원반형 LED 등"
+      ],
+      "conditions": [
+        "형광등 파손 여부",
+        "LED 형태",
+        "수량은 구 안내에서 추가 확인"
+      ],
+      "summary": "깨진 형광등과 평판형·십자형·원반형 LED에는 종량제봉투를 안내한다."
+    },
+    "seodaemun_air_cushion_film": {
+      "source_id": "seodaemun_lamp_booklet",
+      "scope": "district_guidance",
+      "group": "포장재",
+      "location": "PDF 16쪽 · 인쇄 31쪽 알쓸신잡 > 폐비닐 분리배출 안내",
+      "items": [
+        "뽁뽁이",
+        "에어캡"
+      ],
+      "conditions": [
+        "이물질 제거",
+        "비닐끼리 모아 배출"
+      ],
+      "summary": "소식지는 뽁뽁이와 에어캡을 같은 비닐류 배출 예시로 표기한다."
+    },
+    "seodaemun_small_appliance_dropoff": {
+      "source_id": "seodaemun_lamp_booklet",
+      "scope": "district_guidance",
+      "group": "가전·전자제품",
+      "location": "PDF 16쪽 · 인쇄 31쪽 알쓸신잡 > 중소형 폐가전·폐배터리",
+      "items": [
+        "노트북",
+        "제습기",
+        "모니터",
+        "중소형 폐가전",
+        "폐배터리"
+      ],
+      "conditions": [
+        "동 주민센터와 공동주택에 설치된 이동식 수거함",
+        "석탄·가스·기름 혼용 제품은 배출 대상에서 제외"
+      ],
+      "summary": "노트북·제습기·모니터를 중소형 폐가전 예시로 들고, 중소형 폐가전과 폐배터리를 사전 신고 없이 이동식 수거함에 배출하도록 안내한다."
+    },
+    "keco_appliance_routes": {
+      "source_id": "keco_ecoas_appliance",
+      "scope": "national_collection_reference",
+      "group": "가전·전자제품",
+      "location": "환경성보장제도 안내 이미지의 폐가전 배출 방법",
+      "items": [
+        "폐가전제품",
+        "중소형 폐가전",
+        "대형 폐가전",
+        "폐가전 무상방문수거"
+      ],
+      "conditions": [
+        "구입 시 회수 요청",
+        "무상방문수거 접수",
+        "인근 수거함",
+        "소형 폐가전 5개 이상이면 무상방문수거 접수"
+      ],
+      "summary": "구입 시 회수, 무상방문수거, 중소형 제품 수거함을 각각 조회할 수 있다."
+    },
+    "ecycle_pickup_size_quantity": {
+      "source_id": "ecycle_guide",
+      "scope": "national_collection_service",
+      "group": "가전·전자제품",
+      "location": "수거품목 및 수거기준 > 제품 크기·중량 기준 및 단일 품목 표",
+      "items": [
+        "폐가전제품",
+        "기타 전기·전자 제품",
+        "폐가전 무상방문수거"
+      ],
+      "conditions": [
+        "단일 품목에 해당하는 품목 또는 규격",
+        "가로·세로·높이의 합",
+        "무게",
+        "지역별 예약 가능 여부"
+      ],
+      "summary": "단일 품목은 1개부터 방문수거를 접수할 수 있다. 세 변의 합과 중량이 다른 구간에 해당하면 더 높은 규격을 선택한다."
+    },
+    "ecycle_multiple_pickup": {
+      "source_id": "ecycle_guide",
+      "scope": "national_collection_service",
+      "group": "가전·전자제품",
+      "location": "수거품목 및 수거기준 > 다량 품목 표",
+      "items": [
+        "폐가전제품",
+        "기타 전기·전자 제품",
+        "폐가전 무상방문수거"
+      ],
+      "minimum_count": 5,
+      "conditions": [
+        "다량 품목에 해당하는 품목 또는 규격",
+        "총 5개 이상",
+        "지역별 예약 가능 여부"
+      ],
+      "summary": "다량 품목으로 분류되는 중소형 전자제품 등은 5개 이상일 때 방문수거를 접수할 수 있다."
+    },
+    "ecycle_massage_chair_pickup": {
+      "source_id": "ecycle_guide",
+      "scope": "national_collection_service",
+      "group": "안마용품",
+      "location": "수거품목 및 수거기준 > 단일 품목 표의 안마의자 주의문",
+      "items": [
+        "안마의자"
+      ],
+      "conditions": [
+        "차량이 접근 가능한 실외 배출장소",
+        "신청 품목과 규격 확인"
+      ],
+      "summary": "안마의자의 배출 위치는 수거차량이 접근할 수 있는 집 밖이어야 한다."
+    },
+    "ecycle_installed_appliances": {
+      "source_id": "ecycle_guide",
+      "scope": "national_collection_service",
+      "group": "가전·전자제품",
+      "location": "접수 및 배출 관련 유의사항 > 설치(고정) 제품",
+      "items": [
+        "에어컨",
+        "벽걸이 TV",
+        "정수기",
+        "빌트인 제품"
+      ],
+      "conditions": [
+        "설치·고정 여부",
+        "수거 전 철거 여부"
+      ],
+      "summary": "고정 설치된 제품은 방문수거 전에 수거 가능한 상태로 철거해야 한다."
+    },
+    "mfds_food_contact_resin_names": {
+      "source_id": "mfds_packaging_standard",
+      "scope": "material_terminology",
+      "group": "전문 용어",
+      "location": "PDF 12쪽 · 인쇄 22–23쪽 V. 재질별 규격 > 1. 합성수지제 > 재질명 표",
+      "items": [
+        "합성수지제",
+        "폴리프로필렌",
+        "폴리카보네이트",
+        "폴리염화비닐",
+        "폴리염화비닐리덴",
+        "폴리락타이드"
+      ],
+      "conditions": [
+        "식품 접촉용 용기·포장 재질명",
+        "주민 배출 질문에서는 지역 규칙을 확인"
+      ],
+      "summary": "식약처 고시의 재질명 표에는 국문명과 영문명, 약어가 함께 제시된다. PLA의 국문 표기는 폴리락타이드다."
+    },
+    "mafra_empty_pesticide_containers": {
+      "source_id": "mafra_farm_waste",
+      "scope": "farm_collection_reference",
+      "group": "농업용 약품·포장재",
+      "location": "PDF 188쪽 · 인쇄 184쪽 영농폐기물 처리방법 안내문 > 수거 가능 종류·유의사항",
+      "items": [
+        "빈 농약병",
+        "폐농약 용기",
+        "농약 봉지"
+      ],
+      "conditions": [
+        "직불금 지급 대상 농지와 그 주변에서 발생한 영농폐기물",
+        "내용물을 완전히 비운 용기",
+        "공동수거 운영지역과 해당 읍·면·동의 수거일·장소 확인"
+      ],
+      "summary": "공동수거 운영지역의 안내문은 내용물이 없는 폐농약 용기류를 공단 수거 품목에 포함한다. 일정과 장소는 읍·면·동별로 확인한다."
+    },
+    "mafra_farm_waste_film": {
+      "source_id": "mafra_farm_waste",
+      "scope": "farm_collection_reference",
+      "group": "농업용 약품·포장재",
+      "location": "PDF 188쪽 · 인쇄 184쪽 영농폐기물 처리방법 안내문 > 수거 가능 폐비닐류·유의사항",
+      "items": [
+        "영농폐비닐",
+        "하우스 비닐",
+        "멀칭 비닐"
+      ],
+      "conditions": [
+        "직불금 지급 대상 농지와 그 주변에서 발생한 영농폐기물",
+        "흙 등 이물질을 제거한 비닐",
+        "공동수거 운영지역과 해당 읍·면·동의 수거일·장소 확인"
+      ],
+      "summary": "공동수거 운영지역의 안내문은 하우스·멀칭 비닐을 공단 수거 품목에 포함하고 흙 등 이물질을 제거하도록 안내한다."
+    },
+    "mafra_local_farm_materials": {
+      "source_id": "mafra_farm_waste",
+      "scope": "farm_collection_reference",
+      "group": "농업용 약품·포장재",
+      "location": "PDF 188쪽 · 인쇄 184쪽 영농폐기물 처리방법 안내문 > 적정 수거·배출 방법",
+      "items": [
+        "타이벡",
+        "모종판",
+        "부직포"
+      ],
+      "conditions": [
+        "직불금 지급 대상 농지와 그 주변에서 발생한 영농폐기물",
+        "공동수거 운영지역 등을 위한 안내문 양식",
+        "지자체의 품목별 처리계획"
+      ],
+      "summary": "타이벡·모종판·부직포는 지자체의 처리 기준을 찾기 위한 품목으로 제시된다."
+    },
+    "songpa_hard_fruit_shells_pits": {
+      "source_id": "songpa_food_guide",
+      "scope": "district_guidance",
+      "group": "음식물 관련",
+      "location": "음식물쓰레기 분리배출 > 음식물쓰레기가 아닌 식품류 > 과일류",
+      "items": [
+        "복숭아씨",
+        "살구씨",
+        "감 씨",
+        "호두 껍데기",
+        "밤 껍데기",
+        "땅콩 껍데기",
+        "파인애플 껍질"
+      ],
+      "conditions": [
+        "구체적인 과일 종류",
+        "딱딱한 껍데기 또는 표에 예시된 씨"
+      ],
+      "summary": "송파구 과일류 표는 호두·밤·땅콩·파인애플의 딱딱한 껍데기와 복숭아·살구·감의 씨를 음식물 대상에서 제외한다."
+    },
+    "seodaemun_household_medicine_bins": {
+      "source_id": "seodaemun_household_medicine",
+      "scope": "district_guidance",
+      "group": "일반·특수폐기물",
+      "location": "보건소 공지 본문의 폐의약품 수거함 안내",
+      "items": [
+        "폐의약품",
+        "가정 폐의약품",
+        "폐의약품 수거함"
+      ],
+      "conditions": [
+        "가정에서 나온 폐의약품",
+        "현재 운영 중인 수거함 위치 확인"
+      ],
+      "summary": "서대문구 보건소 공지는 폐의약품 전용 수거함을 안내한다."
+    }
+  },
+  "material_names": {
+    "record_id": "mfds_food_contact_resin_names",
+    "names_by_code": {
+      "PE": "폴리에틸렌",
+      "PP": "폴리프로필렌",
+      "PET": "폴리에틸렌테레프탈레이트",
+      "PC": "폴리카보네이트",
+      "PVC": "폴리염화비닐",
+      "PVDC": "폴리염화비닐리덴",
+      "PLA": "폴리락타이드",
+      "ABS": "아크릴로니트릴-부타디엔-스티렌 공중합체",
+      "PS": "폴리스티렌",
+      "PA": "폴리아미드",
+      "PU": "폴리우레탄",
+      "EVA": "에틸렌-초산비닐 공중합체",
+      "PBS": "부틸렌숙시네이트 공중합체",
+      "PBSA": "부틸렌숙시네이트-아디페이트 공중합체",
+      "PBAT": "폴리부틸렌아디페이트테레프탈레이트",
+      "PBT": "폴리부틸렌테레프탈레이트",
+      "POM": "폴리아세탈"
+    }
+  },
+  "pending": {
+    "wasteguide_get_item": {
+      "documentation_url": "https://www.data.go.kr/data/15156866/openapi.do?recommendDataYn=Y",
+      "endpoint": "https://apis.data.go.kr/1482000/WasteRecyclingService/getItem",
+      "required_parameters": [
+        "serviceKey",
+        "pageNo",
+        "numOfRows",
+        "itemNm"
+      ],
+      "sample_items": [
+        "에어캡",
+        "아보카도씨"
+      ],
+      "checked_on": "2026-11-25",
+      "status": "credential_unavailable"
+    }
+  }
+}
