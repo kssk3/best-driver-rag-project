@@ -12,7 +12,7 @@ cd deploy/langfuse
 sh init-env.sh
 ```
 
-3. `deploy/langfuse/.env`의 `LANGFUSE_HOST=`에 실제 도메인을 입력한다(예: `LANGFUSE_HOST=langfuse.example.org`). 도메인이 미정이면 이 값은 비워 두고, 도메인이 준비되면 같은 폴더에서 아래 명령을 실행한다. 서버 비밀값은 재기동 때도 유지하며 `.env`와 Docker 볼륨을 백업한다.
+3. `deploy/langfuse/.env`의 `LANGFUSE_HOST=`에 실제 도메인을 입력한다(예: `LANGFUSE_HOST=langfuse.example.org`). 도메인이 미정이면 이 값은 비워 두고, 도메인이 준비되면 같은 폴더에서 아래 명령을 실행한다. 기동 시 `validate-host`가 호스트의 DNS 문법을 검사한다. URL·포트·경로를 넣으면 프록시와 웹·워커 시작이 중단된다. `docker compose logs validate-host`로 오류를 확인한 뒤 도메인을 바로잡고 다시 기동한다. 서버 비밀값은 재기동 때도 유지하며 `.env`와 Docker 볼륨을 백업한다.
 
 ```sh
 docker compose config --quiet

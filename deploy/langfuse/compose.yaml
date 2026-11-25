@@ -23,13 +23,25 @@ x-langfuse-env: &langfuse-env
   LANGFUSE_S3_EVENT_UPLOAD_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:?set MINIO_ROOT_PASSWORD}
 
 x-backends: &backends
+  validate-host: {condition: service_completed_successfully}
   postgres: {condition: service_healthy}
   clickhouse: {condition: service_healthy}
   redis: {condition: service_healthy}
   minio: {condition: service_healthy}
 
 services:
+  validate-host:
+    image: caddy:2-alpine
+    network_mode: none
+    entrypoint: ["sh", "/validate-host.sh"]
+    environment:
+      LANGFUSE_HOST: ${LANGFUSE_HOST:?set LANGFUSE_HOST}
+    volumes:
+      - ./validate-host.sh:/validate-host.sh:ro
+
   proxy:
+    depends_on:
+      validate-host: {condition: service_completed_successfully}
     image: caddy:2-alpine
     restart: unless-stopped
     command: ["caddy", "reverse-proxy", "--from", "${LANGFUSE_HOST:?set LANGFUSE_HOST}", "--to", "langfuse-web:3000"]
