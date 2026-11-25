@@ -99,6 +99,8 @@ uv run --locked python -m scripts.score_answers \
 
 ### 승인 후 Langfuse 업로드
 
+팀 서버의 HTTPS 주소, 배포 구성과 점수 조회 방법은 [팀 서버 Docker 실행 안내](../deploy/langfuse/README.md)를 따른다.
+
 점수가 저장된 후 별도 명령으로 실행한다. 기본은 네트워크 없는 점검이다. `--report`에는 매 시도마다 새 파일을 지정한다. 입력 확인만 한 행과 숫자 점수가 없는 행은 건너뛴다.
 
 ```sh
