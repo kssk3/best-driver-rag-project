@@ -180,3 +180,24 @@ def test_insufficient_evidence_shows_answer_without_citations() -> None:
 
     app = AppTest.from_function(page, default_timeout=10).run()
     assert any("근거가 없습니다" in m.value for m in app.markdown)
+
+
+def test_followup_request_routes_district_and_dong_to_top_level() -> None:
+    request = build_followup_request(
+        "가상 질문", "송파구", {"district": "서대문구", "dong": "연희동", "item": "병"}
+    )
+    assert request == {
+        "question": "가상 질문",
+        "district": "서대문구",
+        "dong": "연희동",
+        "conditions": {"item": "병"},
+    }
+
+
+def test_switching_mode_hides_response_from_other_mode() -> None:
+    app = ask("answered", question="가상 질문")
+    assert app.tabs[0].success
+    app.radio[0].set_value("실행(합성 데모)").run()
+    assert not app.tabs[0].success
+    app.radio[0].set_value("예시 응답").run()
+    assert app.tabs[0].success

@@ -80,7 +80,7 @@ with user_tab:
 
     if st.button("질문하기"):
         # 새 요청이 실패하거나 비어도 이전 응답이 남아 보이지 않게 지운다.
-        for key in ("view", "places", "asked_question", "asked_district"):
+        for key in ("view", "places", "asked_question", "asked_district", "asked_mode"):
             st.session_state.pop(key, None)
         if mode == "예시 응답":
             st.session_state["view"] = to_view_response(
@@ -88,6 +88,7 @@ with user_tab:
             )
             st.session_state["asked_question"] = question
             st.session_state["asked_district"] = district
+            st.session_state["asked_mode"] = mode
         elif not question.strip():
             st.warning("질문을 입력하세요.")
         else:
@@ -104,9 +105,11 @@ with user_tab:
                 st.session_state["places"] = run_record_to_places(record)
                 st.session_state["asked_question"] = question
                 st.session_state["asked_district"] = district
+                st.session_state["asked_mode"] = mode
 
     view = st.session_state.get("view")
-    if view is not None:
+    # 응답 방식을 바꾸면 다른 방식으로 만든 이전 응답은 보이지 않게 한다.
+    if view is not None and st.session_state.get("asked_mode") == mode:
         # 입력창이 아니라 제출 당시의 질문·지역으로 그린다.
         render_response(
             view,

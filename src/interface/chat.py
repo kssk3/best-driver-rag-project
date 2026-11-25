@@ -18,7 +18,13 @@ def build_followup_request(
     conditions = {
         key: value.strip() for key, value in extra_conditions.items() if value.strip()
     }
-    return {"question": question, "district": district, "conditions": conditions}
+    # 구·동은 요청의 최상위 필드이므로 조건이 아니라 그 자리에 넣는다.
+    request: dict = {"question": question, "district": district}
+    for key in ("district", "dong"):
+        if key in conditions:
+            request[key] = conditions.pop(key)
+    request["conditions"] = conditions
+    return request
 
 
 # 링크는 특정 접두사로 시작해야만 한다. (아무거나 링크되지 않도록 방어)
