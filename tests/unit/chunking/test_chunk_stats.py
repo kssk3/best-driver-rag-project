@@ -135,10 +135,15 @@ def test_append_row_writes_header_once(tmp_path: Path) -> None:
     append_row(summarize(CHUNKS, "v1", "json"), target)
     rows = read_rows(target)
     assert list(rows[0]) == COLUMNS
-    assert [(r["label"], r["format"]) for r in rows] == [("v1", "html"), ("v1", "json")]
+    assert [(r["chunking_version"], r["format"]) for r in rows] == [
+        ("v1", "html"),
+        ("v1", "json"),
+    ]
 
 
-def test_append_row_refuses_duplicate_label_and_format(tmp_path: Path) -> None:
+def test_append_row_refuses_duplicate_chunking_version_and_format(
+    tmp_path: Path,
+) -> None:
     target = tmp_path / "chunk_stats.csv"
     append_row(summarize(CHUNKS, "v1", "html"), target)
     with pytest.raises(ValueError):
@@ -159,7 +164,7 @@ def test_main_appends_row_and_returns_zero(
     args = [
         "--chunks",
         str(write_chunks(tmp_path)),
-        "--label",
+        "--chunking-version",
         "v1",
         "--format",
         "html",
@@ -180,7 +185,7 @@ def test_main_without_csv_only_prints(
             [
                 "--chunks",
                 str(write_chunks(tmp_path)),
-                "--label",
+                "--chunking-version",
                 "v1",
                 "--format",
                 "html",
@@ -209,7 +214,7 @@ def test_main_missing_file_returns_two(tmp_path: Path) -> None:
             [
                 "--chunks",
                 str(tmp_path / "none.json"),
-                "--label",
+                "--chunking-version",
                 "v1",
                 "--format",
                 "html",
@@ -219,6 +224,6 @@ def test_main_missing_file_returns_two(tmp_path: Path) -> None:
     )
 
 
-def test_main_needs_label_and_format(tmp_path: Path) -> None:
+def test_main_needs_chunking_version_and_format(tmp_path: Path) -> None:
     with pytest.raises(SystemExit):
         main(["--chunks", str(write_chunks(tmp_path))])

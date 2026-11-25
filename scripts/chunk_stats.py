@@ -17,7 +17,7 @@ from pathlib import Path
 SHORT_PLAIN_CHARS = 100
 
 COLUMNS = [
-    "label",
+    "chunking_version",
     "format",
     "chunk_count",
     "documents",
@@ -69,7 +69,7 @@ def _has_deleted_marker(text: str) -> bool:
     return bool(re.search(r"삭제\s*<|<[^<>]*삭제", text))
 
 
-def summarize(chunks: list[dict], label: str, fmt: str) -> dict:
+def summarize(chunks: list[dict], chunking_version: str, fmt: str) -> dict:
     """청크 목록(prepare_data의 chunks-*.json 항목)을 한 줄 요약으로 바꾼다."""
     if not chunks:
         raise ValueError("청크가 없습니다.")
@@ -83,7 +83,7 @@ def summarize(chunks: list[dict], label: str, fmt: str) -> dict:
     article = sum(1 for c in chunks if c["source_location"].startswith("조문"))
     table = sum(1 for c in chunks if c["source_location"].startswith("table-"))
     return {
-        "label": label,
+        "chunking_version": chunking_version,
         "format": fmt,
         "chunk_count": len(chunks),
         "documents": len({c["source_document_id"] for c in chunks}),
@@ -112,15 +112,18 @@ def summarize(chunks: list[dict], label: str, fmt: str) -> dict:
 
 
 def append_row(row: dict, csv_path: Path) -> None:
-    """CSV 끝에 한 줄을 더한다. 파일이 없으면 제목 줄부터 만든다. 같은 이름(label, format)이 이미 있으면 거부한다."""
+    """CSV 끝에 한 줄을 더한다. 파일이 없으면 제목 줄부터 만든다. 같은 이름(chunking_version, format)이 이미 있으면 거부한다."""
     csv_path = Path(csv_path)
     exists = csv_path.exists()
     if exists:
         with open(csv_path, encoding="utf-8-sig", newline="") as f:
             for old in csv.DictReader(f):
-                if old["label"] == row["label"] and old["format"] == row["format"]:
+                if (
+                    old["chunking_version"] == row["chunking_version"]
+                    and old["format"] == row["format"]
+                ):
                     raise ValueError(
-                        f"이미 있는 기록입니다: {row['label']} / {row['format']}"
+                        f"이미 있는 기록입니다: {row['chunking_version']} / {row['format']}"
                     )
     csv_path.parent.mkdir(parents=True, exist_ok=True)
     with open(
@@ -164,8 +167,8 @@ def main(argv: list[str] | None = None) -> int:
         help="chunks-html.json 또는 chunks-json.json",
     )
     parser.add_argument(
-        "--label",
-        help="이 기록의 이름(예: preprocessed-v2-row-v1). CSV에 쓸 때 필요하다.",
+        "--chunking-version",
+        help="청킹 버전 이름(청크의 chunking_version 값, 예: preprocessed-v2-row-v1). CSV에 쓸 때 필요하다.",
     )
     parser.add_argument(
         "--format", choices=("html", "json"), help="청크 형식. CSV에 쓸 때 필요하다."
@@ -183,9 +186,9 @@ def main(argv: list[str] | None = None) -> int:
         if args.show:
             show(chunks, args.show)
             return 0
-        if not args.label or not args.format:
-            parser.error("--label과 --format이 필요합니다.")
-        row = summarize(chunks, args.label, args.format)
+        if not args.chunking_version or not args.format:
+            parser.error("--chunking-version과 --format이 필요합니다.")
+        row = summarize(chunks, args.chunking_version, args.format)
         for key in COLUMNS:
             print(f"{key}: {row[key]}")
         if args.csv:
