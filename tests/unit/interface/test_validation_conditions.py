@@ -135,6 +135,7 @@ def open_panel(view: ViewResponse) -> AppTest:
     app = AppTest.from_file(str(APP_PATH), default_timeout=10)
     app.session_state["view"] = view
     app.session_state["asked_district"] = "서대문구"
+    app.session_state["asked_mode"] = "예시 응답"  # 앱의 기본 응답 방식
     return app.run()
 
 

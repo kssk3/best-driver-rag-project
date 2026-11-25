@@ -258,3 +258,30 @@ def test_error_after_record_failure_does_not_show_the_successful_answer() -> Non
     app = AppTest.from_function(page, default_timeout=10).run()
     assert not any("성공한 답변" in e.value for e in app.error)
     assert any("처리 중 오류" in e.value for e in app.error)
+
+
+def test_error_keeps_primary_message_when_record_also_failed() -> None:
+    def page() -> None:
+        from src.interface.adapter import StageError, ViewResponse
+        from src.interface.chat import render_response
+
+        render_response(
+            ViewResponse(
+                "r",
+                "demo",
+                "error",
+                "[가상] 답변 모델에 연결하지 못했습니다.",
+                [],
+                [],
+                None,
+                [],
+                "x",
+                stage_errors=[
+                    StageError("generate", "x.generate_failed", None),
+                    StageError("record", "x.record_failed", None),
+                ],
+            )
+        )
+
+    app = AppTest.from_function(page, default_timeout=10).run()
+    assert any("답변 모델에 연결하지 못했습니다" in e.value for e in app.error)

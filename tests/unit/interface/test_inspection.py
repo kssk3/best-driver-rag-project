@@ -71,3 +71,10 @@ def test_common_scope_candidate_is_labelled_common_not_unknown() -> None:
 
     app = AppTest.from_function(page, default_timeout=10).run()
     assert list(app.dataframe[0].value["지역"]) == ["공통", "알 수 없음"]
+
+
+def test_switching_mode_hides_stale_response_from_inspection_panel() -> None:
+    app = ask("answered")
+    assert not any("먼저 질문" in item.value for item in app.info)
+    app.radio[0].set_value("실행(합성 데모)").run()
+    assert any("먼저 질문" in item.value for item in app.info)

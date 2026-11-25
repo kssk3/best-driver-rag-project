@@ -110,9 +110,11 @@ with user_tab:
                 st.session_state["asked_district"] = district
                 st.session_state["asked_mode"] = mode
 
+    # 응답 방식을 바꾸면 다른 방식으로 만든 이전 응답은 사용자 화면과 검증 패널 모두에서 숨긴다.
     view = st.session_state.get("view")
-    # 응답 방식을 바꾸면 다른 방식으로 만든 이전 응답은 보이지 않게 한다.
-    if view is not None and st.session_state.get("asked_mode") == mode:
+    if st.session_state.get("asked_mode") != mode:
+        view = None
+    if view is not None:
         # 입력창이 아니라 제출 당시의 질문·지역으로 그린다.
         render_response(
             view,
@@ -130,9 +132,7 @@ with user_tab:
 
 
 with inspection_tab:
-    render_inspection(
-        st.session_state.get("view"), st.session_state.get("asked_district")
-    )
+    render_inspection(view, st.session_state.get("asked_district"))
 
 
 with comparison_tab:
