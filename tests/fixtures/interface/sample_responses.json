@@ -1,0 +1,101 @@
+{
+  "_note": "합성(가상) 예시 응답. 실제 분리배출 규칙·근거가 아니다. 화면 형식 확인용이며 실제 RAG 실행이 아니다.",
+  "answered": {
+    "request_id": "fx-req-001",
+    "status": "answered",
+    "answer": "[가상] 예시 품목은 예시 요일에 내놓는다는 가상의 안내입니다.",
+    "sources": [
+      {
+        "chunk_id": "fx-chunk-001",
+        "source_url": "https://example.invalid/fx-doc-1"
+      }
+    ],
+    "required_fields": [],
+    "debug_trace": {
+      "candidates": [
+        {
+          "chunk_id": "fx-chunk-001",
+          "district": "서대문구",
+          "score": 0.82,
+          "text": "[가상] 예시 본문 1"
+        },
+        {
+          "chunk_id": "fx-chunk-002",
+          "district": "서대문구",
+          "score": 0.74,
+          "text": "[가상] 예시 본문 2"
+        },
+        {
+          "chunk_id": "fx-chunk-003",
+          "district": "송파구",
+          "score": 0.61,
+          "text": "[가상] 예시 본문 3"
+        }
+      ],
+      "model_inputs": ["fx-chunk-001", "fx-chunk-002"]
+    }
+  },
+  "needs_clarification": {
+    "request_id": "fx-req-002",
+    "status": "needs_clarification",
+    "answer": null,
+    "sources": [],
+    "required_fields": ["housing_type"],
+    "debug_trace": { "candidates": [] }
+  },
+  "insufficient_evidence": {
+    "request_id": "fx-req-003",
+    "status": "insufficient_evidence",
+    "answer": "[가상] 확인한 자료로는 안내할 수 없습니다.",
+    "sources": [],
+    "required_fields": [],
+    "debug_trace": {
+      "candidates": [
+        {
+          "chunk_id": "fx-chunk-009",
+          "district": "송파구",
+          "score": 0.33,
+          "text": "[가상] 관련 낮은 예시 본문"
+        }
+      ]
+    }
+  },
+  "insufficient_evidence_conflict": {
+    "request_id": "fx-req-005",
+    "status": "insufficient_evidence",
+    "answer": "확인한 출처의 안내가 서로 다릅니다.\n[1] [가상] 예시 안내문은 월·수·금\n[2] [가상] 예시 PDF는 화·목·일\n현재 적용되는 내용을 하나로 확정하기 어렵습니다.",
+    "sources": [
+      {
+        "chunk_id": "fx-chunk-101",
+        "source_url": "https://example.invalid/fx-conflict-html",
+        "title": "예시 안내 웹페이지(가상)",
+        "source_location": "일반주택 표 > 예시동 행",
+        "document_version": "fx-v1"
+      },
+      {
+        "chunk_id": "fx-chunk-102",
+        "source_url": "",
+        "title": "예시 안내 PDF(가상)",
+        "source_location": "PDF 3쪽 > 마지막 예시동 행",
+        "document_version": "fx-v2"
+      }
+    ],
+    "required_fields": [],
+    "debug_trace": {
+      "candidates": [
+        {"chunk_id": "fx-chunk-101", "district": "송파구", "score": 0.81, "text": "[가상] 예시 본문 월·수·금"},
+        {"chunk_id": "fx-chunk-102", "district": "송파구", "score": 0.79, "text": "[가상] 예시 본문 화·목·일"}
+      ],
+      "model_inputs": ["fx-chunk-101", "fx-chunk-102"]
+    }
+  },
+  "error": {
+    "request_id": "fx-req-004",
+    "status": "error",
+    "answer": null,
+    "sources": [],
+    "required_fields": [],
+    "error": "[가상] 검색 호출 실패",
+    "debug_trace": { "candidates": [] }
+  }
+}

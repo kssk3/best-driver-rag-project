@@ -34,7 +34,7 @@
 └─ docs/                     팀 공통 기준과 재현 문서
 ```
 
-Streamlit 진입점인 루트 `app.py`와 `src/interface/`는 아직 docstring만 있는 뼈대다. Streamlit은 현재 공용 의존성에 포함되지 않았고 확인한 프로젝트 가상환경에도 설치되지 않았다. 화면 구현 시 의존성과 잠금 파일을 갱신하고, 구현된 공통 파이프라인을 호출하도록 연결한다. 현재 질문 입력은 `scripts/search_index.py`의 실제 근거 조회에서 지원하며 답변 생성과 Streamlit 화면은 연결하지 않았다. Python 패키지에는 `__init__.py`를 두었다.
+Streamlit 진입점인 루트 `app.py`와 `src/interface/`는 공통 `RAGPipeline.run` 결과(`RunRecord`)를 어댑터로 화면용 응답으로 바꿔 보여 준다. 지금 연결된 파이프라인은 합성 데모(`create_demo_pipeline`)이며, 실행 전에 데모 색인을 만들어야 한다([README](../README.md)). 터미널에서는 `scripts/search_index.py`로 실제 근거를 조회할 수 있다. Python 패키지에는 `__init__.py`를 두었다.
 
 ## 담당 경로
 
