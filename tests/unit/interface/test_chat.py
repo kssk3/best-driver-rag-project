@@ -276,6 +276,7 @@ def test_error_keeps_primary_message_when_record_also_failed() -> None:
                 None,
                 [],
                 "x",
+                error_code="x.generate_failed",
                 stage_errors=[
                     StageError("generate", "x.generate_failed", None),
                     StageError("record", "x.record_failed", None),
@@ -285,3 +286,34 @@ def test_error_keeps_primary_message_when_record_also_failed() -> None:
 
     app = AppTest.from_function(page, default_timeout=10).run()
     assert any("답변 모델에 연결하지 못했습니다" in e.value for e in app.error)
+
+
+def test_recoverable_stage_failure_plus_record_failure_hides_successful_answer() -> (
+    None
+):
+    def page() -> None:
+        from src.interface.adapter import StageError, ViewResponse
+        from src.interface.chat import render_response
+
+        render_response(
+            ViewResponse(
+                "r",
+                "demo",
+                "error",
+                "[가상] 성공한 답변",
+                [],
+                [],
+                None,
+                [],
+                "x",
+                error_code="x.record_failed",
+                stage_errors=[
+                    StageError("place_lookup", "x.place_failed", None),
+                    StageError("record", "x.record_failed", None),
+                ],
+            )
+        )
+
+    app = AppTest.from_function(page, default_timeout=10).run()
+    assert not any("성공한 답변" in e.value for e in app.error)
+    assert any("처리 중 오류" in e.value for e in app.error)

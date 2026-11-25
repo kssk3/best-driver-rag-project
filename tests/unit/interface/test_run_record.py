@@ -259,3 +259,9 @@ def test_common_scope_chunk_keeps_scope_type() -> None:
     view = run_record_to_view(record)
     assert view.candidates[0].district is None
     assert view.candidates[0].scope_type == "common"
+
+
+def test_response_error_code_is_carried_to_the_view() -> None:
+    record = make_record(status="error")
+    record.response.error_code = "pipeline.example"
+    assert run_record_to_view(record).error_code == "pipeline.example"

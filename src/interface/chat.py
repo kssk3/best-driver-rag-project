@@ -133,9 +133,12 @@ def _render_error(view: ViewResponse) -> None:
     # 사용자 화면 오류: 파이프라인이 정리해 준 안내문(answer)을 보여 준다.
     # 오류 원문(view.error)은 사용자 화면이 아닌 검증 패널에서만 확인한다.
     # 기록 저장만 실패하면 파이프라인이 상태만 error로 바꾸고 answer는 성공한 답을 그대로 둔다.
-    # 그 답을 오류 상자에 보여 주지 않는다. 다른 단계도 실패했다면 그 안내문(answer)은 살린다.
-    only_record_failed = bool(view.stage_errors) and all(
-        e.name == "record" for e in view.stage_errors
+    # 그 답을 오류 상자에 보여 주지 않는다. 질문 다듬기·장소 조회처럼 복구되는 단계의 실패는
+    # 상태를 바꾸지 않으므로 판단 근거가 아니다. 응답의 최초 원인 코드가 기록 실패의 코드와 같을 때만
+    # (앞 단계에서 이미 실패했다면 파이프라인이 그 코드를 유지한다) 기록 실패 하나가 원인이다.
+    record_codes = [e.error_code for e in view.stage_errors if e.name == "record"]
+    only_record_failed = bool(record_codes) and (
+        view.error_code is None or view.error_code in record_codes
     )
     st.error(
         (None if only_record_failed else view.answer)

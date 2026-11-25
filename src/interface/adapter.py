@@ -62,6 +62,9 @@ class ViewResponse:
     stage_errors: list[StageError] = field(
         default_factory=list
     )  # 실패한 단계(답변은 유지됐을 수 있다)
+    error_code: str | None = (
+        None  # 응답을 오류로 만든 최초 원인 코드(status가 error일 때만)
+    )
 
 
 def to_view_response(raw: dict, kind: ViewKind) -> ViewResponse:
@@ -207,6 +210,7 @@ def run_record_to_view(record: RunRecord) -> ViewResponse:
         ],
         error=response.error,
         request_conditions=dict(record.request.conditions),
+        error_code=response.error_code,
         stage_errors=[
             StageError(s.name, s.error_code, s.error)
             for s in record.stages
