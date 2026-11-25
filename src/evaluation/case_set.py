@@ -96,6 +96,11 @@ def check_final_set(cases: list[EvaluationCase], grading: dict[str, dict]) -> li
         counts[category] += 1
         problems.extend(_check_item(case, item, category))
 
+        # 모범 정답은 문항과 채점표 양쪽에 둘 수 있다. 둘 다 있으면 같아야 한다.
+        if 'reference_answer' in item and case.reference_answer is not None:
+            if item['reference_answer'] != case.reference_answer:
+                problems.append(f'{case.case_id}: 문항과 채점표의 reference_answer(모범 정답)가 다릅니다.')
+
     for name, expected in EXPECTED_COUNTS.items():
         if counts[name] != expected:
             problems.append(f'{name} 문항은 {expected}개여야 합니다. 지금은 {counts[name]}개 입니다.')

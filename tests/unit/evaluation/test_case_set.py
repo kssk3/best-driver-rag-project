@@ -48,6 +48,30 @@ def test_valid_set_has_no_problems() -> None:
     assert check_final_set(make_cases(), make_grading()) == []
 
 
+def test_reference_answer_may_be_in_both_files_when_same() -> None:
+    cases = make_cases()
+    grading = make_grading()
+    cases[0] = cases[0].model_copy(update={"reference_answer": "[가상] 모범 정답"})
+    grading["fx-01"]["reference_answer"] = "[가상] 모범 정답"
+    assert check_final_set(cases, grading) == []
+
+
+def test_reference_answer_in_both_files_must_match() -> None:
+    cases = make_cases()
+    grading = make_grading()
+    cases[0] = cases[0].model_copy(update={"reference_answer": "[가상] 모범 정답"})
+    grading["fx-01"]["reference_answer"] = "[가상] 다른 정답"
+    problems = check_final_set(cases, grading)
+    assert any("fx-01" in p and "reference_answer" in p for p in problems)
+
+
+def test_reference_answer_in_one_file_only_is_fine() -> None:
+    cases = make_cases()
+    grading = make_grading()
+    grading["fx-01"]["reference_answer"] = "[가상] 채점표에만 있는 정답"
+    assert check_final_set(cases, grading) == []
+
+
 def test_wrong_total_is_reported() -> None:
     problems = check_final_set(make_cases()[:19], make_grading())
     assert any("20개여야 합니다. 지금은 19개 입니다" in p for p in problems)
