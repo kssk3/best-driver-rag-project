@@ -27,7 +27,7 @@ def create_color_runtime(settings: RuntimeSettings) -> RAGPipeline:
 
     project = Path(__file__).resolve().parents[3]
     bundle = load_preprocessed_bundle(
-        project / "data/handoff/jungeun/p04-2026-11-24",
+        project / "data/handoff/jungeun/ordinance-handoff-2026-11-24",
         project_root=project,
         version="v1",
     )

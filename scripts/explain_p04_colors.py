@@ -6,9 +6,9 @@ from tempfile import TemporaryDirectory
 
 from src.config import RuntimeSettings
 from src.contracts import PipelineOptions, ResolvedQuery, SearchCandidate
-from src.evaluation.answer_experiments.p04_answer_probe import (
-    draft_p04_answer,
-    make_p04_request,
+from src.evaluation.answer_experiments.evidence_answer_probe import (
+    draft_evidence_answer,
+    make_evidence_request,
 )
 from src.generation.answer import AnswerDraft, GenerationInput
 from src.generation.pipeline_adapter import make_answer_generator
@@ -17,12 +17,12 @@ from src.ingestion.preprocessed_chunking import chunk_preprocessed_documents
 from src.runtime import create_runtime
 
 PROJECT = Path(__file__).resolve().parents[1]
-BUNDLE = PROJECT / "data/handoff/jungeun/p04-2026-11-24"
+BUNDLE = PROJECT / "data/handoff/jungeun/ordinance-handoff-2026-11-24"
 COLOR_DOCUMENT_ID = "seodaemun-rules:attachment:160561037"
 
 
 def main() -> None:
-    request = make_p04_request(
+    request = make_evidence_request(
         "서대문구 공동주택 일반용기에서 유리병은 회색이고 캔은 주황색이 맞죠?",
         district="서대문구",
         conditions={"housing_type": "공동주택", "container_type": "일반용기"},
@@ -55,7 +55,7 @@ def main() -> None:
         for row in content["structured_image_summary"]["colors"]:
             print(f"   {row['item']} → {row['color']}")
 
-        draft = draft_p04_answer(payload)
+        draft = draft_evidence_answer(payload)
         print("\n3. 로컬 초안 함수가 반환한 값")
         print(f"   상태: {draft['status']}")
         print(f"   답변: {draft.get('message')}")

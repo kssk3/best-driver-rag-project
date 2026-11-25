@@ -76,7 +76,7 @@ def test_color_question_sends_evidence_and_returns_draft():
                 "citation_indices": [1],
             },
             "error",
-            "invalid_draft",
+            "invalid_citation",
             id="missing-citation",
         ),
         pytest.param(
