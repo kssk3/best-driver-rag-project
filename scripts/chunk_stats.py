@@ -8,6 +8,7 @@ python -m scripts.chunk_stats --help 참조.
 
 import argparse
 import csv
+import hashlib
 import html
 import json
 import re
@@ -43,6 +44,7 @@ COLUMNS = [
     "plain_median",
     "plain_p90",
     "plain_max",
+    "chunk_ids_sha256",
 ]
 
 
@@ -156,6 +158,10 @@ def summarize(chunks: list[dict]) -> dict:
         "plain_median": int(statistics.median(plain)),
         "plain_p90": _percentile(plain, 0.9),
         "plain_max": max(plain),
+        # chunk_id는 내용·위치·버전을 섞은 해시라서 ID 목록의 해시가 결과 전체의 지문이 된다.
+        "chunk_ids_sha256": hashlib.sha256(
+            "\n".join(sorted(c["chunk_id"] for c in chunks)).encode("utf-8")
+        ).hexdigest(),
     }
 
 

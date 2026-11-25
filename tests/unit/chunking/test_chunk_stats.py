@@ -298,3 +298,11 @@ def test_main_rejects_mixed_formats_and_versions(tmp_path: Path) -> None:
         make_chunk("b", "<p>나</p>", chunking_version="v2"),
     ]
     assert main(["--chunks", str(write_chunks(tmp_path, mixed_version))]) == 2
+
+
+def test_chunk_ids_fingerprint_ignores_order_and_changes_with_any_id() -> None:
+    first = summarize(CHUNKS)["chunk_ids_sha256"]
+    assert summarize(list(reversed(CHUNKS)))["chunk_ids_sha256"] == first
+    changed = [dict(c) for c in CHUNKS]
+    changed[0]["chunk_id"] = "id-other"
+    assert summarize(changed)["chunk_ids_sha256"] != first
