@@ -63,6 +63,54 @@ def test_archive_inputs_and_zero_nan(tmp_path):
         )
 
 
+@pytest.mark.parametrize(
+    ("field", "value", "reason"),
+    [
+        ("district", "송파구", "snapshot_district_mismatch"),
+        ("dong", "연희동", "snapshot_dong_mismatch"),
+        (
+            "conditions_json",
+            '{"housing_type":"단독주택","container_type":"일반용기"}',
+            "snapshot_conditions_mismatch",
+        ),
+        ("conditions_json", "{", "invalid_snapshot_conditions"),
+        (
+            "conditions_json",
+            '{"container_type": "일반용기", "housing_type": "공동주택"}',
+            "",
+        ),
+    ],
+)
+def test_snapshot_request_checked_before_scoring(tmp_path, field, value, reason):
+    with CASES.open(newline="", encoding="utf-8") as stream:
+        cases = list(csv.DictReader(stream))
+    cases[0][field] = value
+    snapshot = tmp_path / "cases.csv"
+    with snapshot.open("w", newline="", encoding="utf-8") as stream:
+        writer = csv.DictWriter(stream, fieldnames=cases[0].keys())
+        writer.writeheader()
+        writer.writerows(cases)
+
+    scorer = AsyncMock(return_value=SimpleNamespace(value=0.5))
+    output = tmp_path / "evaluation"
+    ok = asyncio.run(score_archive(ARCHIVE, snapshot, output, scorer=scorer))
+    first, second = rows(output)
+    if reason:
+        assert not ok
+        assert (first["status"], first["reason"], first["score"]) == (
+            "input_error",
+            reason,
+            "",
+        )
+        assert [call.kwargs["user_input"] for call in scorer.await_args_list] == [
+            cases[1]["question"]
+        ]
+    else:
+        assert ok and scorer.await_count == 2
+        assert (first["status"], first["score"]) == ("scored", "0.5")
+    assert (second["status"], second["score"]) == ("scored", "0.5")
+
+
 def test_archive_failures_are_independent(tmp_path):
     attempts = json.loads(ARCHIVE.read_text())
     record = attempts[0]["record"]

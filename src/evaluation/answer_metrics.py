@@ -63,6 +63,19 @@ async def _score(row, attempt, case, scorer):
         or record.request.question != case["question"]
     ):
         raise InputError("record_mismatch")
+    # The case CSV serializes an unspecified district or dong as an empty cell.
+    if case.get("district") != (record.request.district or ""):
+        raise InputError("snapshot_district_mismatch")
+    if case.get("dong") != (record.request.dong or ""):
+        raise InputError("snapshot_dong_mismatch")
+    try:
+        conditions = json.loads(case["conditions_json"])
+    except (KeyError, TypeError, json.JSONDecodeError) as error:
+        raise InputError("invalid_snapshot_conditions") from error
+    if not isinstance(conditions, dict):
+        raise InputError("invalid_snapshot_conditions")
+    if conditions != record.request.conditions:
+        raise InputError("snapshot_conditions_mismatch")
     row.update(
         run_kind=record.run_kind,
         versions_json=json.dumps(
