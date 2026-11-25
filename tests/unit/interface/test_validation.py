@@ -131,3 +131,20 @@ def test_w1_accepts_shared_chunk_that_includes_selected_district() -> None:
     assert codes(view, "서대문구") == []
     assert codes(view, "송파구") == []
     assert codes(view, "강남구") == ["W1"]
+
+
+def test_w2_requires_citation_in_model_inputs_when_known() -> None:
+    # c2는 후보이지만 모델 입력이 아니다
+    assert codes(make_view(citations=[Citation("c2", None)])) == ["W2"]
+    assert "W2" not in codes(
+        make_view(model_inputs=None, citations=[Citation("c2", None)])
+    )
+
+
+def test_w8_detects_hidden_model_input_by_id() -> None:
+    view = make_view(
+        candidates=[Candidate("c1", "서대문구", 0.8, "[가상]")],
+        model_inputs=["hidden"],
+        citations=[Citation("hidden", None)],
+    )
+    assert "W8" in codes(view)

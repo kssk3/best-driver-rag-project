@@ -204,3 +204,14 @@ def test_w5_requires_every_condition_to_match() -> None:
         request_conditions={"housing_type": "일반주택", "item": "병"},
     )
     assert w5(ok) == []
+
+
+def test_unchecked_when_any_used_candidate_lacks_conditions() -> None:
+    view = make_view(
+        candidates=[
+            Candidate("c1", "서대문구", 0.8, "[가상]", rank=1, conditions=["일반주택"]),
+            Candidate("c2", "서대문구", 0.6, "[가상]", rank=2),
+        ],
+        model_inputs=["c1", "c2"],
+    )
+    assert "W5" in unchecked_rules(view)[0]

@@ -45,15 +45,15 @@ def check_response(
                 )
             )
 
-    # [W2] 인용한 근거가 후보와 모델 입력 어디에도 없다.
-    known = set(candidate_ids) | set(view.model_inputs or [])
+    # [W2] 인용한 근거가 모델 입력에 없다. 모델 입력을 모르면 후보를 대신 본다.
+    known = set(candidate_ids if view.model_inputs is None else view.model_inputs)
     missing = [c.chunk_id for c in view.citations if c.chunk_id not in known]
     if missing:
         alerts.append(
             Alert(
                 "W2",
                 "warning",
-                f"후보나 모델 입력에 없는 근거를 인용했습니다.: {', '.join(missing)}",
+                f"모델 입력에 없는 근거를 인용했습니다.: {', '.join(missing)}",
             )
         )
 
@@ -89,13 +89,14 @@ def check_response(
             Alert("W7", "error", f"오류 응답: {view.error or '오류 내용 없음'}")
         )
 
-    # [W8] 모델이 받은 근거가 화면에 보이는 근거보다 많다.
-    if view.model_inputs is not None and len(view.candidates) < len(view.model_inputs):
+    # [W8] 모델이 받은 근거 중 화면 후보에 없는 것이 있다.
+    hidden = [i for i in (view.model_inputs or []) if i not in set(candidate_ids)]
+    if hidden:
         alerts.append(
             Alert(
                 "W8",
                 "warning",
-                f"모델 입력 근거({len(view.model_inputs)}개)가 화면 후보({len(view.candidates)}개)보다 많습니다.",
+                f"모델 입력 근거가 화면 후보에 없습니다.: {', '.join(hidden)}",
             )
         )
 
@@ -148,7 +149,7 @@ def unchecked_rules(view: ViewResponse) -> list[str]:
     rules: list[str] = []
     used = _used_candidates(view)
 
-    if view.request_conditions and used and not any(c.conditions for c in used):
+    if view.request_conditions and any(not c.conditions for c in used):
         rules.append("W5(근거에 조건 정보가 없어 입력 조건을 비교하지 못했습니다)")
     return rules
 

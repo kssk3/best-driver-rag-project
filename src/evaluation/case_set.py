@@ -12,7 +12,11 @@ import json
 from pathlib import Path
 
 from src.contracts import EvaluationCase
-from src.evaluation.runner import EvaluationCaseError, load_evaluation_cases
+from src.evaluation.runner import (
+    EvaluationCaseError,
+    _unique_keys,
+    load_evaluation_cases,
+)
 
 # 최종 20문항 = 직접 검색 10 + 표현 변형·조건 구분 7 + 근거 없음 3
 EXPECTED_COUNTS = {"direct": 10, "variation": 7, "no_evidence": 3}
@@ -26,7 +30,9 @@ def _text(value: object) -> bool:
 # 채점표 읽기
 def load_grading(path: Path) -> dict[str, dict]:
 
-    data = json.loads(Path(path).read_text(encoding="utf-8-sig"))
+    data = json.loads(
+        Path(path).read_text(encoding="utf-8-sig"), object_pairs_hook=_unique_keys
+    )
     grading = data.get("grading") if isinstance(data, dict) else None
 
     if not isinstance(grading, dict):

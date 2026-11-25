@@ -111,10 +111,10 @@ def _render_insufficient_evidence(view: ViewResponse) -> None:
 
     # 근거는 찾았지만 답을 하나로 정할 수 없는 경우(출처끼리 내용이 다름)에는
     # 안내 문장과 출처를 함께 보여 준다. 근거가 없으면 위 안내 한 줄만 보인다.
+    for line in (view.answer or "").splitlines():
+        if line.strip():
+            st.write(line)
     if view.citations:
-        for line in (view.answer or "").splitlines():
-            if line.strip():
-                st.write(line)
         st.markdown("확인한 출처")
         for citation in view.citations:
             st.markdown(format_citation(citation))

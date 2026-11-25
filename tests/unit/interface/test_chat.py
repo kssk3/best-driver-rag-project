@@ -157,3 +157,26 @@ def test_clarification_shows_the_pipeline_message() -> None:
 
     app = AppTest.from_function(page, default_timeout=10).run()
     assert any("동을 알려 주세요" in w.value for w in app.warning)
+
+
+def test_insufficient_evidence_shows_answer_without_citations() -> None:
+    def page() -> None:
+        from src.interface.adapter import ViewResponse
+        from src.interface.chat import render_response
+
+        render_response(
+            ViewResponse(
+                "r",
+                "fixture",
+                "insufficient_evidence",
+                "[가상] 근거가 없습니다.",
+                [],
+                [],
+                None,
+                [],
+                None,
+            )
+        )
+
+    app = AppTest.from_function(page, default_timeout=10).run()
+    assert any("근거가 없습니다" in m.value for m in app.markdown)

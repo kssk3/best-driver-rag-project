@@ -246,3 +246,13 @@ def test_main_returns_two_for_malformed_grading_entry(
     cases_path, grading_path = write_files(tmp_path, {"fx-01": []})
     assert main(["--cases", str(cases_path), "--grading", str(grading_path)]) == 2
     assert "fx-01" in capsys.readouterr().out
+
+
+def test_load_grading_rejects_duplicate_case_id(tmp_path: Path) -> None:
+    path = tmp_path / "grading.json"
+    path.write_text(
+        '{"grading": {"fx-01": {"category": "direct"}, "fx-01": {"category": "direct"}}}',
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="중복"):
+        load_grading(path)
