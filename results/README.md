@@ -1,6 +1,6 @@
 # 실행 원본과 비교 결과
 
-실행별 디렉터리에 설정과 자료 버전, 요청과 후보, 실제 생성 입력 ID, 답변과 인용, 시간과 오류를 보존한다. 공통 파이프라인과 `RunRecorder`의 로컬 JSON 기록을 구현했으며, 합성 데모/CLI 결과는 `local/`에 생성한다. 실제 팀 구성의 품질 평가 결과와 제출용 비교 보고서는 아직 없다.
+실행별로 질문, 검색 후보, 생성기에 전달된 청크, 답변과 인용, 소요 시간, 오류, 실행 설정과 자료 버전을 보관한다. 팀 A의 개발 문항 2개로 얻은 기준 데이터는 아래 CSV에서 확인할 수 있다. 최종 20문항에 대한 구성별 비교는 후속 작업이다.
 
 `scripts.demo`는 합성 색인과 `summary.json`을, `scripts.evaluate`는 `evaluation.json`을 생성한다. 데모 경로는 각 실행 폴더의 `runs/<run_id>.json`에 개별 기록도 남긴다. 평가의 `--factory` 경로에서 개별 파일을 남기려면 연결 함수가 `create_runtime` 등으로 기록기를 붙여야 한다. 기록기가 없어도 정상 반환된 `RunRecord`는 `evaluation.json`에 포함된다. 평가 명령에 `--output-dir`를 지정할 때는 새 폴더를 사용하며, 기록기는 같은 실행 ID 파일을 덮어쓰지 않는다. 자세한 경로와 명령은 [인계 문서](../docs/handoff.md)를 따른다.
 
@@ -18,9 +18,9 @@
 
 이 폴더 전체를 Git에서 제외하지 않는다. 제출용 기록은 비밀값과 공유 가능 여부를 검토해 포함하며, 큰 기록은 관리 위치, 버전과 접근 방법을 남긴다. 로컬 실험용 `local/`은 제외한다. [평가 기준](../docs/problem.md)을 기준으로 비교하며 결과를 검색 색인에 넣지 않는다.
 
-## Automatic evaluation CSVs
+## 평가할 때마다 저장하는 CSV
 
-Running `python -m scripts.evaluate` with `--demo` or `--factory` writes `cases.csv`, `runs.csv`, `candidates.csv` and `evaluation.json` into the specified `--output-dir`. Use a new directory for each run. For example, this command uses the Team A settings and a UTC timestamp in the folder name.
+`python -m scripts.evaluate`를 `--demo` 또는 `--factory`로 실행하면 `--output-dir`에 `cases.csv`, `runs.csv`, `candidates.csv`와 `evaluation.json`을 저장한다. 실행할 때마다 새 폴더를 지정한다. 아래 명령은 팀 A 검색기로 두 개발 문항을 각각 평가하고, 폴더 이름에 실행 시각(UTC)을 넣는다. 먼저 [조례 색인 준비 방법](../eval/README.md#색상표-개발-문항-실행)에 따라 색인을 준비하고 로컬 `.env`에 `OPENAI_API_KEY`를 설정한다.
 
 ```sh
 uv run --locked --env-file .env python -m scripts.evaluate \
@@ -29,21 +29,21 @@ uv run --locked --env-file .env python -m scripts.evaluate \
   --output-dir "results/local/team-a-$(date -u +%Y%m%dT%H%M%SZ)"
 ```
 
-The all-in-one synthetic demo, `python -m scripts.demo`, writes the same three CSV files alongside its `summary.json`. The links below open the previously prepared Team A snapshot and illustrate each table.
+외부 API 없이 확인하려면 `uv run --locked python -m scripts.demo`를 실행한다. 합성 데모도 `summary.json`과 함께 같은 세 종류의 CSV를 만든다. 아래 링크는 2026년 11월 25일 팀 A 실행에서 보관한 실제 파일이다.
 
-| File | One row represents | Use |
+| 파일 | 한 행이 나타내는 단위 | 확인할 내용 |
 | --- | --- | --- |
-| [cases.csv](../eval/snapshots/2026-11-25T064832Z/cases.csv) | One evaluation question | Read the question, conditions, reference answer and allowed chunk IDs. The linked snapshot also includes separately maintained scoring notes. |
-| [runs.csv](team-a/2026-11-25T064832Z/runs.csv) | One question in one run configuration | Compare the original and search queries, actual answer, retrieval and citation ranks, timestamps, duration and versions. |
-| [candidates.csv](team-a/2026-11-25T064832Z/candidates.csv) | One retrieved chunk in a run | Inspect the source text, URL, document location, rank, score, and positions in the generator input and final citations. |
+| [cases.csv](../eval/snapshots/2026-11-25T064832Z/cases.csv) | 평가 문항 하나 | 질문, 조건, 모범 답안, 허용 근거의 청크 ID. 이 기준 파일에는 별도로 관리한 채점 메모도 포함돼 있다. |
+| [runs.csv](team-a/2026-11-25T064832Z/runs.csv) | 한 설정에서 실행한 문항 하나 | 원질문과 검색 질의, 실제 답변, 허용 근거·생성 입력·인용의 검색 순위, 시작 시각(UTC·한국 시각), 소요 시간과 버전 |
+| [candidates.csv](team-a/2026-11-25T064832Z/candidates.csv) | 한 실행에서 검색한 청크 하나 | 원문, URL과 문서 내 위치, 검색 순위와 점수, 생성 입력과 최종 인용에서의 위치 |
 
-Join cases and runs on `dataset_id` and `case_id`, then join candidates on `run_id`. Automatic exports derive `dataset_id` from the normalized evaluation cases, so repeated runs with the same cases can be compared across folders. The linked historical snapshot used a timestamp as its dataset ID. Match its case IDs and verify the case content when comparing it with an automatic export.
+문항과 실행은 `dataset_id`와 `case_id`로 연결하고, 실행과 검색 후보는 `run_id`로 연결한다. 자동 저장에서는 문항 내용을 정규화한 뒤 해시로 `dataset_id`를 만든다. 같은 문항으로 반복하면 폴더와 실행 시각이 달라도 데이터셋 ID가 같다. 위 기준 파일은 생성 시각을 데이터셋 ID로 사용했다. 기준 파일과 새 실행을 비교할 때는 `case_id`를 맞춘 뒤 질문·조건·정답 근거가 같은지 확인한다.
 
-Positions start at 1. If a factory uses the same chunk more than once, the candidate row gives its first position. The ordered rank arrays in `runs.csv` include every occurrence. In the illustrative row below, the second search result was first in the generator input and was omitted from the final citations.
+순위와 위치는 1부터 센다. 같은 청크가 여러 번 쓰이면 `candidates.csv`에는 처음 쓰인 위치가, `runs.csv`의 순위 목록에는 쓰인 순서대로 모든 항목이 남는다. 아래 예시에서 검색 2위 청크는 생성기에 첫 번째로 전달됐고 최종 답변에서는 인용되지 않았다.
 
 ```csv
 run_id,rank,model_input_position,citation_position
 example-run,2,1,
 ```
 
-Read the [frozen cases JSON](../eval/snapshots/2026-11-25T064832Z/cases.json) with the evaluation CLI. Retain its [evaluation JSON](team-a/2026-11-25T064832Z/evaluation.json) for full run records and stage timings. For comparisons across chunking versions, match sources by document and original location before mapping the new chunk IDs.
+같은 문항으로 다시 평가하려면 [보관한 문항 JSON](../eval/snapshots/2026-11-25T064832Z/cases.json)을 `--cases`에 지정한다. [실행 원본 JSON](team-a/2026-11-25T064832Z/evaluation.json)에는 각 단계의 상태와 소요 시간이 남아 있다. 청킹 버전이 달라졌다면 문서와 원문 위치부터 대조한 뒤 새 청크 ID를 연결한다.

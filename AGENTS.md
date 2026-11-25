@@ -1,3 +1,3 @@
-# Project workflow
+# 프로젝트 작업 절차
 
-Follow [the team roadmap](ROADMAP.md) for ownership, integration milestones, evaluation, and delivery. Its [module handoff criteria](docs/TEAM-SETUP.md) apply to the affected interfaces.
+작업 담당자, 기능을 연결할 시점, 평가와 인계 절차는 [팀 로드맵](ROADMAP.md)을 따른다. 공용 인터페이스를 변경할 때는 해당 모듈의 [작업별 연결 기준](docs/TEAM-SETUP.md#작업별-연결-기준)을 확인한다.
