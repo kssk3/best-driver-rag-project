@@ -16,6 +16,7 @@
 
 - `test.json`은 최종 20문항(직접 검색 10, 표현 변형·조건 구분 7, 근거 없음 3)의 공용 `EvaluationCase` 목록이다. 문항은 AI가 초안을 만들고 이승주가 확정했고, 근거 위치는 이정은의 교차 확인을 마쳤다. `conditions`는 성수님이 쓰는 키(`item`)만 쓰며 13개 문항에 있다. `reference_answer`(모범 정답)는 이 파일과 채점 자료 양쪽에 같은 값으로 둔다.
 - `test_grading.json`은 문항 ID에 연결한 채점 자료다. 답변 가능 17문항에는 필수 사실(`required_facts`), 원문 위치(`evidence`의 `document_id`, `source_location`)와 판정 이유(`reason`)를, 근거 없음 3문항에는 부재 이유(`absence_reason`)를 둔다. 정답은 `chunk_id`가 아니라 청킹 결과와 같은 원문 위치로 적었다. 이 자료는 채점에만 사용하고 검색, 질문 다듬기와 생성 입력에 전달하지 않는다.
+- `chunk_id_map.csv`는 채점 자료의 원문 위치를 현재 청킹 결과(`preprocessed-v2-row-v1`, 557개)의 `chunk_id`로 푼 표다(답변 가능 17문항, HTML·JSON 형식 각각). 열 이름은 성수님 `candidates.csv`에 맞췄다(`question_id`, `document_id`, `parent_mst`, `attachment_id`, `source_location`). 청킹을 바꾸면 이 표를 다시 만든다. 만드는 방법: `scripts.prepare_data`로 청크를 만들고, 채점 자료의 `evidence`(`document_id`, `source_location`)와 청크의 `source_document_id`, `source_location`이 같은 청크를 찾는다(청크가 하나로 풀려야 한다). `source_document_version`의 `v1`은 `prepare_data`를 실행할 때 준 값이지 법령 시행일이 아니다.
 - 두 파일은 `src/evaluation/case_set.py`로 점검한다. 문항 수와 구성, 문항과 채점표의 짝, 필수 사실과 원문 위치와 판정 이유, 두 파일의 `reference_answer` 일치, 개발 문항과의 겹침을 확인한다. 파일 구조는 임시이며 평가 모델이 정해지면 그에 맞춰 바꾼다.
 
 ```bash
