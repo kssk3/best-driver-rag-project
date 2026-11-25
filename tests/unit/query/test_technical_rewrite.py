@@ -1,14 +1,15 @@
 """전문 용어가 배출 조건을 바꾸지 않고 리라이트에 들어가는지 검증한다."""
 
 import json
-from pathlib import Path
 from unittest import TestCase
 
-from rewrite_dictionary.dialect_rewrite import (
+from src.rewrite_dictionary.catalog import CATALOG_PATH
+from src.rewrite_dictionary.dialect_rewrite import (
     language_matching_rules,
     normalize_search_language,
 )
-from rewrite_dictionary.technical_terms import (
+from src.rewrite_dictionary.official_review import OFFICIAL_SNAPSHOT_PATH
+from src.rewrite_dictionary.technical_terms import (
     MATERIAL_CODES,
     TECHNICAL_TERMS,
     expand_material_codes,
@@ -54,6 +55,25 @@ class TechnicalRewriteTests(TestCase):
                 self.assertEqual(actual, expected)
                 self.assertEqual(normalize_search_language(actual), actual)
 
+    def test_material_expansion_skips_only_explicitly_excluded_mentions(self):
+        cases = (
+            ("PP 용기 말고 유리병은요?", ""),
+            ("PET병 빼고 유리병만 버려요?", ""),
+            ("뚜껑(PP)은 빼고 유리병만 버려요?", ""),
+            ("PP 재질이 아닌 용기와 PVC 파이프는?", " (폴리염화비닐)"),
+            ("PP로 된 용기 말고 PVC 파이프는?", " (폴리염화비닐)"),
+            ("PP 용기는 제외하고 PVC 파이프를 버려요.", " (폴리염화비닐)"),
+            ("PP 용기 말고 PP 컵은요?", " (폴리프로필렌)"),
+            ("PP 용기는 안 씻고 버려도 돼요?", " (폴리프로필렌)"),
+            (
+                "PET병 말고도 PP 용기를 버려요?",
+                " (폴리에틸렌테레프탈레이트) (폴리프로필렌)",
+            ),
+        )
+        for question, suffix in cases:
+            with self.subTest(question=question):
+                self.assertEqual(expand_material_codes(question), question + suffix)
+
     def test_leaves_ambiguous_and_partial_code_mentions_in_place(self):
         cases = (
             "PC 본체는 어디에 버려요?",
@@ -79,8 +99,7 @@ class TechnicalRewriteTests(TestCase):
                 self.assertEqual(expand_material_codes(query), query)
 
     def test_generated_dictionary_contains_current_technical_vocabulary(self):
-        path = Path(__file__).with_name("item_catalog.json")
-        catalog = json.loads(path.read_text(encoding="utf-8"))
+        catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
         technical = catalog["technical_lookup"]
         self.assertEqual(
             len(technical["terms_by_key"]),
@@ -107,8 +126,7 @@ class TechnicalRewriteTests(TestCase):
             self.assertIn(key, catalog["items_by_key"])
 
     def test_catalog_exports_current_language_and_material_matching_rules(self):
-        path = Path(__file__).with_name("item_catalog.json")
-        catalog = json.loads(path.read_text(encoding="utf-8"))
+        catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
         rules = catalog["rewrite_rules"]
 
         self.assertEqual(
@@ -118,36 +136,24 @@ class TechnicalRewriteTests(TestCase):
             rules["materials"], json.loads(json.dumps(material_matching_rules()))
         )
 
-    def test_official_sources_preserve_item_location_and_scope(self):
-        path = Path(__file__).with_name("item_catalog.json")
-        catalog = json.loads(path.read_text(encoding="utf-8"))
-        official = catalog["official_source_lookup"]
-        records = official["records"]
-        cases = {
-            "종이컵": ("songpa_paper_cup", "송파구"),
-            "깨진형광등": ("seodaemun_broken_lamp", "서대문구"),
-            "불투명패트병": ("songpa_colored_opaque_containers", "송파구"),
-            "안마의자": ("ecycle_massage_chair_pickup", None),
-            "폴리락타이드": ("mfds_food_contact_resin_names", None),
-            "빈농약병": ("mafra_empty_pesticide_containers", None),
-        }
-        for key, (record_id, district) in cases.items():
-            with self.subTest(key=key):
-                self.assertIn(record_id, official["by_item_key"][key])
-                self.assertEqual(records[record_id]["district"], district)
-                self.assertIn(
-                    record_id,
-                    {
-                        entry.get("official_record_id")
-                        for entry in catalog["items_by_key"][key]["sources"]
-                    },
-                )
-
-        self.assertNotIn("삼자형led등", records["seodaemun_broken_lamp"]["item_keys"])
-        self.assertNotIn(
-            "남은농약", records["mafra_empty_pesticide_containers"]["item_keys"]
+    def test_review_sources_are_separate_from_the_search_catalog(self):
+        catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
+        snapshot = json.loads(OFFICIAL_SNAPSHOT_PATH.read_text(encoding="utf-8"))
+        self.assertNotIn("official_source_lookup", catalog)
+        self.assertEqual(snapshot["use"], "review_only")
+        self.assertTrue(
+            all(
+                "official_record_id" not in source
+                for item in catalog["items_by_key"].values()
+                for source in item["sources"]
+            )
+        )
+        self.assertTrue(
+            all("reuse_status" not in source for source in catalog["sources"].values())
         )
         self.assertEqual(
-            catalog["technical_lookup"]["material_codes"]["PLA"]["official_name"],
-            "폴리락타이드",
+            snapshot["material_names"]["names_by_code"]["PLA"], "폴리락타이드"
+        )
+        self.assertEqual(
+            catalog["technical_lookup"]["material_codes"]["PLA"]["term"], "폴리젖산"
         )

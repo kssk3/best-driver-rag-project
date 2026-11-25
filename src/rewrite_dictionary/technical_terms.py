@@ -4,6 +4,8 @@ import re
 from collections.abc import Callable
 from functools import cache
 
+from .matching import is_excluded_mention
+
 TECHNICAL_SOURCES = {
     "plastic_markings": (
         None,
@@ -693,27 +695,25 @@ def make_material_expander(names: dict[str, str], rules: dict) -> Callable[[str]
             excluded_prefix = excluded_prefixes.get(code)
             if excluded_prefix is not None and excluded_prefix.search(before):
                 continue
-            item_after = item_suffixes.get(code)
-            uppercase_item_after = uppercase_suffixes.get(code)
             if code in explicit_codes:
-                matches_context = context["explicit_material_before"].search(
-                    before
-                ) or context["explicit_material_after"].match(after)
+                mark = context["explicit_material_after"].match(after)
+                marked_before = context["explicit_material_before"].search(before)
             else:
-                matches_context = (
-                    context["mark_before"].search(before)
-                    or context["component_before"].search(before)
-                    or context["mark_after"].match(after)
-                )
-            if (
-                matches_context
-                or (item_after and item_after.match(after))
-                or (
-                    uppercase_item_after
-                    and match["code"] == code
-                    and uppercase_item_after.match(after)
-                )
-            ):
+                mark = context["mark_after"].match(after)
+                marked_before = context["mark_before"].search(before) or context[
+                    "component_before"
+                ].search(before)
+
+            item_start = mark.end() if mark else 0
+            item_pattern = item_suffixes.get(code)
+            if item_pattern is None and match["code"] == code:
+                item_pattern = uppercase_suffixes.get(code)
+            item = item_pattern.match(after, item_start) if item_pattern else None
+            if not (marked_before or mark or item):
+                continue
+
+            phrase_end = item.end() if item else item_start
+            if not is_excluded_mention(question, match.end() + phrase_end):
                 terms.append(name)
         suffix = "".join(f" ({term})" for term in terms)
         return f"{question.rstrip()}{suffix}" if suffix else question

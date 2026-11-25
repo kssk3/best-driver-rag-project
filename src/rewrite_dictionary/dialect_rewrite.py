@@ -2,14 +2,13 @@
 
 import json
 import re
+import unicodedata
 from collections.abc import Callable
 from functools import cache, partial
 from pathlib import Path
 
-if __package__:
-    from .technical_terms import expand_material_codes
-else:
-    from technical_terms import expand_material_codes
+from .catalog import QueryCatalog
+from .technical_terms import expand_material_codes, make_material_expander
 
 _DICTIONARY_PATH = Path(__file__).with_name("dialect_dictionary.json")
 _LOANWORD_PATH = Path(__file__).with_name("loanword_dictionary.json")
@@ -40,6 +39,7 @@ _QUOTED = re.compile(
 )
 _PARTICLE_PAIRS = (
     ("은", "는"),
+    ("은요", "는요"),
     ("이", "가"),
     ("을", "를"),
     ("과", "와"),
@@ -49,7 +49,18 @@ _PARTICLE_PAIRS = (
     ("으로", "로"),
 )
 _INFLECTED_PARTICLES = {particle: pair for pair in _PARTICLE_PAIRS for particle in pair}
-_UNCHANGING_PARTICLES = ("에서", "에서만", "에", "에는", "도", "만", "의", "하고")
+_UNCHANGING_PARTICLES = (
+    "에서",
+    "에서는",
+    "에서도",
+    "에서만",
+    "에",
+    "에는",
+    "도",
+    "만",
+    "의",
+    "하고",
+)
 _PARTICLES = "|".join(
     sorted((*_INFLECTED_PARTICLES, *_UNCHANGING_PARTICLES), key=len, reverse=True)
 )
@@ -108,7 +119,9 @@ def make_language_normalizer(vocabulary: dict, config: dict) -> Callable[[str], 
         for name, entry in config["patterns"].items()
     }
     pairs = {particle: pair for pair in config["particle_pairs"] for particle in pair}
-    forms_by_mode = {mode: {} for mode in config["mode_order"]}
+    forms_by_mode: dict[str, dict[str, str]] = {
+        mode: {} for mode in config["mode_order"]
+    }
     for rule in vocabulary["rules"]:
         forms = forms_by_mode[rule["match"]]
         for expression, standard in rule["forms"].items():
@@ -202,3 +215,24 @@ def normalize_search_language(question: str) -> str:
     """방언과 외래어를 다듬고 재질 문맥의 약어를 검색어로 보강한다."""
     language = _default_loanword_normalizer()(normalize_dialect(question))
     return expand_material_codes(language)
+
+
+def make_language_rewriter(catalog: QueryCatalog) -> Callable[[str], str]:
+    rules = catalog["rewrite_rules"]
+    language = rules["language"]
+    normalizers = {
+        "dialect": make_language_normalizer(catalog["dialect"], language),
+        "loanwords": make_language_normalizer(catalog["loanwords"], language),
+        "material_codes": make_material_expander(
+            catalog["material_names"],
+            rules["materials"],
+        ),
+    }
+
+    def normalize(question: str) -> str:
+        question = unicodedata.normalize("NFC", question)
+        for stage in rules["search_language_order"]:
+            question = normalizers[stage](question)
+        return question
+
+    return normalize

@@ -3,13 +3,8 @@
 import argparse
 import hashlib
 import json
-import sys
 from collections import Counter
 from pathlib import Path
-
-if not __package__:
-    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-    __package__ = "rewrite_dictionary"
 
 from .aliases import EXACT_ITEM_ALIASES, ITEM_ALIASES, item_key
 from .catalog_bulky_specs import BULKY_SPEC_TERMS
@@ -531,68 +526,9 @@ def add_technical_lookup(items, sources):
     }
 
 
-def add_official_source_lookup(items, sources, technical_lookup):
-    snapshot_path = Path(__file__).with_name("official_source_snapshot.json")
-    snapshot = json.loads(snapshot_path.read_text(encoding="utf-8"))
-    for source_id, source in snapshot["sources"].items():
-        previous = sources.get(source_id)
-        if previous and (previous["district"], previous["url"]) != (
-            source["district"],
-            source["url"],
-        ):
-            raise ValueError(f"출처의 URL 또는 지역 불일치: {source_id}")
-        sources[source_id] = source
-
-    material_names = snapshot["material_names"]
-    material_record_id = material_names["record_id"]
-    material_record = snapshot["records"][material_record_id]
-    for code, name in material_names["names_by_code"].items():
-        if code in technical_lookup["material_codes"]:
-            technical_lookup["material_codes"][code]["official_name"] = name
-            technical_lookup["material_codes"][code]["official_name_record_id"] = (
-                material_record_id
-            )
-        if name not in material_record["items"]:
-            material_record["items"].append(name)
-
-    records = {}
-    by_item_key = {}
-    by_district = {}
-    for record_id, record in snapshot["records"].items():
-        source_id = record["source_id"]
-        district = sources[source_id]["district"]
-        if record["scope"] == "district_guidance" and district is None:
-            raise ValueError(f"지역 배출 안내의 적용 지역 누락: {record_id}")
-        item_keys = list(dict.fromkeys(map(item_key, record["items"])))
-        for label in record["items"]:
-            add_item(
-                items,
-                label,
-                record["group"],
-                source_id,
-                record["location"],
-                official_record_id=record_id,
-            )
-        for key in item_keys:
-            by_item_key.setdefault(key, []).append(record_id)
-            if record["scope"] == "district_guidance":
-                by_district.setdefault(district, {}).setdefault(key, []).append(
-                    record_id
-                )
-        records[record_id] = {**record, "district": district, "item_keys": item_keys}
-    return {
-        "use": "review_only",
-        "records": records,
-        "by_item_key": dict(sorted(by_item_key.items())),
-        "by_district": by_district,
-        "material_names": material_names,
-        "pending": snapshot["pending"],
-    }
-
-
-def build_catalog(bundle):
+def build_catalog(bundle: Path) -> dict:
     documents, sources = load_sources(bundle)
-    items = {}
+    items: dict[str, dict] = {}
     counts = add_bulky(items, documents)
     add_processed_terms(items, documents)
     add_guides(items)
@@ -604,9 +540,6 @@ def build_catalog(bundle):
             add_item(items, label, group, "resident_search_vocabulary", "질문 검색어")
     facility_lookup = add_facility_profiles(items, sources)
     technical_lookup = add_technical_lookup(items, sources)
-    official_source_lookup = add_official_source_lookup(
-        items, sources, technical_lookup
-    )
     dialect, loanwords = read_dictionary(), read_loanwords()
     alias_profiles_path = Path(__file__).with_name("rewrite_alias_profiles.json")
     alias_profiles = json.loads(alias_profiles_path.read_text(encoding="utf-8"))
@@ -638,7 +571,7 @@ def build_catalog(bundle):
             }
         )
     ordered_items = dict(sorted(items.items()))
-    grouped_items = {}
+    grouped_items: dict[str, list[str]] = {}
     for key, entry in ordered_items.items():
         for group in entry["groups"]:
             grouped_items.setdefault(group, []).append(key)
@@ -659,7 +592,6 @@ def build_catalog(bundle):
         "loanwords": loanwords,
         "facility_lookup": facility_lookup,
         "technical_lookup": technical_lookup,
-        "official_source_lookup": official_source_lookup,
         "prompt_vocabulary": {
             "item_conditions": prompt_vocabulary["item_conditions"],
             "ambiguous_expressions": prompt_vocabulary["ambiguous_expressions"],
