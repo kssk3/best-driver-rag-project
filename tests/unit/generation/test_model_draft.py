@@ -119,20 +119,3 @@ def test_model_draft_outcomes(model_reply, expected_status, expected_error):
     assert result["status"] == expected_status
     assert result.get("error_kind") == expected_error
     assert result["citations"] == []
-
-    # with patch("src.generation.model_draft.ChatOpenAI") as chat_class:
-    #     chat = chat_class.return_value.bind.return_value
-    #     if isinstance(model_reply, Exception):
-    #         chat.invoke.side_effect = model_reply
-    #     else:
-    #         chat.invoke.return_value = AIMessage(
-    #             content=json.dumps(model_reply, ensure_ascii=False)
-    #         )
-
-    #     result = generate_answer(request, make_model_draft("test-model"))
-
-    # chat.invoke.assert_called_once()
-    # assert result is not None
-    # assert result["status"] == expected_status
-    # assert result.get("error_kind") == expected_error
-    # assert result["citations"] == []
