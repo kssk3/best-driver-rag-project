@@ -1,0 +1,15 @@
+{
+    "p04-songpa-bulky-waste": {
+        "status": "draft",
+        "checked_at": null,
+        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2053883",
+        "source_document_id": "songpa-ordinance",
+        "source_location": "제10조 제1항 제1호",
+        "chunk_id": "chunk-a482ca0127c4c30a5cad3d2bb61487b0db08300bb301abfb63468d07760f23d0",
+        "source_excerpt": "배출일 전에 배출자의 주소·성명·물품명·크기·수량 등을 구청장에게 신고하여야 하며 구청장이 지정하는 장소에 내어 놓아야 한다.",
+        "required_facts": [
+            "배출일 전에 구청장에게 신고한다.",
+            "구청장이 지정하는 장소에 내놓는다."
+        ]
+    }
+}

@@ -11,6 +11,7 @@ from src.generation.answer import (
     GenerationInput,
     generate_answer,
 )
+from src.infrastructure.chat_models import ModelCallError
 
 # 실패 이유는 한 구간의 snake_case여야 generation.<이유> 코드로 기록한다.
 _REASON_PATTERN = re.compile(r"[a-z][a-z0-9_]*")
@@ -101,7 +102,11 @@ def make_answer_generator(
             raise _generation_error("pending_evidence")
         status = answer["status"]
         if status == "error":
-            raise _generation_error(answer.get("error_kind", "generation_failed"))
+            reason = answer.get("error_kind", "generation_failed")
+            if reason in (ModelCallError.code, "infrastructure.llm_timeout"):
+                # Keep the provider's classification without storing its diagnostic.
+                raise ModelCallError(code=reason)
+            raise _generation_error(reason)
 
         allowed_ids = {chunk.chunk_id for chunk in chunks}
         cited_ids = []
