@@ -46,3 +46,28 @@ def test_unknown_model_input_is_not_shown_as_empty() -> None:
     app = ask("insufficient_evidence")
     assert any("알 수 없습니다" in item.value for item in app.info)
     assert list(app.dataframe[0].value["모델"]) == ["알 수 없음"]
+
+
+def test_common_scope_candidate_is_labelled_common_not_unknown() -> None:
+    def page() -> None:
+        from src.interface.adapter import Candidate, ViewResponse
+        from src.interface.inspection import render_inspection
+
+        view = ViewResponse(
+            "r",
+            "demo",
+            "answered",
+            "[가상]",
+            [],
+            [
+                Candidate("c1", None, 0.8, "[가상]", rank=1, scope_type="common"),
+                Candidate("c2", None, 0.7, "[가상]", rank=2, scope_type="unknown"),
+            ],
+            ["c1", "c2"],
+            [],
+            None,
+        )
+        render_inspection(view, "서대문구")
+
+    app = AppTest.from_function(page, default_timeout=10).run()
+    assert list(app.dataframe[0].value["지역"]) == ["공통", "알 수 없음"]

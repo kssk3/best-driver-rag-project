@@ -36,7 +36,16 @@ def check_response(
             and (c.districts or c.district)
             and selected_district not in (c.districts or [c.district])
         ]
-        if mixed:
+        if mixed and view.model_inputs is None:
+            # 모델 입력 기록이 없으면 실제로 쓰였는지는 모른다. 후보 기준으로만 말한다.
+            alerts.append(
+                Alert(
+                    "W1",
+                    "warning",
+                    f"선택한 지역({selected_district})과 다른 지역의 후보가 있습니다. 모델 입력 기록이 없어 실제로 쓰였는지는 모릅니다.: {', '.join(mixed)}",
+                )
+            )
+        elif mixed:
             alerts.append(
                 Alert(
                     "W1",
@@ -100,6 +109,17 @@ def check_response(
             )
         )
 
+    # [W10] 실패한 단계가 있다. 답변 상태가 유지돼도 실패는 숨기지 않는다.
+    for stage in view.stage_errors:
+        alerts.append(
+            Alert(
+                "W10",
+                "warning",
+                f"{stage.name} 단계가 실패했습니다. 오류 코드: {stage.error_code or '없음'}"
+                + (f" ({stage.error})" if stage.error else ""),
+            )
+        )
+
     # [W9] 오류 내용이 있는데 상태는 오류가 아니다.
     if view.error and view.status != "error":
         alerts.append(
@@ -144,10 +164,17 @@ def _condition_mismatch(view: ViewResponse) -> list[str]:
 
 
 # 정보가 없어 검사하지 못한 규칙 처리
-def unchecked_rules(view: ViewResponse) -> list[str]:
+def unchecked_rules(
+    view: ViewResponse, selected_district: str | None = None
+) -> list[str]:
 
     rules: list[str] = []
     used = _used_candidates(view)
+
+    if selected_district and view.model_inputs is None:
+        rules.append(
+            "W1(모델 입력 기록이 없어 실제로 쓰인 근거의 지역을 확인하지 못했습니다)"
+        )
 
     if view.request_conditions and any(not c.conditions for c in used):
         rules.append("W5(근거에 조건 정보가 없어 입력 조건을 비교하지 못했습니다)")

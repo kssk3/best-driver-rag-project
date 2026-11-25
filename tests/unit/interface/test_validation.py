@@ -148,3 +148,28 @@ def test_w8_detects_hidden_model_input_by_id() -> None:
         citations=[Citation("hidden", None)],
     )
     assert "W8" in codes(view)
+
+
+def test_w1_without_model_inputs_is_described_by_candidates() -> None:
+    from src.validation import unchecked_rules
+
+    view = make_view(model_inputs=None)
+    alert = next(a for a in check_response(view, "서대문구") if a.code == "W1")
+    assert "후보" in alert.message and "모릅니다" in alert.message
+    assert any("W1" in rule for rule in unchecked_rules(view, "서대문구"))
+    assert unchecked_rules(make_view(), "서대문구") == []
+
+
+def test_w10_reports_failed_stage_even_when_answer_is_kept() -> None:
+    from src.interface.adapter import StageError
+
+    view = make_view(
+        stage_errors=[StageError("place_lookup", "pipeline.place_lookup_failed", None)]
+    )
+    alerts = check_response(view, "서대문구")
+    w10 = [a for a in alerts if a.code == "W10"]
+    assert len(w10) == 1
+    assert (
+        "place_lookup" in w10[0].message
+        and "pipeline.place_lookup_failed" in w10[0].message
+    )

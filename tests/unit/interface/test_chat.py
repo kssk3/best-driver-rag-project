@@ -233,3 +233,28 @@ def test_error_shows_pipeline_safe_message_but_not_internal_detail() -> None:
     app = AppTest.from_function(page, default_timeout=10).run()
     assert any("답변 모델에 연결하지 못했습니다" in e.value for e in app.error)
     assert not any("내부 오류 상세" in e.value for e in app.error)
+
+
+def test_error_after_record_failure_does_not_show_the_successful_answer() -> None:
+    def page() -> None:
+        from src.interface.adapter import StageError, ViewResponse
+        from src.interface.chat import render_response
+
+        render_response(
+            ViewResponse(
+                "r",
+                "demo",
+                "error",
+                "[가상] 성공한 답변",
+                [],
+                [],
+                None,
+                [],
+                "기록 실패",
+                stage_errors=[StageError("record", "x.record_failed", "기록 실패")],
+            )
+        )
+
+    app = AppTest.from_function(page, default_timeout=10).run()
+    assert not any("성공한 답변" in e.value for e in app.error)
+    assert any("처리 중 오류" in e.value for e in app.error)

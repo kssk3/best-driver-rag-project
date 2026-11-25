@@ -7,7 +7,7 @@
 
 import streamlit as st
 
-from src.interface.adapter import ViewResponse
+from src.interface.adapter import Candidate, ViewResponse
 from src.interface.chat import format_citation
 from src.validation import check_response, rank_shifts, stage_names, unchecked_rules
 
@@ -16,6 +16,13 @@ def _used_in_model_input(view: ViewResponse, chunk_id: str) -> str:
     if view.model_inputs is None:
         return "알 수 없음"
     return "예" if chunk_id in view.model_inputs else "아니오"
+
+
+def _district_text(candidate: Candidate) -> str:
+    # 공통 범위는 구 목록이 비어 있어도 "알 수 없음"이 아니다.
+    if candidate.district:
+        return candidate.district
+    return "공통" if candidate.scope_type == "common" else "알 수 없음"
 
 
 def _shift_text(shift: int | None) -> str:
@@ -41,7 +48,7 @@ def render_inspection(
 
     st.subheader("자동 경고")
     alerts = check_response(view, selected_district)
-    unchecked = unchecked_rules(view)
+    unchecked = unchecked_rules(view, selected_district)
 
     # 검사하지 못한 규칙이 있으면 "경고 없음"이라고 하지 않는다.
     if not alerts and not unchecked:
@@ -72,7 +79,7 @@ def render_inspection(
                 {
                     "순위": c.rank if c.rank is not None else position,
                     "chunk_id": c.chunk_id,
-                    "지역": c.district or "알 수 없음",
+                    "지역": _district_text(c),
                     "점수": c.score,
                     "모델": _used_in_model_input(view, c.chunk_id),
                     "인용": "예" if c.chunk_id in cited_ids else "아니오",

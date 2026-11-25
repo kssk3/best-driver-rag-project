@@ -132,4 +132,10 @@ def _render_error(view: ViewResponse) -> None:
 
     # 사용자 화면 오류: 파이프라인이 정리해 준 안내문(answer)을 보여 준다.
     # 오류 원문(view.error)은 사용자 화면이 아닌 검증 패널에서만 확인한다.
-    st.error(view.answer or "처리 중 오류가 발생했습니다. 다시 시도해주세요.")
+    # 기록 저장만 실패하면 파이프라인이 상태만 error로 바꾸고 answer는 성공한 답을 그대로 둔다.
+    # 그 답을 오류 상자에 보여 주지 않는다.
+    record_failed = any(e.name == "record" for e in view.stage_errors)
+    st.error(
+        (None if record_failed else view.answer)
+        or "처리 중 오류가 발생했습니다. 다시 시도해주세요."
+    )

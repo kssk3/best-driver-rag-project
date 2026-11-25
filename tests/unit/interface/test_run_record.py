@@ -227,3 +227,35 @@ def test_fixed_evidence_run_keeps_its_own_kind() -> None:
         run_record_to_view(make_record(run_kind="fixed_evidence")).kind
         == "fixed_evidence"
     )
+
+
+def test_failed_stages_and_scope_type_are_carried_to_the_view() -> None:
+    from src.contracts import StageRecord
+
+    record = make_record()
+    record.stages.append(
+        StageRecord(
+            name="place_lookup",
+            status="error",
+            duration_ms=1.0,
+            error="[가상] 장소 조회 실패",
+            error_code="pipeline.place_lookup_failed",
+        )
+    )
+    record.stages.append(StageRecord(name="search", status="ok", duration_ms=1.0))
+    view = run_record_to_view(record)
+    assert [(e.name, e.error_code) for e in view.stage_errors] == [
+        ("place_lookup", "pipeline.place_lookup_failed")
+    ]
+    assert view.status == "answered"
+    assert view.candidates[0].scope_type == "district"
+
+
+def test_common_scope_chunk_keeps_scope_type() -> None:
+    record = make_record()
+    record.candidates[0] = SearchCandidate(
+        chunk=make_chunk("c1", []), rank=1, score=0.9
+    )
+    view = run_record_to_view(record)
+    assert view.candidates[0].district is None
+    assert view.candidates[0].scope_type == "common"

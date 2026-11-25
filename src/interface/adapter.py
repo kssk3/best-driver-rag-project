@@ -26,6 +26,14 @@ class Candidate:
     )  # 청크가 가진 조건. 비어 있으면 모름
     stage_scores: dict[str, float] = field(default_factory=dict)  # 검색 단계별 점수
     districts: list[str] = field(default_factory=list)  # 청크가 적용되는 구 목록
+    scope_type: str | None = None  # district, common, unknown. 예시 응답에는 없다.
+
+
+@dataclass(frozen=True)
+class StageError:
+    name: str  # 실패한 단계 이름
+    error_code: str | None
+    error: str | None
 
 
 @dataclass(frozen=True)
@@ -51,6 +59,9 @@ class ViewResponse:
     request_conditions: dict[str, str] = field(
         default_factory=dict
     )  # 사용자가 넣은 조건
+    stage_errors: list[StageError] = field(
+        default_factory=list
+    )  # 실패한 단계(답변은 유지됐을 수 있다)
 
 
 def to_view_response(raw: dict, kind: ViewKind) -> ViewResponse:
@@ -183,6 +194,7 @@ def run_record_to_view(record: RunRecord) -> ViewResponse:
                 conditions=list(c.chunk.conditions),
                 stage_scores=dict(c.stage_scores),
                 districts=list(c.chunk.districts),
+                scope_type=c.chunk.scope_type,
             )
             for c in record.candidates
         ],
@@ -195,6 +207,11 @@ def run_record_to_view(record: RunRecord) -> ViewResponse:
         ],
         error=response.error,
         request_conditions=dict(record.request.conditions),
+        stage_errors=[
+            StageError(s.name, s.error_code, s.error)
+            for s in record.stages
+            if s.status == "error"
+        ],
     )
 
 

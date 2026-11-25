@@ -273,3 +273,11 @@ def test_grading_only_reference_answer_must_be_nonblank_text(value: object) -> N
     grading["fx-01"]["reference_answer"] = value
     problems = check_final_set(make_cases(), grading)
     assert any("fx-01" in p and "reference_answer" in p for p in problems)
+
+
+@pytest.mark.parametrize("value", ["", "   "])
+def test_blank_case_side_reference_answer_is_reported(value: str) -> None:
+    cases = make_cases()
+    cases[0] = cases[0].model_copy(update={"reference_answer": value})
+    problems = check_final_set(cases, make_grading())
+    assert any("fx-01" in p and "reference_answer" in p for p in problems)

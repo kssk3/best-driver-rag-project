@@ -125,7 +125,11 @@ def check_final_set(cases: list[EvaluationCase], grading: dict[str, dict]) -> li
         counts[category] += 1
         problems.extend(_check_item(case, item, category))
 
-        # 모범 정답은 문항과 채점표 양쪽에 둘 수 있다. 둘 다 있으면 같아야 한다.
+        # 모범 정답은 문항과 채점표 양쪽에 둘 수 있다. 있는 쪽은 각각 비어 있으면 안 되고, 둘 다 있으면 같아야 한다.
+        if case.reference_answer is not None and not _text(case.reference_answer):
+            problems.append(
+                f"{case.case_id}: 문항의 reference_answer(모범 정답)는 비어 있지 않은 문자열이어야 합니다."
+            )
         if "reference_answer" in item and not _text(item["reference_answer"]):
             problems.append(
                 f"{case.case_id}: 채점표의 reference_answer(모범 정답)는 비어 있지 않은 문자열이어야 합니다."
