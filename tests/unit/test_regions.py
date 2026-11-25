@@ -1,4 +1,5 @@
 from src.contracts import PipelineRequest
+from src.retrieval import regions
 from src.retrieval.regions import DONG_TO_DISTRICTS, resolve_region, resolve_request
 
 # ---------------------------------------------------------------------------
@@ -300,7 +301,13 @@ def test_resolve_request_resolves_shared_dong_when_confirmed_district_is_a_candi
     monkeypatch,
 ):
     # 여러 구에 있는 동(ambiguous)을 되묻고 사용자가 후보 구를 확정하면 그 구와 그 동으로 해석한다.
+    # find_dong은 매핑표가 아니라 긴 이름 순 목록(DONG_NAMES_LONGEST_FIRST)으로 동을 찾으므로 둘 다 설정한다.
     monkeypatch.setitem(DONG_TO_DISTRICTS, "공통동", ["서대문구", "송파구"])
+    monkeypatch.setattr(
+        regions,
+        "DONG_NAMES_LONGEST_FIRST",
+        ["공통동", *regions.DONG_NAMES_LONGEST_FIRST],
+    )
     question = "공통동 쓰레기 언제?"
 
     asked = resolve_request(PipelineRequest(question=question))
@@ -321,3 +328,51 @@ def test_resolve_request_resolves_shared_dong_when_confirmed_district_is_a_candi
     assert (
         not_candidate.region_status == "ambiguous"
     )  # 후보에 없는 구는 확정으로 인정하지 않는다
+
+
+def test_resolve_request_does_not_let_confirmation_cover_unsupported_district_written_with_a_dong():
+    # 구와 동이 함께 적힌 질문: 동(연희동)은 찾았지만 질문에 지원 밖 구(강남구)가 있으면 확정해도 안내한다.
+    result = resolve_request(
+        PipelineRequest(
+            question="강남구 연희동 대형폐기물 수거일은?",
+            district="송파구",
+            district_confirmed=True,
+        )
+    )
+
+    assert result.status == "needs_clarification"
+    assert result.region_status == "unsupported"
+    assert "강남구" in result.clarification_question
+
+
+def test_resolve_request_uses_the_new_district_and_dong_pair_confirmed_in_a_follow_up():
+    # 원질문은 연희동(서대문구), 후속 요청에서 송파구·잠실동으로 함께 고쳐 확정했다.
+    result = resolve_request(
+        PipelineRequest(
+            question="연희동 종량제 봉투는?",
+            district="송파구",
+            dong="잠실동",
+            district_confirmed=True,
+        )
+    )
+
+    assert result.status == "resolved"
+    assert (result.district, result.dong, result.region_status) == (
+        "송파구",
+        "잠실동",
+        "ok",
+    )
+
+
+def test_resolve_request_still_asks_when_the_confirmed_pair_does_not_match():
+    # 확정한 구(송파구)와 후속 요청의 동(연희동, 서대문구)이 맞지 않으면 새 조합으로 인정하지 않는다.
+    result = resolve_request(
+        PipelineRequest(
+            question="연희동 종량제 봉투는?",
+            district="송파구",
+            dong="연희동",
+            district_confirmed=True,
+        )
+    )
+
+    assert result.status == "needs_clarification"

@@ -164,3 +164,26 @@ def test_confirmation_cannot_drop_a_structured_dong_before_generation():
 
     assert record.response.status == "needs_clarification"
     assert observed == {}  # 검색도 생성도 하지 않았다
+
+
+def test_generator_receives_the_confirmed_pair_not_the_dong_in_the_original_question():
+    observed: dict = {}
+    runner = RAGPipeline(
+        resolver=resolve_request,
+        retriever=_retrieve,
+        generator=_capturing_generator(observed),
+    )
+
+    runner.run(
+        PipelineRequest(
+            question="연희동 종량제 봉투는?",
+            district="송파구",
+            dong="잠실동",
+            district_confirmed=True,
+        )
+    )
+
+    assert (observed["request"]["district"], observed["request"]["dong"]) == (
+        "송파구",
+        "잠실동",
+    )

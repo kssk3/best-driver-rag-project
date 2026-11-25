@@ -185,7 +185,8 @@ def resolve_request(request: PipelineRequest) -> ResolvedQuery:
     - 질문 속 구·동이 고른 구와 충돌: 고른 구로 해석한다. 맞지 않는 동은 버리고 구만 쓴다.
       이때 region_status는 no_dong이다("이 동으로는 지역을 정하지 못했다"는 뜻이며 동을 찾지 못했다는 뜻이 아니다).
     - 여러 구에 있는 동(ambiguous): 확정한 구가 후보 구에 있으면 그 구와 그 동으로 해석한다.
-    - 지원하지 않는 구가 질문에 있거나 동이 지원 밖이면 확정으로 덮지 않고 안내한다.
+    - 지원하지 않는 구가 질문에 있으면(동과 함께 적혀도) 또는 동이 지원 밖이면 확정으로 덮지 않고 안내한다.
+    - 후속 요청에서 구와 동을 함께 확정했고 그 동이 그 구에 있으면 원질문의 동보다 그 조합을 먼저 쓴다.
     - 화면에서 받은 동(request.dong)이 있으면 확정으로 버릴 수 없다. 파이프라인이 생성 요청을 만들 때
       resolved.dong이 없으면 request.dong을 되돌려 넣기 때문이다.
     질문 다듬기는 다른 단계 담당이므로 search_query는 항상 원질문을 쓴다.
@@ -193,6 +194,22 @@ def resolve_request(request: PipelineRequest) -> ResolvedQuery:
     region = resolve_region(request.question)
     selected = request.district  # 사용자가 화면에서 고른 구 (없으면 None)
     confirmed = _confirmed_selected_district(request)
+
+    if confirmed:
+        # 지원하지 않는 구가 질문에 있으면 동이 함께 있어도 확정으로 덮지 않고 안내한다.
+        named_in_question = find_district(request.question)
+        if named_in_question and named_in_question not in SUPPORTED_DISTRICTS:
+            return _ask_unsupported(request, named_in_question, None)
+        # 사용자가 후속 요청에서 구와 동을 함께 확정했고 서로 맞으면 그 조합이 원질문의 동보다 먼저다.
+        if request.dong:
+            fixed = resolve_region(request.dong)
+            if fixed["status"] == "ok" and fixed["district"] == selected:
+                return ResolvedQuery(
+                    search_query=request.question,
+                    region_status="ok",
+                    district=selected,
+                    dong=fixed["dong"],
+                )
 
     # 질문에 동이 없으면 화면에서 따로 받은 동도 같은 규칙(매핑·지원 범위·충돌)으로
     # 해석한다. 검사 없이 복사하면 송파구/연희동처럼 맞지 않는 짝이 검색으로 넘어간다.
@@ -248,10 +265,6 @@ def resolve_request(request: PipelineRequest) -> ResolvedQuery:
                     "어느 구 기준으로 알려 드릴까요?"
                 ),
             )
-
-        # 지원하지 않는 구가 질문에 있으면 확정으로 덮지 않고 안내한다.
-        if confirmed and named is not None and named not in SUPPORTED_DISTRICTS:
-            return _ask_unsupported(request, named, None)
 
         district = selected if confirmed else named or selected
         if district is None:
