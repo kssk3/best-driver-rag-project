@@ -168,7 +168,7 @@ def main(argv: list[str] | None = None) -> int:
         "--cases",
         type=Path,
         required=True,
-        help="최종 문항 파일 (e.g. tests/fixtures/interface/final_set/cases.json)",
+        help="문항 파일 (e.g. tests/fixtures/interface/screen_check_set/cases.json)",
     )
     parser.add_argument("--grading", type=Path, required=True, help="채점 자료 파일")
     parser.add_argument(

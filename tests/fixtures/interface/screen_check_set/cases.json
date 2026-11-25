@@ -2,14 +2,14 @@
   "is_synthetic": true,
   "cases": [
     {
-      "case_id": "final-01",
+      "case_id": "check-01",
       "question": "서대문구에서 생활쓰레기를 내놓으려면 어디에 담아서 어떻게 배출해야 하나요?",
       "district": "서대문구",
       "expected_status": "answered",
       "reference_answer": "구청장이 제작해 공급하는 관급 규격봉투(종량제 봉투)에 담아 묶은 뒤 구청장이 지정한 장소·요일·시간에 배출하거나 용기에 담아 배출해야 합니다. 폐기물 처리업자가 수거하는 지역에서는 그 업자가 공급하는 규격봉투를 써야 합니다."
     },
     {
-      "case_id": "final-02",
+      "case_id": "check-02",
       "question": "서대문구에서 대형폐기물을 배출하려면 사전에 어떻게 신고해야 하나요?",
       "district": "서대문구",
       "conditions": {
@@ -19,7 +19,7 @@
       "reference_answer": "배출 전에 배출자의 주소, 성명, 물품명, 크기, 수량 등을 주소지 관할 수거대행업체에 신고하거나 서대문구 지정 전산망으로 신고해야 하고, 구청장이 지정하는 장소·요일·시간에 내어 놓아야 합니다."
     },
     {
-      "case_id": "final-03",
+      "case_id": "check-03",
       "question": "서대문구 일반규격봉투 중 생활폐기물용 20리터 종량제 봉투 가격은 얼마인가요?",
       "district": "서대문구",
       "conditions": {
@@ -29,7 +29,7 @@
       "reference_answer": "490원입니다. (사업장 생활폐기물용 20리터는 800원입니다.)"
     },
     {
-      "case_id": "final-04",
+      "case_id": "check-04",
       "question": "서대문구에서 일반 가정용(생활폐기물용) 종량제 봉투는 무슨 색인가요?",
       "district": "서대문구",
       "conditions": {
@@ -39,7 +39,7 @@
       "reference_answer": "일반규격봉투 중 생활폐기물용 봉투는 흰색(반투명)입니다."
     },
     {
-      "case_id": "final-05",
+      "case_id": "check-05",
       "question": "서대문구에서 다 쓴 건전지는 어떻게 버려야 하나요?",
       "district": "서대문구",
       "conditions": {
@@ -49,7 +49,7 @@
       "reference_answer": "전지를 제품에서 분리해서, 전자제품 대리점·시계점 등 역회수 루트로 배출하거나 주요 거점에 비치된 수거함 또는 지정된 전지류 수거일·장소에 배출합니다."
     },
     {
-      "case_id": "final-06",
+      "case_id": "check-06",
       "question": "송파구에서 50리터 종량제 봉투에는 쓰레기를 최대 몇 킬로그램까지 담을 수 있나요?",
       "district": "송파구",
       "conditions": {
@@ -59,7 +59,7 @@
       "reference_answer": "50리터 봉투는 13kg까지입니다. 75리터는 19kg이 상한이며 이를 넘으면 수거를 거부할 수 있습니다."
     },
     {
-      "case_id": "final-07",
+      "case_id": "check-07",
       "question": "송파구에서 일반 종량제 봉투와 특수규격봉투는 각각 무슨 색인가요?",
       "district": "송파구",
       "conditions": {
@@ -69,21 +69,21 @@
       "reference_answer": "생활폐기물용 봉투는 흰색(유백색)이고 특수규격봉투는 노란색입니다. 다만 생활폐기물용 중 5ℓ·10ℓ·20ℓ 봉투는 색상을 넣어 불투명하게 제작할 수 있습니다."
     },
     {
-      "case_id": "final-08",
+      "case_id": "check-08",
       "question": "송파구에서 큰길(가로변)에 쓰레기를 내놓을 수 있는 시간은 언제인가요?",
       "district": "송파구",
       "expected_status": "answered",
       "reference_answer": "가로변에 배출하는 폐기물은 오후 10시부터 새벽 1시까지 배출해야 합니다."
     },
     {
-      "case_id": "final-09",
+      "case_id": "check-09",
       "question": "송파구에서 쓰레기 무단투기를 신고하면 포상금을 한 사람이 한 달에 최대 얼마까지 받을 수 있나요?",
       "district": "송파구",
       "expected_status": "answered",
       "reference_answer": "1인당 지급되는 포상금은 전국을 기준으로 월별 50만원을 초과할 수 없습니다. 포상금은 투기행위자에게 과태료를 부과한 뒤 해당 연도 예산 범위에서 지급합니다."
     },
     {
-      "case_id": "final-10",
+      "case_id": "check-10",
       "question": "송파구에서 42인치 이상 TV를 대형폐기물로 버리면 수수료가 얼마인가요?",
       "district": "송파구",
       "conditions": {
@@ -93,21 +93,21 @@
       "reference_answer": "TV 42인치 이상은 7,000원입니다."
     },
     {
-      "case_id": "final-11",
+      "case_id": "check-11",
       "question": "서대문구에서 분리배출한 재활용품을 내놓을 때도 돈을 내야 하나요?",
       "district": "서대문구",
       "expected_status": "answered",
       "reference_answer": "아니요. 분리 배출한 재활용 가능품의 수수료는 부과하지 않습니다."
     },
     {
-      "case_id": "final-12",
+      "case_id": "check-12",
       "question": "서대문구에서 사업장생활계폐기물을 하루 평균 300킬로그램 이상 내놓는 사업장은 어떤 봉투에 담아야 하나요?",
       "district": "서대문구",
       "expected_status": "answered",
       "reference_answer": "하루 평균 300kg 이상 배출하는 사업장생활계폐기물은 사업장폐기물용 봉투에 담습니다. 300kg 미만이면 생활폐기물용 봉투에 담습니다."
     },
     {
-      "case_id": "final-13",
+      "case_id": "check-13",
       "question": "서대문구에서 대형폐기물 배출 신고를 했다가 취소하려면 언제까지 해야 하나요?",
       "district": "서대문구",
       "conditions": {
@@ -117,7 +117,7 @@
       "reference_answer": "신고일부터 30일 이내에 취소(변경)신고를 해야 합니다. 취소하면 수거되지 않은 품목의 수집·운반수수료는 돌려받습니다."
     },
     {
-      "case_id": "final-14",
+      "case_id": "check-14",
       "question": "서대문구에서 페트병은 모두 같은 방법으로 버리나요?",
       "district": "서대문구",
       "conditions": {
@@ -127,14 +127,14 @@
       "reference_answer": "아니요. 무색 투명한 먹는 샘물·음료 PET병은 내용물을 깨끗이 비우고 라벨을 제거한 뒤 가능한 압착해 뚜껑을 닫아 배출하고, 그 밖의 PET병은 플라스틱류와 함께 배출합니다."
     },
     {
-      "case_id": "final-15",
+      "case_id": "check-15",
       "question": "송파구에서 생계급여를 받는 1인 가구는 종량제 봉투를 매달 얼마나 무료로 받을 수 있나요?",
       "district": "송파구",
       "expected_status": "answered",
       "reference_answer": "수수료 감면 대상(생계·의료급여 수급자 등)에게는 일반규격봉투 중 생활폐기물용 봉투를 무료로 지급하며, 가구당 월 120리터 범위이고 1인 가구는 월 60리터 범위에서 지급할 수 있습니다."
     },
     {
-      "case_id": "final-16",
+      "case_id": "check-16",
       "question": "송파구에서 대형폐기물을 내놓기 전에 무엇을 먼저 해야 하나요?",
       "district": "송파구",
       "conditions": {
@@ -144,7 +144,7 @@
       "reference_answer": "배출일 전에 주소·성명·물품명·크기·수량 등을 구청장에게 신고하고, 구청장이 지정하는 장소에 내어 놓아야 합니다. 폐기물처리업자가 대행수거하는 지역에서는 처리업자가 이를 대행합니다."
     },
     {
-      "case_id": "final-17",
+      "case_id": "check-17",
       "question": "송파구에서 대형폐기물 수수료는 언제 어디에서 내나요?",
       "district": "송파구",
       "conditions": {
@@ -154,14 +154,14 @@
       "reference_answer": "배출신고를 한 뒤 수거하기 전에 미리 시중은행 및 우체국에 납부해야 하며, 전자지불제도로 납부할 수도 있습니다."
     },
     {
-      "case_id": "final-18",
+      "case_id": "check-18",
       "question": "서대문구에서 길에 쓰레기를 버리다 걸리면 과태료가 얼마인가요?",
       "district": "서대문구",
       "expected_status": "insufficient_evidence",
       "reference_answer": "제공된 서대문구 자료에는 과태료 금액이 없어 알 수 없습니다. (조례 제42조는 과태료를 폐기물관리법 제68조와 같은 법 시행령 제38조의4에 따라 부과·징수한다고만 하고, 시행규칙 제9조④는 포상금을 과태료 부과액의 20%로 정할 뿐입니다.)"
     },
     {
-      "case_id": "final-19",
+      "case_id": "check-19",
       "question": "송파구에서 스티로폼은 어떻게 분리배출하나요?",
       "district": "송파구",
       "conditions": {
@@ -171,7 +171,7 @@
       "reference_answer": "제공된 송파구 자료에는 스티로폼의 분리배출 방법이 없어 알 수 없습니다. (송파구 조례 제8조②는 배출요령·시간·장소를 구청장이 따로 정한다고만 합니다.)"
     },
     {
-      "case_id": "final-20",
+      "case_id": "check-20",
       "question": "서대문구에서 대형폐기물을 신고하면 며칠 안에 수거해 가나요?",
       "district": "서대문구",
       "conditions": {
