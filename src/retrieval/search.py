@@ -323,14 +323,73 @@ def rrf_merge(
     ]
 
 
+# --- C 검색: B 후보를 재정렬기로 다시 줄 세우기 --------------------------------
+
+# 재정렬기: (질문, 후보 목록) → 후보마다 관련도 점수(클수록 관련 있음), 후보와 같은 순서·개수.
+# 어떤 모델을 쓸지는 아직 정하지 않았으므로 밖에서 넘겨받는다(의존성 주입).
+# 실제 모델(cross-encoder, LLM 등)은 이 모양의 함수만 만들면 끼울 수 있다.
+Reranker = Callable[[str, list[SearchCandidate]], list[float]]
+
+
+class RerankerOutputError(ApplicationError, ValueError):
+    """재정렬기가 후보 수와 다른 개수의 점수를 돌려줌. 어느 점수가 어느 후보인지 알 수 없다."""
+
+    code = "retrieval.invalid_rerank_scores"
+    category = ErrorCategory.CONTRACT_VIOLATION
+
+
+def rerank(
+    query: str,
+    candidates: list[SearchCandidate],
+    reranker: Reranker,
+    top_k: int,
+) -> list[SearchCandidate]:
+    """재정렬기 점수로 후보를 다시 줄 세워 top_k개를 돌려준다.
+
+    이전 단계 점수(vector, bm25, rrf)는 stage_scores에 남기고 "rerank" 점수를 더한다.
+    점수가 같으면 chunk_id 순으로 정해 실행할 때마다 순서가 같게 한다.
+
+    Raises:
+        RetrievalError: top_k가 1보다 작을 때.
+        RerankerOutputError: 재정렬기 점수 개수가 후보 수와 다를 때.
+    """
+    if top_k < 1:
+        raise RetrievalError("top_k는 1 이상이어야 합니다.")
+    if not candidates:
+        return []
+
+    scores = reranker(query, candidates)
+    if len(scores) != len(candidates):
+        raise RerankerOutputError(
+            f"재정렬 점수 {len(scores)}개가 후보 {len(candidates)}개와 다릅니다."
+        )
+
+    paired = sorted(
+        zip(scores, candidates), key=lambda item: (-item[0], item[1].chunk.chunk_id)
+    )
+    return [
+        SearchCandidate(
+            chunk=candidate.chunk,
+            rank=rank,
+            score=float(score),
+            stage_scores={**candidate.stage_scores, "rerank": float(score)},
+        )
+        for rank, (score, candidate) in enumerate(paired[:top_k], start=1)
+    ]
+
+
 def make_vector_retriever(
-    index: IndexSnapshot, embedder: EmbeddingProvider
+    index: IndexSnapshot,
+    embedder: EmbeddingProvider,
+    reranker: Reranker | None = None,
 ) -> Retriever:
     """파이프라인 retriever 규격 `(ResolvedQuery, *, variant, top_k)`에 맞춘 검색을 만든다.
 
     - variant "A": Vector 단독
     - variant "B": Vector + BM25를 RRF로 합침 (각각 HYBRID_DEPTH개씩 본 뒤 top_k개)
-    - 그 밖(C 포함): 아직 없음 → RetrievalVariantError
+    - variant "C": B 후보 HYBRID_DEPTH개를 재정렬기로 다시 줄 세워 top_k개.
+      재정렬기를 넘기지 않았으면 C를 쓸 수 없다 → RetrievalVariantError
+    - 그 밖: RetrievalVariantError
 
     색인을 만든 임베딩과 다른 임베딩으로 질문을 바꾸면 벡터를 비교할 수 없어 처음에 막는다.
     """
@@ -340,20 +399,28 @@ def make_vector_retriever(
     def retrieve(
         query: ResolvedQuery, *, variant: str, top_k: int
     ) -> list[SearchCandidate]:
-        if variant not in ("A", "B"):
-            # 빈 목록을 돌려주면 "근거 없음"으로 오해되므로 오류로 알린다.
+        # 빈 목록을 돌려주면 "근거 없음"으로 오해되므로 오류로 알린다.
+        if variant not in ("A", "B", "C"):
             raise RetrievalVariantError(f"지원하지 않는 검색 방식입니다: {variant!r}")
+        if variant == "C" and reranker is None:
+            raise RetrievalVariantError("C 검색에 쓸 재정렬기가 설정되지 않았습니다.")
+
         query_vector = embedder.embed_query(query.search_query)
         if variant == "A":
             return vector_search(index, query_vector, query.district, top_k)
 
         depth = max(top_k, HYBRID_DEPTH)
-        return rrf_merge(
+        hybrid = rrf_merge(
             {
                 "vector": vector_search(index, query_vector, query.district, depth),
                 "bm25": bm25_search(index, query.search_query, query.district, depth),
             },
-            top_k,
+            # B는 top_k개만, C는 재정렬할 후보를 넉넉히(depth개) 받는다.
+            top_k if variant == "B" else depth,
         )
+        if variant == "B":
+            return hybrid
+        assert reranker is not None  # 위에서 확인함 (타입 검사기용)
+        return rerank(query.search_query, hybrid, reranker, top_k)
 
     return retrieve

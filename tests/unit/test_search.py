@@ -5,6 +5,7 @@ import pytest
 from src.contracts import Chunk, ResolvedQuery, SearchCandidate
 from src.ingestion.indexing import build_index
 from src.retrieval.search import (
+    RerankerOutputError,
     RetrievalConfigError,
     RetrievalError,
     RetrievalVariantError,
@@ -12,6 +13,7 @@ from src.retrieval.search import (
     cosine_similarity,
     is_in_region,
     make_vector_retriever,
+    rerank,
     rrf_merge,
     tokenize,
     vector_search,
@@ -311,7 +313,7 @@ def test_retriever_runs_hybrid_variant_b():
 
 @pytest.mark.parametrize("variant", ["C", "Z"])
 def test_retriever_rejects_unsupported_variant(variant):
-    # 아직 없는 검색 방식은 빈 결과가 아니라 설정 오류로 알린다.
+    # 없는 검색 방식(Z), 재정렬기 없이 요청한 C는 빈 결과가 아니라 설정 오류로 알린다.
     retrieve = make_vector_retriever(make_index(), FakeEmbedder())
     query = ResolvedQuery(search_query="페트병 질문", district="서대문구")
 
@@ -327,3 +329,61 @@ def test_retriever_rejects_embedder_different_from_index():
 
     with pytest.raises(RetrievalConfigError):
         make_vector_retriever(make_index(), OtherEmbedder())
+
+
+# --- rerank / C 검색 (재정렬기는 가짜) --------------------------------------
+
+
+def prefer(*chunk_ids: str):
+    """주어진 chunk_id 순서대로 높은 점수를 주는 가짜 재정렬기. 나머지는 0점."""
+
+    def reranker(query: str, candidates: list[SearchCandidate]) -> list[float]:
+        return [
+            float(len(chunk_ids) - chunk_ids.index(c.chunk.chunk_id))
+            if c.chunk.chunk_id in chunk_ids
+            else 0.0
+            for c in candidates
+        ]
+
+    return reranker
+
+
+def test_rerank_reorders_by_reranker_score_and_keeps_stage_scores():
+    candidates = rrf_merge({"vector": ranked("x", "y", "z")}, top_k=5)
+
+    results = rerank("질문", candidates, prefer("z", "x"), top_k=2)
+
+    assert [r.chunk.chunk_id for r in results] == ["z", "x"]
+    assert [r.rank for r in results] == [1, 2]
+    # 이전 단계 점수는 남고 rerank 점수가 더해진다.
+    assert {"vector", "rrf", "rerank"} <= set(results[0].stage_scores)
+    assert results[0].score == results[0].stage_scores["rerank"] == 2.0
+
+
+def test_rerank_rejects_wrong_number_of_scores():
+    candidates = rrf_merge({"vector": ranked("x", "y")}, top_k=5)
+
+    with pytest.raises(RerankerOutputError) as caught:
+        rerank("질문", candidates, lambda q, c: [1.0], top_k=5)
+    assert caught.value.code == "retrieval.invalid_rerank_scores"
+
+
+def test_rerank_returns_empty_without_calling_reranker_for_no_candidates():
+    def must_not_call(query, candidates):
+        raise AssertionError("후보가 없으면 재정렬기를 부르지 않는다")
+
+    assert rerank("질문", [], must_not_call, top_k=5) == []
+
+
+def test_retriever_runs_variant_c_with_injected_reranker():
+    # C = B 후보를 재정렬기로 다시 줄 세운 결과. 재정렬기가 종이팩을 1위로 올린다.
+    retrieve = make_vector_retriever(
+        make_index(), FakeEmbedder(), reranker=prefer("seodaemun-carton")
+    )
+    query = ResolvedQuery(search_query="서대문 페트병", district="서대문구")
+
+    results = retrieve(query, variant="C", top_k=2)
+
+    assert results[0].chunk.chunk_id == "seodaemun-carton"
+    assert len(results) == 2
+    assert {"vector", "rrf", "rerank"} <= set(results[0].stage_scores)
