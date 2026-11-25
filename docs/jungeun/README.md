@@ -119,6 +119,10 @@ python -m src.ingestion.annexes --manifest data/raw/documents/law_runs/e783d2319
 검수 파일을 지정하지 않으면 새 추출 결과는 검수 대기다.
 그림 자체는 원본 HWP에 보존하며 그림의 의미를 무조건 자동 추출하지 않는다.
 
+공용 인계본에서 원문과 대조한 표 줄바꿈은 `table_row_continuations`로 기록한다.
+송파구 별표 5의 이어진 문장 8건은 HTML·JSON에서 첫 행의 청크 한 개로 전달하며
+원본 행·셀 ID와 포상금 열을 보존한다. 합친 청크의 ID는 내용 해시에 따라 바뀐다.
+
 ## 사람 검수와 현재 제한
 
 이정은 확인 범위는 로컬 review_status.json에 항목별로 기록했다.
