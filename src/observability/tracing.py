@@ -6,7 +6,7 @@ import hashlib
 import json
 import os
 from datetime import UTC, datetime, timedelta
-from http.client import HTTPSConnection
+from http.client import HTTPResponse, HTTPSConnection
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -18,16 +18,50 @@ REPORT_FIELDS = (
 ).split()
 
 
+def _accepted(path: str, response: HTTPResponse) -> bool | None:
+    """True는 접수, False는 명시적 거절, None은 확인되지 않은 결과다."""
+    status = response.status
+    if 400 <= status < 500 and status != 408:
+        return False
+    if path == TRACES and status == 200:
+        body = json.load(response)
+        if body == {}:
+            return True
+        partial = body.get("partialSuccess")
+        if isinstance(partial, dict):
+            count = partial.get("rejectedSpans", 0)
+            if (
+                type(count) in (str, int)
+                and str(count).isascii()
+                and str(count).isdigit()
+            ):
+                return int(count) == 0
+    if path == SCORES and status in (202, 207):
+        body = json.load(response)
+        if status == 202 and body.get("message") == "Accepted":
+            return True
+        # 이 클라이언트는 점수를 한 건씩 제출한다.
+        if status == 207 and body.get("rejected") == 1 and body.get("accepted", 0) == 0:
+            return False
+    return None
+
+
 def langfuse_post():
     """인증 키는 HTTPS 인증 헤더에서만 사용한다."""
-    url = urlsplit(os.environ.get("LANGFUSE_BASE_URL", ""))
+    try:
+        url = urlsplit(os.environ.get("LANGFUSE_BASE_URL", ""))
+        hostname, port = url.hostname, url.port
+    except ValueError as error:
+        raise ValueError(
+            "LANGFUSE_BASE_URL requires a valid hostname and port"
+        ) from error
     public = os.environ.get("LANGFUSE_PUBLIC_KEY")
     secret = os.environ.get("LANGFUSE_SECRET_KEY")
     if (
         url.scheme != "https"
-        or not url.hostname
-        or url.username
-        or url.password
+        or not hostname
+        or url.username is not None
+        or url.password is not None
         or url.query
         or url.fragment
     ):
@@ -43,21 +77,12 @@ def langfuse_post():
         }
         if path == TRACES:
             headers["x-langfuse-ingestion-version"] = "4"
-        connection = HTTPSConnection(url.hostname, url.port, timeout=15)
+        connection = HTTPSConnection(hostname, port, timeout=15)
         try:
             connection.request(
                 "POST", url.path.rstrip("/") + path, json.dumps(payload), headers
             )
-            response = connection.getresponse()
-            if response.status not in (200, 202):
-                return False
-            body = json.load(response)
-            if path == SCORES:
-                return response.status == 202 and body == {"message": "Accepted"}
-            return (
-                response.status == 200
-                and int(body.get("partialSuccess", {}).get("rejectedSpans", 0)) == 0
-            )
+            return _accepted(path, connection.getresponse())
         finally:
             connection.close()
 
@@ -94,7 +119,10 @@ def _payloads(row):
         "kind": 1,
         "startTimeUnixNano": nanos,
         "endTimeUnixNano": nanos,
-        "attributes": [{"key": "run.kind", "value": {"stringValue": row["run_kind"]}}],
+        "attributes": [
+            {"key": "run.kind", "value": {"stringValue": row["run_kind"]}},
+            {"key": "langfuse.environment", "value": {"stringValue": row["run_kind"]}},
+        ],
     }
     trace = {"resourceSpans": [{"scopeSpans": [{"spans": [span]}]}]}
     score = {
@@ -102,6 +130,7 @@ def _payloads(row):
         "id": _identifier("score", row["evaluation_id"], row["run_id"], metric),
         "name": metric,
         "dataType": "NUMERIC",
+        "environment": row["run_kind"],
         "value": value,
         "timestamp": scored_at.isoformat(),
     }
@@ -109,8 +138,18 @@ def _payloads(row):
 
 
 def _publish(row, entry, post):
-    if row["status"] != "scored":
+    status = row["status"]
+    if status not in {"scored", "skipped", "no_score", "input_error", "scorer_error"}:
+        entry.update(status="failed", reason="unknown_score_status")
+        return
+    if (status == "scored") != bool(row["score"]):
+        entry.update(status="failed", reason="score_status_conflict")
+        return
+    if status != "scored":
         entry.update(status="skipped", reason="no_numeric_score")
+        return
+    if not row["run_started_at_utc"]:
+        entry.update(status="failed", reason="missing_run_started_at_utc")
         return
     try:
         trace, score = _payloads(row)
@@ -126,6 +165,8 @@ def _publish(row, entry, post):
         try:
             accepted = post(path, payload)
         except Exception:
+            accepted = None
+        if accepted is None:
             entry.update(status="failed", reason=stage + "_unconfirmed")
             return
         if not accepted:

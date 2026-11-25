@@ -33,6 +33,6 @@ uv run --locked --env-file .env python -m scripts.upload_scores \
   --report results/local/faithfulness-smoke/team-upload-1.csv --upload
 ```
 
-보고서에서 `accepted`를 확인한 뒤 팀 프로젝트의 **Scores**에서 `faithfulness`와 원래 채점 날짜로 필터링한다. **Score Analytics**에서 점수 분포를 볼 수 있다. 개별 값은 보고서의 `trace_id` 및 `score_id`로 대조한다. 입력 검증만 수행해 점수가 비어 있으면 업로드를 건너뛴다. [점수 분석 화면 안내](https://langfuse.com/docs/evaluation/scores/score-analytics)
+보고서에서 `accepted`를 확인한 뒤 팀 프로젝트의 **Scores**에서 `faithfulness`와 원래 채점 날짜로 필터링한다. 새로 전송한 점수와 trace에는 실행 유형이 Langfuse의 `environment`로 기록된다. 실제 검색 결과를 비교할 때는 환경 필터에서 `rag`를 선택한다. 고정 근거 실험은 `fixed_evidence`, 합성 데모는 `demo`에서 조회한다. 기존에 환경 없이 업로드한 점수는 기본 환경에서 조회한다. **Score Analytics**에서 선택한 환경의 점수 분포를 확인한다. 개별 값은 보고서의 `trace_id` 및 `score_id`로 대조한다. 입력 검증만 수행해 점수가 비어 있으면 업로드를 건너뛴다. [점수 분석 화면 안내](https://langfuse.com/docs/evaluation/scores/score-analytics)
 
 일시 정지는 서버의 `deploy/langfuse`에서 `docker compose stop`, 재기동은 `docker compose up -d`로 한다. 데이터는 이름 있는 볼륨에 보존된다.

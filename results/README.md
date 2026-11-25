@@ -103,7 +103,7 @@ uv run --locked python -m scripts.score_answers \
 
 팀 서버의 HTTPS 주소, 배포 구성과 점수 조회 방법은 [팀 서버 Docker 실행 안내](../deploy/langfuse/README.md)를 따른다.
 
-점수가 저장된 후 별도 명령으로 실행한다. 기본은 네트워크 없는 점검이다. `--report`에는 매 시도마다 새 파일을 지정한다. 입력 확인만 한 행과 숫자 점수가 없는 행은 건너뛴다.
+점수가 저장된 후 별도 명령으로 실행한다. 기본은 네트워크 없는 점검이다. `--report`에는 매 시도마다 새 파일을 지정한다. 정상 상태로 기록된 미채점 행은 건너뛴다. 알 수 없는 상태나 상태와 점수가 모순되는 행은 실패로 기록한다.
 
 ```sh
 uv run --locked python -m scripts.upload_scores \
@@ -113,4 +113,4 @@ uv run --locked python -m scripts.upload_scores \
 
 실서버 스모크는 앞 절에서 승인받아 채점한 한 문항의 CSV로 진행한다. 대상 프로젝트의 HTTPS `LANGFUSE_BASE_URL`, `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`를 환경변수로 설정하고 위 명령에 `--upload`를 붙인다. 보고서 이름은 `upload-1.csv`로 바꾼다. 숫자 점수 1건당 시작 시각을 표시하는 OTLP span 하나와 숫자 점수 한 건을 각각 POST한다. span은 실행 시점을 표시하는 길이 0의 기록이다. 본문은 파생 ID·고정 이름·시각·실행 유형·점수로 구성한다. 인증은 HTTPS Basic 헤더를 사용한다. [Langfuse OTLP 규격](https://github.com/langfuse/langfuse/blob/main/fern/apis/server/definition/opentelemetry.yml) · [점수 API 스키마](https://github.com/langfuse/langfuse/blob/main/fern/apis/server/definition/scores.yml)
 
-보고서의 `accepted`는 두 요청을 서버가 접수했다는 뜻이다. 실제 스모크에서는 `trace_id`와 `score_id`로 서버에 표시된 값과 날짜를 확인한다. 네트워크 오류로 접수가 불확실하면 `*_unconfirmed`, 부분 거절 등은 `*_not_accepted`로 기록하고 종료 코드 1을 반환한다. 원인을 확인한 뒤 같은 `scores.csv`와 새 보고서 이름으로 재시도한다. 같은 실행은 같은 trace ID와 span 시작 시각을 사용한다. 같은 평가·실행·지표는 같은 점수 ID와 이름을 사용하며, 요청의 `timestamp`에 원래 `scored_at_utc`를 보낸다. 업로드 시도 시각은 보고서의 `upload_attempted_at_utc`에만 남긴다. 서버에서 점수를 교체하는 조건은 ID·이름·timestamp의 날짜가 모두 같은 경우다. [Langfuse 점수 교체 규칙](https://langfuse.com/faq/all/tracing-data-updates)
+보고서의 `accepted`는 두 요청을 서버가 접수했다는 뜻이다. 실제 스모크에서는 `trace_id`와 `score_id`로 서버에 표시된 값과 날짜를 확인한다. 타임아웃, HTTP 5xx 또는 예상하지 못한 성공 응답으로 접수 여부가 불확실하면 `*_unconfirmed`, 부분 거절 등은 `*_not_accepted`로 기록하고 종료 코드 1을 반환한다. 원인을 확인한 뒤 같은 `scores.csv`와 새 보고서 이름으로 재시도한다. 같은 실행은 같은 trace ID와 span 시작 시각을 사용한다. 같은 평가·실행·지표는 같은 점수 ID와 이름을 사용하며, 요청의 `timestamp`에 원래 `scored_at_utc`를 보낸다. 업로드 시도 시각은 보고서의 `upload_attempted_at_utc`에만 남긴다. 서버에서 점수를 교체하는 조건은 ID·이름·timestamp의 날짜가 모두 같은 경우다. [Langfuse 점수 교체 규칙](https://langfuse.com/faq/all/tracing-data-updates)
