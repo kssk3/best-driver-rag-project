@@ -26,9 +26,10 @@ def build_followup_request(
     if "dong" in conditions:
         request["dong"] = conditions.pop("dong")
     if "district" in conditions:
-        # 구는 조건에도 남긴다. 해석기는 조건의 구가 요청의 구와 같으면 "충돌을 알고
-        # 확정했다"로 보고 같은 되묻기를 되풀이하지 않는다.
-        request["district"] = conditions["district"]
+        # 되묻기에서 사용자가 구를 직접 입력했다. 해석기가 같은 되묻기를 되풀이하지 않도록
+        # 확정 표시를 전용 필드로 보낸다(조건에 섞으면 생성기 입력과 W5 검증에 샌다).
+        request["district"] = conditions.pop("district")
+        request["district_confirmed"] = True
     request["conditions"] = conditions
     return request
 

@@ -192,8 +192,9 @@ def test_followup_request_sends_district_and_dong_at_top_level_and_confirms_dist
         "question": "가상 질문",
         "district": "서대문구",
         "dong": "연희동",
-        # 구는 조건에도 남아 "충돌을 알고 확정했다"는 표시가 된다(해석기가 읽는다).
-        "conditions": {"item": "병", "district": "서대문구"},
+        # 되묻기에서 구를 입력했으므로 확정 표시를 전용 필드로 보낸다(조건에는 섞지 않는다).
+        "district_confirmed": True,
+        "conditions": {"item": "병"},
     }
 
 
