@@ -94,8 +94,9 @@ def check_response(
 
     # [W7] 오류는 정상 거절과 다른 상태이다.
     if view.status == "error":
+        code = f" (오류 코드: {view.error_code})" if view.error_code else ""
         alerts.append(
-            Alert("W7", "error", f"오류 응답: {view.error or '오류 내용 없음'}")
+            Alert("W7", "error", f"오류 응답: {view.error or '오류 내용 없음'}{code}")
         )
 
     # [W8] 모델이 받은 근거 중 화면 후보에 없는 것이 있다.
