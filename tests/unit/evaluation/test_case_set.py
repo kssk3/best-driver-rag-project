@@ -256,3 +256,20 @@ def test_load_grading_rejects_duplicate_case_id(tmp_path: Path) -> None:
     )
     with pytest.raises(ValueError, match="중복"):
         load_grading(path)
+
+
+def test_missing_expected_status_is_reported() -> None:
+    cases = make_cases()
+    cases[0] = cases[0].model_copy(update={"expected_status": None})
+    cases[19] = cases[19].model_copy(update={"expected_status": None})
+    problems = check_final_set(cases, make_grading())
+    assert any("expected_status" in p and "fx-01" in p for p in problems)
+    assert any("expected_status" in p and "fx-20" in p for p in problems)
+
+
+@pytest.mark.parametrize("value", ["", "  ", [], {"a": 1}])
+def test_grading_only_reference_answer_must_be_nonblank_text(value: object) -> None:
+    grading = make_grading()
+    grading["fx-01"]["reference_answer"] = value
+    problems = check_final_set(make_cases(), grading)
+    assert any("fx-01" in p and "reference_answer" in p for p in problems)

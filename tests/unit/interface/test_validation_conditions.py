@@ -215,3 +215,27 @@ def test_unchecked_when_any_used_candidate_lacks_conditions() -> None:
         model_inputs=["c1", "c2"],
     )
     assert "W5" in unchecked_rules(view)[0]
+
+
+def test_panel_does_not_say_no_alert_when_a_rule_was_unchecked() -> None:
+    def page() -> None:
+        from src.interface.adapter import Candidate, Citation, ViewResponse
+        from src.interface.inspection import render_inspection
+
+        view = ViewResponse(
+            "r",
+            "demo",
+            "answered",
+            "[가상]",
+            [],
+            [Candidate("c1", "서대문구", 0.8, "[가상]", rank=1)],
+            ["c1"],
+            [Citation("c1", None)],
+            None,
+            request_conditions={"item": "병"},
+        )
+        render_inspection(view, "서대문구")
+
+    app = AppTest.from_function(page, default_timeout=10).run()
+    assert not app.success
+    assert any("검사하지 못한 규칙" in i.value for i in app.info)

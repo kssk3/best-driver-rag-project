@@ -76,7 +76,7 @@ def _check_item(case: EvaluationCase, item: dict, category: str) -> list[str]:
 
         if not _text(item.get("reason")):
             problems.append(f"{who}: reason(판정 이유)이 비어 있습니다.")
-        if case.expected_status not in (None, "answered"):
+        if case.expected_status != "answered":
             problems.append(
                 f"{who}: 답변 가능 문항의 expected_status는 answered여야 합니다."
             )
@@ -86,7 +86,7 @@ def _check_item(case: EvaluationCase, item: dict, category: str) -> list[str]:
             problems.append(
                 f"{who}: absence_reason(근거가 없다고 판정한 이유)이 비어 있습니다."
             )
-        if case.expected_status not in (None, "insufficient_evidence"):
+        if case.expected_status != "insufficient_evidence":
             problems.append(
                 f"{who}: 근거 없음 문항의 expected_status는 insufficient_evidence여야 합니다."
             )
@@ -126,7 +126,11 @@ def check_final_set(cases: list[EvaluationCase], grading: dict[str, dict]) -> li
         problems.extend(_check_item(case, item, category))
 
         # 모범 정답은 문항과 채점표 양쪽에 둘 수 있다. 둘 다 있으면 같아야 한다.
-        if "reference_answer" in item and case.reference_answer is not None:
+        if "reference_answer" in item and not _text(item["reference_answer"]):
+            problems.append(
+                f"{case.case_id}: 채점표의 reference_answer(모범 정답)는 비어 있지 않은 문자열이어야 합니다."
+            )
+        elif "reference_answer" in item and case.reference_answer is not None:
             if item["reference_answer"] != case.reference_answer:
                 problems.append(
                     f"{case.case_id}: 문항과 채점표의 reference_answer(모범 정답)가 다릅니다."

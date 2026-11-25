@@ -99,7 +99,9 @@ def _render_clarification(view: ViewResponse, question: str, district: str) -> N
 
     with st.form("followup"):
         extra_conditions = {
-            field: st.text_input(REQUIRED_FIELD_LABELS.get(field, field), key=field)
+            field: st.text_input(
+                REQUIRED_FIELD_LABELS.get(field, field), key=f"followup:{field}"
+            )
             for field in view.required_fields
         }
 

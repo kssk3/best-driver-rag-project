@@ -201,3 +201,11 @@ def test_switching_mode_hides_response_from_other_mode() -> None:
     assert not app.tabs[0].success
     app.radio[0].set_value("예시 응답").run()
     assert app.tabs[0].success
+
+
+def test_followup_inputs_are_cleared_for_a_new_request() -> None:
+    app = ask("needs_clarification", question="가상 질문")
+    app.text_input[1].set_value("아파트")
+    app.button[1].click().run()
+    app.button[0].click().run()
+    assert app.text_input[1].value == ""

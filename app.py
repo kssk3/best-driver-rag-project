@@ -82,6 +82,9 @@ with user_tab:
         # 새 요청이 실패하거나 비어도 이전 응답이 남아 보이지 않게 지운다.
         for key in ("view", "places", "asked_question", "asked_district", "asked_mode"):
             st.session_state.pop(key, None)
+        # 이전 되묻기에서 입력한 값이 다음 되묻기에 미리 채워지지 않게 한다.
+        for key in [k for k in st.session_state if k.startswith("followup:")]:
+            del st.session_state[key]
         if mode == "예시 응답":
             st.session_state["view"] = to_view_response(
                 samples[sample_name], kind="fixture"

@@ -41,8 +41,10 @@ def render_inspection(
 
     st.subheader("자동 경고")
     alerts = check_response(view, selected_district)
+    unchecked = unchecked_rules(view)
 
-    if not alerts:
+    # 검사하지 못한 규칙이 있으면 "경고 없음"이라고 하지 않는다.
+    if not alerts and not unchecked:
         st.success("경고 없음")
 
     for alert in alerts:
@@ -50,7 +52,7 @@ def render_inspection(
         show(f"[{alert.code}] {alert.message}")
 
     # 정보가 없어 검사하지 못한 규칙은 '경고 없음'과 구별해 알려 준다.
-    for rule in unchecked_rules(view):
+    for rule in unchecked:
         st.info(f"검사하지 못한 규칙: {rule}")
 
     st.subheader("후보 순위")
