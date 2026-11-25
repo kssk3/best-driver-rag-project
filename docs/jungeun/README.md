@@ -139,6 +139,50 @@ uv run --locked python -m scripts.review_annex_tables \
 현재 묶음의 첨부 19건·표 32개에서 기존 검수 8건을 확인했다. 새 행 경계
 후보인 서대문구 별지의 `상호`·`주소`는 서식의 항목명으로 보고 합치지 않았다.
 
+## 청킹 입력과 Markdown 미리보기
+
+팀 청킹은 전처리 JSON과 XML에서 변환한 HTML을 각각 읽어 조문과 표 행으로 나눈다.
+2026-11-24 인계본을 `v1`으로 실행했을 때 두 형식 모두 문서 14건, 청크 543건이
+생성됐다. `report.json`에서 형식별 건수를 다시 확인할 수 있다.
+[청킹 실행 코드](../../scripts/prepare_data.py)
+
+사람이 표를 검수할 때는 [원문·추출 표 검수 화면][table-review]을 열거나 아래 예시로
+송파구 별표 두 건의 Markdown 미리보기를 만든다. 두 미리보기에는 병합 셀이 있어
+HTML 표를 Markdown에 그대로 넣는다. `rowspan`·`colspan`으로 표의 행·열 관계가 보존된다.
+
+```zsh
+review_dir=$(mktemp -d)
+uv run --locked python -m scripts.prepare_data \
+  --bundle data/handoff/jungeun/ordinance-handoff-2026-11-24 \
+  --version v1 --output-dir "$review_dir/prepared"
+uv run --locked python - "$review_dir" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+output = Path(sys.argv[1])
+documents = json.loads((output / "prepared/documents.json").read_text(encoding="utf-8"))
+attachments = {
+    "songpa-ordinance:attachment:154690991": "2053883_154690991",
+    "songpa-rules:attachment:121237861": "1481479_121237861",
+}
+for document in documents:
+    stem = attachments.get(document["document_id"])
+    if stem is None or document["content_format"] != "html":
+        continue
+    body = document["content"].split("<body>", 1)[1].removesuffix("</body></html>")
+    (output / f"{stem}.md").write_text(f"# 첨부 {stem} 검수용\n\n{body}\n", encoding="utf-8")
+print(output)
+PY
+```
+
+`prepared/report.json`은 청킹 실행 결과이고 `.md` 두 건은 임시 폴더의 검수 산출물이다.
+송파구 별표 5의 이어쓰기 검수 8건은 인계본 JSON의 `table_row_continuations`에서 대조한다.
+[송파구 시행규칙 별표 JSON][songpa-rules-annex]
+
+[table-review]: ../../data/handoff/jungeun/ordinance-handoff-2026-11-24/review/review.html
+[songpa-rules-annex]: ../../data/handoff/jungeun/ordinance-handoff-2026-11-24/processed/annex/1481479_121237861.json
+
 ## 사람 검수와 현재 제한
 
 이정은 확인 범위는 로컬 review_status.json에 항목별로 기록했다.
