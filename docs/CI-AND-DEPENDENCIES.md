@@ -29,7 +29,7 @@ uv run --locked python -m pytest tests --cov --cov-config=.coveragerc --cov-repo
 
 검증용 표본은 `tests/fixtures/`, 단위 테스트는 `tests/unit/`, 연결 테스트는 `tests/integration/`에 있다. 위의 공통 pytest 명령으로 함께 실행한다. `.coveragerc`에는 커버리지 하한을 지정하지 않았다.
 
-로컬 테스트 수와 합성 데모/CLI에서 확인한 동작은 [인계본 검증 기록](seokho-handoff.md#구현-경계와-검증)에 모은다. 해당 결과는 GitHub Actions 실행 성공이나 Codecov 업로드 성공을 뜻하지 않는다.
+로컬 테스트 수와 합성 데모/CLI에서 확인한 동작은 [인계본 검증 기록](handoff.md#구현-경계와-검증)에 모은다. 해당 결과는 GitHub Actions 실행 성공이나 Codecov 업로드 성공을 뜻하지 않는다.
 
 Windows의 기본 pytest 임시 폴더에 권한 오류가 생겼던 환경에서는 다음과 같이 프로젝트 안의 새 임시 경로를 지정해 검사했다. 오류가 없는 환경에서는 위의 공통 명령을 사용한다.
 

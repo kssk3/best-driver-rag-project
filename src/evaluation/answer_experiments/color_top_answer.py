@@ -3,7 +3,9 @@ from pathlib import Path
 
 from src.config import load_settings
 from src.contracts import Chunk, PipelineRequest, ResolvedQuery, SearchCandidate
-from src.evaluation.answer_experiments.p04_model_run import MissingEvaluationModelError
+from src.evaluation.answer_experiments.answer_evaluation_runtimes import (
+    MissingEvaluationModelError,
+)
 from src.evaluation.runner import load_evaluation_cases
 from src.generation.model_draft import make_model_draft
 from src.generation.pipeline_adapter import make_answer_generator
@@ -14,7 +16,7 @@ def main() -> None:
     # 개발 문항과 저장된 검색 결과가 같은 질문인지 확인한다.
     cases = load_evaluation_cases("eval/dev.json")
     case = next(c for c in cases if c.case_id == "p04-colors-trick")
-    path = Path("results/local/p04-color-top5-verify-01.json")
+    path = Path("results/local/color-table-retrieval-top5.json")
     search = json.loads(path.read_text(encoding="utf-8"))
     if (search["question"], search["district"]) != (case.question, case.district):
         raise SystemExit("검색 기록의 질문 또는 자치구가 다릅니다.")
@@ -32,8 +34,8 @@ def main() -> None:
         raise SystemExit("서로 다른 검색 후보 5개가 필요합니다.")
 
     # 이번 실행에서 다섯 본문이 모두 모델에 들어가도록 설정한다.
-    settings = load_settings("configs/p04-model-settings.json")
-    settings.runs_path = Path("results/local/p04-color-top5-answers/runs")
+    settings = load_settings("configs/answer-model-settings.json")
+    settings.runs_path = Path("results/local/color-table-answers/runs")
     options = settings.pipeline
     model = options.versions.get("model", "").strip()
     if not model:

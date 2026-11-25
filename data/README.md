@@ -2,7 +2,7 @@
 
 `raw/`에는 공식 원문과 getSpot 원자료, `processed/`에는 정제 문서와 청크 및 별도 형식의 장소 자료, `indexes/`에는 검색 색인을 둔다. 현재 Git에 공유된 파일에는 실제 분리배출 본문과 서비스용 색인이 없으며, 합성 문서로 로컬 색인을 생성하는 코드가 구현되어 있다.
 
-`tests/fixtures/source_manifest.json`은 제공된 문서 목록과 첨부 링크의 검증 표본이다. 조례 본문은 포함하지 않는다. `tests/fixtures/handoff_documents.json`은 데모용 합성 본문이다. 두 입력의 용도와 본문 로더 사용법은 [공통 기반 최소 인계본](../docs/seokho-handoff.md)을 따른다.
+`tests/fixtures/source_manifest.json`은 제공된 문서 목록과 첨부 링크의 검증 표본이다. 조례 본문은 포함하지 않는다. `tests/fixtures/handoff_documents.json`은 데모용 합성 본문이다. 두 입력의 용도와 본문 로더 사용법은 [공통 기반 최소 인계본](../docs/handoff.md)을 따른다.
 
 수집 결과에는 원문 위치와 URL, 발행 주체, 이용 조건, 수집 시각, 확인 상태와 버전을 남긴다. 문서와 장소 자료를 같은 근거로 취급하지 않는다. 동일한 본문도 지역과 출처 연결을 보존한다.
 

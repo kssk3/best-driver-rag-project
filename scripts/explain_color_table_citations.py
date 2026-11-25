@@ -1,4 +1,4 @@
-"""P04 색상표가 답변과 인용으로 이어지는 과정을 출력한다."""
+"""서대문구 공동주택 수거용기 색상표가 답변과 인용으로 이어지는 과정을 출력한다."""
 
 import json
 from pathlib import Path
@@ -62,7 +62,7 @@ def main() -> None:
         print(f"   근거 목록의 위치(citation_indices): {draft.get('citation_indices')}")
         return draft
 
-    with TemporaryDirectory(prefix="p04-colors-") as directory:
+    with TemporaryDirectory(prefix="color-table-citations-") as directory:
         runtime = create_runtime(
             RuntimeSettings(
                 runs_path=Path(directory),

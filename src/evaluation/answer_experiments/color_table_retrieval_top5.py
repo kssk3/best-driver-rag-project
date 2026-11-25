@@ -6,7 +6,7 @@ from pathlib import Path
 
 from src.evaluation.runner import load_evaluation_cases
 
-INDEX = "data/processed/p04-v2-openai-small/index-json.json"
+INDEX = "data/processed/ordinance-v2-openai-small/index-json.json"
 
 
 def main() -> None:

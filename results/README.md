@@ -2,7 +2,7 @@
 
 실행별 디렉터리에 설정과 자료 버전, 요청과 후보, 실제 생성 입력 ID, 답변과 인용, 시간과 오류를 보존한다. 공통 파이프라인과 `RunRecorder`의 로컬 JSON 기록을 구현했으며, 합성 데모/CLI 결과는 `local/`에 생성한다. 실제 팀 구성의 품질 평가 결과와 제출용 비교 보고서는 아직 없다.
 
-`scripts.demo`는 합성 색인과 `summary.json`을, `scripts.evaluate`는 `evaluation.json`을 생성한다. 데모 경로는 각 실행 폴더의 `runs/<run_id>.json`에 개별 기록도 남긴다. 평가의 `--factory` 경로에서 개별 파일을 남기려면 연결 함수가 `create_runtime` 등으로 기록기를 붙여야 한다. 기록기가 없어도 정상 반환된 `RunRecord`는 `evaluation.json`에 포함된다. 평가 명령에 `--output-dir`를 지정할 때는 새 폴더를 사용하며, 기록기는 같은 실행 ID 파일을 덮어쓰지 않는다. 자세한 경로와 명령은 [인계 문서](../docs/seokho-handoff.md)를 따른다.
+`scripts.demo`는 합성 색인과 `summary.json`을, `scripts.evaluate`는 `evaluation.json`을 생성한다. 데모 경로는 각 실행 폴더의 `runs/<run_id>.json`에 개별 기록도 남긴다. 평가의 `--factory` 경로에서 개별 파일을 남기려면 연결 함수가 `create_runtime` 등으로 기록기를 붙여야 한다. 기록기가 없어도 정상 반환된 `RunRecord`는 `evaluation.json`에 포함된다. 평가 명령에 `--output-dir`를 지정할 때는 새 폴더를 사용하며, 기록기는 같은 실행 ID 파일을 덮어쓰지 않는다. 자세한 경로와 명령은 [인계 문서](../docs/handoff.md)를 따른다.
 
 양석호가 인계한 실행 기록을 바탕으로 이명지는 검색 순위, 이정은은 프롬프트 변경 전후, 강성수는 답변·인용을 확인한다. 이승주는 청킹 변경의 영향과 화면에 표시되는 근거를 비교한다. [현재 역할표](../ROADMAP.md#업무-분담과-인계)
 
@@ -24,8 +24,8 @@ Running `python -m scripts.evaluate` with `--demo` or `--factory` writes `cases.
 
 ```sh
 uv run --locked --env-file .env python -m scripts.evaluate \
-  --cases eval/dev.json --settings configs/p04-a-model-settings.json \
-  --factory src.evaluation.answer_experiments.p04_model_run:create_a_runtime \
+  --cases eval/dev.json --settings configs/team-a-answer-eval-settings.json \
+  --factory src.evaluation.answer_experiments.answer_evaluation_runtimes:create_a_runtime \
   --output-dir "results/local/team-a-$(date -u +%Y%m%dT%H%M%SZ)"
 ```
 

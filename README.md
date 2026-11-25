@@ -13,7 +13,7 @@
 | 직접 실행 | 실제 색인의 근거 조회 CLI와 API 키 없는 합성 응답 데모 실행 가능 |
 | 지역 해석과 답변 | PR #11의 지역 해석기는 연습용 매핑표에 있는 동 4곳의 자치구를 판별한다. 전처리 자료 답변 실험은 미리 지정한 근거로 답변과 인용을 검증한다. 벡터 단독과 BM25+벡터 앙상블의 검색 순위는 별도 실험에서 비교한다. |
 
-현재 담당자와 변경 사항을 전달할 대상은 [4인 역할표](ROADMAP.md#업무-분담과-인계), 작업별 참고 파일은 [담당 경로](docs/architecture.md#담당-경로)에서 확인한다. 기존 공통 기반의 구현 범위와 검증 결과는 [양석호의 인계 기록](docs/seokho-handoff.md)에 있으며, 담당자별 연결 지점은 [Notion 인수인계](https://app.notion.com/p/422dc8b0e16381758494e218a97087aa)에서도 확인할 수 있다. 검색/생성 연결 함수가 준비돼 있다는 사실과 실제 서비스가 동작한다는 사실을 구분한다.
+현재 담당자와 변경 사항을 전달할 대상은 [4인 역할표](ROADMAP.md#업무-분담과-인계), 작업별 참고 파일은 [담당 경로](docs/architecture.md#담당-경로)에서 확인한다. 기존 공통 기반의 구현 범위와 검증 결과는 [양석호의 인계 기록](docs/handoff.md)에 있으며, 담당자별 연결 지점은 [Notion 인수인계](https://app.notion.com/p/422dc8b0e16381758494e218a97087aa)에서도 확인할 수 있다. 검색/생성 연결 함수가 준비돼 있다는 사실과 실제 서비스가 동작한다는 사실을 구분한다.
 
 ## 개발 환경
 
@@ -53,7 +53,7 @@ uv run --locked python -m scripts.prepare_data --bundle data/handoff/jungeun/ord
 uv run --locked python -m scripts.search_index --index data/processed/ordinance-v2-openai-small/index-html.json --index data/processed/ordinance-v2-openai-small/index-json.json --district 송파구
 ```
 
-`--question "질문"`을 지정하면 한 번 조회하고, 생략하면 질문을 반복 입력한다. `/종료`로 끝낸다. 이 명령은 지역을 제한한 코사인 유사도 검색 결과를 출력한다. 관련성 하한이 없어 `안녕`에도 무관한 결과가 나올 수 있고, 실제 질문에서 관련 별표가 상위 결과에 빠진 사례도 있다. 팀 파이프라인용 [A 벡터 검색기](src/retrieval/search.py)는 별도 진입점이다. HTML·JSON 비교의 범위와 재실행 방법은 [전처리 자료 인계 기록](docs/seokho-handoff.md#실제-전처리-자료-연결)에 있다.
+`--question "질문"`을 지정하면 한 번 조회하고, 생략하면 질문을 반복 입력한다. `/종료`로 끝낸다. 이 명령은 지역을 제한한 코사인 유사도 검색 결과를 출력한다. 관련성 하한이 없어 `안녕`에도 무관한 결과가 나올 수 있고, 실제 질문에서 관련 별표가 상위 결과에 빠진 사례도 있다. 팀 파이프라인용 [A 벡터 검색기](src/retrieval/search.py)는 별도 진입점이다. HTML·JSON 비교의 범위와 재실행 방법은 [전처리 자료 인계 기록](docs/handoff.md#실제-전처리-자료-연결)에 있다.
 
 ## 자동 데모와 검증
 
@@ -79,7 +79,7 @@ uv run --locked python -m src.evaluation.answer_experiments.evidence_retrieval_b
 
 [전처리 자료 질문별 결과표](results/testData.md)에서 세 사례의 검색 순위, 답변, 인용을 CSV 원본과 대조할 수 있다. 동 이름에서 추론한 구를 검색기와 생성기가 각각 어떻게 사용하는지는 [지역 해석과 답변 생성 연결](docs/TEAM-SETUP.md#전처리-자료-지역-해석과-답변-생성-연결)에 정리했다.
 
-입력 자료 규격, 색인/평가 명령과 팀 함수 연결 예시는 [인계 문서](docs/seokho-handoff.md)에 있다. `sources.json`은 문서 목록과 첨부 관계를 읽는 별도 입력이며 전처리 묶음 대신 넣지 않는다. OpenAI 임베딩 환경변수는 [.env.example](.env.example)을 참고한다.
+입력 자료 규격, 색인/평가 명령과 팀 함수 연결 예시는 [인계 문서](docs/handoff.md)에 있다. `sources.json`은 문서 목록과 첨부 관계를 읽는 별도 입력이며 전처리 묶음 대신 넣지 않는다. OpenAI 임베딩 환경변수는 [.env.example](.env.example)을 참고한다.
 
 ## 작업 위치
 
@@ -102,6 +102,6 @@ uv run --locked python -m src.evaluation.answer_experiments.evidence_retrieval_b
 - [개발 환경과 연결 기준](docs/TEAM-SETUP.md): 공용 규격과 인계 방식
 - [검사와 의존성 관리](docs/CI-AND-DEPENDENCIES.md): pytest, Codecov, Dependabot과 Gitleaks
 - [출처 목록 로더](docs/source-manifest-loader.md): `sources.json` 필드와 첨부 관계 읽기
-- [공통 기반 최소 인계본](docs/seokho-handoff.md): 입력 규격, API, 실행 명령, 현재 한계와 검증 결과
+- [공통 기반 최소 인계본](docs/handoff.md): 입력 규격, API, 실행 명령, 현재 한계와 검증 결과
 
 통합 기준 브랜치는 `dev`다. 작업 브랜치는 `feature/<작성자>/<작업명>`으로 만들고, 검증 후 `dev`를 대상으로 PR을 연다. 합성 검증 자료는 `tests/fixtures/`에 있으며 실제 최종 평가셋과 품질 평가 결과는 포함되어 있지 않다.

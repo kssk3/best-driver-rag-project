@@ -117,7 +117,7 @@ def test_a_evaluation_retrieves_and_cites_for_each_question(monkeypatch, tmp_pat
             "--settings",
             str(settings),
             "--factory",
-            "src.evaluation.answer_experiments.p04_model_run:create_a_runtime",
+            "src.evaluation.answer_experiments.answer_evaluation_runtimes:create_a_runtime",
         ],
     )
 

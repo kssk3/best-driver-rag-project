@@ -1,5 +1,5 @@
 {
-    "index_path": "data/processed/p04-v2-openai-small/index-json.json",
+    "index_path": "data/processed/ordinance-v2-openai-small/index-json.json",
     "pipeline": {
         "variant": "A",
         "rewrite_enabled": false,
