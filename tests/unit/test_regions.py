@@ -18,11 +18,39 @@ def test_resolve_region_returns_district_for_songpa_dong():
     assert result == {"status": "ok", "district": "송파구", "dong": "잠실동"}
 
 
+def test_resolve_region_prefers_longer_dong_name():
+    # 잠실본동(송파구 행정동) 안에 본동(동작구)이 들어 있다.
+    # 짧은 이름을 먼저 보면 동작구 → unsupported로 잘못 해석된다.
+    result = resolve_region("잠실본동 페트병 언제?")
+    assert result == {"status": "ok", "district": "송파구", "dong": "잠실본동"}
+
+
+def test_resolve_region_uses_administrative_dong_name():
+    # 천연동은 서대문구 행정동이자 법정동. 행정동 이름으로도 구를 찾는다.
+    result = resolve_region("천연동 종이팩 버리는 법")
+    assert result == {"status": "ok", "district": "서대문구", "dong": "천연동"}
+
+
+def test_resolve_region_accepts_dong_name_with_or_without_je():
+    # 공식 이름은 홍제제1동이지만 사람들은 홍제1동이라고 쓴다. 둘 다 서대문구.
+    official = resolve_region("홍제제1동 스티로폼 버리는 법")
+    common = resolve_region("홍제1동 스티로폼 버리는 법")
+    assert official == {"status": "ok", "district": "서대문구", "dong": "홍제제1동"}
+    assert common == {"status": "ok", "district": "서대문구", "dong": "홍제1동"}
+
+
+def test_resolve_region_keeps_je_when_not_followed_by_number():
+    # 제기동(동대문구)의 "제"는 숫자 앞이 아니라 그대로 둔다 → "기동"으로 바뀌지 않는다.
+    result = resolve_region("제기동 페트병")
+    assert result == {"status": "unsupported", "district": "동대문구", "dong": "제기동"}
+
+
 def test_resolve_region_does_not_guess_shared_dong_name():
-    # 신사동(강남구·관악구) → ambiguous. 첫 번째 구로 임의 확정하지 않는다.
+    # 신사동: 행정동(강남구·관악구) + 법정동(강남구·은평구) → ambiguous.
+    # 첫 번째 구로 임의 확정하지 않는다.
     result = resolve_region("신사동 쓰레기 언제?")
     assert result["status"] == "ambiguous"
-    assert result["candidate_districts"] == ["강남구", "관악구"]
+    assert result["candidate_districts"] == ["강남구", "관악구", "은평구"]
 
 
 def test_resolve_region_marks_unsupported_district():
