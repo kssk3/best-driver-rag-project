@@ -151,3 +151,12 @@ def test_callback_models_are_revalidated_after_mutation(
         for stage in record.stages
     )
     assert bool(generation_calls) == (failed_stage == "generate")
+
+
+def test_pipeline_request_district_confirmed_defaults_to_false_and_old_payloads_load():
+    from src.contracts import PipelineRequest
+
+    assert PipelineRequest(question="질문").district_confirmed is False
+    # 이 필드가 생기기 전에 저장한 실행 기록의 요청도 그대로 읽힌다.
+    old = {"request_id": "r", "question": "질문", "district": "서대문구", "dong": None}
+    assert PipelineRequest.model_validate(old).district_confirmed is False
