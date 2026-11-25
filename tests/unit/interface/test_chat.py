@@ -182,7 +182,9 @@ def test_insufficient_evidence_shows_answer_without_citations() -> None:
     assert any("근거가 없습니다" in m.value for m in app.markdown)
 
 
-def test_followup_request_routes_district_and_dong_to_top_level() -> None:
+def test_followup_request_sends_district_and_dong_at_top_level_and_confirms_district() -> (
+    None
+):
     request = build_followup_request(
         "가상 질문", "송파구", {"district": "서대문구", "dong": "연희동", "item": "병"}
     )
@@ -190,7 +192,8 @@ def test_followup_request_routes_district_and_dong_to_top_level() -> None:
         "question": "가상 질문",
         "district": "서대문구",
         "dong": "연희동",
-        "conditions": {"item": "병"},
+        # 구는 조건에도 남아 "충돌을 알고 확정했다"는 표시가 된다(해석기가 읽는다).
+        "conditions": {"item": "병", "district": "서대문구"},
     }
 
 

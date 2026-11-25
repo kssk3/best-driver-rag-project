@@ -21,11 +21,14 @@ def build_followup_request(
     conditions = {
         key: value.strip() for key, value in extra_conditions.items() if value.strip()
     }
-    # 구·동은 요청의 최상위 필드이므로 조건이 아니라 그 자리에 넣는다.
+    # 구·동은 요청의 최상위 필드이므로 그 자리에 넣는다.
     request: dict = {"question": question, "district": district}
-    for key in ("district", "dong"):
-        if key in conditions:
-            request[key] = conditions.pop(key)
+    if "dong" in conditions:
+        request["dong"] = conditions.pop("dong")
+    if "district" in conditions:
+        # 구는 조건에도 남긴다. 해석기는 조건의 구가 요청의 구와 같으면 "충돌을 알고
+        # 확정했다"로 보고 같은 되묻기를 되풀이하지 않는다.
+        request["district"] = conditions["district"]
     request["conditions"] = conditions
     return request
 
