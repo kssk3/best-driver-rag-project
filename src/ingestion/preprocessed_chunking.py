@@ -3,12 +3,12 @@
 전체 삭제 표시가 있는 조문/별표 구역은 제외한다. 부칙은 과거/현행 혼재
 주의를 보존한다. 표 행에는 첫 행의 병합 범위에 해당하는 머리글과 같은
 구역의 모든 문단(후행 비고 포함)을 반복한다. search_text 정규화 대신
-원문 text를 쓰므로 이 경로는 표현/청킹 비교이며 정규화 효과 비교가 아니다.
+원문 text를 쓰며, 전처리에서 원문 대조를 마친 이어쓰기만 한 행으로 전달한다.
 """
 
 import hashlib
 import json
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from html import escape
 from html.parser import HTMLParser
 
@@ -184,6 +184,45 @@ def _header_count(rows: list[list[_Cell]]) -> int:
     return max(cell.rowspan for cell in rows[0])
 
 
+def _logical_rows(rows: list[list[_Cell]], groups: list[dict]):
+    """전처리에서 확정한 문장만 원본 첫 행 위치에 배치한다."""
+    by_anchor = {}
+    last_end = _header_count(rows) - 1
+    for group in groups:
+        numbers = _list(group["source_rows"], "source_rows")
+        if (
+            len(numbers) < 2
+            or any(type(number) is not int for number in numbers)
+            or numbers[0] <= last_end
+            or numbers[-1] >= len(rows)
+            or numbers != list(range(numbers[0], numbers[-1] + 1))
+        ):
+            raise ValueError("이어쓰기 원본 행 범위가 다릅니다.")
+        first_cells = [rows[number][0] for number in numbers]
+        if group["source_cell_ids"] != [cell.cell_id for cell in first_cells]:
+            raise ValueError("이어쓰기 원본 셀 ID가 다릅니다.")
+        original = "".join(cell.text for cell in first_cells)
+        text = _text(group["text"], "이어쓰기 문장")
+        if "".join(original.split()) != "".join(text.split()):
+            raise ValueError("이어쓰기 문장과 원문 글자가 다릅니다.")
+        by_anchor[numbers[0]] = group
+        last_end = numbers[-1]
+
+    skip_through = -1
+    for number, cells in enumerate(rows):
+        if number <= skip_through:
+            continue
+        group = by_anchor.get(number)
+        origin = {}
+        if group is not None:
+            anchor, *others = cells
+            text = group["text"]
+            cells = [replace(anchor, text=text, html=escape(text)), *others]
+            origin = {key: group[key] for key in ("source_rows", "source_cell_ids")}
+            skip_through = group["source_rows"][-1]
+        yield number, cells, origin
+
+
 def _json_body(data: dict):
     for unit in _list(data["units"], "units"):
         if _deleted(unit.get("deleted_article", False)):
@@ -223,6 +262,9 @@ def _json_body(data: dict):
 def _json_annex(data: dict):
     if _deleted(data.get("deleted_marker", False)):
         return
+    continuations = data.get("table_row_continuations", {})
+    if not isinstance(continuations, dict):
+        raise ValueError("표 행 이어쓰기 검수 기록은 객체여야 합니다.")
     tables = {}
     for table in _list(data["tables"], "tables"):
         table_id = _text(table["table_id"], "table_id")
@@ -269,7 +311,9 @@ def _json_annex(data: dict):
                 {"row": n, "cells": [cell.value(n) for cell in cells]}
                 for n, cells in enumerate(rows[: _header_count(rows)])
             ]
-            for number, cells in enumerate(rows):
+            for number, cells, origin in _logical_rows(
+                rows, continuations.get(table["table_id"], [])
+            ):
                 yield (
                     f"{table['table_id']}/row[{number}]",
                     {
@@ -279,6 +323,7 @@ def _json_annex(data: dict):
                         "row": {
                             "row": number,
                             "cells": [cell.value(number) for cell in cells],
+                            **origin,
                         },
                     },
                 )
@@ -398,23 +443,27 @@ def _html_rows(table: _Node) -> list[list[_Cell]]:
     return _grid(cells, len(row_nodes), max(cell.col + cell.colspan for cell in cells))
 
 
+def _is_review_overlay(node: _Node) -> bool:
+    return node.tag == "aside" and node.attrs.get("data-review-overlay") in {
+        "image-summary",
+        "table-row-continuations",
+    }
+
+
 def _context_html(node: _Node) -> str:
     # 표 앞/뒤 순서와 무관하게 같은 section의 모든 서술을 보존한다.
     parts = []
     for child in node.children:
         if isinstance(child, str):
             parts.append(escape(child))
-        elif child.tag != "table" and not (
-            child.tag == "aside"
-            and child.attrs.get("data-review-overlay") == "image-summary"
-        ):
+        elif child.tag != "table" and not _is_review_overlay(child):
             if list(child.walk("table")):
                 raise ValueError("표를 감싼 별도 요소의 문맥 규격을 확인해야 합니다.")
             parts.append(child.render())
     return "".join(parts)
 
 
-def _row_html(number: int, cells: list[_Cell]) -> str:
+def _row_html(number: int, cells: list[_Cell], origin: dict | None = None) -> str:
     content = []
     for cell in cells:
         content.append(
@@ -424,7 +473,12 @@ def _row_html(number: int, cells: list[_Cell]) -> str:
         )
     # 수직 병합 값을 현재 행에 반복하고 원점/원래 span을 명시한다. 출력의
     # rowspan을 1로 풀어 머리글/단일 행의 잘못된 셀 겹침을 만들지 않는다.
-    return f'<tr data-row-index="{number}">' + "".join(content) + "</tr>"
+    attrs = f'data-row-index="{number}"'
+    if origin:
+        rows = " ".join(map(str, origin["source_rows"]))
+        cell_ids = escape(" ".join(origin["source_cell_ids"]), quote=True)
+        attrs += f' data-source-rows="{rows}" data-source-cell-ids="{cell_ids}"'
+    return f"<tr {attrs}>" + "".join(content) + "</tr>"
 
 
 def _html_parts(content: str):
@@ -444,15 +498,22 @@ def _html_parts(content: str):
         if summary is not None
         else ""
     )
+    row_overlays = [
+        node
+        for node in root.walk("aside")
+        if node.attrs.get("data-review-overlay") == "table-row-continuations"
+    ]
+    if len(row_overlays) > 1:
+        raise ValueError("표 행 이어쓰기 검수 기록이 중복됩니다.")
+    continuations = _load_json(row_overlays[0].text()) if row_overlays else {}
+    if not isinstance(continuations, dict):
+        raise ValueError("표 행 이어쓰기 검수 기록은 객체여야 합니다.")
     sections = list(root.walk("section"))
     if not sections:
         raise ValueError("XML 어댑터의 section 정보가 없는 HTML입니다.")
 
     def check_outside(node, inside=False):
-        if node.tag == "head" or (
-            node.tag == "aside"
-            and node.attrs.get("data-review-overlay") == "image-summary"
-        ):
+        if node.tag == "head" or _is_review_overlay(node):
             return
         inside = inside or node.tag == "section"
         for child in node.children:
@@ -499,11 +560,13 @@ def _html_parts(content: str):
                     _row_html(n, row)
                     for n, row in enumerate(rows[: _header_count(rows)])
                 )
-                for row_number, cells in enumerate(rows):
+                for row_number, cells, origin in _logical_rows(
+                    rows, continuations.get(table_id, [])
+                ):
                     value = (
                         f'<section data-section-title="{escape(title, quote=True)}">{context}'
                         f'<table data-table-id="{escape(table_id, quote=True)}"><thead>{headers}</thead>'
-                        f"<tbody>{_row_html(row_number, cells)}</tbody></table></section>{overlay}"
+                        f"<tbody>{_row_html(row_number, cells, origin)}</tbody></table></section>{overlay}"
                     )
                     yield f"{table_id}/row[{row_number}]", value
         else:

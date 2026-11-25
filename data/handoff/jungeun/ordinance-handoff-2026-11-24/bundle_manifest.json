@@ -35,11 +35,11 @@
     },
     {
       "repository_path": "src/ingestion/annexes.py",
-      "sha256": "0864ed74a55497949fbcb28ec798da458e56433804005480761c2655b677b1de"
+      "sha256": "5e2d7747b69207f0f3457678acadfca8349a9fe2ddc0921d85c719604e69cfff"
     },
     {
       "repository_path": "src/ingestion/search_preparation.py",
-      "sha256": "d3998005834a83283a74d2aa47824a1b95c28e5e1f4ea374a60cf606393669c0"
+      "sha256": "2a15f1429f22f04e6f051349a83fa042224db5d8432ee9ec8502662da09a6282"
     },
     {
       "repository_path": "pyproject.toml",
@@ -140,13 +140,13 @@
     },
     {
       "path": "README.md",
-      "size_bytes": 11211,
-      "sha256": "8b7e9ee832233fea58d4d6e85d3eed67c4b19295e5b77c578277ebc55c11139b"
+      "size_bytes": 11825,
+      "sha256": "da81451adf91cc6286953bd4ef21496307b33822ca4f185e672e03f3d02a6371"
     },
     {
       "path": "processed/annex/1481479_121237861.json",
-      "size_bytes": 1339708,
-      "sha256": "5d43d95e532ddf488c0b6d32eb692f3e514dda435be657cfeac4eec961effaea"
+      "size_bytes": 1342692,
+      "sha256": "ef55fa4e61708c1f5c5c1c1d0eeb77061abdd4b2d6fd45026f9ce1de1863fa3c"
     },
     {
       "path": "processed/annex/1481479_121237861.xml",
@@ -335,8 +335,8 @@
     },
     {
       "path": "processed/annex/annex_manifest.json",
-      "size_bytes": 45049,
-      "sha256": "9bc7671120aa88c2b21364240c4f4fbcd7a3ce92ba7be4a38d9675bd6c69a8b6"
+      "size_bytes": 48449,
+      "sha256": "d62667847a8e95b9b22dd2adac01d6ea3f96c8146f155fa6b3cff4f8f655de12"
     },
     {
       "path": "processed/body/processing_manifest.json",
@@ -515,8 +515,8 @@
     },
     {
       "path": "review/human_review_overlays.json",
-      "size_bytes": 3104,
-      "sha256": "0a6e1b7a01a8fb671e2c9cc7a2c648714b1181541785394e10ceedacbc8fe37a"
+      "size_bytes": 6906,
+      "sha256": "c3f70bbacf66e8613985ec2b2bc9f2e75fc121e86bd22c01c393750bf83972bb"
     },
     {
       "path": "review/pr9_integration_review.json",

@@ -18,6 +18,7 @@ from pathlib import Path, PurePosixPath, PureWindowsPath
 from urllib.parse import parse_qs, urlsplit
 
 from src.contracts import SourceDocument
+from src.ingestion.search_preparation import validate_table_row_continuations
 from src.ingestion.xml_adapter import xml_to_html
 
 
@@ -198,6 +199,7 @@ _OVERLAY_FIELDS = {
     "human_review",
     "retrieval_decision",
     "structured_image_summary",
+    "table_row_continuations",
 }
 
 
@@ -524,10 +526,19 @@ def load_preprocessed_bundle(
                 )
             _same(data, updates, tuple(updates), "검수 overlay 적용 결과")
             _same(record, updates, tuple(updates), "검수 overlay manifest")
-            review = _mapping(updates.get("human_review"), "human_review")
-            _same(review, data, ("parent_mst", "attachment_id"), "검수 부모/첨부")
+            if set(updates) != {"table_row_continuations"}:
+                review = _mapping(updates.get("human_review"), "human_review")
+                _same(review, data, ("parent_mst", "attachment_id"), "검수 부모/첨부")
             used_overlays.add(key)
-        elif "structured_image_summary" in data or "human_review" in data:
+        if any(
+            field in data
+            and (key not in overlays or field not in overlays[key]["updates"])
+            for field in (
+                "structured_image_summary",
+                "human_review",
+                "table_row_continuations",
+            )
+        ):
             raise PreprocessedBundleError(
                 "사람 검수 보완에 대응하는 overlay가 없습니다."
             )
@@ -541,6 +552,24 @@ def load_preprocessed_bundle(
                 + "</aside>"
             )
             # JSON에 이미 있는 검수 보완을 XML 표현에도 같은 키/값으로 전달한다.
+            html = (
+                html.replace("</body>", supplement + "</body>")
+                if "</body>" in html
+                else html + supplement
+            )
+        if "table_row_continuations" in data:
+            continuations = data["table_row_continuations"]
+            try:
+                validate_table_row_continuations(data["tables"], continuations)
+            except (ValueError, KeyError, TypeError, IndexError) as error:
+                raise PreprocessedBundleError(
+                    f"첨부 표 이어쓰기 확인 필요: {error}"
+                ) from error
+            supplement = (
+                '<aside data-review-overlay="table-row-continuations">'
+                + escape(json.dumps(continuations, ensure_ascii=False), quote=False)
+                + "</aside>"
+            )
             html = (
                 html.replace("</body>", supplement + "</body>")
                 if "</body>" in html
