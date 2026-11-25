@@ -5,10 +5,25 @@
 수거 종류를 확인하지 못한 장소는 확인된 종류가 없다고만 보여 주고 단정하지 않는다.
 """
 
+from urllib.parse import quote
+
 import streamlit as st
 
 from src.interface.adapter import Place, PlaceResult
 from src.interface.chat import is_safe_url
+
+MAP_SEARCH_URLS = (
+    ('카카오맵', 'https://map.kakao.com/link/search/'),
+    ('네이버지도', 'https://map.naver.com/p/search/'),
+)
+
+
+# 주소로 지도 검색 링크 생성
+def map_search_links(address: str | None) -> list[tuple[str, str]]:
+    text = (address or '').strip()
+    if not text:
+        return []
+    return [(label, prefix + quote(text, safe='')) for label, prefix in MAP_SEARCH_URLS]
 
 
 def has_coordinates(place: Place) -> bool:
@@ -66,6 +81,14 @@ def _place_line(place: Place) -> str:
 
     line = f'- {place.name} · {place.address or '주소 없음'}'
     line += f' · 수거 종류: {types} · {source}'
+    links = map_search_links(place.address)
+    
+    if links:
+        line += ' · 지도에서 보기: ' + ' / '.join(
+            f'[{label}]({url})' for label, url in links
+        )
+
     if not has_coordinates(place):
         line += ' · (좌표 없음: 지도에 표시되지 않음)'
+    
     return line
