@@ -1,3 +1,3 @@
-﻿chunking_version,format,chunk_count,documents,서대문구,송파구,공통,article_chunks,table_row_chunks,other_chunks,conditions_empty,deleted_marker_chunks,short_chunks,duplicate_plain_chunks,content_min,content_median,content_p90,content_max,plain_min,plain_median,plain_p90,plain_max
-preprocessed-v2-row-v1,html,557,14,259,298,0,104,446,7,557,11,44,31,190,2293,2816,4228,7,256,500,1780
-preprocessed-v2-row-v1,json,557,14,259,298,0,104,446,7,557,11,16,4,48,1987,2287,2957,42,1885,2264,2845
+﻿chunking_version,format,chunk_count,documents,서대문구,송파구,공통,범위미상,article_chunks,heading_chunks,table_row_chunks,other_chunks,conditions_empty,deleted_marker_chunks,short_chunks,duplicate_plain_chunks,content_min,content_median,content_p90,content_max,plain_min,plain_median,plain_p90,plain_max
+preprocessed-v2-row-v1,html,557,14,259,298,0,0,90,14,446,7,557,11,44,31,190,2293,2816,4228,7,256,500,1780
+preprocessed-v2-row-v1,json,557,14,259,298,0,0,90,14,446,7,557,11,16,4,48,1987,2287,2957,42,1885,2264,2845

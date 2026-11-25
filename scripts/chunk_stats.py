@@ -2,11 +2,13 @@
 
 담당: 이승주
 `scripts.prepare_data`가 만든 `chunks-html.json` 또는 `chunks-json.json`을 읽는다. 외부 호출은 하지 않는다.
+청킹 버전(`chunking_version`)과 형식(`content_format`)은 청크에서 읽는다. 한 파일에 여러 값이 섞여 있으면 거부한다.
 python -m scripts.chunk_stats --help 참조.
 """
 
 import argparse
 import csv
+import html
 import json
 import re
 import statistics
@@ -24,7 +26,9 @@ COLUMNS = [
     "서대문구",
     "송파구",
     "공통",
+    "범위미상",
     "article_chunks",
+    "heading_chunks",
     "table_row_chunks",
     "other_chunks",
     "conditions_empty",
@@ -51,7 +55,8 @@ def plain_text(content: str, content_format: str = "html") -> str:
     text = content
     if content_format == "html":
         text = re.sub(r"<[^>]+>", " ", text)
-        text = text.replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&")
+        # &lt; &gt; &amp;뿐 아니라 &quot;, &#x27;, &nbsp; 같은 문자 참조도 한 글자로 센다.
+        text = html.unescape(text)
     return re.sub(r"\s+", " ", text).strip()
 
 
@@ -69,30 +74,73 @@ def _has_deleted_marker(text: str) -> bool:
     return bool(re.search(r"삭제\s*<|<[^<>]*삭제", text))
 
 
-def summarize(chunks: list[dict], chunking_version: str, fmt: str) -> dict:
-    """청크 목록(prepare_data의 chunks-*.json 항목)을 한 줄 요약으로 바꾼다."""
+def _scope(chunk: dict) -> str:
+    """청크의 범위. common과 unknown은 둘 다 districts가 빈 목록이므로 scope_type으로 구별한다."""
+    scope = chunk.get("scope_type")
+    if scope in ("district", "common", "unknown"):
+        return scope
+    # scope_type이 없는 옛 파일은 구 목록이 비었으면 공통으로 본다.
+    return "district" if chunk["districts"] else "common"
+
+
+def detect_version(chunks: list[dict]) -> str:
+    """청크들이 모두 같은 chunking_version이면 그 값을 돌려주고, 없거나 섞여 있으면 거부한다."""
+    versions = {c.get("chunking_version") for c in chunks}
+    if len(versions) != 1 or not next(iter(versions)):
+        raise ValueError(
+            f"청크의 chunking_version이 하나가 아닙니다: {sorted(map(str, versions))}"
+        )
+    return versions.pop()
+
+
+def _is_heading(chunk: dict) -> bool:
+    """장·절 제목 청크. 조문 번호가 000000인 조문 단위다(JSON 청크의 unit_type이 heading인 것과 일치한다)."""
+    return (
+        chunk["source_location"].startswith("조문")
+        and "(조문번호 000000)" in chunk["source_location"]
+    )
+
+
+def detect_format(chunks: list[dict]) -> str:
+    """청크들이 모두 같은 content_format이면 그 값을 돌려주고, 섞여 있으면 거부한다."""
+    formats = {c.get("content_format", "html") for c in chunks}
+    if len(formats) != 1:
+        raise ValueError(f"청크의 content_format이 하나가 아닙니다: {sorted(formats)}")
+    return formats.pop()
+
+
+def summarize(chunks: list[dict]) -> dict:
+    """청크 목록(prepare_data의 chunks-*.json 항목)을 한 줄 요약으로 바꾼다.
+
+    구 열은 구마다 따로 센다. 여러 구에 적용되는 청크는 각 구 열에 모두 들어가므로
+    서대문구+송파구가 청크 수보다 커질 수 있다.
+    """
     if not chunks:
         raise ValueError("청크가 없습니다.")
-    districts = Counter(
-        "공통" if not c["districts"] else ",".join(c["districts"]) for c in chunks
-    )
+    chunking_version = detect_version(chunks)
+    fmt = detect_format(chunks)
     raw = [len(c["content"]) for c in chunks]
     plain_texts = [_plain(c) for c in chunks]
     plain = [len(t) for t in plain_texts]
     same = Counter(plain_texts)
-    article = sum(1 for c in chunks if c["source_location"].startswith("조문"))
+    heading = sum(1 for c in chunks if _is_heading(c))
+    article = (
+        sum(1 for c in chunks if c["source_location"].startswith("조문")) - heading
+    )
     table = sum(1 for c in chunks if c["source_location"].startswith("table-"))
     return {
         "chunking_version": chunking_version,
         "format": fmt,
         "chunk_count": len(chunks),
         "documents": len({c["source_document_id"] for c in chunks}),
-        "서대문구": districts.get("서대문구", 0),
-        "송파구": districts.get("송파구", 0),
-        "공통": districts.get("공통", 0),
+        "서대문구": sum(1 for c in chunks if "서대문구" in c["districts"]),
+        "송파구": sum(1 for c in chunks if "송파구" in c["districts"]),
+        "공통": sum(1 for c in chunks if _scope(c) == "common"),
+        "범위미상": sum(1 for c in chunks if _scope(c) == "unknown"),
         "article_chunks": article,
+        "heading_chunks": heading,
         "table_row_chunks": table,
-        "other_chunks": len(chunks) - article - table,
+        "other_chunks": len(chunks) - article - heading - table,
         "conditions_empty": sum(1 for c in chunks if not c["conditions"]),
         "deleted_marker_chunks": sum(
             1 for c in chunks if _has_deleted_marker(_plain(c))
@@ -114,10 +162,16 @@ def summarize(chunks: list[dict], chunking_version: str, fmt: str) -> dict:
 def append_row(row: dict, csv_path: Path) -> None:
     """CSV 끝에 한 줄을 더한다. 파일이 없으면 제목 줄부터 만든다. 같은 이름(chunking_version, format)이 이미 있으면 거부한다."""
     csv_path = Path(csv_path)
-    exists = csv_path.exists()
+    # 0바이트 파일은 새 파일로 본다(머리글을 쓴다).
+    exists = csv_path.exists() and csv_path.stat().st_size > 0
     if exists:
         with open(csv_path, encoding="utf-8-sig", newline="") as f:
-            for old in csv.DictReader(f):
+            reader = csv.DictReader(f)
+            if reader.fieldnames != COLUMNS:
+                raise ValueError(
+                    "기존 CSV의 열이 이 스크립트의 열과 다릅니다. 새 파일에 기록하세요."
+                )
+            for old in reader:
                 if (
                     old["chunking_version"] == row["chunking_version"]
                     and old["format"] == row["format"]
@@ -167,13 +221,6 @@ def main(argv: list[str] | None = None) -> int:
         help="chunks-html.json 또는 chunks-json.json",
     )
     parser.add_argument(
-        "--chunking-version",
-        help="청킹 버전 이름(청크의 chunking_version 값, 예: preprocessed-v2-row-v1). CSV에 쓸 때 필요하다.",
-    )
-    parser.add_argument(
-        "--format", choices=("html", "json"), help="청크 형식. CSV에 쓸 때 필요하다."
-    )
-    parser.add_argument(
         "--csv", type=Path, help="누적할 CSV. 주지 않으면 요약만 출력한다."
     )
     parser.add_argument(
@@ -186,9 +233,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.show:
             show(chunks, args.show)
             return 0
-        if not args.chunking_version or not args.format:
-            parser.error("--chunking-version과 --format이 필요합니다.")
-        row = summarize(chunks, args.chunking_version, args.format)
+        row = summarize(chunks)
         for key in COLUMNS:
             print(f"{key}: {row[key]}")
         if args.csv:
