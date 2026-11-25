@@ -1,6 +1,7 @@
 """실행기와 지역별 검토 조회가 JSON의 규칙을 지키는지 확인한다."""
 
 import json
+import sys
 import unicodedata
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -8,7 +9,7 @@ from unittest import TestCase
 from unittest.mock import patch
 
 from src.query.aliases import ITEM_ALIASES
-from src.rewrite_dictionary.build_item_catalog import build_catalog
+from src.rewrite_dictionary.build_item_catalog import main as build_item_catalog
 from src.rewrite_dictionary.catalog import CATALOG_PATH
 from src.rewrite_dictionary.official_review import (
     OFFICIAL_SNAPSHOT_PATH,
@@ -348,8 +349,7 @@ class CatalogRuntimeTests(TestCase):
                 self.assertEqual(rewrite(question), question)
                 self.assertIsNone(build(question)["language_normalized_question"])
 
-    def test_rebuild_and_prompt_do_not_read_the_review_snapshot(self):
-        tracked_catalog = CATALOG_PATH.read_text(encoding="utf-8")
+    def test_cli_rebuild_matches_tracked_bytes_without_reading_review_snapshot(self):
         bundle = (
             CATALOG_PATH.parents[2]
             / "data/handoff/jungeun/ordinance-handoff-2026-11-24"
@@ -361,19 +361,24 @@ class CatalogRuntimeTests(TestCase):
                 self.fail("검색 카탈로그에서 검토 전용 스냅샷을 읽었습니다.")
             return original_read_text(path, *args, **kwargs)
 
-        with patch.object(Path, "read_text", guarded_read):
-            rebuilt = build_catalog(bundle)
-            build = make_prompt_context_builder()
-            result = build(
-                "송파구에서 불투명 패트병을 어떻게 버려요?", district="송파구"
-            )
+        with TemporaryDirectory() as directory:
+            output = Path(directory) / "item_catalog.json"
+            argv = ["build_item_catalog", str(bundle), "--output", str(output)]
+            with (
+                patch.object(Path, "read_text", guarded_read),
+                patch.object(sys, "argv", argv),
+            ):
+                build_item_catalog()
+                build = make_prompt_context_builder(output)
+                result = build(
+                    "송파구에서 불투명 패트병을 어떻게 버려요?", district="송파구"
+                )
 
-        self.assertEqual(
-            json.dumps(rebuilt, ensure_ascii=False, indent=2) + "\n",
-            tracked_catalog,
-        )
+            rebuilt = output.read_bytes()
+            self.assertEqual(rebuilt, CATALOG_PATH.read_bytes())
+
         self.assertEqual(
             result["item_context"],
             [{"item": "불투명 패트병", "checks": ["원래 용도", "재질 표시"]}],
         )
-        self.assertNotIn("official_source_lookup", rebuilt)
+        self.assertNotIn("official_source_lookup", json.loads(rebuilt))

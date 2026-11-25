@@ -656,7 +656,9 @@ def main():
     args = parser.parse_args()
     data = build_catalog(args.bundle)
     args.output.write_text(
-        json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+        json.dumps(data, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+        newline="\n",
     )
     print(
         f"품목·검색어 {data['item_count']}개, 리라이트 별칭 {data['rewrite_alias_count']}개"
