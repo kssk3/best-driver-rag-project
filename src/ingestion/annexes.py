@@ -16,7 +16,10 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlparse, urlunparse
 from urllib.request import urlopen
 
-from src.ingestion.search_preparation import prepare_table_rows
+from src.ingestion.search_preparation import (
+    prepare_table_rows,
+    validate_table_row_continuations,
+)
 
 REVIEW_UPDATE_FIELDS = {
     "content_role",
@@ -24,6 +27,7 @@ REVIEW_UPDATE_FIELDS = {
     "human_review",
     "structured_image_summary",
     "retrieval_decision",
+    "table_row_continuations",
 }
 
 
@@ -48,7 +52,11 @@ def _validate_review_overlay(overlay: dict) -> tuple[str, str]:
     ):
         raise ValueError("검수 오버레이의 updates 허용 필드 확인 필요")
     for field, value in updates.items():
-        if field in {"human_review", "structured_image_summary"}:
+        if field in {
+            "human_review",
+            "structured_image_summary",
+            "table_row_continuations",
+        }:
             if not isinstance(value, dict) or not value:
                 raise ValueError(f"검수 오버레이의 {field}는 기록 객체 필요")
         elif not isinstance(value, str) or not value.strip():
@@ -100,6 +108,10 @@ def apply_review_overlay(record: dict, overlay: dict) -> dict:
         raise ValueError("검수 오버레이 원본 해시 불일치")
     result = deepcopy(record)
     result.update(deepcopy(overlay["updates"]))
+    if "table_row_continuations" in result:
+        validate_table_row_continuations(
+            result["tables"], result["table_row_continuations"]
+        )
     return result
 
 

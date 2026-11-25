@@ -205,3 +205,66 @@ def prepare_table_rows(table: dict) -> list[PreparedRow]:
     if used_ids != set(by_id):
         raise ValueError("행 참조에서 누락된 원본 셀")
     return rows
+
+
+def validate_table_row_continuations(tables: list[dict], continuations: dict) -> None:
+    """원문 대조로 확정한 이어쓰기의 행·셀·내용을 검사한다."""
+    if not isinstance(continuations, dict) or not continuations:
+        raise ValueError("이어쓰기 표 목록 필요")
+    tables_by_id = {table["table_id"]: table for table in tables}
+    for table_id, groups in continuations.items():
+        table = tables_by_id.get(table_id)
+        if table is None or not isinstance(groups, list) or not groups:
+            raise ValueError("이어쓰기 대상 표와 행 범위 확인 필요")
+        rows = table["rows_for_search"]
+        header_count = max(cell["rowspan"] for cell in rows[0]["cell_values"])
+        previous_end = header_count - 1
+        for group in groups:
+            if not isinstance(group, dict) or set(group) != {
+                "source_rows",
+                "source_cell_ids",
+                "text",
+            }:
+                raise ValueError("이어쓰기의 행·셀·문장 필요")
+            numbers = group["source_rows"]
+            if (
+                not isinstance(numbers, list)
+                or len(numbers) < 2
+                or any(type(number) is not int for number in numbers)
+                or numbers[0] <= previous_end
+                or numbers[-1] >= len(rows)
+                or numbers != list(range(numbers[0], numbers[-1] + 1))
+            ):
+                raise ValueError("이어쓰기 행은 본문의 겹치지 않는 연속 범위 필요")
+            anchor = rows[numbers[0]]["cell_values"]
+            anchor_ids = {cell["cell_id"] for cell in anchor}
+            first_cells = []
+            for number in numbers:
+                cells = rows[number]["cell_values"]
+                first = next((cell for cell in cells if cell["origin_col"] == 0), None)
+                if (
+                    first is None
+                    or first["origin_row"] != number
+                    or first["rowspan"] != 1
+                    or first["colspan"] != 1
+                    or not first["text"].strip()
+                ):
+                    raise ValueError("이어쓰기는 원본 첫 열의 독립적인 텍스트 셀 필요")
+                if number != numbers[0] and any(
+                    cell["text"].strip() and cell["cell_id"] not in anchor_ids
+                    for cell in cells
+                    if cell is not first
+                ):
+                    raise ValueError(
+                        "이어쓰기에서 후속 행의 다른 열 값을 잃을 수 있습니다."
+                    )
+                first_cells.append(first)
+            text = group["text"]
+            if group["source_cell_ids"] != [cell["cell_id"] for cell in first_cells]:
+                raise ValueError("이어쓰기의 원본 셀 ID가 다릅니다.")
+            original = "".join(cell["text"] for cell in first_cells)
+            if not isinstance(text, str) or "".join(text.split()) != "".join(
+                original.split()
+            ):
+                raise ValueError("이어쓰기는 원문 글자를 변경할 수 없습니다.")
+            previous_end = numbers[-1]

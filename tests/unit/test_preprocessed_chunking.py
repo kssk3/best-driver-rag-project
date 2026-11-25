@@ -2,12 +2,16 @@
 
 import copy
 import json
+import re
 from html import escape
 from html.parser import HTMLParser
+from pathlib import Path
 
 import pytest
 
 from src.contracts import SourceDocument
+from src.ingestion.annexes import apply_review_overlay
+from src.ingestion.preprocessed_bundle import load_preprocessed_bundle
 from src.ingestion.preprocessed_chunking import (
     PreprocessedChunkingError,
     chunk_preprocessed_documents,
@@ -479,3 +483,121 @@ def test_duplicate_source_and_invalid_input_are_rejected_without_modification():
         chunk_preprocessed_documents([{}])
     with pytest.raises(ValueError, match="chunking_version"):
         chunk_preprocessed_documents([], chunking_version=" ")
+
+
+def test_reviewed_songpa_annex_row_continuations_keep_text_amount_and_location():
+    project = Path(__file__).resolve().parents[2]
+    bundle = project / "data/handoff/jungeun/ordinance-handoff-2026-11-24"
+    result = load_preprocessed_bundle(
+        bundle, project_root=project, version="row-review"
+    )
+    source_id = "songpa-rules:attachment:121237861"
+    documents = [
+        document for document in result.documents if document.document_id == source_id
+    ]
+    assert {document.content_format for document in documents} == {"html", "json"}
+
+    expected = {
+        3: (5, "허가승인 받은 매립시설외의 곳에 폐기물을 버리거나 매립한 자"),
+        7: (8, "담배꽁초"),
+        10: (11, "이용하여 폐기물을 버리는 행위"),
+        15: (16, "수거하지 아니하는 행위"),
+        18: (19, "이용하여 폐기물을 버리는 행위"),
+        21: (24, "법 제46조 폐기물 재생신고자는 제외"),
+        26: (30, "1차 위반은 용기 미소지에 한함"),
+        31: (32, "소각 또는 매립한 자"),
+    }
+    continuations = {
+        f"table-3/row[{number}]"
+        for first, (last, _) in expected.items()
+        for number in range(first + 1, last + 1)
+    }
+    anchors = {f"table-3/row[{number}]" for number in expected}
+    for source in documents:
+        legacy = source.model_copy()
+        if source.content_format == "json":
+            data = json.loads(source.content)
+            data.pop("table_row_continuations")
+            legacy.content = json.dumps(data, ensure_ascii=False)
+        else:
+            legacy.content = re.sub(
+                r'<aside data-review-overlay="table-row-continuations">.*?</aside>',
+                "",
+                source.content,
+                flags=re.DOTALL,
+            )
+        before = {
+            chunk.source_location: chunk
+            for chunk in chunk_preprocessed_documents([legacy])
+        }
+        after = {
+            chunk.source_location: chunk
+            for chunk in chunk_preprocessed_documents([source])
+        }
+        assert set(before) - set(after) == continuations
+        assert all(
+            after[key].chunk_id == before[key].chunk_id for key in set(after) - anchors
+        )
+        for first, (last, phrase) in expected.items():
+            content = after[f"table-3/row[{first}]"].content
+            assert phrase in content
+            assert f"table-3-r{last}-c0" in content
+        construction = after["table-3/row[21]"].content
+        animals = after["table-3/row[26]"].content
+        if source.content_format == "json":
+            construction_values = json.loads(construction)["row"]
+            animal_values = json.loads(animals)["row"]
+            assert construction_values["source_rows"] == [21, 22, 23, 24]
+            assert [cell["text"] for cell in construction_values["cells"][1:4]] == [
+                "500"
+            ] * 3
+            assert [cell["text"] for cell in animal_values["cells"][1:4]] == [
+                "15",
+                "21",
+                "30",
+            ]
+        else:
+            assert 'data-source-rows="21 22 23 24"' in construction
+            construction_amounts = [part.strip() for part in Text(construction).parts]
+            animal_amounts = [part.strip() for part in Text(animals).parts]
+            assert construction_amounts.count("500") == 3
+            assert all(value in animal_amounts for value in ("15", "21", "30"))
+
+    form = next(
+        record
+        for record in result.report["sources"]
+        if record["document_id"] == "seodaemun-rules:attachment:160561049"
+    )
+    assert form["role"] == "administrative_form"
+    assert not form["index_eligible"]
+
+
+def test_preprocessing_rejects_continuation_that_drops_an_amount():
+    project = Path(__file__).resolve().parents[2]
+    annex = project / "data/handoff/jungeun/ordinance-handoff-2026-11-24"
+    data = json.loads(
+        (annex / "processed/annex/1481479_121237861.json").read_text(encoding="utf-8")
+    )
+    overlay = {
+        **{key: data[key] for key in ("parent_mst", "attachment_id", "raw_sha256")},
+        "updates": {
+            "table_row_continuations": {
+                "table-3": [
+                    {
+                        "source_rows": [19, 20, 21],
+                        "source_cell_ids": [
+                            "table-3-r19-c0",
+                            "table-3-r20-c0",
+                            "table-3-r21-c0",
+                        ],
+                        "text": "",
+                    }
+                ],
+            },
+        },
+    }
+    # Force a plausible continuation shape in the spacer between two real entries.
+    table = next(table for table in data["tables"] if table["table_id"] == "table-3")
+    table["rows_for_search"][20]["cell_values"][0]["text"] = "같은 줄"
+    with pytest.raises(ValueError, match="다른 열 값"):
+        apply_review_overlay(data, overlay)
