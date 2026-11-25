@@ -387,3 +387,24 @@ def test_retriever_runs_variant_c_with_injected_reranker():
     assert results[0].chunk.chunk_id == "seodaemun-carton"
     assert len(results) == 2
     assert {"vector", "rrf", "rerank"} <= set(results[0].stage_scores)
+
+
+def test_rrf_merge_skips_missing_stage_score():
+    # score가 없는 후보(None)도 순위로는 합치고, 단계 점수에는 숫자만 남긴다.
+    no_score = [
+        SearchCandidate(
+            chunk=make_chunk("x", "district", ["서대문구"], "x"), rank=1, score=None
+        )
+    ]
+    merged = rrf_merge({"vector": no_score}, top_k=5)
+
+    assert merged[0].stage_scores == {"rrf": pytest.approx(1 / 61)}
+
+
+def test_rerank_breaks_ties_by_previous_rank():
+    # 재정렬 점수가 모두 같으면 chunk_id 순이 아니라 이전 단계(B) 순위를 유지한다.
+    candidates = rrf_merge({"vector": ranked("zz", "aa")}, top_k=5)  # zz 1위, aa 2위
+
+    results = rerank("질문", candidates, lambda q, c: [10.0, 10.0], top_k=2)
+
+    assert [r.chunk.chunk_id for r in results] == ["zz", "aa"]

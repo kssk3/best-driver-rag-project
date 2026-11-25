@@ -285,8 +285,8 @@ def rrf_merge(
     chunks: dict[str, Chunk] = {}
     stage_scores: dict[str, dict[str, float]] = {}
 
-    # ③ 목록을 하나씩: 처음엔 stage="vector", 다음엔 stage="bm25"
-    for stage, candidates in ranked_lists.items():
+    # ③ 목록을 하나씩: 처음엔 stage_name="vector", 다음엔 stage_name="bm25"
+    for stage_name, candidates in ranked_lists.items():
         # ④ 그 목록 안의 후보를 하나씩
         for candidate in candidates:
             chunk_id = candidate.chunk.chunk_id
@@ -303,7 +303,10 @@ def rrf_merge(
             #    setdefault = "없으면 빈 dict를 만들고, 그 dict를 돌려줘"
             #    → x: {"vector": 0.9}
             #    → y: {"vector": 0.8, "bm25": 12}
-            stage_scores.setdefault(chunk_id, {})[stage] = candidate.score
+            #    score는 없을 수도 있다(None). 단계 점수는 숫자만 받으므로 있을 때만 남긴다.
+            recorded = stage_scores.setdefault(chunk_id, {})
+            if candidate.score is not None:
+                recorded[stage_name] = candidate.score
 
     # ⑧ chunk_id들을 RRF 점수 높은 순으로 정렬, 동점이면 chunk_id 순 (재현성)
     #    y = 1/62 + 1/61 = 0.0325,  x = 1/61 = 0.0164  →  ["y", "x"]
@@ -347,26 +350,39 @@ def rerank(
     """재정렬기 점수로 후보를 다시 줄 세워 top_k개를 돌려준다.
 
     이전 단계 점수(vector, bm25, rrf)는 stage_scores에 남기고 "rerank" 점수를 더한다.
-    점수가 같으면 chunk_id 순으로 정해 실행할 때마다 순서가 같게 한다.
+    재정렬 점수가 같으면 이전 단계(B) 순위를 따른다. LLM은 0~10 정수라 동점이 잦은데,
+    chunk_id 순으로 정하면 근거 없는 순서가 된다. 그래도 같으면 chunk_id 순.
 
     Raises:
         RetrievalError: top_k가 1보다 작을 때.
         RerankerOutputError: 재정렬기 점수 개수가 후보 수와 다를 때.
     """
+    # ① 잘못된 요청은 오류로 (A·BM25·RRF와 같은 규칙)
     if top_k < 1:
         raise RetrievalError("top_k는 1 이상이어야 합니다.")
+    # ② 후보가 없으면 모델을 부르지 않는다 (빈 목록에 돈 쓰지 않기)
     if not candidates:
         return []
 
+    # ③ 재정렬기 호출: 후보마다 점수 하나씩 (어떤 모델인지 여기선 모른다 = 의존성 주입)
     scores = reranker(query, candidates)
+    # ④ 개수가 다르면 어느 점수가 어느 후보인지 알 수 없다 → 계약 위반 오류
     if len(scores) != len(candidates):
         raise RerankerOutputError(
             f"재정렬 점수 {len(scores)}개가 후보 {len(candidates)}개와 다릅니다."
         )
 
+    # ⑤ (점수, 후보)를 짝지어 정렬. 기준 3단계:
+    #    -item[0]               재정렬 점수 높은 순
+    #    item[1].rank           같으면 B(RRF) 순위 (면접 동점이면 서류 점수 순처럼)
+    #    item[1].chunk.chunk_id 그래도 같으면 chunk_id (실행마다 같은 순서)
     paired = sorted(
-        zip(scores, candidates), key=lambda item: (-item[0], item[1].chunk.chunk_id)
+        zip(scores, candidates),
+        key=lambda item: (-item[0], item[1].rank, item[1].chunk.chunk_id),
     )
+    # ⑥ 앞에서 top_k개를 새 순위(1, 2, ...)로 포장.
+    #    stage_scores: 이전 단계 점수(vector·bm25·rrf)를 펼쳐 복사(**)하고 rerank를 더한다
+    #    → 화면·평가에서 "어느 단계에서 순위가 바뀌었는지" 볼 수 있다
     return [
         SearchCandidate(
             chunk=candidate.chunk,
