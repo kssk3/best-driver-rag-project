@@ -22,31 +22,39 @@
 
 소형가전 77개에는 상위 검색어 `소형가전`과 세부 검색어 76개가 포함된다. 품목 하나가 여러 출처 분야에 등장할 수 있으므로 분야별 숫자는 합산하지 않는다.
 
-## 챗봇에서 읽는 형식
+## 운영 리라이트와 사전의 적용 범위
+
+현재 챗봇은 [운영 별칭표](../query/aliases.py)의 세 별칭과 [운영 프롬프트](../../prompts/query/rewrite.md)의 `p09-v1` 계약을 사용한다. 이 PR의 생성 원본 [aliases.py](aliases.py)와 출력 `item_catalog.json`은 확장 사전의 기준이다. 운영에 있는 우유팩·두유팩·소주팩의 `종이팩` 연결이 확장 사전에도 같은 값으로 들어 있는지 팀 테스트에서 확인한다.
+
+후속 연결 PR에서 확장 사전을 운영 별칭의 단일 원본으로 지정하고 기존 표에 별칭을 별도로 유지하는 방식을 종료한다. 프롬프트를 연결할 때는 문안을 `prompts/query/`에 반영하고 `QUERY_REWRITE_PROMPT_VERSION`을 올린다. 새 프롬프트 입력과 모델 출력 검증은 같은 사전 규칙을 사용하고, 세 별칭의 검색 동작을 회귀 테스트로 확인한다. 현재 `normalize_item()`과 모델 호출 계약은 기존 운영 경로를 따른다.
+
+## 사전을 읽는 형식
 
 - [item_catalog.json](item_catalog.json) 한 파일에 품목, 별칭, 방언·외래어, 장소, 전문 용어와 출처가 들어 있다. `rewrite_rules`에는 언어 치환 순서, 조사·인용문 처리에 필요한 패턴, 재질 약어의 문맥과 예외를 담았다. 정규식은 Python `re` 문법이다.
-- `alias_profiles.team`과 `alias_profiles.personal_fork`에는 각각의 `src/query/aliases.py`에서 가져온 별칭표 3개와 55개가 들어 있다. 기본 조회는 `item_aliases`를 사용한다. 프로필별 표는 대상 검색어와 출처 파일 해시를 보존해 비교할 수 있다.
+- `alias_profiles.team`과 `alias_profiles.personal_fork`에는 각각의 `src/query/aliases.py`에서 가져온 별칭표 3개와 55개가 들어 있다. 확장 사전 실행기는 `item_aliases`를 사용한다. 프로필별 표는 대상 검색어와 출처 파일 해시를 보존해 비교할 수 있다.
 - [개발용 평가 JSON](rewrite_evaluation.json)에는 품목·표현 54건, 방언 28건, 복합 품목 16건, 개인 검색 검증 22건을 담았다. `datasets[].data.cases`에서 문항을 읽으며, 문항과 기대 결과는 개발용 검증에 사용한다.
-- [aliases.py](aliases.py)는 팀의 `src/query/aliases.py`와 같은 `ITEM_ALIASES`와 `normalize_item()` 형식이다. 리라이트는 기존과 같이 질문을 보존하고 괄호에 검색어를 보강한다. `계란껍질은 음식물 쓰레기인가요?`는 `계란껍질은 음식물 쓰레기인가요? (음식물류폐기물) (달걀 껍데기)`가 된다.
+- [aliases.py](aliases.py)는 팀의 `src/query/aliases.py`와 같은 `ITEM_ALIASES`와 `normalize_item()` 형식이다. 사전 실행기는 필요한 언어 표현을 정규화한 뒤 검색어를 괄호로 보강한다. `계란껍질은 음식물 쓰레기인가요?`는 `계란껍질은 음식물 쓰레기인가요? (음식물류폐기물) (달걀 껍데기)`가 된다.
 - JSON의 `item_aliases`는 같은 별칭표다. `items_by_group`에서 분야의 품목 키를 찾고 `items_by_key`에서 이름과 지역별 출처를 조회할 수 있다. 품목 키는 한글 NFC 정규화, 대소문자 접기, 공백 제거 순으로 계산한다.
 - `exact_item_aliases`는 `스타일러`, `마사지기`, `원형 형광등`처럼 품목명 전체가 일치할 때 연결하는 표다. `normalize_item()`에서 사용할 수 있다. 이 규칙으로 `헤어 스타일러`나 `LED 원형형광등`은 문장 안에서 다른 품목의 별칭에 걸리지 않는다.
 - 품목별 `sources`는 지역 안내를 연결하는 출처 키, 조문·표 행 또는 안내 안의 위치, 품목이 등장한 분야를 담는다. 크기나 대상이 적힌 경우 해당 출처의 `qualifier`에 남겼다. 예를 들어 송파구 소형가전 안내의 식기세척기는 **1m 미만**으로 기재되어 있다. [송파구 폐가전 안내](https://www.songpa.go.kr/www/contents.do?key=3171)
 - `groups`는 품목을 찾기 위한 검색 범위다. 배출 분류와 수거 기준은 해당 지역·규격·품목 상태와 원문을 확인한다. 예를 들어 소형가전 안내의 가스레인지 표기는 송파구 목록과 서대문구 수거함 제외 공지에서 적용 범위가 다르다. [송파구 폐가전 안내](https://www.songpa.go.kr/www/contents.do?key=3171) · [서대문구 수거체계 변경 공지](https://www.sdm.go.kr/news/news/notice.do?mode=view&sdmBoardSeq=309565)
 - `sources.kind`에서 두 구의 전처리·공식 안내, 제품명 참고 자료, 주민 검색 표현을 확인할 수 있다. `lookup_context`는 가정용·업소용, 전원, 재질, 철거 여부처럼 품목마다 유지할 검색 조건이다. 관악구 품목표는 나무 판자와 운동용품의 명칭 참고에 사용했다. [관악구 품목표](https://www.gwanak.go.kr/site/gwanak/08/10803020300002016091310.jsp)
 
-## 질문별 프롬프트 입력
+## 질문별 프롬프트 입력 초안
 
 [prompt_context.py](prompt_context.py)의 `make_prompt_context_builder()`를 시작할 때 한 번 만든 뒤 질문마다 호출한다. 원질문, 지역 해석에서 확정한 구·동, 일치한 별칭과 해당 품목·장소의 확인 조건을 JSON으로 돌려준다. `--district`와 `--dong`을 생략하면 해석된 지역 필드는 `null`이다.
 
 ```zsh
-python3 -m rewrite_dictionary.prompt_context \
+uv run --locked python -m src.rewrite_dictionary.prompt_context \
   "잠실동에서 종이 뽁뽁이랑 LED전구 소켓은 우야노?" \
   --district 송파구 --dong 잠실동
 ```
 
 예시에서는 `종이 완충재`와 `LED 전구 소켓`을 보강하고, 포장재의 재질과 등기구 본체 포함 여부를 확인할 수 있다. `농약 공병`처럼 내용물이 불확실한 표현은 확인 항목을 전달한다. 새 품목별 조건 26개와 모호한 표현 20개는 [prompt_vocabulary.json](prompt_vocabulary.json)에서 관리한다.
 
-[프롬프트 문안](prompt_instructions.md)의 리라이트 구간은 질의 생성에, 답변 구간은 검색 결과를 받은 뒤 사용한다. JSON에서 프롬프트로 보내는 데이터는 질문에 해당하는 표현과 조건으로 제한한다. 공식 기록과 평가 정답은 검토 자료에서 조회한다. 이 실행기는 작업 폴더에서 검증했으며 팀 챗봇의 기본 프롬프트 적용은 별도다.
+[프롬프트 문안](prompt_instructions.md)은 `catalog-context-v1` 입력을 사용하는 연결 전 초안이다. 입력은 질문에 해당하는 표현과 조건으로 제한한다. 질문 등장 순서로 별칭 8개, 품목 6개, 장소 3개, 모호 표현 4개, 각 품목·장소의 조건 4개를 담는다. 상한을 넘으면 `omitted_counts`에 필드별 생략 수를 남긴다. 사용자 질문은 그대로 보존하고 매칭에 NFC 표기를 쓴다.
+
+후속 모델 연동에서 `serialize_prompt_context()`로 만든 JSON을 시스템 지시문과 분리된 사용자 입력으로 전달한다. 연결 테스트에서 어댑터가 직렬화 결과를 그대로 전달하는지 검증한다.
 
 ## 전국 방언, 외래어와 일본어계 생활어
 
@@ -69,7 +77,7 @@ python3 -m rewrite_dictionary.prompt_context \
 [runtime.py](runtime.py)는 JSON에서 방언·외래어·재질 규칙과 기본 별칭을 읽는다. 팀 `create_runtime`의 `rewriter` 인자로 `make_catalog_rewriter()`를 넘기면 지역 해석 후 검색 문자열을 다듬고, 파이프라인이 원질문과 구·동을 보존한다. 검증은 팀 파이프라인에서 이 콜백을 선택하고 모의 검색·응답을 붙여 진행했다. 팀 및 개인 앱의 기본 실행 설정에 반영하는 작업은 별도다.
 
 ```zsh
-python3 -m rewrite_dictionary.runtime "잠실동에서 계란껍질은 워떻게 버려?"
+uv run --locked python -m src.rewrite_dictionary.runtime "잠실동에서 계란껍질은 워떻게 버려?"
 ```
 
 ## 장소별 폐기물 검색
@@ -127,11 +135,9 @@ JSON의 `technical_lookup.terms_by_key`에서 전문 용어 63개의 뜻과 관�
 
 ## 출처와 재생성
 
-[공식 자료 검토본](official_source_snapshot.json)에 수집 원문 8건과 전처리 별표에서 확인한 기록 18건을 담았다. `review_district_records(catalog, item, district)`는 `by_district`에 기록된 해당 구 자료를 로컬 검토용으로 조회한다. `official_source_lookup` 전체는 `review_only`로 표시했다. 이용조건 검토를 마친 뒤 검색 색인과 외부 모델 입력에 사용할 자료를 정한다. 기존 개발 평가의 기대 결과는 평가 당시 색인 범위를 따른다.
+[공식 자료 검토본](official_source_snapshot.json)은 `review_only`로 표시하며, 출처 8건의 메타데이터와 로컬 검토 기록 18건을 담는다. [검토 모듈](official_review.py)의 `review_district_records(item, district)`는 이 스냅샷에서 해당 구의 기록을 찾는다. 검색 카탈로그 빌드와 프롬프트 실행은 검토 스냅샷을 읽지 않는다. 답변 근거나 인용은 팀 검색 결과를 사용한다.
 
-식약처 고시에서 확인한 재질명 17개는 `official_source_lookup.material_names`로 읽는다. 기존 재질 코드에 포함된 항목은 `technical_lookup.material_codes`에서 고시 표기 `official_name`도 조회할 수 있다. `PLA`의 고시 표기는 `폴리락타이드`이며 기존 검색어에는 `폴리젖산`이 있다. [식약처 제2026-72호](https://www.mfds.go.kr/brd/m_211/view.do?seq=14991)
-
-공식 품목 조회 API는 `official_source_lookup.pending.wasteguide_get_item`에 대상과 인증 상태를 기록했다. 확인 대상은 `에어캡`, `아보카도씨`다. [공공데이터포털 API 명세](https://www.data.go.kr/data/15156866/openapi.do?recommendDataYn=Y)
+검토 자료에서 확인한 재질명 17개와 공식 품목 조회 API 인증 상태는 검토본의 `material_names`와 `pending.wasteguide_get_item`에서 확인한다. 검색에 쓰는 명칭은 `prompt_vocabulary.json`의 품목명과 [전문 용어 사전](technical_terms.py)의 표기를 따른다. [식약처 제2026-72호](https://www.mfds.go.kr/brd/m_211/view.do?seq=14991) · [공공데이터포털 API 명세](https://www.data.go.kr/data/15156866/openapi.do?recommendDataYn=Y)
 
 팀 저장소 `dev`의 `c04cb70`에 있는 `data/handoff/jungeun/ordinance-handoff-2026-11-24/`를 기준으로 했다. 대형폐기물 표의 품목 셀은 서대문구 111개와 송파구 147개를 읽고, 규격 칸에서 확인한 일부 세부 품목도 포함했다. 서로 같은 표기에서 공백과 대소문자만 달라지는 경우 한 품목 키로 묶고, 각 지역 원문 위치를 모두 보존했다.
 
@@ -140,10 +146,10 @@ JSON의 `technical_lookup.terms_by_key`에서 전문 용어 63개의 뜻과 관�
 실험실 약품은 명칭·성분과 용기 잔류 여부를 유지하며 소속 기관의 연구실 안내를 조회한다. 농약은 남은 내용물과 빈 포장을 구분한다. 송파구의 2026년 10월 폐농약 공지는 해당 기간의 자료로 기록했다. [중앙대학교 연구실 폐기물 안내](https://safety.cau.ac.kr/contents.php?mid=m01_11) · [정부민원안내콜센터 남은 농약 안내](https://www.110.go.kr/data/counselView.do?num=C04_664043) · [한국환경공단 영농폐기물 안내](https://www.keco.or.kr/web/lay1/S1T185C1072/contents.do)
 
 ```zsh
-python3 rewrite_dictionary/export_rewrite_inputs.py "/path/to/team-repo" "/path/to/personal-fork"
-python3 -m rewrite_dictionary.build_item_catalog "/path/to/ordinance-handoff-2026-11-24"
+uv run --locked python -m src.rewrite_dictionary.export_rewrite_inputs "/path/to/team-repo" "/path/to/personal-fork"
+uv run --locked python -m src.rewrite_dictionary.build_item_catalog "/path/to/ordinance-handoff-2026-11-24"
 ```
 
 첫 명령은 별칭표 스냅샷과 평가 입력을 갱신할 때 실행한다. 두 번째 명령은 기존 스냅샷을 읽고 전처리 파일을 매니페스트의 해시와 대조한 뒤 품목 사전을 쓴다.
 
-리라이트와 생성된 사전은 프로젝트 루트에서 `python3 -m unittest discover -s rewrite_dictionary -p 'test_*.py'`로 검증한다.
+프로젝트 루트에서 `uv run --locked python -m pytest tests/unit/query`로 질의 모듈을 검증한다. 사전 코드와 테스트는 팀 CI의 Ruff, mypy, 문법 검사와 테스트·커버리지 범위에 포함된다.
