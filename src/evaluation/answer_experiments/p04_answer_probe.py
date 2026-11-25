@@ -9,11 +9,12 @@ from typing import TypeGuard
 from src.contracts import PipelineRequest
 from src.generation.answer import AnswerDraft, ConflictSide, Evidence, GenerationInput
 
-
 _COLOR_ROW = re.compile(r"[\w·]+ \w+색")
 _COLOR_DOCUMENT_ID = "seodaemun-rules:attachment:160561037"
 _COLOR_SCOPE = "공동주택 일반용기 설치 기준"
-_IMAGE_SUMMARY = re.compile(r'<aside data-review-overlay="image-summary">([^<]*)</aside>\s*$')
+_IMAGE_SUMMARY = re.compile(
+    r'<aside data-review-overlay="image-summary">([^<]*)</aside>\s*$'
+)
 _P04_ITEMS_JSON = "p04_items_json"
 
 
@@ -38,7 +39,9 @@ def make_p04_request(
         else:
             raise ValueError(f"Unsupported P04 condition: {key}")
     dong = encoded.pop("dong", None)
-    return PipelineRequest(question=question, district=district, dong=dong, conditions=encoded)
+    return PipelineRequest(
+        question=question, district=district, dong=dong, conditions=encoded
+    )
 
 
 def decode_p04_conditions(conditions: Mapping[str, str]) -> dict[str, object]:
@@ -65,7 +68,9 @@ def _reviewed_colors(evidence: Evidence) -> list[str]:
     try:
         if source.get("content_format") == "json":
             data = json.loads(evidence["text"])
-            summary = data.get("structured_image_summary") if isinstance(data, dict) else None
+            summary = (
+                data.get("structured_image_summary") if isinstance(data, dict) else None
+            )
         elif source.get("content_format") == "html":
             match = _IMAGE_SUMMARY.search(evidence["text"])
             summary = json.loads(unescape(match[1])) if match else None
@@ -146,7 +151,9 @@ def draft_p04_answer(payload: GenerationInput) -> AnswerDraft:
             schedules = set()
             for index, evidence in enumerate(payload["evidence"]):
                 text = evidence["text"]
-                if text.startswith(prefix) and (days := text.removeprefix(prefix).strip()):
+                if text.startswith(prefix) and (
+                    days := text.removeprefix(prefix).strip()
+                ):
                     sides.append({"evidence_index": index, "excerpt": text})
                     schedules.add(days)
             if len(schedules) > 1:

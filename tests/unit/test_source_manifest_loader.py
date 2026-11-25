@@ -3,17 +3,16 @@
 fixture는 사용자가 제공한 공개 출처 목록이다. 실제 원문을 내려받거나 읽지 않는다.
 """
 
+import json
+import socket
 from copy import deepcopy
 from datetime import date
-import json
 from pathlib import Path
-import socket
 from urllib import request
 
 import pytest
 
 from src.ingestion.loaders import SourceManifestError, load_source_manifest
-
 
 FIXTURE_PATH = Path(__file__).parents[1] / "fixtures" / "source_manifest.json"
 
@@ -65,9 +64,7 @@ def test_public_manifest_preserves_parent_attachment_relationships(manifest_data
             for attachment in original["별표_링크"]
         ]
 
-    attachments = [
-        attachment for entry in entries for attachment in entry.attachments
-    ]
+    attachments = [attachment for entry in entries for attachment in entry.attachments]
     # 이 단계는 목록을 읽는다. 삭제 표시나 서식을 임의로 걸러 인계 자료를 잃지 않는다.
     assert sum("삭제" in attachment.title for attachment in attachments) == 2
     assert sum("별지" in attachment.title for attachment in attachments) == 8

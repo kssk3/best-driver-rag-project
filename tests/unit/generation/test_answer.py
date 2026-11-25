@@ -66,7 +66,11 @@ class GroundedAnswerTests(TestCase):
             "evidence": [{"source": source, "text": wording, "chunk_id": None}],
         }
         draft_answer = Mock(
-            return_value={"status": "answered", "message": wording, "citation_indices": [0]}
+            return_value={
+                "status": "answered",
+                "message": wording,
+                "citation_indices": [0],
+            }
         )
 
         response = answer.generate_answer(request, draft_answer)
@@ -160,7 +164,9 @@ class InvalidDraftTests(TestCase):
         response = answer.generate_answer(self.request, draft_answer)
 
         self.assertEqual(response["citations"][0]["source_url"], original_url)
-        self.assertEqual(self.request["evidence"][0]["source"]["source_url"], original_url)
+        self.assertEqual(
+            self.request["evidence"][0]["source"]["source_url"], original_url
+        )
 
     def test_generation_failure_returns_error(self):
         draft_answer = Mock(side_effect=TimeoutError("provider detail"))
@@ -203,7 +209,6 @@ class InvalidDraftTests(TestCase):
         self.assertEqual(response["error_kind"], "invalid_draft")
         self.assertEqual(response["citations"], [])
 
-
     def test_generated_body_accepts_prose_and_leaves_links_in_citations(self):
         for markup in (
             "https://example.org/unverified",
@@ -228,7 +233,11 @@ class InvalidDraftTests(TestCase):
 
         message = "[수거 범위] (공동주택) 캔·유리병을 오전 09:00에 수거합니다."
         draft_answer = Mock(
-            return_value={"status": "answered", "message": message, "citation_indices": [0]}
+            return_value={
+                "status": "answered",
+                "message": message,
+                "citation_indices": [0],
+            }
         )
         response = answer.generate_answer(self.request, draft_answer)
 
@@ -242,7 +251,10 @@ class InvalidDraftTests(TestCase):
             {"source_url": "https://example.org/guide"},
             {"source_url": "https://example.org/other-guide"},
         ]
-        excerpts = ["수거요일은 월요일 (www.example.org/unverified)", "수거요일은 목요일"]
+        excerpts = [
+            "수거요일은 월요일 (www.example.org/unverified)",
+            "수거요일은 목요일",
+        ]
         response = self._generate_conflict(sources, excerpts)
 
         self.assertEqual(response["status"], "error")
@@ -252,7 +264,7 @@ class InvalidDraftTests(TestCase):
         first = {"source_url": "https://example.org/guide?key=3153"}
         for other in (
             {"document_id": "guide-id", "source_url": first["source_url"]},
-            {"pdf_sha256": "a" * 64, "source_url": f'{first["source_url"]}#page=3'},
+            {"pdf_sha256": "a" * 64, "source_url": f"{first['source_url']}#page=3"},
             {"document_version": "revision", "source_url": first["source_url"]},
         ):
             with self.subTest(other=other):
@@ -300,4 +312,6 @@ class InvalidDraftTests(TestCase):
                 ],
             }
         )
-        return answer.generate_answer({**self.request, "evidence": evidence}, draft_answer)
+        return answer.generate_answer(
+            {**self.request, "evidence": evidence}, draft_answer
+        )

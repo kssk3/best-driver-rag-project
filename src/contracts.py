@@ -6,8 +6,8 @@
 필드와 호출 규격은 합의한 부분부터 추가하고 사용하는 담당자와 검토한다.
 """
 
-from datetime import date, datetime
 import math
+from datetime import date, datetime
 from pathlib import PurePosixPath, PureWindowsPath
 from typing import Literal, Self
 from uuid import uuid4
@@ -103,9 +103,13 @@ class SourceDocument(BaseModel):
         if not value.strip() or not relative_path.parts:
             raise ValueError("raw_path는 빈 경로 대신 None을 사용해야 합니다.")
         if windows_path.anchor or relative_path.is_absolute() or ":" in value:
-            raise ValueError("raw_path는 URL이나 절대 경로가 아닌 상대 경로여야 합니다.")
+            raise ValueError(
+                "raw_path는 URL이나 절대 경로가 아닌 상대 경로여야 합니다."
+            )
         if ".." in relative_path.parts or "\0" in value:
-            raise ValueError("raw_path에는 상위 경로(..)나 NUL 문자를 넣을 수 없습니다.")
+            raise ValueError(
+                "raw_path에는 상위 경로(..)나 NUL 문자를 넣을 수 없습니다."
+            )
 
         # 파일을 읽거나 존재를 확인하지 않는다. 실제 파일 접근 시에는 로더에서
         # 프로젝트 루트와 결합하고, 심볼릭 링크 등을 해결한 경로와 존재 여부를 확인한다.
@@ -119,10 +123,14 @@ class SourceDocument(BaseModel):
             if not self.districts or any(
                 not district.strip() for district in self.districts
             ):
-                raise ValueError("district 범위에는 비어 있지 않은 구 이름이 필요합니다.")
+                raise ValueError(
+                    "district 범위에는 비어 있지 않은 구 이름이 필요합니다."
+                )
         elif self.districts:
             # 값을 임의로 삭제하거나 공통/미확인 상태를 추정하지 않고 입력 오류를 알린다.
-            raise ValueError("common과 unknown 범위의 districts는 빈 목록이어야 합니다.")
+            raise ValueError(
+                "common과 unknown 범위의 districts는 빈 목록이어야 합니다."
+            )
         return self
 
     @model_validator(mode="after")
@@ -185,15 +193,21 @@ class Chunk(BaseModel):
     @model_validator(mode="after")
     def _validate_region_scope(self) -> Self:
         if self.scope_type == "district":
-            if not self.districts or any(not district.strip() for district in self.districts):
+            if not self.districts or any(
+                not district.strip() for district in self.districts
+            ):
                 raise ValueError("district 청크에는 적용 구가 필요합니다.")
         elif self.districts:
-            raise ValueError("common과 unknown 청크의 districts는 빈 목록이어야 합니다.")
+            raise ValueError(
+                "common과 unknown 청크의 districts는 빈 목록이어야 합니다."
+            )
         return self
 
 
 # 아래 타입은 최소 인계용 호출 경계다. 각 팀원의 내부 구현과 모델 선택은 강제하지 않는다.
-ResponseStatus = Literal["answered", "needs_clarification", "insufficient_evidence", "error"]
+ResponseStatus = Literal[
+    "answered", "needs_clarification", "insufficient_evidence", "error"
+]
 
 
 class PipelineRequest(BaseModel):

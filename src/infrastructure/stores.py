@@ -2,8 +2,8 @@
 
 import math
 import os
-from pathlib import Path
 import tempfile
+from pathlib import Path
 from typing import Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
@@ -54,8 +54,14 @@ class IndexEntry(BaseModel):
 
 
 def source_versions(chunks: list[Chunk]) -> list[SourceVersion]:
-    keys = {(c.source_document_id, c.source_document_version, c.content_format) for c in chunks}
-    return [SourceVersion(document_id=i, version=v, content_format=f) for i, v, f in sorted(keys)]
+    keys = {
+        (c.source_document_id, c.source_document_version, c.content_format)
+        for c in chunks
+    }
+    return [
+        SourceVersion(document_id=i, version=v, content_format=f)
+        for i, v, f in sorted(keys)
+    ]
 
 
 class IndexSnapshot(BaseModel):
@@ -70,7 +76,9 @@ class IndexSnapshot(BaseModel):
             raise ValueError("색인 안의 chunk_id는 고유해야 합니다.")
         if any(len(entry.vector) != self.metadata.dimension for entry in self.entries):
             raise ValueError("벡터 차원이 색인 메타데이터와 다릅니다.")
-        if {chunk.chunking_version for chunk in chunks} != {self.metadata.chunking_version}:
+        if {chunk.chunking_version for chunk in chunks} != {
+            self.metadata.chunking_version
+        }:
             raise ValueError("청킹 버전과 색인 메타데이터가 다릅니다.")
         if self.metadata.source_document_versions != source_versions(chunks):
             raise ValueError("문서 버전 목록과 색인 내용이 다릅니다.")
@@ -85,7 +93,11 @@ def save_index(index: IndexSnapshot, path: str | Path) -> None:
     temporary = None
     try:
         with tempfile.NamedTemporaryFile(
-            mode="w", encoding="utf-8", dir=destination.parent, suffix=".tmp", delete=False
+            mode="w",
+            encoding="utf-8",
+            dir=destination.parent,
+            suffix=".tmp",
+            delete=False,
         ) as stream:
             temporary = Path(stream.name)
             stream.write(checked.model_dump_json(indent=2) + "\n")

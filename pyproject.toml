@@ -23,7 +23,12 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = ["pytest", "pytest-cov"]
+dev = [
+    "mypy>=2.4.1",
+    "pytest",
+    "pytest-cov",
+    "ruff>=0.17.6",
+]
 
 [tool.uv]
 package = false
@@ -32,3 +37,20 @@ required-version = ">=0.13.9"
 [[tool.uv.index]]
 url = "https://pypi.org/simple"
 default = true
+
+[tool.ruff]
+# 대상 버전은 requires-python(==3.13.14)에서 자동으로 정해진다.
+src = ["."]
+
+[tool.ruff.lint]
+# Ruff 버전이 올라가도 기본 규칙 변화에 흔들리지 않도록 규칙을 명시한다.
+# 문법·이름 오류(F, E9), 명백한 문장 구조 문제(E4, E7)와 import 정렬(I)을 검사한다.
+select = ["E4", "E7", "E9", "F", "I"]
+
+[tool.mypy]
+# 타입 검사는 담당 경로부터 시작해 단계적으로 넓힌다. 범위를 넓힐 때 이 목록에 추가한다.
+files = ["src/generation", "src/evaluation/answer_experiments"]
+# files 밖 모듈(예: src/contracts.py)은 import를 따라가 타입 정보만 쓰고 오류는 보고하지 않는다.
+follow_imports = "silent"
+warn_unused_ignores = true
+warn_redundant_casts = true

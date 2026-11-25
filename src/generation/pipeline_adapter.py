@@ -3,7 +3,12 @@
 from collections.abc import Callable, Mapping
 
 from src.contracts import Chunk, GenerationResult, PipelineRequest
-from src.generation.answer import AnswerDraft, Evidence, GenerationInput, generate_answer
+from src.generation.answer import (
+    AnswerDraft,
+    Evidence,
+    GenerationInput,
+    generate_answer,
+)
 
 
 class AnswerGenerationError(RuntimeError):
@@ -46,7 +51,8 @@ def make_answer_generator(
         raw_conditions = dict(request.conditions)
         try:
             conditions: dict[str, object] = (
-                dict(raw_conditions) if decode_conditions is None
+                dict(raw_conditions)
+                if decode_conditions is None
                 else decode_conditions(raw_conditions)
             )
         except Exception:
@@ -78,6 +84,8 @@ def make_answer_generator(
             if chunk_id is None or not chunk_id.strip() or chunk_id not in allowed_ids:
                 raise AnswerGenerationError("invalid_citation")
             cited_ids.append(chunk_id)
-        return GenerationResult(status=status, answer=answer["message"], cited_chunk_ids=cited_ids)
+        return GenerationResult(
+            status=status, answer=answer["message"], cited_chunk_ids=cited_ids
+        )
 
     return generate

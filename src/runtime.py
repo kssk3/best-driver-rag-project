@@ -22,7 +22,8 @@ def create_runtime(
     retriever: Callable[..., list[SearchCandidate]],
     generator: Callable[[PipelineRequest, list[Chunk]], GenerationResult],
     rewriter: Callable[[ResolvedQuery], str] | None = None,
-    place_lookup: Callable[[PipelineRequest, ResolvedQuery], PlaceLookupResult] | None = None,
+    place_lookup: Callable[[PipelineRequest, ResolvedQuery], PlaceLookupResult]
+    | None = None,
 ) -> RAGPipeline:
     """실제 모델/검색 제공자는 호출자가 준비한다. 초기화만으로 외부 요청하지 않는다."""
     return RAGPipeline(

@@ -2,8 +2,8 @@
 
 import json
 import math
-from pathlib import Path
 import sys
+from pathlib import Path
 
 import pytest
 
@@ -15,10 +15,16 @@ from src.ingestion.indexing import MemoryEmbeddingCache, build_index
 
 def chunk(name="one", content="<p>합성 안내</p>", version="v1"):
     return Chunk(
-        chunk_id=f"{name}-{version}", source_document_id=name,
-        source_document_version=version, title="합성 자료", content_format="html",
-        content=content, source_url=f"https://example.org/{name}",
-        source_location="문서 전체", scope_type="district", districts=["송파구"],
+        chunk_id=f"{name}-{version}",
+        source_document_id=name,
+        source_document_version=version,
+        title="합성 자료",
+        content_format="html",
+        content=content,
+        source_url=f"https://example.org/{name}",
+        source_location="문서 전체",
+        scope_type="district",
+        districts=["송파구"],
         chunking_version="whole-document-v1",
     )
 
@@ -38,7 +44,10 @@ def test_reuse_keeps_each_source_and_exact_provider_settings_separate():
     first, second = chunk("one"), chunk("two")
     snapshot = build_index([first, second], provider, cache=cache)
     assert provider.calls == [[first.content]]
-    assert [entry.chunk.source_document_id for entry in snapshot.entries] == ["one", "two"]
+    assert [entry.chunk.source_document_id for entry in snapshot.entries] == [
+        "one",
+        "two",
+    ]
     assert snapshot.entries[0].vector == snapshot.entries[1].vector
     assert len(snapshot.metadata.source_document_versions) == 2
     build_index([chunk("one", version="v2")], provider, cache=cache)
@@ -63,12 +72,23 @@ def test_snapshot_round_trip_and_rebuild_remove_old_chunks(tmp_path):
     assert restored.metadata.source_document_versions[0].version == "v2"
 
 
-@pytest.mark.parametrize("vectors", [[], [[1.0]], [[1.0], [1.0, 2.0]],
-    [[math.nan], [0.0]], [[math.inf], [0.0]], [[True], [0.0]], [["1"], [0.0]],
-    [[10**1000], [0.0]]])
+@pytest.mark.parametrize(
+    "vectors",
+    [
+        [],
+        [[1.0]],
+        [[1.0], [1.0, 2.0]],
+        [[math.nan], [0.0]],
+        [[math.inf], [0.0]],
+        [[True], [0.0]],
+        [["1"], [0.0]],
+        [[10**1000], [0.0]],
+    ],
+)
 def test_bad_embedding_batch_is_rejected_without_polluting_cache(vectors):
     provider = LangChainEmbeddingsAdapter(
-        type("BadClient", (), {"embed_documents": lambda self, texts: vectors})(), "bad:model=v1"
+        type("BadClient", (), {"embed_documents": lambda self, texts: vectors})(),
+        "bad:model=v1",
     )
     cache = MemoryEmbeddingCache()
     with pytest.raises(ValueError):
@@ -76,7 +96,9 @@ def test_bad_embedding_batch_is_rejected_without_polluting_cache(vectors):
     assert cache.vectors == {}
 
 
-def test_invalid_write_and_replace_failure_preserve_existing_file(tmp_path, monkeypatch):
+def test_invalid_write_and_replace_failure_preserve_existing_file(
+    tmp_path, monkeypatch
+):
     path = tmp_path / "index.json"
     snapshot = build_index([chunk()], DemoHashEmbeddings())
     save_index(snapshot, path)
@@ -86,8 +108,10 @@ def test_invalid_write_and_replace_failure_preserve_existing_file(tmp_path, monk
         save_index(snapshot, path)
     assert path.read_bytes() == original
     snapshot = load_index(path)
+
     def fail_replace(*args):
         raise OSError("합성 교체 실패")
+
     monkeypatch.setattr("src.infrastructure.stores.os.replace", fail_replace)
     with pytest.raises(OSError, match="합성 교체 실패"):
         save_index(snapshot, path)
@@ -136,9 +160,14 @@ def test_cli_format_filter_and_empty_selection_preserve_existing_index(
     arguments = ["index", "--documents", str(source), "--output", str(output), "--demo"]
     monkeypatch.setattr(sys, "argv", arguments + ["--content-format", "html"])
     main()
-    assert {entry.chunk.content_format for entry in load_index(output).entries} == {"html"}
+    assert {entry.chunk.content_format for entry in load_index(output).entries} == {
+        "html"
+    }
     original = output.read_bytes()
-    source.write_text(json.dumps([doc for doc in documents if doc["content_format"] == "html"]), encoding="utf-8")
+    source.write_text(
+        json.dumps([doc for doc in documents if doc["content_format"] == "html"]),
+        encoding="utf-8",
+    )
     monkeypatch.setattr(sys, "argv", arguments + ["--content-format", "json"])
     with pytest.raises(SystemExit) as error:
         main()

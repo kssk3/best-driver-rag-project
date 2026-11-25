@@ -18,7 +18,6 @@ from .csv_export import Candidate, ModelInput, Run, save_experiment_csv
 from .p04_answer_probe import draft_p04_answer
 from .retrieval import RetrievalDocument, RetrievalPort, prepare_adapters
 
-
 _TOP_K = 5
 _CONFIG_VERSION = "p04-char-tfidf-2-3-bm25-unicode-rrf60-equal-top5-v1"
 _ANSWER_CONFIG_VERSION = "p04-fixed-evidence-draft-v1"
@@ -163,26 +162,56 @@ def _p04_corpus() -> tuple[RetrievalDocument, ...]:
         ),
     )
     distractors = (
-        ("seodaemun-glass-bottles", _SEODAEMUN,
-         "일반용기에 담는 유리병은 뚜껑을 떼어 유리병 수거함에 분리합니다."),
-        ("seodaemun-container-labels", _SEODAEMUN,
-         "공동주택 일반용기에는 품목별 이름과 안내 문구를 표시합니다."),
-        ("seodaemun-standard-bags", _SEODAEMUN,
-         "서대문구 생활폐기물 규격봉투는 용량에 따라 규격이 구분됩니다."),
-        ("seodaemun-cartons", _SEODAEMUN,
-         "종이팩의 내용물을 비우고 헹군 뒤 종이팩 용기에 배출합니다."),
-        ("seodaemun-cardboard", _SEODAEMUN,
-         "택배 상자는 테이프와 송장을 제거한 뒤 펼쳐서 배출합니다."),
-        ("seodaemun-bulky", _SEODAEMUN,
-         "대형폐기물은 신고 후 배출 장소와 수거 일정을 확인합니다."),
-        ("songpa-plastic", _SONGPA,
-         "플라스틱 용기는 내용물을 비우고 분리 가능한 재질을 구별합니다."),
-        ("songpa-food-bin", _SONGPA,
-         "음식물쓰레기는 물기를 줄이고 지정된 전용 용기에 담습니다."),
-        ("songpa-apartment", _SONGPA,
-         "공동주택은 단지에서 안내하는 수거방법과 배출장소를 확인합니다."),
-        ("songpa-bulky", _SONGPA,
-         "대형폐기물 신고증을 붙인 뒤 지정한 장소에 배출합니다."),
+        (
+            "seodaemun-glass-bottles",
+            _SEODAEMUN,
+            "일반용기에 담는 유리병은 뚜껑을 떼어 유리병 수거함에 분리합니다.",
+        ),
+        (
+            "seodaemun-container-labels",
+            _SEODAEMUN,
+            "공동주택 일반용기에는 품목별 이름과 안내 문구를 표시합니다.",
+        ),
+        (
+            "seodaemun-standard-bags",
+            _SEODAEMUN,
+            "서대문구 생활폐기물 규격봉투는 용량에 따라 규격이 구분됩니다.",
+        ),
+        (
+            "seodaemun-cartons",
+            _SEODAEMUN,
+            "종이팩의 내용물을 비우고 헹군 뒤 종이팩 용기에 배출합니다.",
+        ),
+        (
+            "seodaemun-cardboard",
+            _SEODAEMUN,
+            "택배 상자는 테이프와 송장을 제거한 뒤 펼쳐서 배출합니다.",
+        ),
+        (
+            "seodaemun-bulky",
+            _SEODAEMUN,
+            "대형폐기물은 신고 후 배출 장소와 수거 일정을 확인합니다.",
+        ),
+        (
+            "songpa-plastic",
+            _SONGPA,
+            "플라스틱 용기는 내용물을 비우고 분리 가능한 재질을 구별합니다.",
+        ),
+        (
+            "songpa-food-bin",
+            _SONGPA,
+            "음식물쓰레기는 물기를 줄이고 지정된 전용 용기에 담습니다.",
+        ),
+        (
+            "songpa-apartment",
+            _SONGPA,
+            "공동주택은 단지에서 안내하는 수거방법과 배출장소를 확인합니다.",
+        ),
+        (
+            "songpa-bulky",
+            _SONGPA,
+            "대형폐기물 신고증을 붙인 뒤 지정한 장소에 배출합니다.",
+        ),
     )
     return core + tuple(
         RetrievalDocument(
@@ -219,6 +248,7 @@ def _measure(
         return None, (perf_counter_ns() - started) / 1_000_000, type(error).__name__
     return candidates, (perf_counter_ns() - started) / 1_000_000, None
 
+
 def _run_answer_probe(
     case: _Case, sources: dict[str, RetrievalDocument], snapshot: str
 ) -> Run:
@@ -228,7 +258,7 @@ def _run_answer_probe(
         evidence = sources[key].evidence
         source = {**evidence["source"], "experiment_document_id": key}
         candidates.append(Candidate(rank, {**evidence, "source": source}))
-    model_inputs = []
+    model_inputs: list[ModelInput] = []
 
     def draft(payload: GenerationInput) -> AnswerDraft:
         model_inputs.extend(
@@ -295,24 +325,26 @@ def run_benchmark(directory: Path, *, repeats: int = 10) -> BenchmarkResult:
             order = adapters if attempt % 2 else adapters[::-1]
             for adapter in order:
                 candidates, elapsed_ms, error_kind = _measure(adapter, case)
-                runs_by_method[adapter.name].append(Run(
-                    run_id=f"{adapter.name}-{case.question_id}-{attempt}",
-                    question_id=case.question_id,
-                    attempt=attempt,
-                    experiment_kind="synthetic",
-                    case_group=case.case_group,
-                    original_question=case.question,
-                    conditions={"district": case.district, **case.conditions},
-                    retriever=adapter.name,
-                    corpus_snapshot_id=snapshot,
-                    config_version=_CONFIG_VERSION,
-                    candidates=candidates,
-                    model_inputs=[],
-                    answer=None,
-                    retrieval_ms=elapsed_ms,
-                    retrieval_only=True,
-                    retrieval_error_kind=error_kind,
-                ))
+                runs_by_method[adapter.name].append(
+                    Run(
+                        run_id=f"{adapter.name}-{case.question_id}-{attempt}",
+                        question_id=case.question_id,
+                        attempt=attempt,
+                        experiment_kind="synthetic",
+                        case_group=case.case_group,
+                        original_question=case.question,
+                        conditions={"district": case.district, **case.conditions},
+                        retriever=adapter.name,
+                        corpus_snapshot_id=snapshot,
+                        config_version=_CONFIG_VERSION,
+                        candidates=candidates,
+                        model_inputs=[],
+                        answer=None,
+                        retrieval_ms=elapsed_ms,
+                        retrieval_only=True,
+                        retrieval_error_kind=error_kind,
+                    )
+                )
 
     sources = {document.document_key: document for document in documents}
     answer_runs = [
@@ -341,18 +373,28 @@ def _print_comparison(result: BenchmarkResult) -> None:
         for method, runs in result.runs_by_method.items():
             selected = [run for run in runs if run.question_id == case.question_id]
             completed = [run for run in selected if run.candidates is not None]
-            times = [run.retrieval_ms for run in completed if run.retrieval_ms is not None]
+            times = [
+                run.retrieval_ms for run in completed if run.retrieval_ms is not None
+            ]
             errors = Counter(
                 run.retrieval_error_kind for run in selected if run.retrieval_error_kind
             )
-            timing = f"mean={mean(times):.4f} ms; median={median(times):.4f} ms" if times else ""
-            print(f"  {method}: {len(completed)}/{len(selected)} completed {timing}".rstrip())
+            timing = (
+                f"mean={mean(times):.4f} ms; median={median(times):.4f} ms"
+                if times
+                else ""
+            )
+            print(
+                f"  {method}: {len(completed)}/{len(selected)} completed {timing}".rstrip()
+            )
             if errors:
                 print(f"    errors: {dict(errors)}")
 
             rankings = Counter(
-                tuple(candidate.evidence["source"]["experiment_document_id"]
-                      for candidate in run.candidates or ())
+                tuple(
+                    candidate.evidence["source"]["experiment_document_id"]
+                    for candidate in run.candidates or ()
+                )
                 for run in completed
             )
             for keys, instances in rankings.items():
@@ -365,8 +407,12 @@ def _print_comparison(result: BenchmarkResult) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--output-dir", type=Path, required=True, help="new export directory")
-    parser.add_argument("--repeats", type=int, default=10, help="timed trials per question and method")
+    parser.add_argument(
+        "--output-dir", type=Path, required=True, help="new export directory"
+    )
+    parser.add_argument(
+        "--repeats", type=int, default=10, help="timed trials per question and method"
+    )
     arguments = parser.parse_args()
     result = run_benchmark(arguments.output_dir, repeats=arguments.repeats)
     _print_comparison(result)
@@ -376,10 +422,13 @@ def main() -> int:
             print(f"  {run.question_id} [{run.case_group}]: {run.answer['status']}")
     print(f"CSV files: {arguments.output_dir.resolve()}")
     retrieval_failed = any(
-        run.retrieval_error_kind for runs in result.runs_by_method.values() for run in runs
+        run.retrieval_error_kind
+        for runs in result.runs_by_method.values()
+        for run in runs
     )
     answer_failed = any(
-        run.answer is None or run.answer["status"] == "error" for run in result.answer_runs
+        run.answer is None or run.answer["status"] == "error"
+        for run in result.answer_runs
     )
     return int(retrieval_failed or answer_failed)
 

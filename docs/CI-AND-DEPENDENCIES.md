@@ -1,4 +1,4 @@
-# Python 커버리지, 의존성과 비밀정보 검사
+# Python 커버리지, 린트, 의존성과 비밀정보 검사
 
 [팀 개발 환경](TEAM-SETUP.md)의 공통 Python 구조에 맞춰 검사한다. 공통 설정이나 의존성을 바꾸는 담당자는 영향을 받는 모듈의 담당자와 테스트 결과를 확인한다. [현재 역할표](../ROADMAP.md#업무-분담과-인계)
 
@@ -41,6 +41,32 @@ uv run --locked python -m pytest tests --cov --cov-config=.coveragerc --cov-repo
 
 커버리지는 테스트가 실행한 코드의 범위다. 검색 품질, 정답 충족과 실제 인용의 적합성은 [문제와 평가 기준](problem.md)의 고정 문항으로 별도 측정한다. 단위 테스트, 실제 외부 서비스 연결 시험과 최종 RAG 평가의 결과를 구분해 기록한다.
 
+## 린트, 포맷과 타입 검사
+
+[린트 워크플로](../.github/workflows/lint.yml)는 커버리지 워크플로와 같은 조건(PR, `main`·`dev` 푸시)에서 별도 job으로 실행된다. 린트가 실패해도 테스트 결과는 커버리지 워크플로에서 따로 확인할 수 있다. 세 단계는 앞 단계가 실패해도 모두 실행해 한 번에 결과를 보여 준다. 단, `uv sync --locked`가 실패하면 뒤 단계는 건너뛴다.
+
+- **Ruff 린트**: `src`, `scripts`, `tests`, `app.py`를 검사한다. 규칙은 `pyproject.toml`의 `[tool.ruff.lint] select`에 명시한 `E4`, `E7`, `E9`, `F`, `I`(문법·이름 오류, 명백한 문장 구조 문제, import 정렬)이다. Ruff 기본 규칙이 바뀌어도 이 목록은 유지되지만, 같은 접두어에 새 규칙이 추가되거나 포맷 스타일이 바뀔 수 있으므로 Dependabot의 Ruff 버전 갱신 PR에서 Lint 결과를 확인한다.
+- **Ruff 포맷 검사**: 같은 범위가 `ruff format` 결과와 같은지 확인한다. 줄 길이는 Ruff 기본값 88열이다. Ruff는 이 범위 안의 Markdown 파일에 들어 있는 Python 코드 블록도 포맷 대상으로 삼는다. 일괄 포맷 커밋은 [`.git-blame-ignore-revs`](../.git-blame-ignore-revs)에 등록되어 GitHub blame에서 건너뛴다.
+- **mypy 타입 검사**: `pyproject.toml`의 `[tool.mypy] files`에 적은 경로만 검사한다. 현재 범위는 `src/generation`, `src/evaluation/answer_experiments`이며, 다른 경로는 담당자가 타입 오류를 정리한 뒤 목록에 추가한다. 목록 밖 모듈(예: `src/contracts.py`)은 import를 따라가 타입 정보로만 쓰고 오류는 보고하지 않는다(`follow_imports = "silent"`).
+
+저장소 루트에서 CI와 같은 명령을 실행한다. 전역에 설치한 `ruff`는 잠금 파일과 버전이 다를 수 있으므로 항상 `uv run --locked`로 실행하고, 다른 파일이 바뀌지 않도록 경로를 지정한다.
+
+```sh
+uv run --locked ruff check src scripts tests app.py
+uv run --locked ruff format --check src scripts tests app.py
+uv run --locked mypy
+
+# 위반 수정 (포맷, 자동 수정 가능한 린트 위반)
+uv run --locked ruff format src scripts tests app.py
+uv run --locked ruff check --fix src scripts tests app.py
+```
+
+GitHub blame은 이 파일을 자동으로 적용한다. 로컬 `git blame`에서도 건너뛰려면 아래처럼 설정한다. 이 설정은 `.git-blame-ignore-revs`가 없는 브랜치(예: 이 변경이 병합되기 전의 `main`)에서 `git blame`을 실패시키므로, 그런 브랜치에서는 `git -c blame.ignoreRevsFile= blame ...`으로 실행한다. 일괄 포맷 커밋의 SHA가 바뀌지 않도록 이 브랜치는 merge commit으로 병합한다.
+
+```sh
+git config blame.ignoreRevsFile .git-blame-ignore-revs
+```
+
 ## Codecov와 GitHub Actions
 
 PR 이벤트와 `main` 또는 `dev`에 푸시할 때 검사한다. 테스트가 있고 Dependabot 실행이 아닌 경우, 같은 저장소에서 만든 PR이나 푸시는 `CODECOV_TOKEN`으로 보고서를 업로드하도록 설정되어 있다. 포크 PR과 Dependabot PR은 테스트를 실행하되 업로드하지 않는다. 업로드 실패는 검사 실패로 처리한다.
@@ -51,7 +77,7 @@ PR 이벤트와 `main` 또는 `dev`에 푸시할 때 검사한다. 테스트가 
 
 ## 의존성과 런타임
 
-`.python-version`은 `3.13.14`, `pyproject.toml`의 `requires-python`은 `==3.13.14`다. 프로젝트는 uv `0.13.9` 이상을 요구하며 CI는 `0.13.9`를 명시적으로 설치한다. `package = false`로 설정되어 있고 개발 의존성 그룹에 `pytest`와 `pytest-cov`가 있다. 새 기능에 필요한 패키지는 해당 구현 PR에서 추가하고 `uv.lock`과 실제 설치 결과를 함께 확인한다.
+`.python-version`은 `3.13.14`, `pyproject.toml`의 `requires-python`은 `==3.13.14`다. 프로젝트는 uv `0.13.9` 이상을 요구하며 CI는 `0.13.9`를 명시적으로 설치한다. `package = false`로 설정되어 있고 개발 의존성 그룹에 `pytest`, `pytest-cov`, `ruff`, `mypy`가 있으며 버전은 `uv.lock`으로 고정한다. 새 기능에 필요한 패키지는 해당 구현 PR에서 추가하고 `uv.lock`과 실제 설치 결과를 함께 확인한다.
 
 LangChain, Ragas, FastAPI 등의 패키지가 선언되어 있어도 해당 기능의 구현이나 외부 서비스 연결이 완료되었다는 뜻은 아니다. 현재 `streamlit`은 프로젝트 의존성에 선언되어 있지 않다. 합성 데모와 CLI는 API 키 없이 실행되며, 실제 OpenAI 임베딩을 선택할 때는 제공자 환경변수가 필요하다. `.env.example`에는 비어 있는 `OPENAI_API_KEY` 항목만 둔다.
 

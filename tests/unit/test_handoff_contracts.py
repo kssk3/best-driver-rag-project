@@ -8,7 +8,12 @@ import pytest
 from pydantic import ValidationError
 
 from src.contracts import (
-    Chunk, GenerationResult, PipelineRequest, ResolvedQuery, SearchCandidate, SourceDocument,
+    Chunk,
+    GenerationResult,
+    PipelineRequest,
+    ResolvedQuery,
+    SearchCandidate,
+    SourceDocument,
 )
 from src.ingestion.chunking import chunk_documents
 from src.pipeline import RAGPipeline
@@ -29,7 +34,12 @@ def source_chunk(source_document):
 
 @pytest.mark.parametrize(
     ("scope_type", "districts"),
-    [("district", []), ("district", [" "]), ("common", ["송파구"]), ("unknown", ["송파구"])],
+    [
+        ("district", []),
+        ("district", [" "]),
+        ("common", ["송파구"]),
+        ("unknown", ["송파구"]),
+    ],
 )
 def test_chunk_rejects_scope_that_would_change_applicable_regions(
     source_chunk, scope_type, districts
@@ -44,43 +54,72 @@ def test_chunk_rejects_scope_that_would_change_applicable_regions(
     ("status", "answer"),
     [("answered", ""), ("needs_clarification", " \n"), ("insufficient_evidence", "\t")],
 )
-def test_generation_cannot_report_a_status_with_a_blank_answer(source_chunk, status, answer):
+def test_generation_cannot_report_a_status_with_a_blank_answer(
+    source_chunk, status, answer
+):
     with pytest.raises(ValidationError):
-        GenerationResult(status=status, answer=answer, cited_chunk_ids=[source_chunk.chunk_id])
+        GenerationResult(
+            status=status, answer=answer, cited_chunk_ids=[source_chunk.chunk_id]
+        )
 
 
 @pytest.mark.parametrize("score", [math.nan, math.inf, -math.inf])
-def test_stage_scores_reject_nonfinite_values_before_json_can_change_them(source_chunk, score):
+def test_stage_scores_reject_nonfinite_values_before_json_can_change_them(
+    source_chunk, score
+):
     with pytest.raises(ValidationError):
         SearchCandidate(chunk=source_chunk, rank=1, stage_scores={"dense": score})
 
 
-def test_valid_source_scope_and_evidence_survive_the_handoff(source_document, source_chunk):
+def test_valid_source_scope_and_evidence_survive_the_handoff(
+    source_document, source_chunk
+):
     candidate = SearchCandidate(
-        chunk=source_chunk, rank=1, score=0.75, stage_scores={"dense": 0.0, "bm25": 1.25}
+        chunk=source_chunk,
+        rank=1,
+        score=0.75,
+        stage_scores={"dense": 0.0, "bm25": 1.25},
     )
     restored = SearchCandidate.model_validate_json(candidate.model_dump_json())
     chunk = restored.chunk
     assert (chunk.source_document_id, chunk.source_document_version) == (
-        source_document.document_id, source_document.version,
+        source_document.document_id,
+        source_document.version,
     )
-    for field in ("title", "content_format", "content", "source_url", "scope_type", "districts"):
+    for field in (
+        "title",
+        "content_format",
+        "content",
+        "source_url",
+        "scope_type",
+        "districts",
+    ):
         assert getattr(chunk, field) == getattr(source_document, field)
     assert restored.stage_scores == {"dense": 0.0, "bm25": 1.25}
     result = GenerationResult(
-        status="answered", answer="합성 자료에 근거한 안내", cited_chunk_ids=[chunk.chunk_id]
+        status="answered",
+        answer="합성 자료에 근거한 안내",
+        cited_chunk_ids=[chunk.chunk_id],
     )
     assert GenerationResult.model_validate_json(result.model_dump_json()) == result
 
 
 @pytest.mark.parametrize(
     ("mutation", "failed_stage"),
-    [("blank_answer", "generate"), ("nan_score", "retrieve"), ("nested_scope", "retrieve")],
+    [
+        ("blank_answer", "generate"),
+        ("nan_score", "retrieve"),
+        ("nested_scope", "retrieve"),
+    ],
 )
-def test_callback_models_are_revalidated_after_mutation(source_chunk, mutation, failed_stage):
+def test_callback_models_are_revalidated_after_mutation(
+    source_chunk, mutation, failed_stage
+):
     candidate = SearchCandidate(chunk=source_chunk, rank=1)
     generated = GenerationResult(
-        status="answered", answer="합성 자료 안내", cited_chunk_ids=[source_chunk.chunk_id]
+        status="answered",
+        answer="합성 자료 안내",
+        cited_chunk_ids=[source_chunk.chunk_id],
     )
     if mutation == "blank_answer":
         generated.answer = " \t"
@@ -107,5 +146,8 @@ def test_callback_models_are_revalidated_after_mutation(source_chunk, mutation, 
 
     assert record.response.status == "error"
     assert record.response.error is not None
-    assert any(stage.name == failed_stage and stage.status == "error" for stage in record.stages)
+    assert any(
+        stage.name == failed_stage and stage.status == "error"
+        for stage in record.stages
+    )
     assert bool(generation_calls) == (failed_stage == "generate")

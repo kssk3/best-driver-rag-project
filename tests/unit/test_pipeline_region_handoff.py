@@ -7,10 +7,16 @@ from src.retrieval.regions import resolve_request
 
 def _seodaemun_chunk() -> Chunk:
     return Chunk(
-        chunk_id="seodaemun-local", source_document_id="synthetic-seodaemun",
-        source_document_version="v1", title="합성 안내", content_format="html",
-        content="<p>합성 안내</p>", source_url="https://example.org/guide",
-        source_location="합성 별표 1", scope_type="district", districts=["서대문구"],
+        chunk_id="seodaemun-local",
+        source_document_id="synthetic-seodaemun",
+        source_document_version="v1",
+        title="합성 안내",
+        content_format="html",
+        content="<p>합성 안내</p>",
+        source_url="https://example.org/guide",
+        source_location="합성 별표 1",
+        scope_type="district",
+        districts=["서대문구"],
         chunking_version="synthetic-v1",
     )
 
@@ -23,7 +29,9 @@ def _capturing_generator(observed: dict):
     def generate(request, evidence):
         observed["request"] = request.model_dump()
         return GenerationResult(
-            status="answered", answer="합성 답변", cited_chunk_ids=[evidence[0].chunk_id]
+            status="answered",
+            answer="합성 답변",
+            cited_chunk_ids=[evidence[0].chunk_id],
         )
 
     return generate

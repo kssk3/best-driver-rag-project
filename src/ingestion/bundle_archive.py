@@ -2,9 +2,9 @@
 
 import hashlib
 import json
-from pathlib import Path, PurePosixPath
 import re
 import stat
+from pathlib import Path, PurePosixPath
 from zipfile import ZipFile
 
 
@@ -24,15 +24,24 @@ def extract_bundle(archive: Path, destination: Path) -> Path:
         names = [i.filename for i in infos]
         if len(set(names)) != len(names):
             raise ValueError("ZIP에 중복 경로가 있습니다.")
-        manifests = [n for n in names if n.endswith("/bundle_manifest.json") or n == "bundle_manifest.json"]
+        manifests = [
+            n
+            for n in names
+            if n.endswith("/bundle_manifest.json") or n == "bundle_manifest.json"
+        ]
         if len(manifests) != 1:
             raise ValueError("하나의 bundle_manifest.json이 필요합니다.")
-        prefix = manifests[0][:-len("bundle_manifest.json")]
+        prefix = manifests[0][: -len("bundle_manifest.json")]
         for info in infos:
             path = PurePosixPath(info.filename)
-            if (path.is_absolute() or ".." in path.parts or "\\" in info.filename
-                    or ":" in info.filename or not info.filename.startswith(prefix)
-                    or stat.S_ISLNK(info.external_attr >> 16)):
+            if (
+                path.is_absolute()
+                or ".." in path.parts
+                or "\\" in info.filename
+                or ":" in info.filename
+                or not info.filename.startswith(prefix)
+                or stat.S_ISLNK(info.external_attr >> 16)
+            ):
                 raise ValueError("ZIP에 지원하지 않는 경로가 있습니다.")
         manifest = json.loads(zipped.read(manifests[0]))
         if manifest.get("schema_version") != "jungeun-handoff-bundle-v2":
@@ -43,19 +52,29 @@ def extract_bundle(archive: Path, destination: Path) -> Path:
             if path in listed:
                 raise ValueError("번들 목록에 중복 경로가 있습니다.")
             listed[path] = item
-        expected = {n[len(prefix):] for n in names if n != manifests[0]}
+        expected = {n[len(prefix) :] for n in names if n != manifests[0]}
         if set(listed) != expected:
             raise ValueError("ZIP과 번들 파일 목록이 다릅니다.")
         selected = {}
         for path, item in listed.items():
             data = zipped.read(prefix + path)
-            if len(data) != item["size_bytes"] or hashlib.sha256(data).hexdigest() != item["sha256"]:
+            if (
+                len(data) != item["size_bytes"]
+                or hashlib.sha256(data).hexdigest() != item["sha256"]
+            ):
                 raise ValueError("번들 파일 크기 또는 SHA256이 다릅니다.")
-            if (re.fullmatch(r"processed/(body|annex)/[A-Za-z0-9_-]+\.(json|xml)", path)
-                    or re.fullmatch(r"raw/[A-Za-z0-9_-]+/body\.xml", path)
-                    or re.fullmatch(r"raw/attachments/[0-9_]+\.hwp", path)
-                    or path in {"raw/manifest.json", "raw/attachments/manifest.json",
-                                "review/human_review_overlays.json", "review/review_status.json"}):
+            if (
+                re.fullmatch(r"processed/(body|annex)/[A-Za-z0-9_-]+\.(json|xml)", path)
+                or re.fullmatch(r"raw/[A-Za-z0-9_-]+/body\.xml", path)
+                or re.fullmatch(r"raw/attachments/[0-9_]+\.hwp", path)
+                or path
+                in {
+                    "raw/manifest.json",
+                    "raw/attachments/manifest.json",
+                    "review/human_review_overlays.json",
+                    "review/review_status.json",
+                }
+            ):
                 selected[path] = data
         if not selected:
             raise ValueError("전처리 입력 파일이 없습니다.")
@@ -65,8 +84,19 @@ def extract_bundle(archive: Path, destination: Path) -> Path:
             target = destination / path
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(data)
-        (destination / "import_manifest.json").write_text(json.dumps({
-            "archive_sha256": hashlib.sha256(Path(archive).read_bytes()).hexdigest(),
-            "verified_files": len(listed), "stored_files": sorted(selected),
-        }, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        (destination / "import_manifest.json").write_text(
+            json.dumps(
+                {
+                    "archive_sha256": hashlib.sha256(
+                        Path(archive).read_bytes()
+                    ).hexdigest(),
+                    "verified_files": len(listed),
+                    "stored_files": sorted(selected),
+                },
+                ensure_ascii=False,
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
     return destination

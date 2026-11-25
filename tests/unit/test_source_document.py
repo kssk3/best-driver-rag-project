@@ -68,7 +68,9 @@ def test_document_without_parent_keeps_both_references_empty(document_data):
 
 
 def test_attachments_reference_exact_parent_version():
-    fixture_path = Path(__file__).parents[1] / "fixtures" / "source_document_family.json"
+    fixture_path = (
+        Path(__file__).parents[1] / "fixtures" / "source_document_family.json"
+    )
     fixture = json.loads(fixture_path.read_text(encoding="utf-8"))
     assert fixture["is_synthetic"] is True
     parent, *attachments = [
@@ -136,7 +138,9 @@ def test_source_metadata_alone_does_not_create_an_extracted_document(document_da
         (r"data\raw\별표.hwp", "data/raw/별표.hwp"),
     ],
 )
-def test_raw_path_is_portable_and_survives_serialization(document_data, raw_path, expected):
+def test_raw_path_is_portable_and_survives_serialization(
+    document_data, raw_path, expected
+):
     document = SourceDocument(
         **document_data, scope_type="district", districts=["송파구"], raw_path=raw_path
     )
@@ -168,18 +172,25 @@ def test_raw_path_is_portable_and_survives_serialization(document_data, raw_path
 def test_non_project_raw_paths_are_rejected(document_data, raw_path):
     with pytest.raises(ValidationError, match="raw_path"):
         SourceDocument(
-            **document_data, scope_type="district", districts=["송파구"], raw_path=raw_path
+            **document_data,
+            scope_type="district",
+            districts=["송파구"],
+            raw_path=raw_path,
         )
 
 
 def test_preprocessing_variants_preserve_original_identity_and_content():
-    fixture_path = Path(__file__).parents[1] / "fixtures" / "preprocessing_variants.json"
+    fixture_path = (
+        Path(__file__).parents[1] / "fixtures" / "preprocessing_variants.json"
+    )
     fixture = json.loads(fixture_path.read_text(encoding="utf-8"))
     assert fixture["is_synthetic"] is True
     documents = [SourceDocument.model_validate(row) for row in fixture["documents"]]
 
     assert {document.content_format for document in documents} == {"html", "json"}
-    assert len({(document.document_id, document.version) for document in documents}) == 1
+    assert (
+        len({(document.document_id, document.version) for document in documents}) == 1
+    )
     assert len({document.source_url for document in documents}) == 1
     assert len({document.raw_path for document in documents}) == 1
     for document, source in zip(documents, fixture["documents"], strict=True):
@@ -189,7 +200,9 @@ def test_preprocessing_variants_preserve_original_identity_and_content():
 
 
 @pytest.mark.parametrize("content_format", ["pdf", "hwp", "xml"])
-def test_original_file_type_is_not_used_as_preprocessing_format(document_data, content_format):
+def test_original_file_type_is_not_used_as_preprocessing_format(
+    document_data, content_format
+):
     document_data["content_format"] = content_format
 
     with pytest.raises(ValidationError) as error:

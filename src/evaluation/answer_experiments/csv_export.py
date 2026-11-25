@@ -49,20 +49,52 @@ class Run:
 
 
 _RUN_COLUMNS = (
-    "run_id", "question_id", "attempt", "experiment_kind", "case_group",
-    "original_question", "conditions_json", "district", "retriever",
-    "corpus_snapshot_id", "config_version", "run_state", "candidate_count",
-    "status", "answer", "model_inputs_json", "citations_json", "error_kind",
-    "retrieval_ms", "response_ms", "evaluation_ms", "evaluation_score",
+    "run_id",
+    "question_id",
+    "attempt",
+    "experiment_kind",
+    "case_group",
+    "original_question",
+    "conditions_json",
+    "district",
+    "retriever",
+    "corpus_snapshot_id",
+    "config_version",
+    "run_state",
+    "candidate_count",
+    "status",
+    "answer",
+    "model_inputs_json",
+    "citations_json",
+    "error_kind",
+    "retrieval_ms",
+    "response_ms",
+    "evaluation_ms",
+    "evaluation_score",
 )
 _SOURCE_COLUMNS = (
-    "document_id", "parent_mst", "attachment_id", "source_type", "source_url",
-    "evidence_file", "pdf_sha256", "source_location",
+    "document_id",
+    "parent_mst",
+    "attachment_id",
+    "source_type",
+    "source_url",
+    "evidence_file",
+    "pdf_sha256",
+    "source_location",
 )
 _CANDIDATE_COLUMNS = (
-    "run_id", "question_id", "case_group", "experiment_kind", "rank", "chunk_id",
-    *_SOURCE_COLUMNS, "source_json", "text", "retrieval_score",
-    "used_in_model_input", "cited_in_answer",
+    "run_id",
+    "question_id",
+    "case_group",
+    "experiment_kind",
+    "rank",
+    "chunk_id",
+    *_SOURCE_COLUMNS,
+    "source_json",
+    "text",
+    "retrieval_score",
+    "used_in_model_input",
+    "cited_in_answer",
 )
 _ANSWER_STATUSES = {"answered", "needs_clarification", "insufficient_evidence", "error"}
 
@@ -125,10 +157,16 @@ def _build_rows(run: Run) -> tuple[dict[str, object], list[dict[str, object]]]:
             or run.evaluation_ms is not None
             or run.evaluation_score is not None
         ):
-            raise ValueError(f"Retrieval-only run {run.run_id!r} has generation or evaluation data")
+            raise ValueError(
+                f"Retrieval-only run {run.run_id!r} has generation or evaluation data"
+            )
         if (run.candidates is None) == (run.retrieval_error_kind is None):
-            raise ValueError(f"Retrieval-only run {run.run_id!r} requires results or an error")
-        run_state = "retrieval_error" if run.candidates is None else "retrieval_completed"
+            raise ValueError(
+                f"Retrieval-only run {run.run_id!r} requires results or an error"
+            )
+        run_state = (
+            "retrieval_error" if run.candidates is None else "retrieval_completed"
+        )
     elif run.retrieval_error_kind is not None:
         raise ValueError(f"Unexpected retrieval error for {run.run_id!r}")
     elif answer is not None:
@@ -138,7 +176,9 @@ def _build_rows(run: Run) -> tuple[dict[str, object], list[dict[str, object]]]:
         if run.candidates is None and status != "error":
             raise ValueError(f"Missing retrieval list for {run.run_id!r}")
         if status == "answered" and not answer["citations"]:
-            raise ValueError(f"Answered run {run.run_id!r} requires a grounded citation")
+            raise ValueError(
+                f"Answered run {run.run_id!r} requires a grounded citation"
+            )
     elif (
         run.model_inputs
         or run.response_ms is not None
@@ -157,15 +197,16 @@ def _build_rows(run: Run) -> tuple[dict[str, object], list[dict[str, object]]]:
     inputs_by_rank = {}
     for model_input in run.model_inputs:
         rank = model_input.rank
-        candidate = candidates_by_rank.get(rank)
+        matched_candidate = candidates_by_rank.get(rank)
         evidence = model_input.evidence
         if (
             type(rank) is not int
-            or candidate is None
+            or matched_candidate is None
             or rank in inputs_by_rank
-            or _citation_identity(evidence) != _citation_identity(candidate.evidence)
+            or _citation_identity(evidence)
+            != _citation_identity(matched_candidate.evidence)
             or not evidence["text"]
-            or evidence["text"] not in candidate.evidence["text"]
+            or evidence["text"] not in matched_candidate.evidence["text"]
         ):
             raise ValueError(f"Model input does not match candidate rank {rank!r}")
         inputs_by_rank[rank] = evidence
@@ -175,7 +216,8 @@ def _build_rows(run: Run) -> tuple[dict[str, object], list[dict[str, object]]]:
         identity = dict(citation)
         identity.pop("chunk_id_status", None)
         ranks = [
-            rank for rank, evidence in inputs_by_rank.items()
+            rank
+            for rank, evidence in inputs_by_rank.items()
             if _citation_identity(evidence) == identity
         ]
         if len(ranks) != 1:
@@ -201,34 +243,40 @@ def _build_rows(run: Run) -> tuple[dict[str, object], list[dict[str, object]]]:
         "candidate_count": None if run.candidates is None else len(run.candidates),
         "status": None if answer is None else answer["status"],
         "answer": None if answer is None else answer["message"],
-        "model_inputs_json": None if answer is None else _json([
-            {**evidence, "rank": rank} for rank, evidence in inputs_by_rank.items()
-        ]),
+        "model_inputs_json": None
+        if answer is None
+        else _json(
+            [{**evidence, "rank": rank} for rank, evidence in inputs_by_rank.items()]
+        ),
         "citations_json": None if answer is None else _json(citations),
-        "error_kind": run.retrieval_error_kind if answer is None else answer.get("error_kind"),
+        "error_kind": run.retrieval_error_kind
+        if answer is None
+        else answer.get("error_kind"),
         "retrieval_ms": run.retrieval_ms,
         "response_ms": run.response_ms,
         "evaluation_ms": run.evaluation_ms,
         "evaluation_score": run.evaluation_score,
     }
-    candidate_rows = []
+    candidate_rows: list[dict[str, object]] = []
     for rank, candidate in candidates_by_rank.items():
         evidence = candidate.evidence
         source = evidence["source"]
-        candidate_rows.append({
-            "run_id": run.run_id,
-            "question_id": run.question_id,
-            "experiment_kind": run.experiment_kind,
-            "case_group": run.case_group,
-            "rank": rank,
-            "chunk_id": evidence["chunk_id"],
-            **{field: source.get(field) for field in _SOURCE_COLUMNS},
-            "source_json": _json(source),
-            "text": evidence["text"],
-            "retrieval_score": candidate.score,
-            "used_in_model_input": "true" if rank in inputs_by_rank else "false",
-            "cited_in_answer": "true" if rank in cited_ranks else "false",
-        })
+        candidate_rows.append(
+            {
+                "run_id": run.run_id,
+                "question_id": run.question_id,
+                "experiment_kind": run.experiment_kind,
+                "case_group": run.case_group,
+                "rank": rank,
+                "chunk_id": evidence["chunk_id"],
+                **{field: source.get(field) for field in _SOURCE_COLUMNS},
+                "source_json": _json(source),
+                "text": evidence["text"],
+                "retrieval_score": candidate.score,
+                "used_in_model_input": "true" if rank in inputs_by_rank else "false",
+                "cited_in_answer": "true" if rank in cited_ranks else "false",
+            }
+        )
     return run_row, candidate_rows
 
 

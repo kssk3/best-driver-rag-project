@@ -19,7 +19,6 @@ from src.generation.answer import Evidence
 
 from .csv_export import Candidate
 
-
 _DOCUMENT_KEY = "experiment_document_id"
 _WORD = re.compile(r"[^\W_]+")
 
@@ -37,7 +36,9 @@ class RetrievalDocument:
 class RetrievalPort(Protocol):
     """Return ranked candidates within a previously prepared district scope."""
 
-    name: str
+    @property
+    def name(self) -> str:
+        """Return the method label used to group benchmark runs."""
 
     def search(self, query: str, *, district: str, k: int) -> list[Candidate]:
         """Return up to k candidates, with k within the prepared depth."""
@@ -55,7 +56,9 @@ def _character_ngrams(text: str) -> Counter[str]:
         if len(word) == 1:
             counts[word] += 1
         for size in (2, 3):
-            counts.update(word[start:start + size] for start in range(len(word) - size + 1))
+            counts.update(
+                word[start : start + size] for start in range(len(word) - size + 1)
+            )
     return counts
 
 
@@ -136,14 +139,16 @@ def prepare_adapters(
     scopes = tuple(dict.fromkeys(districts))
     eligible = sorted(
         (
-            item for item in documents
-            if item.eligible_for_disposal and (item.district is None or item.district in scopes)
+            item
+            for item in documents
+            if item.eligible_for_disposal
+            and (item.district is None or item.district in scopes)
         ),
         key=lambda item: item.document_key,
     )
     embeddings = CharacterTfidf([item.evidence["text"] for item in eligible])
-    vector_indexes = {}
-    ensemble_indexes = {}
+    vector_indexes: dict[str, BaseRetriever | None] = {}
+    ensemble_indexes: dict[str, BaseRetriever | None] = {}
     for district in scopes:
         pool = [
             Document(
@@ -151,7 +156,10 @@ def prepare_adapters(
                 page_content=item.evidence["text"],
                 metadata={
                     _DOCUMENT_KEY: item.document_key,
-                    "source": {**item.evidence["source"], _DOCUMENT_KEY: item.document_key},
+                    "source": {
+                        **item.evidence["source"],
+                        _DOCUMENT_KEY: item.document_key,
+                    },
                     "chunk_id": item.evidence["chunk_id"],
                 },
             )

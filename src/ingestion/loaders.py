@@ -27,7 +27,6 @@ from pydantic import (
 
 from src.contracts import SourceDocument
 
-
 # 번호의 선행 0, 제목과 URL의 원래 표기를 보존한다. 숫자를 문자열로 추정 변환하지 않는다.
 _NonBlankString = Annotated[
     str, StringConstraints(strict=True, min_length=1, pattern=r"\S")
@@ -103,7 +102,9 @@ class SourceManifestEntry(BaseModel):
         try:
             return date(int(value[:4]), int(value[4:6]), int(value[6:]))
         except ValueError as error:
-            raise ValueError("시행일은 실제 달력에 존재하는 날짜여야 합니다.") from error
+            raise ValueError(
+                "시행일은 실제 달력에 존재하는 날짜여야 합니다."
+            ) from error
 
     @field_validator("body_file")
     @classmethod
@@ -117,7 +118,9 @@ class SourceManifestEntry(BaseModel):
             or ".." in relative_path.parts
             or "\0" in value
         ):
-            raise ValueError("본문_파일은 상위 경로 이동이 없는 상대 파일 경로여야 합니다.")
+            raise ValueError(
+                "본문_파일은 상위 경로 이동이 없는 상대 파일 경로여야 합니다."
+            )
         # 여기서 원본 파일을 열거나 다운로드하지 않는다. 선언된 경로 표기도 바꾸지 않는다.
         return value
 
@@ -157,7 +160,9 @@ def load_source_manifest(path: str | Path) -> list[SourceManifestEntry]:
     try:
         raw_text = manifest_path.read_text(encoding="utf-8-sig")
     except UnicodeDecodeError as error:
-        raise SourceManifestError(f"{manifest_path}: UTF-8 JSON 파일이 필요합니다.") from error
+        raise SourceManifestError(
+            f"{manifest_path}: UTF-8 JSON 파일이 필요합니다."
+        ) from error
 
     try:
         payload = json.loads(raw_text, object_pairs_hook=_unique_json_keys)
@@ -175,7 +180,9 @@ def load_source_manifest(path: str | Path) -> list[SourceManifestEntry]:
             f"{'.'.join(map(str, item['loc'])) or '최상위 목록'}: {item['msg']}"
             for item in error.errors(include_input=False, include_url=False)
         )
-        raise SourceManifestError(f"{manifest_path}: 출처 목록 형식 오류: {details}") from error
+        raise SourceManifestError(
+            f"{manifest_path}: 출처 목록 형식 오류: {details}"
+        ) from error
 
     seen: set[str] = set()
     for index, entry in enumerate(entries):
@@ -211,7 +218,9 @@ def _read_content_file(path: Path) -> str:
         with path.open(encoding="utf-8-sig", newline="") as handle:
             return handle.read()
     except UnicodeDecodeError as error:
-        raise SourceDocumentLoadError(f"{path}: UTF-8 본문 파일이 필요합니다.") from error
+        raise SourceDocumentLoadError(
+            f"{path}: UTF-8 본문 파일이 필요합니다."
+        ) from error
 
 
 def _reject_json_constant(value: str) -> None:
@@ -221,7 +230,9 @@ def _reject_json_constant(value: str) -> None:
 def _read_json_value(text: str, location: str) -> object:
     try:
         return json.loads(
-            text, object_pairs_hook=_unique_json_keys, parse_constant=_reject_json_constant
+            text,
+            object_pairs_hook=_unique_json_keys,
+            parse_constant=_reject_json_constant,
         )
     except json.JSONDecodeError as error:
         raise SourceDocumentLoadError(
@@ -248,7 +259,9 @@ def _validate_document_content(document: SourceDocument, location: str) -> None:
         if not parser.has_element:
             raise ValueError("HTML 본문에는 HTML 요소가 필요합니다.")
     except (ValueError, AssertionError) as error:
-        raise SourceDocumentLoadError(f"{location}: HTML 기본 검사 오류: {error}") from error
+        raise SourceDocumentLoadError(
+            f"{location}: HTML 기본 검사 오류: {error}"
+        ) from error
     # HTML5 전체 문법, 표의 의미, 각주 연결을 검증하거나 HTML을 안전화하지 않는다.
     # 원문 대조와 화면 표시 시 HTML 처리 정책은 별도로 필요하다.
 
@@ -269,10 +282,14 @@ def _source_document_from_data(payload: object, location: str) -> SourceDocument
             f"{'.'.join(map(str, item['loc'])) or '문서'}: {item['msg']}"
             for item in error.errors(include_input=False, include_url=False)
         )
-        raise SourceDocumentLoadError(f"{location}: 문서 규격 오류: {details}") from error
+        raise SourceDocumentLoadError(
+            f"{location}: 문서 규격 오류: {details}"
+        ) from error
     for field in ("document_id", "version", "title", "source_url"):
         if not getattr(document, field).strip():
-            raise SourceDocumentLoadError(f"{location}: {field}는 비어 있을 수 없습니다.")
+            raise SourceDocumentLoadError(
+                f"{location}: {field}는 비어 있을 수 없습니다."
+            )
     try:
         _validate_source_url(document.source_url)
     except ValueError as error:
@@ -299,7 +316,9 @@ def load_source_documents(path: str | Path) -> list[SourceDocument]:
             )
         payload = payload["documents"]
     if not isinstance(payload, list):
-        raise SourceDocumentLoadError(f"{source_path}: documents는 JSON 배열이어야 합니다.")
+        raise SourceDocumentLoadError(
+            f"{source_path}: documents는 JSON 배열이어야 합니다."
+        )
 
     documents: list[SourceDocument] = []
     seen: set[tuple[str, str, str]] = set()
@@ -308,7 +327,9 @@ def load_source_documents(path: str | Path) -> list[SourceDocument]:
         document = _source_document_from_data(row, location)
         key = (document.document_id, document.version, document.content_format)
         if key in seen:
-            raise SourceDocumentLoadError(f"{location}: 같은 문서/버전/형식이 중복됩니다: {key!r}")
+            raise SourceDocumentLoadError(
+                f"{location}: 같은 문서/버전/형식이 중복됩니다: {key!r}"
+            )
         seen.add(key)
         documents.append(document)
     return documents
@@ -326,7 +347,9 @@ def load_preprocessed_content(
     source_path = Path(path)
     content_format = source_path.suffix.lower().removeprefix(".")
     if content_format not in {"html", "json"}:
-        raise SourceDocumentLoadError(f"{source_path}: .html 또는 .json 본문 파일만 지원합니다.")
+        raise SourceDocumentLoadError(
+            f"{source_path}: .html 또는 .json 본문 파일만 지원합니다."
+        )
     forbidden = {"content", "content_format"}.intersection(metadata)
     if forbidden:
         raise SourceDocumentLoadError(

@@ -24,7 +24,11 @@ def chunk_documents(
     초과 문서의 일부를 버리거나 자동 분할하지 않는다. HTML/JSON 내용과 출처를
     그대로 보존하며 conditions 목록은 자동 추출하지 않는다.
     """
-    if isinstance(max_characters, bool) or not isinstance(max_characters, int) or max_characters < 1:
+    if (
+        isinstance(max_characters, bool)
+        or not isinstance(max_characters, int)
+        or max_characters < 1
+    ):
         raise ValueError("max_characters는 1 이상의 정수여야 합니다.")
     if not isinstance(chunking_version, str) or not chunking_version.strip():
         raise ValueError("chunking_version은 비어 있지 않은 문자열이어야 합니다.")
@@ -39,7 +43,9 @@ def chunk_documents(
             raise ValueError(f"같은 문서/버전/형식이 중복됩니다: {source_key!r}")
         seen.add(source_key)
         if not document.content.strip():
-            raise ValueError(f"문서 {document.document_id!r}의 content가 비어 있습니다.")
+            raise ValueError(
+                f"문서 {document.document_id!r}의 content가 비어 있습니다."
+            )
         if len(document.content) > max_characters:
             raise ValueError(
                 f"문서 {document.document_id!r} ({document.version}/{document.content_format})가 "
@@ -58,7 +64,9 @@ def chunk_documents(
             "chunking_version": chunking_version,
         }
         digest = hashlib.sha256(
-            json.dumps(identity, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+            json.dumps(
+                identity, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+            ).encode("utf-8")
         ).hexdigest()
         chunks.append(
             Chunk(

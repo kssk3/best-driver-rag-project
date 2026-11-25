@@ -36,14 +36,16 @@ class AnswerObservationTests(TestCase):
                 {"source": pdf, "text": pdf_excerpt, "chunk_id": None},
             ],
         }
-        draft_answer = Mock(return_value={
-            "status": "source_conflict",
-            "conflict_sides": [
-                {"evidence_index": 0, "excerpt": html_excerpt},
-                {"evidence_index": 1, "excerpt": pdf_excerpt},
-            ],
-            "message": "월·수·금으로 확정합니다.",
-        })
+        draft_answer = Mock(
+            return_value={
+                "status": "source_conflict",
+                "conflict_sides": [
+                    {"evidence_index": 0, "excerpt": html_excerpt},
+                    {"evidence_index": 1, "excerpt": pdf_excerpt},
+                ],
+                "message": "월·수·금으로 확정합니다.",
+            }
+        )
 
         response = answer.generate_answer(request, draft_answer)
 
@@ -52,7 +54,10 @@ class AnswerObservationTests(TestCase):
         self.assertIn(f"[2] {pdf_excerpt}", response["message"])
         self.assertIn("확정하기 어렵습니다", response["message"])
         self.assertNotIn("월·수·금으로 확정합니다", response["message"])
-        self.assertEqual(response["citations"], [
-            {**html, "chunk_id": None, "chunk_id_status": "unconfirmed"},
-            {**pdf, "chunk_id": None, "chunk_id_status": "unconfirmed"},
-        ])
+        self.assertEqual(
+            response["citations"],
+            [
+                {**html, "chunk_id": None, "chunk_id_status": "unconfirmed"},
+                {**pdf, "chunk_id": None, "chunk_id_status": "unconfirmed"},
+            ],
+        )

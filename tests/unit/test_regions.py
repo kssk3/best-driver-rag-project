@@ -132,7 +132,9 @@ def test_resolve_request_tells_unsupported_district_named_in_question():
 
 def test_resolve_request_asks_when_named_district_differs_from_selected():
     # 질문은 송파구, 화면은 서대문구 → 충돌. 어느 쪽으로도 확정하지 않는다.
-    request = PipelineRequest(question="송파구 페트병 언제 버려요?", district="서대문구")
+    request = PipelineRequest(
+        question="송파구 페트병 언제 버려요?", district="서대문구"
+    )
     result = resolve_request(request)
 
     assert result.status == "needs_clarification"

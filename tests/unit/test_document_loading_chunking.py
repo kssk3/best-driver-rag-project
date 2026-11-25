@@ -14,12 +14,11 @@ from src.ingestion.loaders import (
     load_source_manifest,
 )
 
-
 FIXTURES = Path(__file__).parents[1] / "fixtures"
 HTML_CONTENT = (
-    '<table><tr><th>품목</th><th>안내</th></tr>\r\n'
-    '<tr><td>합성 품목 A</td><td>합성 안내 B</td></tr></table>\r\n'
-    '<p>비고: 합성 조건 X일 때 적용. 합성 조건 Y는 제외.</p>'
+    "<table><tr><th>품목</th><th>안내</th></tr>\r\n"
+    "<tr><td>합성 품목 A</td><td>합성 안내 B</td></tr></table>\r\n"
+    "<p>비고: 합성 조건 X일 때 적용. 합성 조건 Y는 제외.</p>"
 )
 JSON_CONTENT = (
     '{\r\n  "rows": [{"item": "합성 품목 A", "guidance": "합성 안내 B"}],\r\n'
@@ -46,8 +45,12 @@ def write_document_bundle(path, rows):
     return path
 
 
-@pytest.mark.parametrize(("suffix", "content"), [("html", HTML_CONTENT), ("json", JSON_CONTENT)])
-def test_input_table_notes_and_metadata_survive_loading_and_chunking(tmp_path, metadata, suffix, content):
+@pytest.mark.parametrize(
+    ("suffix", "content"), [("html", HTML_CONTENT), ("json", JSON_CONTENT)]
+)
+def test_input_table_notes_and_metadata_survive_loading_and_chunking(
+    tmp_path, metadata, suffix, content
+):
     path = tmp_path / f"input.{suffix}"
     path.write_bytes(("\ufeff" + content).encode("utf-8"))
 
@@ -77,8 +80,12 @@ def test_existing_fixture_variants_load_as_separate_stable_chunks():
     assert len(first) == 2
     assert {chunk.content_format for chunk in first} == {"html", "json"}
     assert len({chunk.chunk_id for chunk in first}) == 2
-    assert [chunk.model_dump() for chunk in first] == [chunk.model_dump() for chunk in second]
-    assert [chunk.content for chunk in first] == [document.content for document in documents]
+    assert [chunk.model_dump() for chunk in first] == [
+        chunk.model_dump() for chunk in second
+    ]
+    assert [chunk.content for chunk in first] == [
+        document.content for document in documents
+    ]
 
 
 def test_family_fixture_keeps_direct_attachment_sources():
@@ -129,7 +136,9 @@ def test_invalid_chunk_limits_are_rejected(limit):
         chunk_documents([], max_characters=limit)
 
 
-def test_array_bundle_preserves_parent_reference_without_requiring_parent_in_file(tmp_path, metadata):
+def test_array_bundle_preserves_parent_reference_without_requiring_parent_in_file(
+    tmp_path, metadata
+):
     row = {**metadata, "content_format": "html", "content": HTML_CONTENT}
     path = write_document_bundle(tmp_path / "documents.json", [row])
     [document] = load_source_documents(path)
@@ -137,7 +146,9 @@ def test_array_bundle_preserves_parent_reference_without_requiring_parent_in_fil
     assert document.parent_document_version == metadata["parent_document_version"]
 
 
-def test_duplicate_source_representation_is_rejected_by_loader_and_chunker(tmp_path, metadata):
+def test_duplicate_source_representation_is_rejected_by_loader_and_chunker(
+    tmp_path, metadata
+):
     row = {**metadata, "content_format": "html", "content": HTML_CONTENT}
     path = write_document_bundle(tmp_path / "duplicates.json", [row, row])
     with pytest.raises(SourceDocumentLoadError, match="중복"):
@@ -211,7 +222,12 @@ def test_filesystem_and_encoding_errors_are_not_hidden(tmp_path, metadata):
 
 
 def test_source_documents_do_not_silently_drop_unknown_metadata(tmp_path, metadata):
-    row = {**metadata, "content_format": "html", "content": HTML_CONTENT, "unreviewed_field": 1}
+    row = {
+        **metadata,
+        "content_format": "html",
+        "content": HTML_CONTENT,
+        "unreviewed_field": 1,
+    }
     path = write_document_bundle(tmp_path / "unknown.json", [row])
     with pytest.raises(SourceDocumentLoadError, match="unreviewed_field"):
         load_source_documents(path)

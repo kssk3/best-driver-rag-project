@@ -22,8 +22,16 @@ def p04_runs():
     signage_question = "서대문구에서 깨진 유리를 버릴 때 규격봉투를 써도 되나요?"
 
     def attempt(
-        run_id, question_id, question, conditions, candidates, selected, draft,
-        *, case_group="development", attempt_number=1,
+        run_id,
+        question_id,
+        question,
+        conditions,
+        candidates,
+        selected,
+        draft,
+        *,
+        case_group="development",
+        attempt_number=1,
     ):
         def generate(payload):
             actual_inputs.extend(
@@ -61,68 +69,100 @@ def p04_runs():
             answer=answer,
         )
 
-    signage = csv_export.Candidate(1, {
-        "source": {
-            "document_id": "seodaemun-ordinance",
-            "parent_mst": "2101297",
-            "attachment_id": "160319461",
-            "source_location": "별표 6 > 규격봉투판매소 표지판",
+    signage = csv_export.Candidate(
+        1,
+        {
+            "source": {
+                "document_id": "seodaemun-ordinance",
+                "parent_mst": "2101297",
+                "attachment_id": "160319461",
+                "source_location": "별표 6 > 규격봉투판매소 표지판",
+            },
+            "text": "합성: 판매소 표지판의 글씨와 색상을 규정한다.",
+            "chunk_id": None,
         },
-        "text": "합성: 판매소 표지판의 글씨와 색상을 규정한다.",
-        "chunk_id": None,
-    })
-    colors = csv_export.Candidate(1, {
-        "source": {
-            "document_id": "seodaemun-rules",
-            "parent_mst": "2101385",
-            "attachment_id": "160561037",
-            "source_location": "별표 1 > 공동주택 > 일반용기 설치 > 품목별 색상",
-        },
-        "text": (
-            '합성: 공동주택 "일반용기" 기준\n'
-            "캔류 회색, 유리병 주황색, 종이팩 녹색, PET병 노란색, "
-            "플라스틱류 파란색, 비닐·필름류 보라색"
-        ),
-        "chunk_id": None,
-    })
-    html = csv_export.Candidate(1, {
-        "source": {
-            "source_type": "official_operating_guide_html",
-            "source_url": "https://www.songpa.go.kr/www/contents.do?key=3153",
-            "source_location": "일반주택 표 > 위례동 > 일반·음식물 열",
-        },
-        "text": "합성: 위례동 일반주택의 일반·음식물 배출요일은 월·수·금",
-        "chunk_id": None,
-    })
-    pdf = csv_export.Candidate(2, {
-        "source": {
-            "source_type": "official_linked_PDF",
-            "evidence_file": "official-20261014.pdf",
-            "pdf_sha256": (
-                "8e0043431030c15a5bd1e0dac1e70dd3de4380bf4f0c6054cebb87e1d07ae7f0"
+    )
+    colors = csv_export.Candidate(
+        1,
+        {
+            "source": {
+                "document_id": "seodaemun-rules",
+                "parent_mst": "2101385",
+                "attachment_id": "160561037",
+                "source_location": "별표 1 > 공동주택 > 일반용기 설치 > 품목별 색상",
+            },
+            "text": (
+                '합성: 공동주택 "일반용기" 기준\n'
+                "캔류 회색, 유리병 주황색, 종이팩 녹색, PET병 노란색, "
+                "플라스틱류 파란색, 비닐·필름류 보라색"
             ),
-            "source_location": "PDF 파일 3쪽 > 인쇄면 4쪽 > 마지막 위례동 행",
+            "chunk_id": None,
         },
-        "text": "합성: 위례동 일반주택의 일반·음식물 배출요일은 화·목·일",
-        "chunk_id": None,
-    })
+    )
+    html = csv_export.Candidate(
+        1,
+        {
+            "source": {
+                "source_type": "official_operating_guide_html",
+                "source_url": "https://www.songpa.go.kr/www/contents.do?key=3153",
+                "source_location": "일반주택 표 > 위례동 > 일반·음식물 열",
+            },
+            "text": "합성: 위례동 일반주택의 일반·음식물 배출요일은 월·수·금",
+            "chunk_id": None,
+        },
+    )
+    pdf = csv_export.Candidate(
+        2,
+        {
+            "source": {
+                "source_type": "official_linked_PDF",
+                "evidence_file": "official-20261014.pdf",
+                "pdf_sha256": (
+                    "8e0043431030c15a5bd1e0dac1e70dd3de4380bf4f0c6054cebb87e1d07ae7f0"
+                ),
+                "source_location": "PDF 파일 3쪽 > 인쇄면 4쪽 > 마지막 위례동 행",
+            },
+            "text": "합성: 위례동 일반주택의 일반·음식물 배출요일은 화·목·일",
+            "chunk_id": None,
+        },
+    )
     return [
         attempt(
-            "p04-pending", "p04-signage", signage_question, district, None, None, None,
+            "p04-pending",
+            "p04-signage",
+            signage_question,
+            district,
+            None,
+            None,
+            None,
         ),
         attempt(
-            "p04-zero", "p04-signage", signage_question, district, [], [], None,
+            "p04-zero",
+            "p04-signage",
+            signage_question,
+            district,
+            [],
+            [],
+            None,
             attempt_number=2,
         ),
         attempt(
-            "p04-filtered", "p04-signage", signage_question, district,
-            [signage], [], None,
+            "p04-filtered",
+            "p04-signage",
+            signage_question,
+            district,
+            [signage],
+            [],
+            None,
             attempt_number=3,
         ),
         attempt(
-            "p04-colors", "p04-colors", "서대문구 공동주택 일반용기의 품목별 색은?",
+            "p04-colors",
+            "p04-colors",
+            "서대문구 공동주택 일반용기의 품목별 색은?",
             {**district, "housing_type": "공동주택", "container_type": "일반용기"},
-            [colors], [1],
+            [colors],
+            [1],
             {
                 "status": "answered",
                 "message": colors.evidence["text"],
@@ -130,14 +170,17 @@ def p04_runs():
             },
         ),
         attempt(
-            "p04-wirye", "p04-wirye", "위례동 일반주택 일반·음식물쓰레기의 배출요일은?",
+            "p04-wirye",
+            "p04-wirye",
+            "위례동 일반주택 일반·음식물쓰레기의 배출요일은?",
             {
                 "district": "송파구",
                 "dong": "위례동",
                 "housing_type": "일반주택",
                 "items": ["일반쓰레기", "음식물쓰레기"],
             },
-            [html, pdf], [1, 2],
+            [html, pdf],
+            [1, 2],
             {
                 "status": "source_conflict",
                 "conflict_sides": [
@@ -156,7 +199,9 @@ def write_p04_sample(directory):
 
 
 class CsvExportTests(TestCase):
-    def test_p04_waiting_zero_and_filtered_remain_distinct_after_reading_both_csvs(self):
+    def test_p04_waiting_zero_and_filtered_remain_distinct_after_reading_both_csvs(
+        self,
+    ):
         with TemporaryDirectory() as tmp:
             output = Path(tmp) / "p04"
             write_p04_sample(output)
@@ -170,7 +215,11 @@ class CsvExportTests(TestCase):
         pending = runs["p04-pending"]
         self.assertEqual(pending["run_state"], "pending")
         for field in (
-            "candidate_count", "status", "answer", "response_ms", "evaluation_score"
+            "candidate_count",
+            "status",
+            "answer",
+            "response_ms",
+            "evaluation_score",
         ):
             self.assertEqual(pending[field], "")
         zero = runs["p04-zero"]
@@ -183,8 +232,10 @@ class CsvExportTests(TestCase):
         self.assertEqual(filtered["status"], "insufficient_evidence")
         self.assertEqual(json.loads(filtered["model_inputs_json"]), [])
         self.assertEqual(
-            [runs[key]["attempt"]
-             for key in ("p04-pending", "p04-zero", "p04-filtered")],
+            [
+                runs[key]["attempt"]
+                for key in ("p04-pending", "p04-zero", "p04-filtered")
+            ],
             ["1", "2", "3"],
         )
         self.assertFalse(
@@ -207,7 +258,8 @@ class CsvExportTests(TestCase):
         self.assertEqual(observation["evaluation_score"], "")
         self.assertEqual(observation["status"], "insufficient_evidence")
         ranked = {
-            int(row["rank"]): row for row in candidates
+            int(row["rank"]): row
+            for row in candidates
             if row["case_group"] == "observation"
         }
         self.assertEqual(set(ranked), {1, 2})
@@ -346,7 +398,9 @@ class CsvExportTests(TestCase):
             [run] = read_rows(output / "runs.csv")
             candidates = read_rows(output / "candidates.csv")
 
-        expected_ranks = {row["source_location"]: int(row["rank"]) for row in candidates}
+        expected_ranks = {
+            row["source_location"]: int(row["rank"]) for row in candidates
+        }
         actual_ranks = {
             item["source"]["source_location"]: item["rank"]
             for item in json.loads(run["model_inputs_json"])

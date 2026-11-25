@@ -31,20 +31,26 @@ def main() -> None:
     # 고정된 작은 합성 문서만 색인한다. 평가 정답은 별도 파일로 읽는다.
     documents = load_source_documents(root / "tests/fixtures/handoff_documents.json")
     chunks = chunk_documents(documents, max_characters=settings.max_document_characters)
-    snapshot = build_index(chunks, DemoHashEmbeddings(dimensions=settings.demo_dimensions))
+    snapshot = build_index(
+        chunks, DemoHashEmbeddings(dimensions=settings.demo_dimensions)
+    )
     save_index(snapshot, settings.index_path)
     cases = load_evaluation_cases(root / "tests/fixtures/handoff_eval.json")
     results = evaluate_cases(cases, {"synthetic-demo": create_demo_pipeline(settings)})
     summary = {
-        "is_synthetic": True, "run_kind": "demo",
+        "is_synthetic": True,
+        "run_kind": "demo",
         "notice": "외부 모델 호출과 실제 검색 품질 평가를 수행하지 않은 합성 연결 검사",
         "manifest_documents": len(manifest),
         "manifest_attachments": sum(len(row.attachments) for row in manifest),
-        "indexed_synthetic_documents": len(documents), "chunks": len(chunks),
+        "indexed_synthetic_documents": len(documents),
+        "chunks": len(chunks),
         "index_id": snapshot.metadata.index_id,
         "results": results,
     }
-    (output / "summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    (output / "summary.json").write_text(
+        json.dumps(summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
     print(f"합성 데모 완료: 목록 {len(manifest)}건, 청크 {len(chunks)}개")
     for result in results:
         print(f"{result['case_id']}: {result['status']}")

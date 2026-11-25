@@ -6,9 +6,9 @@ XML 입력을 보존하고 검색 표현만 변환한다. JSON의 검색용 공�
 
 import re
 import xml.etree.ElementTree as ET
+from collections.abc import Iterator
 from dataclasses import dataclass
 from html import escape
-from collections.abc import Iterator
 
 
 class XMLAdapterError(ValueError):
@@ -50,7 +50,9 @@ def _law_html(root: ET.Element) -> str:
                 number = article.findtext("조문번호", "")
                 kind = article.findtext("조문여부", "")
                 if not number or kind not in {"Y", "N"}:
-                    raise XMLAdapterError(f"조문/조[{article_index}]: 조문번호/조문여부가 잘못되었습니다.")
+                    raise XMLAdapterError(
+                        f"조문/조[{article_index}]: 조문번호/조문여부가 잘못되었습니다."
+                    )
                 if kind == "Y" and number in seen_articles:
                     raise XMLAdapterError(f"중복 조문번호: {number}")
                 if kind == "Y":
@@ -58,7 +60,8 @@ def _law_html(root: ET.Element) -> str:
                 raw_text = _required_text(article, "조내용")
                 title = article.findtext("조제목", "")
                 deleted = kind == "Y" and (
-                    title.strip() == "삭제" or bool(_DELETED_ARTICLE.fullmatch(raw_text.strip()))
+                    title.strip() == "삭제"
+                    or bool(_DELETED_ARTICLE.fullmatch(raw_text.strip()))
                 )
                 attrs = _attrs(
                     data_source_location=f"조문/조[{article_index}] (조문번호 {number})",
@@ -96,7 +99,8 @@ class _HwpRenderer:
     def __init__(self, body: ET.Element):
         self.body = body
         self.table_ids = {
-            node: f"table-{index}" for index, node in enumerate(body.iter("TableControl"), 1)
+            node: f"table-{index}"
+            for index, node in enumerate(body.iter("TableControl"), 1)
         }
 
     def _pieces(self, node: ET.Element) -> Iterator[str | _Block]:
@@ -118,12 +122,21 @@ class _HwpRenderer:
             yield from self._paragraph(node)
         elif node.tag in {"FootNote", "Footnote", "EndNote", "Endnote"}:
             blocks = list(self._walk_children(node))
-            attrs = _attrs(data_note_type=node.tag, data_note_number=node.get("number", ""))
-            yield _Block("note", "".join(b.text for b in blocks),
-                         f"<aside{attrs}>" + "".join(b.html for b in blocks) + "</aside>")
+            attrs = _attrs(
+                data_note_type=node.tag, data_note_number=node.get("number", "")
+            )
+            yield _Block(
+                "note",
+                "".join(b.text for b in blocks),
+                f"<aside{attrs}>" + "".join(b.html for b in blocks) + "</aside>",
+            )
         elif node.tag in {"Picture", "ShapePicture"}:
             # 자리 표시의 설명도 원문 텍스트에 추가하지 않는다. 그림 보정은 별도 검수다.
-            yield _Block("image", "", '<span data-embedded-object="image" data-extraction-status="unread"></span>')
+            yield _Block(
+                "image",
+                "",
+                '<span data-embedded-object="image" data-extraction-status="unread"></span>',
+            )
         else:
             for child in node:
                 yield from self._pieces(child)
@@ -177,24 +190,49 @@ class _HwpRenderer:
             rowspan = self._integer(cell, "rowspan", minimum=1)
             colspan = self._integer(cell, "colspan", minimum=1)
             if row + rowspan > rows or col + colspan > cols:
-                raise XMLAdapterError(f"{table_id}: 셀 좌표/병합이 표 범위를 벗어납니다.")
-            slots = {(r, c) for r in range(row, row + rowspan) for c in range(col, col + colspan)}
+                raise XMLAdapterError(
+                    f"{table_id}: 셀 좌표/병합이 표 범위를 벗어납니다."
+                )
+            slots = {
+                (r, c)
+                for r in range(row, row + rowspan)
+                for c in range(col, col + colspan)
+            }
             if occupied.intersection(slots):
                 raise XMLAdapterError(f"{table_id}: 셀 좌표/병합 영역이 겹칩니다.")
             occupied.update(slots)
-            attrs = _attrs(data_cell_id=f"{table_id}-r{row}-c{col}", data_row=row, data_col=col,
-                           rowspan=rowspan, colspan=colspan)
-            starts[row, col] = f"<td{attrs}>" + "".join(b.html for b in self._walk_children(cell)) + "</td>"
+            attrs = _attrs(
+                data_cell_id=f"{table_id}-r{row}-c{col}",
+                data_row=row,
+                data_col=col,
+                rowspan=rowspan,
+                colspan=colspan,
+            )
+            starts[row, col] = (
+                f"<td{attrs}>"
+                + "".join(b.html for b in self._walk_children(cell))
+                + "</td>"
+            )
         if len(occupied) != rows * cols:
             raise XMLAdapterError(f"{table_id}: 누락된 표 셀 좌표가 있습니다.")
         attrs = _attrs(data_table_id=table_id, data_source_location=table_id)
         rendered_rows = []
         for row in range(rows):
-            row_attrs = _attrs(data_row_index=row, data_source_location=f"{table_id}/row[{row}]")
-            rendered_rows.append(f"<tr{row_attrs}>" + "".join(starts.get((row, col), "") for col in range(cols)) + "</tr>")
+            row_attrs = _attrs(
+                data_row_index=row, data_source_location=f"{table_id}/row[{row}]"
+            )
+            rendered_rows.append(
+                f"<tr{row_attrs}>"
+                + "".join(starts.get((row, col), "") for col in range(cols))
+                + "</tr>"
+            )
         # 캡션 등 TableBody 외의 본문도 버리지 않고 표 직전에 보존한다.
-        caption = "".join(block.html for child in node if child is not body
-                          for block in self._walk_children(child))
+        caption = "".join(
+            block.html
+            for child in node
+            if child is not body
+            for block in self._walk_children(child)
+        )
         return caption + f"<table{attrs}>" + "".join(rendered_rows) + "</table>"
 
     def html(self) -> str:
@@ -204,7 +242,9 @@ class _HwpRenderer:
 
         def flush() -> None:
             if current:
-                attrs = _attrs(data_section_title=title, data_deleted_section=str(deleted).lower())
+                attrs = _attrs(
+                    data_section_title=title, data_deleted_section=str(deleted).lower()
+                )
                 sections.append(f"<section{attrs}>" + "".join(current) + "</section>")
                 current.clear()
 
@@ -243,4 +283,8 @@ def xml_to_html(content: str) -> str:
         body = _HwpRenderer(source).html()
     else:
         raise XMLAdapterError(f"지원하지 않는 XML 루트: {root.tag}")
-    return '<!doctype html><html lang="ko"><head><meta charset="utf-8"></head><body>' + body + "</body></html>"
+    return (
+        '<!doctype html><html lang="ko"><head><meta charset="utf-8"></head><body>'
+        + body
+        + "</body></html>"
+    )

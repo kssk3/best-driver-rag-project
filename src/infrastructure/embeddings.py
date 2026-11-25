@@ -1,12 +1,12 @@
 """교체 가능한 임베딩 연결. 기본 예시는 외부 호출 없는 흐름 검증용이다."""
 
 import hashlib
-from importlib.metadata import version
 import json
 import math
 import os
-from pathlib import Path
 import re
+from importlib.metadata import version
+from pathlib import Path
 from typing import Protocol
 
 
@@ -34,7 +34,9 @@ class DemoHashEmbeddings:
     def embed_query(self, text: str) -> list[float]:
         text = " ".join(text.casefold().split())
         vector = [0.0] * self.dimensions
-        parts = [text] if len(text) < 2 else [text[i:i + 2] for i in range(len(text) - 1)]
+        parts = (
+            [text] if len(text) < 2 else [text[i : i + 2] for i in range(len(text) - 1)]
+        )
         for part in parts:
             if part:
                 bucket = int.from_bytes(hashlib.sha256(part.encode()).digest()[:8])
@@ -74,10 +76,17 @@ def create_openai_embeddings(
 
     client = OpenAIEmbeddings(model=model, dimensions=dimensions)
     identity = json.dumps(
-        {"provider": "openai", "model": model, "dimensions": dimensions,
-         "base_url": client.openai_api_base or os.getenv("OPENAI_BASE_URL") or "https://api.openai.com/v1",
-         "adapter": "langchain-openai:" + version("langchain-openai")},
-        sort_keys=True, ensure_ascii=False,
+        {
+            "provider": "openai",
+            "model": model,
+            "dimensions": dimensions,
+            "base_url": client.openai_api_base
+            or os.getenv("OPENAI_BASE_URL")
+            or "https://api.openai.com/v1",
+            "adapter": "langchain-openai:" + version("langchain-openai"),
+        },
+        sort_keys=True,
+        ensure_ascii=False,
     )
     return LangChainEmbeddingsAdapter(client, identity)
 
@@ -109,9 +118,13 @@ class BoundedEmbeddings:
         self.max_tokens = max_tokens
 
     def counts(self, texts: list[str]) -> list[int]:
-        counts = [len(self.encoding.encode(text, disallowed_special=())) for text in texts]
+        counts = [
+            len(self.encoding.encode(text, disallowed_special=())) for text in texts
+        ]
         if any(count > self.max_tokens or count == 0 for count in counts):
-            raise ValueError("빈 입력 또는 임베딩 토큰 한도를 넘는 청크가 있습니다. 청킹을 조정하세요.")
+            raise ValueError(
+                "빈 입력 또는 임베딩 토큰 한도를 넘는 청크가 있습니다. 청킹을 조정하세요."
+            )
         return counts
 
     def embed_documents(self, texts: list[str]) -> list[list[float]]:
