@@ -173,3 +173,29 @@ def test_w10_reports_failed_stage_even_when_answer_is_kept() -> None:
         "place_lookup" in w10[0].message
         and "pipeline.place_lookup_failed" in w10[0].message
     )
+
+
+def test_w7_shows_error_code_when_present() -> None:
+    view = make_view(
+        status="error",
+        error="[가상] 상세",
+        error_code="pipeline.example",
+        candidates=[],
+        model_inputs=None,
+        citations=[],
+    )
+    w7 = next(a for a in check_response(view, "서대문구") if a.code == "W7")
+    assert "[가상] 상세" in w7.message
+    assert "오류 코드: pipeline.example" in w7.message
+
+
+def test_w7_without_error_code_has_no_code_text() -> None:
+    view = make_view(
+        status="error",
+        error="[가상] 상세",
+        candidates=[],
+        model_inputs=None,
+        citations=[],
+    )
+    w7 = next(a for a in check_response(view, "서대문구") if a.code == "W7")
+    assert "오류 코드" not in w7.message
