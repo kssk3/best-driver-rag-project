@@ -36,7 +36,7 @@
 uv run --locked python -m scripts.prepare_data --bundle data/handoff/jungeun/ordinance-handoff-2026-11-24 --version v1 --output-dir data/processed/ordinance-v2-prepared
 ```
 
-위 명령은 외부 API 없이 준비한다. 별도로 받은 v2 ZIP을 쓰려면 입력만 `--bundle "C:/자료/evidence_data_review_2026-11-24_v2.zip"`으로 바꾼다. 실제 색인까지 만들 때는 `OPENAI_API_KEY` 환경변수를 설정한 프로세스에서 다음 명령을 사용한다. `.env` 파일은 자동으로 읽지 않는다. 기존 로컬 키 파일을 사용하려면 `--api-key-file "C:/비공개/openai-key.txt"`처럼 명시적으로 추가한다. 키 내용은 출력하거나 결과 JSON에 기록하지 않는다.
+위 명령은 외부 API 없이 준비한다. 별도로 받은 v2 ZIP을 쓰려면 입력만 `--bundle "받은 ZIP의 실제 경로"`으로 바꾼다. 실제 색인까지 만들 때는 `OPENAI_API_KEY` 환경변수를 설정한 프로세스에서 다음 명령을 사용한다. `.env` 파일은 자동으로 읽지 않는다. 기존 로컬 키 파일을 사용하려면 `--api-key-file "C:/비공개/openai-key.txt"`처럼 명시적으로 추가한다. 키 내용은 출력하거나 결과 JSON에 기록하지 않는다.
 
 `scripts.prepare_data`와 `scripts.search_index`는 `src/infrastructure/embeddings.py`의 `configure_key_file`과 `BoundedEmbeddings`를 함께 사용한다. 명시한 키 파일은 현재 프로세스에만 적용하며, 임베딩 입력은 토큰 한도를 확인해 자동 잘림이나 평균 없이 전송한다.
 

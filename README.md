@@ -37,7 +37,7 @@ uv run --locked python -m pytest --version
 uv run --locked python -m scripts.prepare_data --bundle data/handoff/jungeun/ordinance-handoff-2026-11-24 --version v1 --output-dir data/processed/ordinance-v2-prepared
 ```
 
-이 명령은 외부 호출 없이 공용 문서와 HTML/JSON 청크를 만든다. 별도로 받은 v2 인계 ZIP도 `--bundle "C:/자료/evidence_data_review_2026-11-24_v2.zip"`으로 지정할 수 있다. `--version v1`은 원문 버전이며 인계 파일명의 `v2`와는 별개다.
+이 명령은 외부 호출 없이 공용 문서와 HTML/JSON 청크를 만든다. 별도로 받은 v2 인계 ZIP도 `--bundle "받은 ZIP의 실제 경로"`으로 지정할 수 있다. `--version v1`은 원문 버전이며 인계 파일명의 `v2`와는 별개다.
 
 실제 색인까지 만들려면 `OPENAI_API_KEY` 환경변수를 준비한 뒤 별도 출력 폴더로 실행한다. 기존 키 파일은 `--api-key-file`로 명시할 수도 있으며 `.env`는 자동 로드하지 않는다.
 
@@ -77,7 +77,7 @@ uv run --locked python -m src.evaluation.answer_experiments.evidence_retrieval_b
 
 검색 비교를 다시 실행할 때마다 새 출력 폴더를 지정한다. 전체 테스트 명령은 `uv run --locked python -m pytest -q tests`다. PR #11을 통합한 브랜치에서 위의 답변·지역 해석 테스트 68개와 하위 검사 25개가 통과했다. 같은 환경에서 전체 테스트 403개와 하위 검사 25개가 통과했다. 두 실행 모두 기존 LangChain Community 사용 중단 예정 경고가 1건 발생했다.
 
-[전처리 자료 질문별 결과표](results/testData.md)에서 세 사례의 검색 순위, 답변, 인용을 CSV 원본과 대조할 수 있다. 동 이름에서 추론한 구를 검색기와 생성기가 각각 어떻게 사용하는지는 [지역 해석과 답변 생성 연결](docs/TEAM-SETUP.md#evidence-지역-해석과-답변-생성-연결)에 정리했다.
+[전처리 자료 질문별 결과표](results/testData.md)에서 세 사례의 검색 순위, 답변, 인용을 CSV 원본과 대조할 수 있다. 동 이름에서 추론한 구를 검색기와 생성기가 각각 어떻게 사용하는지는 [지역 해석과 답변 생성 연결](docs/TEAM-SETUP.md#전처리-자료-지역-해석과-답변-생성-연결)에 정리했다.
 
 입력 자료 규격, 색인/평가 명령과 팀 함수 연결 예시는 [인계 문서](docs/seokho-handoff.md)에 있다. `sources.json`은 문서 목록과 첨부 관계를 읽는 별도 입력이며 전처리 묶음 대신 넣지 않는다. OpenAI 임베딩 환경변수는 [.env.example](.env.example)을 참고한다.
 
