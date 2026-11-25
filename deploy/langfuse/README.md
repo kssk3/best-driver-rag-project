@@ -5,28 +5,23 @@
 ## 서버 준비와 기동
 
 1. Docker Engine과 Compose 플러그인이 있는 팀 서버를 준비한다. 팀 도메인의 DNS를 서버로 연결하고 Caddy가 인증서를 발급받도록 TCP 80·443을 연결한다. 이 구성은 두 포트를 Caddy가 직접 사용할 수 있다고 가정한다.
-2. 저장소 루트에서 아래 명령을 실행한다. 예시 도메인을 실제 팀 도메인으로 바꾼다. 서버용 비밀값은 최초 한 번만 만들고 `.env`와 Docker 볼륨을 백업한다.
+2. 저장소 루트에서 아래 명령으로 서버용 `.env`를 최초 한 번 생성한다. 스크립트는 OpenSSL로 서로 다른 비밀값 7개를 만들고 파일 권한을 `0600`으로 설정한다. 이미 `.env`가 있으면 기존 파일을 사용한다.
 
 ```sh
 cd deploy/langfuse
-(
-  set -euC
-  umask 077
-  {
-    printf 'LANGFUSE_HOST=%s\n' 'langfuse.example.org'
-    for key in NEXTAUTH_SECRET SALT ENCRYPTION_KEY POSTGRES_PASSWORD CLICKHOUSE_PASSWORD REDIS_AUTH MINIO_ROOT_PASSWORD; do
-      secret=$(openssl rand -hex 32)
-      printf '%s=%s\n' "$key" "$secret"
-    done
-  } > .env
-)
+sh init-env.sh
+```
+
+3. `deploy/langfuse/.env`의 `LANGFUSE_HOST=`에 실제 도메인을 입력한다(예: `LANGFUSE_HOST=langfuse.example.org`). 도메인이 미정이면 이 값은 비워 두고, 도메인이 준비되면 같은 폴더에서 아래 명령을 실행한다. 서버 비밀값은 재기동 때도 유지하며 `.env`와 Docker 볼륨을 백업한다.
+
+```sh
 docker compose config --quiet
 docker compose up -d
 docker compose ps
 docker compose logs --tail=50 langfuse-web langfuse-worker proxy
 ```
 
-3. `https://팀도메인/api/public/health`와 웹 로그인 화면을 확인한다. 관리자가 조직과 프로젝트를 만들고 팀원에게 해당 프로젝트 조회 권한을 부여한다. 점수 조회는 각자의 계정으로 한다. 업로드용 API 키는 해당 서버의 대상 프로젝트에서 발급한 쌍을 사용한다. 기존 키의 발급 서버·프로젝트가 다르면 새 프로젝트에서 발급한다.
+4. `https://팀도메인/api/public/health`와 웹 로그인 화면을 확인한다. 관리자가 조직과 프로젝트를 만들고 팀원에게 해당 프로젝트 조회 권한을 부여한다. 점수 조회는 각자의 계정으로 한다. 업로드용 API 키는 해당 서버의 대상 프로젝트에서 발급한 쌍을 사용한다. 기존 키의 발급 서버·프로젝트가 다르면 새 프로젝트에서 발급한다.
 
 ## 점수 전송과 확인
 
