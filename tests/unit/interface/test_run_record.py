@@ -220,3 +220,10 @@ def test_demo_mode_asks_for_a_question_when_empty(demo_pipeline, monkeypatch) ->
     app = run_app_in_demo_mode("   ")
     assert not app.exception
     assert any("질문을 입력하세요" in w.value for w in app.warning)
+
+
+def test_fixed_evidence_run_keeps_its_own_kind() -> None:
+    assert (
+        run_record_to_view(make_record(run_kind="fixed_evidence")).kind
+        == "fixed_evidence"
+    )

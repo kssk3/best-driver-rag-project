@@ -36,6 +36,8 @@ def render_inspection(
         st.caption("예시(합성) 응답을 검사합니다. 실제 RAG 실행이 아닙니다.")
     elif view.kind == "demo":
         st.caption("합성 데모 실행을 검사합니다. 실제 RAG 품질이 아닙니다.")
+    elif view.kind == "fixed_evidence":
+        st.caption("고정 근거 평가 실행을 검사합니다. 검색을 거친 결과가 아닙니다.")
 
     st.subheader("자동 경고")
     alerts = check_response(view, selected_district)
@@ -66,7 +68,7 @@ def render_inspection(
         st.dataframe(
             [
                 {
-                    "순위": rank,
+                    "순위": c.rank if c.rank is not None else position,
                     "chunk_id": c.chunk_id,
                     "지역": c.district or "알 수 없음",
                     "점수": c.score,
@@ -74,7 +76,7 @@ def render_inspection(
                     "인용": "예" if c.chunk_id in cited_ids else "아니오",
                     "순위 이동": _shift_text(shifts.get(c.chunk_id)),
                 }
-                for rank, c in enumerate(view.candidates, 1)
+                for position, c in enumerate(view.candidates, 1)
             ]
         )
 

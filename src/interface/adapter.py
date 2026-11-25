@@ -10,7 +10,7 @@ from typing import Literal
 
 from src.contracts import RunRecord
 
-ViewKind = Literal["fixture", "demo", "real"]
+ViewKind = Literal["fixture", "demo", "fixed_evidence", "real"]
 STATUSES = ("answered", "needs_clarification", "insufficient_evidence", "error")
 
 
@@ -25,6 +25,7 @@ class Candidate:
         default_factory=list
     )  # 청크가 가진 조건. 비어 있으면 모름
     stage_scores: dict[str, float] = field(default_factory=dict)  # 검색 단계별 점수
+    districts: list[str] = field(default_factory=list)  # 청크가 적용되는 구 목록
 
 
 @dataclass(frozen=True)
@@ -146,7 +147,9 @@ def to_place_result(raw: dict, kind: ViewKind) -> PlaceResult:
 
 
 def _kind_of(record: RunRecord) -> ViewKind:
-    return "demo" if record.run_kind == "demo" else "real"
+    if record.run_kind in ("demo", "fixed_evidence"):
+        return record.run_kind
+    return "real"
 
 
 def run_record_to_view(record: RunRecord) -> ViewResponse:
@@ -179,6 +182,7 @@ def run_record_to_view(record: RunRecord) -> ViewResponse:
                 rank=c.rank,
                 conditions=list(c.chunk.conditions),
                 stage_scores=dict(c.stage_scores),
+                districts=list(c.chunk.districts),
             )
             for c in record.candidates
         ],

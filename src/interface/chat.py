@@ -55,6 +55,9 @@ def render_response(view: ViewResponse, question: str = "", district: str = "") 
             "합성 데모 실행입니다. 합성 문서만 검색하며 실제 RAG 품질이 아닙니다."
         )
 
+    elif view.kind == "fixed_evidence":
+        st.caption("고정 근거 평가 실행입니다. 검색을 거친 결과가 아닙니다.")
+
     if view.status == "answered":
         _render_answered(view)
 
@@ -86,7 +89,7 @@ def _render_answered(view: ViewResponse) -> None:
 
 def _render_clarification(view: ViewResponse, question: str, district: str) -> None:
 
-    st.warning("질문하신 내용은 추가 정보가 필요합니다.")
+    st.warning(view.answer or "질문하신 내용은 추가 정보가 필요합니다.")
 
     with st.form("followup"):
         extra_conditions = {

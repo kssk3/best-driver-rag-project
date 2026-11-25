@@ -121,3 +121,13 @@ def test_w9_error_text_with_non_error_status() -> None:
     alerts = check_response(view)
     assert [a.code for a in alerts] == ["W9"]
     assert alerts[0].level == "error"
+
+
+def test_w1_accepts_shared_chunk_that_includes_selected_district() -> None:
+    shared = Candidate(
+        "c1", "서대문구, 송파구", 0.8, "[가상] 공통", districts=["서대문구", "송파구"]
+    )
+    view = make_view(candidates=[shared], model_inputs=["c1"])
+    assert codes(view, "서대문구") == []
+    assert codes(view, "송파구") == []
+    assert codes(view, "강남구") == ["W1"]

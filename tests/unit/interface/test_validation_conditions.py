@@ -183,3 +183,24 @@ def test_panel_reports_rules_it_could_not_check() -> None:
     app = open_panel(view)
     assert not app.exception
     assert any("검사하지 못한 규칙" in i.value and "W5" in i.value for i in app.info)
+
+
+def test_w5_requires_every_condition_to_match() -> None:
+    view = make_view(
+        candidates=[
+            Candidate("c1", "서대문구", 0.8, "[가상]", rank=1, conditions=["일반주택"])
+        ],
+        model_inputs=["c1"],
+        request_conditions={"housing_type": "공동주택", "item": "일반주택"},
+    )
+    assert len(w5(view)) == 1
+    ok = make_view(
+        candidates=[
+            Candidate(
+                "c1", "서대문구", 0.8, "[가상]", rank=1, conditions=["일반주택", "병"]
+            )
+        ],
+        model_inputs=["c1"],
+        request_conditions={"housing_type": "일반주택", "item": "병"},
+    )
+    assert w5(ok) == []

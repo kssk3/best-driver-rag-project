@@ -79,10 +79,14 @@ with user_tab:
         st.caption("합성 문서만 검색하는 데모 실행입니다. 실제 RAG 품질이 아닙니다.")
 
     if st.button("질문하기"):
+        # 새 요청이 실패하거나 비어도 이전 응답이 남아 보이지 않게 지운다.
+        for key in ("view", "places", "asked_question", "asked_district"):
+            st.session_state.pop(key, None)
         if mode == "예시 응답":
             st.session_state["view"] = to_view_response(
                 samples[sample_name], kind="fixture"
             )
+            st.session_state["asked_question"] = question
             st.session_state["asked_district"] = district
         elif not question.strip():
             st.warning("질문을 입력하세요.")
@@ -98,11 +102,17 @@ with user_tab:
             else:
                 st.session_state["view"] = run_record_to_view(record)
                 st.session_state["places"] = run_record_to_places(record)
+                st.session_state["asked_question"] = question
                 st.session_state["asked_district"] = district
 
     view = st.session_state.get("view")
     if view is not None:
-        render_response(view, question=question, district=district)
+        # 입력창이 아니라 제출 당시의 질문·지역으로 그린다.
+        render_response(
+            view,
+            question=st.session_state.get("asked_question", ""),
+            district=st.session_state.get("asked_district", ""),
+        )
 
     st.divider()
     st.subheader("장소")

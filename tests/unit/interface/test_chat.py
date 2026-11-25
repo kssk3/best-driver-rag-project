@@ -115,3 +115,45 @@ def test_conflicting_sources_are_both_shown_for_insufficient_evidence() -> None:
 def test_plain_insufficient_evidence_shows_no_source_list() -> None:
     app = ask("insufficient_evidence")
     assert not any("확인한 출처" in item.value for item in app.markdown)
+
+
+def test_followup_uses_submitted_request_not_current_inputs() -> None:
+    app = ask("needs_clarification", question="가상 질문")
+    app.text_input[0].set_value("바뀐 질문")
+    app.selectbox[0].select("송파구")
+    app.text_input[1].set_value("아파트")
+    app.button[1].click().run()
+    assert json.loads(app.json[0].value)["question"] == "가상 질문"
+    assert json.loads(app.json[0].value)["district"] == "서대문구"
+
+
+def test_blank_question_clears_previous_response() -> None:
+    app = ask("answered", question="가상 질문")
+    assert app.success
+    app.radio[0].set_value("실행(합성 데모)").run()
+    app.text_input[0].set_value("")
+    app.button[0].click().run()
+    assert not app.success
+
+
+def test_clarification_shows_the_pipeline_message() -> None:
+    def page() -> None:
+        from src.interface.adapter import ViewResponse
+        from src.interface.chat import render_response
+
+        render_response(
+            ViewResponse(
+                "r",
+                "fixture",
+                "needs_clarification",
+                "[가상] 동을 알려 주세요.",
+                [],
+                [],
+                None,
+                [],
+                None,
+            )
+        )
+
+    app = AppTest.from_function(page, default_timeout=10).run()
+    assert any("동을 알려 주세요" in w.value for w in app.warning)

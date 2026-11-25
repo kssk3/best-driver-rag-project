@@ -32,7 +32,9 @@ def check_response(
         mixed = [
             c.chunk_id
             for c in view.candidates
-            if c.chunk_id in used and c.district and c.district != selected_district
+            if c.chunk_id in used
+            and (c.districts or c.district)
+            and selected_district not in (c.districts or [c.district])
         ]
         if mixed:
             alerts.append(
@@ -123,7 +125,7 @@ def _used_candidates(view: ViewResponse) -> list[Candidate]:
     return [c for c in view.candidates if c.chunk_id in view.model_inputs]
 
 
-# 조건 문자열 안에 입력 값이 들어 있는지만 확인 (조건을 구별하지 않아 오탐 가능성 있음)
+# 입력한 값이 모두 조건 문자열 안에 들어 있어야 한다 (조건 종류는 구별하지 않아 오탐 가능성 있음)
 def _condition_mismatch(view: ViewResponse) -> list[str]:
     values = [
         value.strip() for value in view.request_conditions.values() if value.strip()
@@ -136,7 +138,7 @@ def _condition_mismatch(view: ViewResponse) -> list[str]:
         c.chunk_id
         for c in _used_candidates(view)
         if c.conditions
-        and not any(value in text for value in values for text in c.conditions)
+        and not all(any(value in text for text in c.conditions) for value in values)
     ]
 
 
