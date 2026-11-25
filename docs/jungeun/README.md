@@ -123,6 +123,22 @@ python -m src.ingestion.annexes --manifest data/raw/documents/law_runs/e783d2319
 송파구 별표 5의 이어진 문장 8건은 HTML·JSON에서 첫 행의 청크 한 개로 전달하며
 원본 행·셀 ID와 포상금 열을 보존한다. 합친 청크의 ID는 내용 해시에 따라 바뀐다.
 
+## 별표 검수 후보 찾기
+
+전처리한 첨부 매니페스트를 읽어 검수용 JSON을 출력한다.
+
+```zsh
+uv run --locked python -m scripts.review_annex_tables \
+  data/handoff/jungeun/ordinance-handoff-2026-11-24/processed/annex/annex_manifest.json
+```
+
+`candidate_counts`에서 유형별 개수를, `candidates`에서 파일·표·행·셀 ID와
+0부터 시작하는 좌표 또는 인접 문단 번호를 확인한다. 셀 내부 줄바꿈, 첫 열이
+이어지는 행, 병합 머리글 단위, 표 근처 각주·단위를 원문과 대조한다.
+후보는 검수 제안이며 원본과 전처리 결과, 청크 ID를 보존한다.
+현재 묶음의 첨부 19건·표 32개에서 기존 검수 8건을 확인했다. 새 행 경계
+후보인 서대문구 별지의 `상호`·`주소`는 서식의 항목명으로 보고 합치지 않았다.
+
 ## 사람 검수와 현재 제한
 
 이정은 확인 범위는 로컬 review_status.json에 항목별로 기록했다.
@@ -142,6 +158,7 @@ PDF 파일 메타데이터의 생성·수정일 **2026-10-14**와 구분한다.
 PDF는 이전 발행 자료로 보존하며, 웹·지도 중 최신 일정의 우선순위는 미확인이다.
 날짜 구분 반영 승인은 실제 수거요일을 확인한 기록과 별개다.
 [날짜 검증 기록](../../data/handoff/jungeun/ordinance-handoff-2026-11-24/review/schedule_evidence/date_check.json)에 근거와 남은 확인을 기록했다.
+[출처별 적용 범위 검수](schedule_scope_review.md)에 동·주택 유형별 대조와 추가 확인한 공식 안내를 정리했다.
 
 전체 2,643개 셀을 사람이 개별 승인한 상태로 표현하지 않는다.
 HOP 미리보기는 공식 배포 PDF가 아니며 대형 표 일부에 겹침 경고가 있었다.
