@@ -145,11 +145,20 @@ JSON의 `technical_lookup.terms_by_key`에서 전문 용어 63개의 뜻과 관�
 
 실험실 약품은 명칭·성분과 용기 잔류 여부를 유지하며 소속 기관의 연구실 안내를 조회한다. 농약은 남은 내용물과 빈 포장을 구분한다. 송파구의 2026년 10월 폐농약 공지는 해당 기간의 자료로 기록했다. [중앙대학교 연구실 폐기물 안내](https://safety.cau.ac.kr/contents.php?mid=m01_11) · [정부민원안내콜센터 남은 농약 안내](https://www.110.go.kr/data/counselView.do?num=C04_664043) · [한국환경공단 영농폐기물 안내](https://www.keco.or.kr/web/lay1/S1T185C1072/contents.do)
 
+품목·별칭을 수정할 때는 [aliases.py](aliases.py), [prompt_vocabulary.json](prompt_vocabulary.json) 등 생성 원본을 고친 뒤 카탈로그를 재생성한다. 별칭표 스냅샷과 평가 입력을 갱신할 때는 별도로 아래 명령을 사용한다.
+
 ```zsh
 uv run --locked python -m src.rewrite_dictionary.export_rewrite_inputs "/path/to/team-repo" "/path/to/personal-fork"
-uv run --locked python -m src.rewrite_dictionary.build_item_catalog "/path/to/ordinance-handoff-2026-11-24"
 ```
 
-첫 명령은 별칭표 스냅샷과 평가 입력을 갱신할 때 실행한다. 두 번째 명령은 기존 스냅샷을 읽고 전처리 파일을 매니페스트의 해시와 대조한 뒤 품목 사전을 쓴다.
+저장소의 생성 결과를 덮어쓰지 않고 비교하려면 프로젝트 루트에서 임시 파일에 출력한다. 빌더는 인계 번들의 전처리 파일을 매니페스트 해시와 대조하고 UTF-8, LF 줄바꿈으로 결과를 쓴다. `cmp`가 출력 없이 종료 상태 0을 반환하면 파일이 일치한다. 생성 원본의 변경을 반영할 때는 같은 명령에서 `--output`을 생략한다.
 
-프로젝트 루트에서 `uv run --locked python -m pytest tests/unit/query`로 질의 모듈을 검증한다. 사전 코드와 테스트는 팀 CI의 Ruff, mypy, 문법 검사와 테스트·커버리지 범위에 포함된다.
+```zsh
+catalog_tmp=$(mktemp)
+uv run --locked python -m src.rewrite_dictionary.build_item_catalog \
+  data/handoff/jungeun/ordinance-handoff-2026-11-24 --output "$catalog_tmp"
+cmp src/rewrite_dictionary/item_catalog.json "$catalog_tmp"
+rm -f "$catalog_tmp"
+```
+
+프로젝트 루트에서 `uv run --locked python -m pytest tests/unit/query`로 질의 모듈을 검증한다. CI에서도 카탈로그 생성 명령을 임시 경로에 실행하고, 추적 중인 JSON과 바이트 단위로 비교한다. 사전 코드와 테스트는 팀 CI의 Ruff, mypy, 문법 검사와 테스트·커버리지 범위에 포함된다.
