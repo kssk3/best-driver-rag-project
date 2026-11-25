@@ -1,6 +1,6 @@
 # 평가셋
 
-이 브랜치의 [개발셋](dev.json)에는 서대문구 공동주택 수거용기 색상과 송파구 대형폐기물 신고·배출에 관한 두 문항이 있다. 송파구 문항은 [채점 메모](dev-scoring-notes.json)에 초안으로 표시했다. 사람이 공식 원문을 대조한 날짜는 아직 비어 있다. 목표는 개발 10문항(답변 가능 8개·근거 없음 2개)과 별도 최종 20문항이다. 실행기 연결 검사용 [합성 3문항](../tests/fixtures/handoff_eval.json)은 따로 관리한다. [팀 평가 기준](../docs/problem.md)
+이 브랜치의 [개발셋](dev.json)에는 서대문구 공동주택 수거용기 색상과 송파구 대형폐기물 신고·배출에 관한 두 문항이 있다. [채점 메모](dev-scoring-notes.json)는 문항별 허용 청크를 원문 위치와 연결한다. 두 정답표 모두 초안이며 사람의 대조 날짜(`checked_at`)는 아직 비어 있다. 서대문구는 별표 1의 공동주택 일반용기 색상 행을 확인한다. 송파구는 직접 신고하는 경우를 묻는다. 원문 발췌에는 대행수거 지역의 단서도 보존했으며, 이를 필수 채점 사실에 포함할지는 원문 검수 때 결정한다. 목표는 개발 10문항(답변 가능 8개·근거 없음 2개)과 별도 최종 20문항이다. 실행기 연결 검사용 [합성 3문항](../tests/fixtures/handoff_eval.json)은 따로 관리한다. [팀 평가 기준](../docs/problem.md)
 
 개발문항 초안은 답변 생성과 품질 추적 담당자(강성수), 최종셋 관리는 화면과 관찰 검증 담당자(이승주), 원문 근거 교차 확인은 데이터 수집과 질문 정제 담당자(이정은)가 맡는다.
 
@@ -32,3 +32,7 @@
 색인 준비와 검색은 기존 출력 경로를 덮어쓰지 않는다. 답변 실험은 위에 지정한 검색 결과 파일을 읽으며 실행 유형은 `fixed_evidence`다. 색인과 원본 실행 JSON은 Git에서 제외된다. 정답 판정 시 질문의 뒤바뀐 전제를 바로잡았는지(유리병용은 주황색, 캔용은 회색)와 어떤 청크를 인용했는지를 따로 확인한다.
 
 근거 한 건을 고정하는 비교 실험은 색상표 문항 하나만 담은 JSON을 `--cases`에 전달하고 `--factory src.evaluation.answer_experiments.answer_evaluation_runtimes:create_color_runtime`을 지정한다. 이 함수는 항상 같은 색상표 행을 제공한다. 두 개발 문항을 함께 평가할 때는 질문별로 검색하는 `create_a_runtime`을 사용한다. [평가 CLI](../scripts/evaluate.py)
+
+고정 근거 실험의 실행 기록에는 실제 답변 모델(`versions.model`)과 시스템 프롬프트의 SHA-256(`versions.prompt`)이 남는다. 자료 버전과 청킹 버전이 각각 하나면 `versions.data`, `versions.chunking`에 기록하고, 여러 개면 `data_versions` 또는 `chunking_versions`에 JSON 배열 문자열로 기록한다. 저장된 검색 결과에 색인 ID가 있으면 `versions.replay_index`에서 원래 검색에 쓰인 색인을 확인할 수 있다.
+
+팀 A 검색 평가를 시작할 때 A 벡터 검색 또는 리라이트 끄기 조건을 어기면 `evaluation.unsupported_configuration`, 색인의 임베딩 제공자·모델·차원 정보를 읽을 수 없거나 지원하지 않으면 `evaluation.invalid_embedding_identity`가 발생한다.

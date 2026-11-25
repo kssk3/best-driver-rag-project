@@ -1,12 +1,12 @@
 import json
 import sys
-from types import SimpleNamespace
 
 import langchain_openai
+from langchain_core.messages import AIMessage
 
 from scripts.evaluate import main
 from src.contracts import Chunk
-from src.generation import model_draft
+from src.infrastructure import chat_models
 from src.infrastructure.embeddings import create_openai_embeddings
 from src.infrastructure.stores import save_index
 from src.ingestion.indexing import build_index
@@ -46,7 +46,7 @@ def test_a_evaluation_retrieves_and_cites_for_each_question(monkeypatch, tmp_pat
             assert payload["conditions"]["district"] == district
             assert set(payload) == {"original_question", "conditions", "evidence"}
             [evidence] = payload["evidence"]
-            return SimpleNamespace(
+            return AIMessage(
                 content=json.dumps(
                     {
                         "status": "answered",
@@ -57,7 +57,8 @@ def test_a_evaluation_retrieves_and_cites_for_each_question(monkeypatch, tmp_pat
             )
 
     monkeypatch.setattr(langchain_openai, "OpenAIEmbeddings", FakeEmbeddings)
-    monkeypatch.setattr(model_draft, "ChatOpenAI", FakeChat)
+    monkeypatch.setenv("OPENAI_API_KEY", "offline-unit-test-key")
+    monkeypatch.setattr(chat_models, "ChatOpenAI", FakeChat)
     chunks = [
         Chunk(
             chunk_id=district,

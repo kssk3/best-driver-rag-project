@@ -406,6 +406,77 @@ def test_csv_keeps_repeated_input_and_citation_ranks_and_first_candidate_positio
     assert positions == {"first": ("1", "2"), "second": ("2", "1")}
 
 
+def test_csv_uses_the_stage_that_failed_the_response_when_error_codes_repeat(tmp_path):
+    def fail(*args, **kwargs):
+        raise RuntimeError("synthetic failure")
+
+    class FailingRecorder:
+        write = staticmethod(fail)
+
+    cases = [EvaluationCase(case_id="failure", question="질문", district="송파구")]
+    optional = {
+        "options": PipelineOptions(rewrite_enabled=True),
+        "rewriter": fail,
+        "place_lookup": fail,
+    }
+    runs = evaluate_cases(
+        cases,
+        {
+            "recovered": pipeline(**optional),
+            "record": pipeline(**optional, recorder=FailingRecorder()),
+            "generate": pipeline(
+                **optional, generator=fail, recorder=FailingRecorder()
+            ),
+        },
+    )
+    write_evaluation_csv(tmp_path, cases, runs)
+    with (tmp_path / "runs.csv").open(encoding="utf-8", newline="") as stream:
+        outcomes = {
+            row["configuration"]: (
+                row["status"],
+                row["error_code"],
+                row["failed_stage"],
+            )
+            for row in csv.DictReader(stream)
+        }
+    assert outcomes == {
+        "recovered": ("answered", "", ""),
+        "record": ("error", "common.unexpected_error", "record"),
+        "generate": ("error", "common.unexpected_error", "generate"),
+    }
+
+
+@pytest.mark.parametrize(
+    ("has_code", "has_stage", "expected"),
+    [
+        (False, True, ("", "generate")),
+        (False, False, ("", "")),
+        (True, True, ("common.unexpected_error", "generate")),
+        (True, False, ("common.unexpected_error", "")),
+    ],
+)
+def test_csv_keeps_only_available_failure_evidence_in_legacy_records(
+    tmp_path, has_code, has_stage, expected
+):
+    def fail(*args):
+        raise RuntimeError("failure in generate")
+
+    cases = [EvaluationCase(case_id="legacy", question="질문")]
+    [run] = evaluate_cases(cases, {"legacy": pipeline(generator=fail)})
+    if not has_code:
+        run["record"]["response"].pop("error_code")
+    for stage in run["record"]["stages"]:
+        stage.pop("error_code")
+    if not has_stage:
+        run["record"]["stages"] = []
+
+    write_evaluation_csv(tmp_path, cases, [run])
+    with (tmp_path / "runs.csv").open(encoding="utf-8", newline="") as stream:
+        [row] = csv.DictReader(stream)
+    assert row["status"] == "error"
+    assert (row["error_code"], row["failed_stage"]) == expected
+
+
 @pytest.mark.parametrize("wrapped", [False, True])
 def test_load_explicit_evaluation_file(tmp_path, wrapped):
     cases = [

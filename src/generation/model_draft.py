@@ -1,10 +1,15 @@
 import json
 from collections.abc import Callable
 
-from langchain_openai import ChatOpenAI
-from pydantic import TypeAdapter
+from pydantic import TypeAdapter, ValidationError
 
 from src.generation.answer import AnswerDraft, GenerationInput
+from src.infrastructure.chat_models import (
+    ChatModelSettings,
+    ModelOutputError,
+    create_chat_model,
+    invoke_chat,
+)
 
 SYSTEM_PROMPT = """
 서울 분리배출 질문에 한국어로 답하세요.
@@ -22,23 +27,25 @@ SYSTEM_PROMPT = """
 
 
 def make_model_draft(model: str) -> Callable[[GenerationInput], AnswerDraft]:
-    if not model.strip():
-        raise ValueError("사용할 모델 이름을 지정하세요.")
-
-    chat = ChatOpenAI(model=model).bind(response_format={"type": "json_object"})
+    chat = create_chat_model(ChatModelSettings(model=model)).bind(
+        response_format={"type": "json_object"}
+    )
     draft_schema = TypeAdapter(AnswerDraft)
 
     def draft(payload: GenerationInput) -> AnswerDraft:
-        reply = chat.invoke(
+        text = invoke_chat(
+            chat,
             [
                 ("system", SYSTEM_PROMPT),
                 ("human", json.dumps(payload, ensure_ascii=False)),
-            ]
+            ],
         )
 
-        if not isinstance(reply.content, str):
-            raise ValueError("모델이 텍스트 형식의 JSON 초안을 반환하지 않았습니다.")
-
-        return draft_schema.validate_json(reply.content, strict=True)
+        try:
+            return draft_schema.validate_json(text, strict=True)
+        except ValidationError:
+            raise ModelOutputError(
+                "모델 응답이 답변 초안 형식에 맞지 않습니다."
+            ) from None
 
     return draft

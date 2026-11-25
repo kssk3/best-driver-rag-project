@@ -1,4 +1,17 @@
 {
+    "p04-colors-trick": {
+        "status": "draft",
+        "checked_at": null,
+        "source_url": "http://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=160561037&flNm=%5B%EB%B3%84%ED%91%9C+1%5D+%EC%9E%AC%ED%99%9C%EC%9A%A9%ED%92%88+%EB%B3%B4%EA%B4%80%EC%8B%9C%EC%84%A4+%EB%98%90%EB%8A%94+%EC%9A%A9%EA%B8%B0%EC%9D%98+%EC%84%A4%EC%B9%98%2C+%EA%B7%9C%EA%B2%A9%C2%B7%EC%9E%AC%EC%A7%88%EA%B8%B0%EC%A4%80%0A%28%EC%A0%9C2%EC%A1%B0%EC%A0%9C1%ED%95%AD%EC%A0%9C4%ED%98%B8+%EA%B4%80%EB%A0%A8%29",
+        "source_document_id": "seodaemun-rules:attachment:160561037",
+        "source_location": "별표1 1. 공동주택의 경우 / 가. 일반용기 설치 / 품목별 색상(표기방법-영문병기)",
+        "chunk_id": "chunk-267d3d8946483d4ec51f48803b10fe6968881b0c83a042716d7dfffd08347d17",
+        "source_excerpt": "○ 캔  류 : 회색    ○ 유리병 : 주황색",
+        "required_facts": [
+            "공동주택 일반용기에서 유리병용 용기는 주황색이다.",
+            "공동주택 일반용기에서 캔용 용기는 회색이다."
+        ]
+    },
     "p04-songpa-bulky-waste": {
         "status": "draft",
         "checked_at": null,
@@ -6,7 +19,7 @@
         "source_document_id": "songpa-ordinance",
         "source_location": "제10조 제1항 제1호",
         "chunk_id": "chunk-a482ca0127c4c30a5cad3d2bb61487b0db08300bb301abfb63468d07760f23d0",
-        "source_excerpt": "배출일 전에 배출자의 주소·성명·물품명·크기·수량 등을 구청장에게 신고하여야 하며 구청장이 지정하는 장소에 내어 놓아야 한다.",
+        "source_excerpt": "배출일 전에 배출자의 주소·성명·물품명·크기·수량 등을 구청장에게 신고하여야 하며 구청장이 지정하는 장소에 내어 놓아야 한다. 다만, 폐기물처리업자가 대행수거하는 지역에서는 폐기물처리업자가 이를 대행한다.",
         "required_facts": [
             "배출일 전에 구청장에게 신고한다.",
             "구청장이 지정하는 장소에 내놓는다."

@@ -2,12 +2,19 @@
 
 from unittest.mock import Mock
 
+import httpx
 import pytest
+from langchain_core.messages import AIMessage
+from langchain_openai import ChatOpenAI
+from openai import APITimeoutError, OpenAIError
 
 from src.common.errors import ApplicationError
-from src.contracts import Chunk, PipelineRequest
+from src.config import RuntimeSettings
+from src.contracts import Chunk, PipelineRequest, ResolvedQuery, SearchCandidate
 from src.generation import pipeline_adapter
+from src.generation.model_draft import make_model_draft
 from src.generation.pipeline_adapter import AnswerGenerationError, make_answer_generator
+from src.runtime import create_runtime
 
 
 def _chunk() -> Chunk:
@@ -25,6 +32,60 @@ def _chunk() -> Chunk:
         conditions=["공동주택"],
         chunking_version="test",
     )
+
+
+@pytest.mark.parametrize(
+    ("reply", "expected_code"),
+    [
+        pytest.param(
+            APITimeoutError(request=httpx.Request("POST", "https://example.org")),
+            "infrastructure.llm_timeout",
+            id="sdk-timeout",
+        ),
+        pytest.param(
+            OpenAIError("private-model-diagnostic"),
+            "infrastructure.llm_call_failed",
+            id="provider-failure",
+        ),
+        pytest.param(
+            "private-model-diagnostic", "generation.invalid_draft", id="non-json"
+        ),
+        pytest.param(" ", "generation.invalid_draft", id="empty"),
+        pytest.param(
+            '{"status":"answered","message":"private-model-diagnostic","citation_indices":["0"]}',
+            "generation.invalid_draft",
+            id="strict-schema",
+        ),
+    ],
+)
+def test_model_draft_failure_is_classified_in_persisted_run(
+    reply, expected_code, tmp_path, monkeypatch
+):
+    monkeypatch.setenv("OPENAI_API_KEY", "offline-unit-test-key")
+    invoke = Mock()
+    if isinstance(reply, Exception):
+        invoke.side_effect = reply
+    else:
+        invoke.return_value = AIMessage(content=reply)
+    monkeypatch.setattr(ChatOpenAI, "invoke", invoke)
+    runtime = create_runtime(
+        RuntimeSettings(runs_path=tmp_path),
+        resolver=lambda request: ResolvedQuery(search_query=request.question),
+        retriever=lambda *args, **kwargs: [SearchCandidate(chunk=_chunk(), rank=1)],
+        generator=make_answer_generator(make_model_draft("test-model")),
+    )
+
+    record = runtime.run(PipelineRequest(question="근거는?", district="송파구"))
+
+    invoke.assert_called_once()
+    assert record.response.status == "error"
+    assert record.response.error_code == expected_code
+    assert [(s.name, s.error_code) for s in record.stages if s.status == "error"] == [
+        ("generate", expected_code)
+    ]
+    persisted = (tmp_path / f"{record.run_id}.json").read_text(encoding="utf-8")
+    assert "private-model-diagnostic" not in persisted
+    assert "offline-unit-test-key" not in persisted
 
 
 def test_adapter_preserves_user_input_and_offered_chunk():

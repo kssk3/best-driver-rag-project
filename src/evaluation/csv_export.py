@@ -21,7 +21,7 @@ _RUN_FIELDS = (
     "original_question district search_query status answer candidate_count "
     "allowed_source_ranks_json model_input_ranks_json citation_ranks_json warnings_json "
     "error duration_ms variant rewrite_enabled top_k max_context_chars model embedding "
-    "index_id chunking_version versions_json run_kind retrieval_status"
+    "index_id chunking_version versions_json run_kind retrieval_status error_code failed_stage"
 ).split()
 _CANDIDATE_FIELDS = (
     "dataset_id case_id configuration run_id started_at_utc started_at_kst district "
@@ -39,6 +39,24 @@ def _first_positions(chunk_ids: list[str]) -> dict[str, int]:
     for position, chunk_id in enumerate(chunk_ids, 1):
         positions.setdefault(chunk_id, position)
     return positions
+
+
+def _primary_failure(record: RunRecord) -> tuple[str | None, str | None]:
+    if record.response.status != "error":
+        return None, None
+
+    code = record.response.error_code
+    # Rewrite and place lookup can fail without changing the document response.
+    fatal_stages = {"resolve", "retrieve", "context", "generate", "citations", "record"}
+    uncoded_stage = None
+    for stage in record.stages:
+        if stage.status != "error" or stage.name not in fatal_stages:
+            continue
+        if code is None or stage.error_code == code:
+            return code, stage.name
+        if stage.error_code is None and uncoded_stage is None:
+            uncoded_stage = stage.name
+    return code, uncoded_stage
 
 
 def _record_rows(
@@ -61,6 +79,7 @@ def _record_rows(
         return run, []
 
     record = RunRecord.model_validate(result["record"])
+    run["error_code"], run["failed_stage"] = _primary_failure(record)
     retrieve = next((s.status for s in record.stages if s.name == "retrieve"), None)
     if record.started_at.utcoffset() is not None:
         shared["started_at_utc"] = (

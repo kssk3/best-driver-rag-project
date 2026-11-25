@@ -23,7 +23,7 @@ UI는 Streamlit으로 구현하고 공통 Python RAG 함수를 직접 호출하�
 
 합성 데모는 로컬 JSON 색인과 해시 임베딩을 사용한다. 조례·별표 인계 자료로 실제 색인을 만들 때는 `text-embedding-3-small`을 지정한다. 검색 CLI는 순위와 근거를 출력하고, 파이프라인 답변은 `create_runtime`에 전달한 생성기가 만든다. [환경변수 예시](../.env.example)
 
-PR #24의 [공용 채팅 모듈](../src/infrastructure/chat_models.py)은 `create_chat_model`로 모델을 생성하고 `invoke_chat`으로 호출한다. 기본 제한 시간은 30초이고 재시도는 0회다. 답변 실험 브랜치의 `model_draft.py`는 현재 `ChatOpenAI`를 직접 생성해 호출한다. [공용 함수 테스트](../tests/unit/test_chat_models.py)
+PR #24의 [공용 채팅 모듈](../src/infrastructure/chat_models.py)은 `create_chat_model`로 모델을 생성하고 `invoke_chat`으로 호출한다. 기본 제한 시간은 30초이고 재시도는 0회다. [평가용 답변 초안](../src/generation/model_draft.py)도 같은 생성·호출 함수를 사용하며, 답변 모델에는 JSON 객체 형식을 요청한다. [공용 함수 테스트](../tests/unit/test_chat_models.py)
 
 ## 공동 입출력
 

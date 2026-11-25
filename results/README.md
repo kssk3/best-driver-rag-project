@@ -47,3 +47,36 @@ example-run,2,1,
 ```
 
 같은 문항으로 다시 평가하려면 [보관한 문항 JSON](../eval/snapshots/2026-11-25T064832Z/cases.json)을 `--cases`에 지정한다. [실행 원본 JSON](team-a/2026-11-25T064832Z/evaluation.json)에는 각 단계의 상태와 소요 시간이 남아 있다. 청킹 버전이 달라졌다면 문서와 원문 위치부터 대조한 뒤 새 청크 ID를 연결한다.
+
+### 11월 25일 기준 실행과 새 실행 비교
+
+문항을 비교할 때는 `question`, `conditions_json`, `reference_answer`, `allowed_chunk_ids_json`을 확인한다. 같은 문항과 검색 구성에서 실행별 `allowed_source_ranks_json`(허용 근거의 검색 순위), `model_input_ranks_json`(실제 생성 입력), `citation_ranks_json`(최종 인용)을 나란히 보면 검색 단계와 답변 단계의 변화를 구분할 수 있다. 예를 들어 기준 송파구 실행에서는 세 열이 각각 `[3]`, `[1,2,3,4,5]`, `[3,1]`이다. 실행 시각은 `started_at_utc` 또는 `started_at_kst`에서 확인한다.
+
+자동 `runs.csv`의 `error_code`와 `failed_stage`는 문서 답변이 최종 실패했을 때 원인과 단계를 보여 준다. 예를 들어 모델이 깨진 JSON을 반환하면 `generation.invalid_draft`와 `generate`가 기록된다. 답변에 성공한 경우 둘 다 비어 있다. 과거 기록에 코드가 없으면 코드 칸은 비워 두며, 실행 기록 자체가 없으면 단계도 비어 있다. 답변은 성공했으나 질문 다듬기나 장소 조회가 실패한 경우는 원본 JSON의 개별 단계에서 확인한다.
+
+기준 CSV의 `scoring_*`, `required_facts_json`, `checked_at`은 당시의 채점 자료이고, `git_base`, `factory_sha256`, `cases_json_sha256`은 당시 실행 입력의 출처다. 현재 채점 메모는 [개발 채점 자료](../eval/dev-scoring-notes.json)에서 `case_id`로 찾는다. 기준 실행의 프롬프트 해시는 `prompt_sha256`, 자동 저장한 실행에서는 `versions_json`의 `prompt` 값이다.
+
+자동 `runs.csv`에서는 `configuration`으로 평가 구성을 구분하고 `run_kind`와 `retrieval_status`로 실행 유형과 검색 단계 상태를 확인한다. 자동 `candidates.csv`에는 `dataset_id`와 `configuration`도 있다. 11월 25일 기준 후보에서 같은 정보를 찾을 때는 `run_id`로 당시 `runs.csv`를 연결해 데이터셋과 검색 옵션을 확인한다.
+
+기준 실행도 새 실행과 같은 열과 데이터셋 ID 규칙으로 읽으려면 저장소 루트에서 아래 명령을 실행한다. 보관된 문항·실행 JSON에서 CSV 세 개를 새 로컬 폴더에 만든다. 이 변환은 모델 호출 없이 실행되며, 기준 CSV 전용 열은 원래 파일에서 확인할 수 있다.
+
+```sh
+uv run --locked python - <<'PY'
+import json
+from pathlib import Path
+from tempfile import mkdtemp
+
+from src.evaluation.csv_export import write_evaluation_csv
+from src.evaluation.runner import load_evaluation_cases
+
+snapshot = "2026-11-25T064832Z"
+cases = load_evaluation_cases(Path("eval/snapshots") / snapshot / "cases.json")
+archive = Path("results/team-a") / snapshot / "evaluation.json"
+records = json.loads(archive.read_text(encoding="utf-8"))
+local = Path("results/local")
+local.mkdir(parents=True, exist_ok=True)
+output = Path(mkdtemp(prefix="team-a-baseline-", dir=local))
+write_evaluation_csv(output, cases, records)
+print(output)
+PY
+```

@@ -31,21 +31,45 @@ def _configured_model(settings: RuntimeSettings) -> str:
     return model
 
 
+def _embedding_settings(raw_identity: str) -> tuple[str, int | None]:
+    code = "evaluation.invalid_embedding_identity"
+    try:
+        identity = json.loads(raw_identity)
+    except json.JSONDecodeError as error:
+        raise PipelineConfigurationError(
+            "색인의 임베딩 설정을 JSON으로 읽을 수 없습니다.", code=code
+        ) from error
+    if not isinstance(identity, dict) or identity.get("provider") != "openai":
+        raise PipelineConfigurationError(
+            "OpenAI 임베딩으로 만든 색인이 필요합니다.", code=code
+        )
+    model = identity.get("model")
+    dimensions = identity.get("dimensions")
+    if not isinstance(model, str) or not model.strip():
+        raise PipelineConfigurationError(
+            "색인에 임베딩 모델 ID가 필요합니다.", code=code
+        )
+    if dimensions is not None and (type(dimensions) is not int or dimensions < 1):
+        raise PipelineConfigurationError(
+            "색인의 임베딩 차원은 양의 정수여야 합니다.", code=code
+        )
+    return model, dimensions
+
+
 def create_a_runtime(settings: RuntimeSettings) -> RAGPipeline:
     """Run each development question through region resolution, A search and generation."""
     config = settings.model_copy(deep=True)
     options = config.pipeline
     model = _configured_model(config)
     if options.variant != "A" or options.rewrite_enabled:
-        raise PipelineConfigurationError("A 검색과 리라이트 OFF로 설정하세요.")
+        raise PipelineConfigurationError(
+            "A 검색과 리라이트 OFF로 설정하세요.",
+            code="evaluation.unsupported_configuration",
+        )
 
     index = load_index(config.index_path)
-    identity = json.loads(index.metadata.embedding_identity)
-    if not isinstance(identity, dict) or identity.get("provider") != "openai":
-        raise PipelineConfigurationError("OpenAI 임베딩으로 만든 색인이 필요합니다.")
-    embedder = create_openai_embeddings(
-        identity.get("model", ""), identity.get("dimensions")
-    )
+    embedding_model, dimensions = _embedding_settings(index.metadata.embedding_identity)
+    embedder = create_openai_embeddings(embedding_model, dimensions)
     retrieve = make_vector_retriever(index, embedder)
 
     options.run_kind = "rag"
@@ -53,7 +77,7 @@ def create_a_runtime(settings: RuntimeSettings) -> RAGPipeline:
         {
             "index": index.metadata.index_id,
             "chunking": index.metadata.chunking_version,
-            "embedding": identity["model"],
+            "embedding": embedding_model,
             "model": model,
             "prompt": sha256(SYSTEM_PROMPT.encode()).hexdigest(),
         }
@@ -66,10 +90,48 @@ def create_a_runtime(settings: RuntimeSettings) -> RAGPipeline:
     )
 
 
-def create_color_runtime(settings: RuntimeSettings) -> RAGPipeline:
+def create_fixed_evidence_runtime(
+    settings: RuntimeSettings,
+    candidates: list[SearchCandidate],
+    *,
+    replay_index: str | None = None,
+) -> RAGPipeline:
+    """Generate from supplied candidates and record their observed versions."""
     config = settings.model_copy(deep=True)
     model = _configured_model(config)
+    options = config.pipeline
+    options.run_kind = "fixed_evidence"
+    versions = options.versions
+    versions.update(model=model, prompt=sha256(SYSTEM_PROMPT.encode()).hexdigest())
+    for key in ("index", "embedding", "replay_index"):
+        versions.pop(key, None)
+    if isinstance(replay_index, str) and replay_index.strip():
+        versions["replay_index"] = replay_index
 
+    for key, observed in (
+        ("data", {c.chunk.source_document_version for c in candidates}),
+        ("chunking", {c.chunk.chunking_version for c in candidates}),
+    ):
+        versions.pop(key, None)
+        versions.pop(f"{key}_versions", None)
+        if len(observed) == 1:
+            versions[key] = observed.pop()
+        elif observed:
+            versions[f"{key}_versions"] = json.dumps(
+                sorted(observed), ensure_ascii=False
+            )
+
+    return create_runtime(
+        config,
+        resolver=lambda request: ResolvedQuery(
+            search_query=request.question, district=request.district, dong=request.dong
+        ),
+        retriever=lambda *_args, **_kwargs: candidates,
+        generator=make_answer_generator(make_model_draft(model)),
+    )
+
+
+def create_color_runtime(settings: RuntimeSettings) -> RAGPipeline:
     project = Path(__file__).resolve().parents[3]
     bundle = load_preprocessed_bundle(
         project / "data/handoff/jungeun/ordinance-handoff-2026-11-24",
@@ -87,16 +149,6 @@ def create_color_runtime(settings: RuntimeSettings) -> RAGPipeline:
         if chunk.content_format == "json" and chunk.source_location == "table-1/row[0]"
     ]
 
-    config.pipeline.run_kind = "fixed_evidence"
-    config.pipeline.versions["prompt"] = sha256(SYSTEM_PROMPT.encode()).hexdigest()
-
-    return create_runtime(
-        config,
-        resolver=lambda request: ResolvedQuery(
-            search_query=request.question, district=request.district, dong=request.dong
-        ),
-        retriever=lambda *_args, **_kwargs: [
-            SearchCandidate(chunk=color_chunk, rank=1)
-        ],
-        generator=make_answer_generator(make_model_draft(model)),
+    return create_fixed_evidence_runtime(
+        settings, [SearchCandidate(chunk=color_chunk, rank=1)]
     )

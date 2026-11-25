@@ -2,14 +2,11 @@ import json
 from pathlib import Path
 
 from src.config import load_settings
-from src.contracts import Chunk, PipelineRequest, ResolvedQuery, SearchCandidate
+from src.contracts import Chunk, PipelineRequest, SearchCandidate
 from src.evaluation.answer_experiments.answer_evaluation_runtimes import (
-    MissingEvaluationModelError,
+    create_fixed_evidence_runtime,
 )
 from src.evaluation.runner import load_evaluation_cases
-from src.generation.model_draft import make_model_draft
-from src.generation.pipeline_adapter import make_answer_generator
-from src.runtime import create_runtime
 
 
 def main() -> None:
@@ -21,7 +18,7 @@ def main() -> None:
     if (search["question"], search["district"]) != (case.question, case.district):
         raise SystemExit("검색 기록의 질문 또는 자치구가 다릅니다.")
 
-    # 검색 결과의 순서, 점수, 본문을 그대로 복원한다 .
+    # 검색 결과의 순서, 점수, 본문을 그대로 복원한다.
     [index] = search["results"]
     candidates = [
         SearchCandidate(
@@ -36,22 +33,9 @@ def main() -> None:
     # 이번 실행에서 다섯 본문이 모두 모델에 들어가도록 설정한다.
     settings = load_settings("configs/answer-model-settings.json")
     settings.runs_path = Path("results/local/color-table-answers/runs")
-    options = settings.pipeline
-    model = options.versions.get("model", "").strip()
-    if not model:
-        raise MissingEvaluationModelError("답변 모델 ID가 필요합니다.")
-
-    options.max_context_chars = sum(len(c.chunk.content) for c in candidates)
-    options.run_kind = "fixed_evidence"
-
-    # 기존 답변 생성기에 질문과 검색 후보를 연결한다.
-    runtime = create_runtime(
-        settings,
-        resolver=lambda req: ResolvedQuery(
-            search_query=req.question, district=req.district, dong=req.dong
-        ),
-        retriever=lambda *_args, **_kwargs: candidates,
-        generator=make_answer_generator(make_model_draft(model)),
+    settings.pipeline.max_context_chars = sum(len(c.chunk.content) for c in candidates)
+    runtime = create_fixed_evidence_runtime(
+        settings, candidates, replay_index=index.get("index_id")
     )
     request = PipelineRequest(
         question=case.question,

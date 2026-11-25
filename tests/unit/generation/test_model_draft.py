@@ -12,7 +12,7 @@ from src.generation.answer import (
 from src.generation.model_draft import SYSTEM_PROMPT, make_model_draft
 
 
-def test_color_question_sends_evidence_and_returns_draft():
+def test_color_question_sends_evidence_and_returns_draft(monkeypatch):
     # 모델에 보낼 값. 테스트용으로 색상표를 두 품목으로 줄였다.
     payload: GenerationInput = {
         "original_question": (
@@ -43,16 +43,21 @@ def test_color_question_sends_evidence_and_returns_draft():
     }
 
     # 모델 응답만 준비하고, 직접 작성한 make_model_draft와 draft를 실행한다.
-    with patch("src.generation.model_draft.ChatOpenAI") as chat_class:
+    monkeypatch.setenv("OPENAI_API_KEY", "offline-unit-test-key")
+    with patch("src.infrastructure.chat_models.ChatOpenAI") as chat_class:
         chat = chat_class.return_value.bind.return_value
         chat.invoke.return_value = AIMessage(
-            content=json.dumps(expected, ensure_ascii=False)
+            content=[{"type": "text", "text": json.dumps(expected, ensure_ascii=False)}]
         )
 
         draft = make_model_draft("test-model")
         actual = draft(payload)
 
     # 나가는 메시지와 돌아온 결과를 각각 확인한다.
+    chat_class.assert_called_once_with(model="test-model", timeout=30, max_retries=0)
+    chat_class.return_value.bind.assert_called_once_with(
+        response_format={"type": "json_object"}
+    )
     system, user = chat.invoke.call_args.args[0]
     assert system == ("system", SYSTEM_PROMPT)
     assert user[0] == "human"
@@ -77,13 +82,13 @@ def test_color_question_sends_evidence_and_returns_draft():
             },
             "error",
             "invalid_citation",
-            id="missing-citation",
+            id="out-of-range-citation",
         ),
         pytest.param(
             TimeoutError("model timed out"),
             "error",
             "generation_failed",
-            id="model-timeout",
+            id="ordinary-callback-timeout",
         ),
     ],
 )
@@ -103,8 +108,8 @@ def test_model_draft_outcomes(model_reply, expected_status, expected_error):
         ],
     }
 
-    with patch("src.generation.model_draft.ChatOpenAI") as chat_class:
-        chat = chat_class.return_value.bind.return_value
+    with patch("src.generation.model_draft.create_chat_model") as create_chat:
+        chat = create_chat.return_value.bind.return_value
         if isinstance(model_reply, Exception):
             chat.invoke.side_effect = model_reply
         else:

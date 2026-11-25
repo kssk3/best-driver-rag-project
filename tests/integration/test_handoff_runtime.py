@@ -247,7 +247,10 @@ def test_factory_cli_keeps_error_records_and_exits_nonzero(tmp_path):
     assert len(list((output / "runs").glob("*.json"))) == 3
     assert all("provider failed" in row["error"] for row in rows)
     assert all(
-        row["retrieval_status"] == "error" and row["candidate_count"] == ""
+        row["retrieval_status"] == "error"
+        and row["candidate_count"] == ""
+        and row["error_code"] == "common.unexpected_error"
+        and row["failed_stage"] == "retrieve"
         for row in csv_rows(output / "runs.csv")
     )
     assert csv_rows(output / "candidates.csv") == []
@@ -339,11 +342,14 @@ def test_factory_csv_keeps_attempts_and_identifies_equivalent_stdin_datasets(tmp
                 "started_at_utc",
                 "candidate_count",
                 "variant",
+                "error_code",
+                "failed_stage",
             )
         )
         for name in ("before", "after"):
             row = runs[name]
             assert row["variant"] == "A" and row["candidate_count"] == "0"
+            assert row["error_code"] == row["failed_stage"] == ""
             assert (
                 row["district"] == "서대문구" and row["search_query"] == "실제 검색어"
             )
@@ -421,13 +427,7 @@ def test_csv_write_failure_preserves_raw_evidence_and_publishes_no_partial_table
     assert list(output.glob("*.csv")) == []
 
 
-def test_export_on_filesystem_without_hard_links_preserves_existing_files(
-    tmp_path, monkeypatch
-):
-    def unsupported(*args, **kwargs):
-        raise OSError("hard links unavailable")
-
-    monkeypatch.setattr(os, "link", unsupported)
+def test_export_rolls_back_reservations_and_preserves_existing_table(tmp_path):
     existing = tmp_path / "runs.csv"
     existing.write_bytes(b"existing")
     with pytest.raises(FileExistsError):
@@ -436,10 +436,14 @@ def test_export_on_filesystem_without_hard_links_preserves_existing_files(
         list(tmp_path.iterdir()) == [existing] and existing.read_bytes() == b"existing"
     )
 
-    fresh = tmp_path / "fresh"
-    fresh.mkdir()
-    write_evaluation_csv(fresh, [], [])
-    assert {path.name for path in fresh.iterdir()} == {
+
+def test_export_publishes_all_tables_without_hard_link_support(tmp_path, monkeypatch):
+    def unsupported(*args, **kwargs):
+        raise OSError("hard links unavailable")
+
+    monkeypatch.setattr(os, "link", unsupported)
+    write_evaluation_csv(tmp_path, [], [])
+    assert {path.name for path in tmp_path.iterdir()} == {
         "cases.csv",
         "runs.csv",
         "candidates.csv",
