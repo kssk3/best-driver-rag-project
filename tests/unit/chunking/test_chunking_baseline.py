@@ -1,15 +1,17 @@
-"""청킹 결과가 기준선(results/chunking/chunk_stats.csv)과 같은지, 기록된 버전이 고쳐지지 않았는지 확인한다.
+"""청킹 결과가 기준선(results/chunking/chunk_stats.csv)과 같은지, 기록된 버전의 줄이 고쳐지지 않았는지 확인한다.
 
 정은님 인계 번들을 현재 청킹 코드로 청킹한 결과를 `scripts.chunk_stats`로 요약해 CSV의
 같은 `chunking_version` 줄과 비교한다. 청킹 결과가 달라지는 변경(코드뿐 아니라 번들 변경 포함)이
 버전 이름과 기준선을 갱신하지 않고 들어오는 것을 막으려는 점검이다.
 
 CSV와 현재 결과가 같은지만 보면 "같은 버전 줄을 다시 만들어 맞추는" 우회가 통과하므로,
-기록된 버전의 지문은 이 파일(RELEASED)에도 못 박아 둔다. 기록된 버전의 줄을 고치려면
+기록된 버전의 줄은 이 파일(RELEASED_CSV)에 행 전체를 못 박아 둔다. 기록된 버전의 줄을 고치려면
 이 파일의 표도 고쳐야 하고, 그 변경은 코드 리뷰에서 눈에 띈다.
 """
 
 import csv
+import io
+from collections import Counter
 from pathlib import Path
 
 import pytest
@@ -22,18 +24,13 @@ ROOT = Path(__file__).resolve().parents[3]
 BUNDLE = ROOT / "data/handoff/jungeun/ordinance-handoff-2026-11-24"
 BASELINE = ROOT / "results/chunking/chunk_stats.csv"
 
-# 기준선에 기록된 (청킹 버전, 형식)의 지문(청크 모든 필드의 해시). 새 버전을 올릴 때 줄을 "추가"한다.
+# 기준선에 기록된 줄의 행 전체(통계와 지문). 새 버전을 올릴 때 줄을 "추가"한다.
 # 이미 있는 줄을 바꾸는 것은 같은 버전 이름이 다른 결과를 가리키게 하는 일이므로 하지 않는다.
-RELEASED = {
-    (
-        "preprocessed-v2-row-v1",
-        "html",
-    ): "d1e90cbce3b1c8619ca107325bb731f7ccc7cc42aaef93375e5a0f393bf1ecc8",
-    (
-        "preprocessed-v2-row-v1",
-        "json",
-    ): "93af4ecd43ea1764da2b1dd52e94dcf81c4a32d27a7f0ecd7402dc7885087789",
-}
+# 같은 이름이 서로 다른 두 상태를 가리킨 내력은 results/chunking/README.md에 있다.
+RELEASED_CSV = """chunking_version,format,chunk_count,documents,서대문구,송파구,공통,범위미상,article_chunks,heading_chunks,table_row_chunks,other_chunks,conditions_empty,deleted_marker_chunks,short_chunks,duplicate_plain_chunks,content_min,content_median,content_p90,content_max,plain_min,plain_median,plain_p90,plain_max,chunks_sha256
+preprocessed-v2-row-v1,html,543,14,259,284,0,0,90,14,432,7,543,11,44,31,190,2291,2816,4228,7,259,525,1780,d1e90cbce3b1c8619ca107325bb731f7ccc7cc42aaef93375e5a0f393bf1ecc8
+preprocessed-v2-row-v1,json,543,14,259,284,0,0,90,14,432,7,543,11,16,4,48,1986,2287,2957,42,1884,2264,2845,93af4ecd43ea1764da2b1dd52e94dcf81c4a32d27a7f0ecd7402dc7885087789
+"""
 
 HOW_TO_FIX = (
     "청킹 결과가 기준선과 다릅니다. 청킹 결과가 달라지는 변경이면 다음을 함께 하세요.\n"
@@ -43,15 +40,22 @@ HOW_TO_FIX = (
     "   uv run --locked python -m scripts.prepare_data --bundle {bundle} --version v1 --output-dir results/local/<새 폴더>\n"
     "   uv run --locked python -m scripts.chunk_stats --chunks results/local/<새 폴더>/chunks-html.json "
     "--csv results/chunking/chunk_stats.csv\n"
-    "3) 이 파일의 RELEASED에 (새 버전, 형식)과 CSV에 기록된 chunks_sha256을 추가합니다.\n"
+    "3) 이 파일의 RELEASED_CSV에 CSV에 추가된 새 줄을 그대로 추가합니다.\n"
     "4) chunk_id가 모두 바뀌므로 근거 매핑(tests/fixtures/interface/screen_check_set/chunk_id_map.csv, "
-    "eval/dev.json의 allowed_chunk_ids 등)과 색인을 갱신하고 영향받는 팀원에게 알립니다.\n"
+    "eval/dev.json의 allowed_chunk_ids 등)과 색인을 갱신하고 영향받는 팀원에게 알립니다. "
+    "results/chunking/README.md의 내력 표에도 새 버전을 적습니다.\n"
     "버전을 올리지 않고 같은 이름의 줄을 고치면 이전 결과와 비교할 수 없게 되므로 하지 마세요."
 )
 
 
-def _fix(bundle: Path = BUNDLE) -> str:
-    return HOW_TO_FIX.format(bundle=bundle.relative_to(ROOT).as_posix())
+def _fix() -> str:
+    return HOW_TO_FIX.format(bundle=BUNDLE.relative_to(ROOT).as_posix())
+
+
+def _released_rows() -> dict[tuple[str, str], dict]:
+    reader = csv.DictReader(io.StringIO(RELEASED_CSV.strip()))
+    assert reader.fieldnames == COLUMNS, "RELEASED_CSV의 열이 COLUMNS와 다릅니다."
+    return {(r["chunking_version"], r["format"]): r for r in reader}
 
 
 def _current_chunks() -> dict[str, list[dict]]:
@@ -82,6 +86,15 @@ def test_baseline_csv_has_current_columns() -> None:
         assert csv.DictReader(f).fieldnames == COLUMNS
 
 
+def test_baseline_has_exactly_one_row_per_version_and_format() -> None:
+    counts = Counter((r["chunking_version"], r["format"]) for r in _baseline_rows())
+    duplicated = {key: n for key, n in counts.items() if n > 1}
+    assert not duplicated, (
+        f"같은 (버전, 형식) 줄이 여러 개입니다: {duplicated}. 과거 줄을 복제하지 마세요.\n"
+        + _fix()
+    )
+
+
 @pytest.mark.parametrize("fmt", ["html", "json"])
 def test_current_chunking_matches_the_baseline_row_of_its_version(fmt: str) -> None:
     row = summarize(_current_chunks()[fmt])
@@ -106,24 +119,29 @@ def test_current_chunking_matches_the_baseline_row_of_its_version(fmt: str) -> N
 
 
 def test_every_baseline_row_is_pinned_in_released() -> None:
+    released = _released_rows()
     unpinned = [
         (r["chunking_version"], r["format"])
         for r in _baseline_rows()
-        if (r["chunking_version"], r["format"]) not in RELEASED
+        if (r["chunking_version"], r["format"]) not in released
     ]
     assert not unpinned, (
-        f"기준선 CSV에 있는데 RELEASED에 없는 줄: {unpinned}. 새 버전 줄을 추가했다면 RELEASED에도 추가하세요.\n"
+        f"기준선 CSV에 있는데 RELEASED_CSV에 없는 줄: {unpinned}. 새 버전 줄을 추가했다면 RELEASED_CSV에도 추가하세요.\n"
         + _fix()
     )
 
 
 def test_recorded_versions_are_not_rewritten() -> None:
     rows = {(r["chunking_version"], r["format"]): r for r in _baseline_rows()}
-    for key, pinned in RELEASED.items():
+    for key, pinned in _released_rows().items():
         assert key in rows, (
-            f"RELEASED의 {key}가 기준선 CSV에 없습니다(기록된 줄을 지우지 마세요)."
+            f"RELEASED_CSV의 {key}가 기준선 CSV에 없습니다(기록된 줄을 지우지 마세요)."
         )
-        assert rows[key]["chunks_sha256"] == pinned, (
-            f"이미 기록된 {key}의 지문이 바뀌었습니다. 같은 버전 이름의 결과를 고치지 말고 "
-            "새 버전을 올려 새 줄로 추가하세요.\n" + _fix()
+        changed = {
+            c: (pinned[c], rows[key][c]) for c in COLUMNS if rows[key][c] != pinned[c]
+        }
+        assert not changed, (
+            f"이미 기록된 {key}의 줄이 바뀌었습니다(열: (못 박은 값, CSV 값)): {changed}. "
+            "같은 버전 이름의 결과나 통계를 고치지 말고 새 버전을 올려 새 줄로 추가하세요.\n"
+            + _fix()
         )
