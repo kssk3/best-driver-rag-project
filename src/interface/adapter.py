@@ -6,7 +6,7 @@
 """
 
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Literal
 
 from src.contracts import RunRecord
@@ -21,6 +21,9 @@ class Candidate:
     district: str | None
     score: float | None
     text: str
+    rank: int | None = None  # 최종 순위. 예시 응답에는 없다.
+    conditions: list[str] = field(default_factory=list)  # 청크가 가진 조건. 비어 있으면 모름
+    stage_scores: dict[str, float] = field(default_factory=dict)  # 검색 단계별 점수
 
 
 @dataclass(frozen=True)
@@ -43,6 +46,7 @@ class ViewResponse:
     model_inputs: list[str] | None # None은 알 수 없음, 빈 리스트는 실제로 없음
     citations: list[Citation]
     error: str | None
+    request_conditions: dict[str, str] = field(default_factory=dict) # 사용자가 넣은 조건
 
 
 def to_view_response(raw: dict, kind: ViewKind) -> ViewResponse:
@@ -165,6 +169,9 @@ def run_record_to_view(record: RunRecord) -> ViewResponse:
                 ', '.join(c.chunk.districts) or None,
                 c.score,
                 c.chunk.content,
+                rank=c.rank,
+                conditions=list(c.chunk.conditions),
+                stage_scores=dict(c.stage_scores),
             )
             for c in record.candidates
         ],
@@ -174,6 +181,7 @@ def run_record_to_view(record: RunRecord) -> ViewResponse:
             for c in response.citations
         ],
         error=response.error,
+        request_conditions=dict(record.request.conditions),
     )
 
 
