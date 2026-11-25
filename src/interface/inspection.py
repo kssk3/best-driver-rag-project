@@ -73,4 +73,5 @@ def render_inspection(view: ViewResponse | None, selected_district: str | None=N
     if view.citations:
         for citation in view.citations:
             st.markdown(format_citation(citation))
-    else: st.info('인용이 없습니다.')
+    else:
+        st.info('인용이 없습니다.')

@@ -9,7 +9,6 @@ import streamlit as st
 
 from src.interface.adapter import Citation, ViewResponse
 
-
 REQUIRED_FIELD_LABELS = {
     'district': '지역(구)',
     'dong': '지역(동)',

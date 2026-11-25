@@ -9,7 +9,6 @@
 from dataclasses import dataclass
 from typing import Literal
 
-
 STATUSES = ("answered", "needs_clarification", "insufficient_evidence", "error")
 
 

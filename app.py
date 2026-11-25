@@ -16,7 +16,6 @@ from src.interface.chat import render_response
 from src.interface.inspection import render_inspection
 from src.interface.map import render_places
 
-
 # [임시] 예시(합성) 응답을 읽는다. 
 SAMPLE_PATH = Path(__file__).parent / 'tests' / 'fixtures' / 'interface' / 'sample_responses.json'
 PLACE_SAMPLE_PATH = Path(__file__).parent / 'tests' / 'fixtures' / 'interface' / 'sample_places.json'
