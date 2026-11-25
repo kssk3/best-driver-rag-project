@@ -1,19 +1,54 @@
 """구와 동 이름 해석.
 
 담당: 이명지
-상태: 연습용 매핑표로 질문 속 동 이름을 자치구로 해석한다.
-실제 행정동·법정동 매핑표와 공용 반환 규격은 사용하는 담당자와 합의한 뒤 교체한다.
+상태: 서울 행정동·법정동 매핑표(data/reference/seoul_dong_map.csv)로
+질문 속 동 이름을 자치구로 해석한다. 매핑표의 출처·기준일은 data/reference/README.md.
 """
+
+import csv
+import re
+from pathlib import Path
 
 from src.contracts import PipelineRequest, ResolvedQuery
 
-# 동 이름 → 그 동이 있는 구 목록 (연습용. 실제 행정동·법정동 매핑표로 교체 예정)
-DONG_TO_DISTRICTS: dict[str, list[str]] = {
-    "연희동": ["서대문구"],
-    "잠실동": ["송파구"],
-    "신사동": ["강남구", "관악구"],
-    "역삼동": ["강남구"],
-}
+# 프로젝트 루트 기준 경로. regions.py → retrieval/ → src/ → 루트
+DONG_MAP_PATH = (
+    Path(__file__).resolve().parents[2] / "data" / "reference" / "seoul_dong_map.csv"
+)
+
+
+def load_dong_map(path: Path) -> dict[str, list[str]]:
+    """매핑표 CSV를 읽어 '동 이름 → 그 동이 있는 구 목록'을 만든다.
+
+    사람들은 행정동(잠실본동)과 법정동(잠실동)을 섞어 쓰므로 두 이름을 모두 키로 넣는다.
+    같은 이름이 여러 구에 있으면(신사동: 강남구·관악구·은평구) 구 목록이 여러 개가 된다.
+    공식 행정동 이름의 "제N동"(홍제제1동)은 사람들이 "N동"(홍제1동)으로 쓰는 경향이 있으므로
+    "제"를 뺀 이름도 같은 구로 추가한다. 원래 이름도 그대로 남겨 둘 다 찾는다.
+    구 목록은 정렬해서 실행할 때마다 순서가 같게 한다.
+    """
+    dong_to_districts: dict[str, set[str]] = {}
+    with path.open(encoding="utf-8", newline="") as file:
+        for row in csv.DictReader(file):
+            for name in (row["admin_dong"], row["legal_dong"]):
+                dong_to_districts.setdefault(name, set()).add(row["district"])
+                # "제" 뒤에 숫자가 올 때만 뺀다. 제기동 같은 이름은 바뀌지 않는다.
+                short_name = re.sub(r"제(\d)", r"\1", name)
+                if short_name != name:
+                    dong_to_districts.setdefault(short_name, set()).add(row["district"])
+    return {name: sorted(districts) for name, districts in dong_to_districts.items()}
+
+
+# 동 이름 → 그 동이 있는 구 목록 (서울 행정동·법정동 전체)
+DONG_TO_DISTRICTS: dict[str, list[str]] = load_dong_map(DONG_MAP_PATH)
+
+# find_dong이 확인할 순서: 긴 이름 먼저 (질문마다 정렬하지 않도록 한 번만 만든다).
+# 길이가 같으면 이름순으로 정해 실행할 때마다 순서가 같게 한다.
+DONG_NAMES_LONGEST_FIRST: list[str] = sorted(
+    # 길이를 -len 음수로 바꿔서 긴 것 이앞으로(내림차순)
+    # 길이가 같으면 이름 가나다순
+    DONG_TO_DISTRICTS,
+    key=lambda name: (-len(name), name),
+)
 
 SUPPORTED_DISTRICTS: set[str] = {"서대문구", "송파구"}
 
@@ -65,10 +100,13 @@ def find_district(question: str) -> str | None:
 def find_dong(question: str) -> str | None:
     """질문 속에서 매핑표에 있는 동 이름을 찾는다.
 
+    긴 이름부터 확인한다. 짧은 동 이름이 긴 동 이름 안에 들어 있는 경우가 있어서
+    ("본동"(동작구) ⊂ "잠실본동"(송파구)) 짧은 이름을 먼저 보면 엉뚱한 구로 해석된다.
+
     Returns:
         찾은 동 이름. 질문에 매핑표의 동이 없으면 None.
     """
-    for dong in DONG_TO_DISTRICTS:
+    for dong in DONG_NAMES_LONGEST_FIRST:
         if dong in question:
             return dong
     return None
