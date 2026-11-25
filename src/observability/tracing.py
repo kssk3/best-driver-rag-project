@@ -137,7 +137,7 @@ def _payloads(row):
     return trace, score
 
 
-def _publish(row, entry, post):
+def _publish(row, entry, post, seen_score_ids: set[str]):
     status = row["status"]
     if status not in {"scored", "skipped", "no_score", "input_error", "scorer_error"}:
         entry.update(status="failed", reason="unknown_score_status")
@@ -156,7 +156,12 @@ def _publish(row, entry, post):
     except (ValueError, TypeError, KeyError):
         entry.update(status="failed", reason="invalid_score_row")
         return
-    entry.update(trace_id=score["traceId"], score_id=score["id"])
+    score_id = score["id"]
+    entry.update(trace_id=score["traceId"], score_id=score_id)
+    if score_id in seen_score_ids:
+        entry.update(status="failed", reason="duplicate_score_identity")
+        return
+    seen_score_ids.add(score_id)
     if post is None:
         entry.update(status="dry_run")
         return
@@ -192,6 +197,7 @@ def publish_scores(scores: Path, report: Path, post=None) -> bool:
         }
         if not required.issubset(rows.fieldnames or []):
             raise ValueError("missing scores.csv columns")
+        seen_score_ids: set[str] = set()
         ok = True
         with report.open("x", encoding="utf-8", newline="") as stream:
             writer = csv.DictWriter(stream, fieldnames=REPORT_FIELDS)
@@ -207,7 +213,7 @@ def publish_scores(scores: Path, report: Path, post=None) -> bool:
                         "scored_at_utc",
                     )
                 }
-                _publish(row, entry, post)
+                _publish(row, entry, post, seen_score_ids)
                 writer.writerow(entry)
                 stream.flush()
                 if entry["status"] == "failed":

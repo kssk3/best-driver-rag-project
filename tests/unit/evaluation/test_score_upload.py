@@ -279,3 +279,63 @@ def test_missing_score_header_exits_before_upload(tmp_path, transport, capsys, m
     assert "missing scores.csv columns" in capsys.readouterr().err
     assert not report.exists()
     transport.assert_not_called()
+
+
+@pytest.mark.parametrize("first_status", ["dry_run", "accepted", "score_unconfirmed"])
+def test_only_first_valid_row_for_score_id_is_published(
+    tmp_path, transport, first_status
+):
+    scores = tmp_path / "scores.csv"
+    # Invalid and scoreless rows with the same identity must not reserve it.
+    row = write_scores(scores, score="NaN")
+    with scores.open("a", newline="") as stream:
+        writer = csv.DictWriter(stream, fieldnames=list(row))
+        writer.writerow(dict(row, attempt_index=3, score="0.2"))
+        writer.writerow(dict(row, attempt_index=4, score="0.8"))
+        writer.writerow(dict(row, attempt_index=5, score="1.0", evaluation_id="other"))
+    original = scores.read_bytes()
+    report = tmp_path / "report.csv"
+    args = ["--scores", str(scores), "--report", str(report)]
+    connection = transport.return_value
+    if first_status != "dry_run":
+        args.append("--upload")
+        connection.getresponse.side_effect = [
+            response(200, {}),
+            response(504, {})
+            if first_status == "score_unconfirmed"
+            else response(202, {"message": "Accepted"}),
+            response(200, {}),
+            response(202, {"message": "Accepted"}),
+        ]
+
+    with pytest.raises(SystemExit) as error:
+        main(args)
+    assert error.value.code == 1
+    invalid, skipped, first, duplicate, independent = receipt(report)
+    assert invalid["reason"] == "invalid_score_row"
+    assert skipped["reason"] == "no_numeric_score"
+    if first_status == "score_unconfirmed":
+        assert (first["status"], first["reason"]) == ("failed", "score_unconfirmed")
+    else:
+        assert first["status"] == first_status
+    assert (duplicate["status"], duplicate["reason"]) == (
+        "failed",
+        "duplicate_score_identity",
+    )
+    assert duplicate["upload_attempted_at_utc"] == ""
+    assert duplicate["score_id"] == first["score_id"] != independent["score_id"]
+    if first_status == "dry_run":
+        assert independent["status"] == "dry_run"
+        transport.assert_not_called()
+    else:
+        assert independent["status"] == "accepted"
+        requests = connection.request.call_args_list
+        assert [call.args[1] for call in requests] == [
+            tracing.TRACES,
+            tracing.SCORES,
+        ] * 2
+        assert [json.loads(call.args[2])[0]["value"] for call in requests[1::2]] == [
+            0.2,
+            1.0,
+        ]
+    assert scores.read_bytes() == original
