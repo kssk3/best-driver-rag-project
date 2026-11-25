@@ -74,7 +74,7 @@ def render_response(view: ViewResponse, question: str = "", district: str = "") 
         _render_insufficient_evidence(view)
 
     elif view.status == "error":
-        _render_error()
+        _render_error(view)
 
     else:
         raise ValueError(f"알 수 없는 상태: {view.status!r}")
@@ -128,7 +128,8 @@ def _render_insufficient_evidence(view: ViewResponse) -> None:
             st.markdown(format_citation(citation))
 
 
-def _render_error() -> None:
+def _render_error(view: ViewResponse) -> None:
 
-    # 사용자 화면 오류: 오류 원문은 사용자 화면이 아닌 검증 패널에서만 확인
-    st.error("처리 중 오류가 발생했습니다. 다시 시도해주세요.")
+    # 사용자 화면 오류: 파이프라인이 정리해 준 안내문(answer)을 보여 준다.
+    # 오류 원문(view.error)은 사용자 화면이 아닌 검증 패널에서만 확인한다.
+    st.error(view.answer or "처리 중 오류가 발생했습니다. 다시 시도해주세요.")

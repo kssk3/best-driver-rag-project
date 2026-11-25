@@ -209,3 +209,27 @@ def test_followup_inputs_are_cleared_for_a_new_request() -> None:
     app.button[1].click().run()
     app.button[0].click().run()
     assert app.text_input[1].value == ""
+
+
+def test_error_shows_pipeline_safe_message_but_not_internal_detail() -> None:
+    def page() -> None:
+        from src.interface.adapter import ViewResponse
+        from src.interface.chat import render_response
+
+        render_response(
+            ViewResponse(
+                "r",
+                "fixture",
+                "error",
+                "[가상] 답변 모델에 연결하지 못했습니다.",
+                [],
+                [],
+                None,
+                [],
+                "[가상] 내부 오류 상세",
+            )
+        )
+
+    app = AppTest.from_function(page, default_timeout=10).run()
+    assert any("답변 모델에 연결하지 못했습니다" in e.value for e in app.error)
+    assert not any("내부 오류 상세" in e.value for e in app.error)
