@@ -126,6 +126,7 @@ def test_archive_failures_are_independent(tmp_path):
         attempts[0], record=None, run_id=None, response=None, status="error"
     )
     path = tmp_path / "evaluation.json"
+    (tmp_path / "runs.csv").write_bytes(ARCHIVE.with_name("runs.csv").read_bytes())
     path.write_text(json.dumps([bad_id, absent_ids, no_record, skipped, *attempts]))
     score = AsyncMock(side_effect=[RuntimeError("private"), SimpleNamespace()])
     output = tmp_path / "eval"
@@ -181,6 +182,230 @@ def test_missing_case_header_fails_before_creating_output(tmp_path, capsys, miss
     assert not output.exists()
 
 
+def test_dataset_identity_uses_original_run_table(tmp_path):
+    from src.evaluation.csv_export import write_evaluation_csv
+    from src.evaluation.runner import load_evaluation_cases
+
+    cases = load_evaluation_cases(CASES.with_suffix(".json"))
+    source = tmp_path / "archive"
+    source.mkdir()
+    archive = source / "evaluation.json"
+    archive.write_bytes(ARCHIVE.read_bytes())
+    write_evaluation_csv(source, cases, json.loads(archive.read_text()))
+    other = tmp_path / "other"
+    other.mkdir()
+    changed = cases[0].model_copy(update={"reference_answer": "다른 채점 기준"})
+    write_evaluation_csv(other, [changed, *cases[1:]], [])
+    scorer = AsyncMock(return_value=SimpleNamespace(value=0.0))
+    output = tmp_path / "eval"
+    with pytest.raises(ValueError, match="dataset_id"):
+        asyncio.run(score_archive(archive, other / "cases.csv", output, scorer=scorer))
+    assert not output.exists()
+    scorer.assert_not_awaited()
+    assert asyncio.run(
+        score_archive(archive, source / "cases.csv", output, scorer=scorer)
+    )
+    assert [r["score"] for r in rows(output)] == ["0.0", "0.0"]
+
+
+def test_missing_run_table_fails_before_scoring(tmp_path):
+    archive = tmp_path / "evaluation.json"
+    archive.write_bytes(ARCHIVE.read_bytes())
+    scorer = AsyncMock()
+    output = tmp_path / "eval"
+    with pytest.raises(FileNotFoundError, match="runs.csv"):
+        asyncio.run(score_archive(archive, CASES, output, scorer=scorer))
+    assert not output.exists()
+    scorer.assert_not_awaited()
+
+
+@pytest.mark.parametrize("missing", ["dataset_id", "case_id", "run_id"])
+def test_missing_run_header_rejects_archive(tmp_path, missing):
+    archive = tmp_path / "evaluation.json"
+    archive.write_bytes(ARCHIVE.read_bytes())
+    with ARCHIVE.with_name("runs.csv").open(newline="", encoding="utf-8") as stream:
+        reader = csv.DictReader(stream)
+        fields = [field for field in reader.fieldnames if field != missing]
+        runs = list(reader)
+    with archive.with_name("runs.csv").open(
+        "w", newline="", encoding="utf-8"
+    ) as stream:
+        writer = csv.DictWriter(stream, fieldnames=fields, extrasaction="ignore")
+        writer.writeheader()
+        writer.writerows(runs)
+    scorer = AsyncMock()
+    output = tmp_path / "scored"
+    with pytest.raises(ValueError, match=f"runs.csv 필수 열 누락: {missing}"):
+        asyncio.run(score_archive(archive, CASES, output, scorer=scorer))
+    scorer.assert_not_awaited()
+    assert not output.exists()
+
+
+def test_duplicate_run_id_cannot_bind_two_cases(tmp_path):
+    archive = tmp_path / "evaluation.json"
+    archive.write_bytes(ARCHIVE.read_bytes())
+    with ARCHIVE.with_name("runs.csv").open(newline="", encoding="utf-8") as stream:
+        first, second = csv.DictReader(stream)
+    second["run_id"] = first["run_id"]
+    with archive.with_name("runs.csv").open(
+        "w", newline="", encoding="utf-8"
+    ) as stream:
+        writer = csv.DictWriter(stream, fieldnames=first.keys())
+        writer.writeheader()
+        writer.writerows([first, second])
+    scorer = AsyncMock()
+    output = tmp_path / "scored"
+    with pytest.raises(ValueError, match="중복 run_id"):
+        asyncio.run(score_archive(archive, CASES, output, scorer=scorer))
+    scorer.assert_not_awaited()
+    assert not output.exists()
+
+
+def test_exported_blank_run_ids_preserve_each_missing_attempt(tmp_path):
+    from src.evaluation.csv_export import write_evaluation_csv
+    from src.evaluation.runner import load_evaluation_cases
+
+    cases = load_evaluation_cases(CASES.with_suffix(".json"))
+    first, second = json.loads(ARCHIVE.read_text())
+    attempts = [
+        dict(a, record=None, run_id=None, response=None, status="error")
+        for a in (first, second)
+    ] + [second]
+    archive = tmp_path / "evaluation.json"
+    archive.write_text(json.dumps(attempts), encoding="utf-8")
+    write_evaluation_csv(tmp_path, cases, attempts)
+    with archive.with_name("runs.csv").open(newline="", encoding="utf-8") as stream:
+        assert [r["run_id"] for r in csv.DictReader(stream)] == [
+            "",
+            "",
+            second["run_id"],
+        ]
+    output = tmp_path / "scored"
+    scorer = AsyncMock(return_value=SimpleNamespace(value=1))
+    assert not asyncio.run(
+        score_archive(archive, tmp_path / "cases.csv", output, scorer=scorer)
+    )
+    assert [
+        (r["attempt_index"], r["case_id"], r["reason"], r["score"])
+        for r in rows(output)
+    ] == [
+        ("1", first["case_id"], "no_run_record", ""),
+        ("2", second["case_id"], "no_run_record", ""),
+        ("3", second["case_id"], "", "1.0"),
+    ]
+    scorer.assert_awaited_once()
+
+
+@pytest.mark.parametrize("reason", ["ambiguous_chunk_id", "empty_context"])
+def test_invalid_selected_context_prevents_judge_call(tmp_path, reason):
+    first, second = json.loads(ARCHIVE.read_text())
+    record = first["record"]
+    selected_id = record["model_input_chunk_ids"][0]
+    candidate = next(
+        c for c in record["candidates"] if c["chunk"]["chunk_id"] == selected_id
+    )
+    if reason == "ambiguous_chunk_id":
+        revised = dict(
+            candidate["chunk"], content="같은 식별자에 연결된 서로 다른 본문"
+        )
+        record["candidates"].append(dict(candidate, chunk=revised))
+    else:
+        candidate["chunk"]["content"] = "   "
+    archive = tmp_path / "evaluation.json"
+    archive.write_text(json.dumps([first, second]), encoding="utf-8")
+    archive.with_name("runs.csv").write_bytes(
+        ARCHIVE.with_name("runs.csv").read_bytes()
+    )
+    scorer = AsyncMock(return_value=SimpleNamespace(value=0.25))
+    output = tmp_path / "scored"
+    assert not asyncio.run(score_archive(archive, CASES, output, scorer=scorer))
+    assert [(r["status"], r["score"], r["reason"]) for r in rows(output)] == [
+        ("input_error", "", reason),
+        ("scored", "0.25", ""),
+    ]
+    scorer.assert_awaited_once()
+    assert (
+        scorer.await_args.kwargs["user_input"]
+        == second["record"]["request"]["question"]
+    )
+
+
+@pytest.mark.parametrize(
+    ("value", "reason"),
+    [(False, "invalid_value"), (-0.01, "out_of_range"), (1.01, "out_of_range")],
+)
+def test_invalid_judge_value_has_reason_and_no_score(tmp_path, value, reason):
+    output = tmp_path / "scored"
+    scorer = AsyncMock(
+        side_effect=[SimpleNamespace(value=value), SimpleNamespace(value=1.0)]
+    )
+    assert not asyncio.run(score_archive(ARCHIVE, CASES, output, scorer=scorer))
+    assert [(r["status"], r["score"], r["reason"]) for r in rows(output)] == [
+        ("no_score", "", reason),
+        ("scored", "1.0", ""),
+    ]
+    assert scorer.await_count == 2
+
+
+def test_malformed_attempts_and_run_case_mismatch_do_not_drop_valid_rows(tmp_path):
+    attempts = json.loads(ARCHIVE.read_text())
+    attempts[0]["case_id"] = attempts[1]["case_id"]
+    archive = tmp_path / "evaluation.json"
+    archive.write_text(json.dumps([None, {"case_id": []}, *attempts]))
+    (tmp_path / "runs.csv").write_bytes(ARCHIVE.with_name("runs.csv").read_bytes())
+    scorer = AsyncMock(return_value=SimpleNamespace(value=1.0))
+    output = tmp_path / "out"
+    assert not asyncio.run(score_archive(archive, CASES, output, scorer=scorer))
+    result = rows(output)
+    assert [row["attempt_index"] for row in result] == ["1", "2", "3", "4"]
+    assert [(row["status"], row["reason"]) for row in result] == [
+        ("input_error", "invalid_attempt"),
+        ("input_error", "invalid_case_id"),
+        ("input_error", "run_case_mismatch"),
+        ("scored", ""),
+    ]
+    assert result[1]["case_id"] == "" and result[3]["score"] == "1.0"
+    scorer.assert_awaited_once()
+
+
+@pytest.mark.parametrize(
+    "run_stamp", ["explicit", "", "2026-11-25T06:48:32", "2026-11-25T06:48:32+09:00"]
+)
+def test_naive_run_start_needs_explicit_utc_in_matched_run(tmp_path, run_stamp):
+    attempts = json.loads(ARCHIVE.read_text())
+    # Legacy timestamps may use local wall time; never assign them a timezone by guess.
+    attempts[0]["record"]["started_at"] = "2026-11-25T15:48:32.431436"
+    archive = tmp_path / "evaluation.json"
+    archive.write_text(json.dumps(attempts))
+    with ARCHIVE.with_name("runs.csv").open(encoding="utf-8", newline="") as stream:
+        runs = list(csv.DictReader(stream))
+    original_stamp = runs[0]["started_at_utc"]
+    if run_stamp != "explicit":
+        runs[0]["started_at_utc"] = run_stamp
+    with (tmp_path / "runs.csv").open("w", encoding="utf-8", newline="") as stream:
+        writer = csv.DictWriter(stream, fieldnames=runs[0].keys())
+        writer.writeheader()
+        writer.writerows(reversed(runs))
+    scorer = AsyncMock(return_value=SimpleNamespace(value=0.5))
+    output = tmp_path / "out"
+    ok = asyncio.run(score_archive(archive, CASES, output, scorer=scorer))
+    first, second = rows(output)
+    if run_stamp == "explicit":
+        assert ok and scorer.await_count == 2
+        assert first["status"] == "scored"
+        assert datetime.fromisoformat(
+            first["run_started_at_utc"]
+        ) == datetime.fromisoformat(original_stamp)
+    else:
+        assert not ok and scorer.await_count == 1
+        assert (first["status"], first["reason"], first["score"]) == (
+            "input_error",
+            "missing_run_start_utc",
+            "",
+        )
+    assert second["status"] == "scored"
+
+
 def test_validate_cli_creates_new_table(tmp_path):
     out = tmp_path / "check"
     args = [
@@ -201,7 +426,17 @@ def test_validate_cli_creates_new_table(tmp_path):
 def test_judge_cli_with_installed_ragas(tmp_path, monkeypatch):
     monkeypatch.setenv("RAGAS_DO_NOT_TRACK", "true")
     monkeypatch.setenv("OPENAI_API_KEY", "offline-test")
+    import httpx
     from ragas.llms.base import InstructorLLM
+
+    from scripts.upload_scores import main as preview_scores
+
+    async def unexpected_request(self, request):
+        pytest.fail("채점 테스트에서 HTTP 요청을 시도했습니다")
+
+    monkeypatch.setattr(
+        httpx.AsyncHTTPTransport, "handle_async_request", unexpected_request
+    )
 
     calls = []
 
@@ -230,4 +465,13 @@ def test_judge_cli_with_installed_ragas(tmp_path, monkeypatch):
         ]
     )
     assert calls == ["StatementGeneratorOutput", "NLIStatementOutput"]
-    assert rows(out)[0]["score"] == "0.0"
+    (scored,) = rows(out)
+    assert scored["score"] == "0.0"
+    report = tmp_path / "preview.csv"
+    preview_scores(["--scores", str(out / "scores.csv"), "--report", str(report)])
+    with report.open(newline="", encoding="utf-8") as stream:
+        (receipt,) = csv.DictReader(stream)
+    assert receipt["status"] == "dry_run"
+    assert receipt["run_id"] == scored["run_id"]
+    assert receipt["scored_at_utc"] == scored["scored_at_utc"]
+    assert receipt["trace_id"] and receipt["score_id"]

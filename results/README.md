@@ -83,7 +83,7 @@ PY
 
 ## 저장 답변의 Faithfulness 사후 평가
 
-아래 명령은 새 디렉터리의 `scores.csv`에 시도×지표별 한 행을 쓴다. 기본 실행은 입력만 검증하고 점수를 비운다. 같은 스냅샷의 `cases.csv`에서 문항 ID로 행을 찾아 실행 기록의 원래 질문·구·동·조건과 대조한다. 조건은 JSON 객체로 비교한다. 값이 다르면 해당 시도에 `input_error`와 원인을 남기고 다음 문항을 처리한다. 채점 입력은 기록된 질문·답변과 `model_input_chunk_ids` 순서로 후보 본문을 역참조한 목록이다. 이 ID는 생성 어댑터 경계의 기록이다. 모델 서버 수신 여부는 별도 확인이 필요하다.
+아래 명령은 새 디렉터리의 `scores.csv`에 시도×지표별 한 행을 쓴다. 기본 실행은 입력만 검증하고 점수를 비운다. `evaluation.json` 옆에 원래 실행의 `runs.csv`를 함께 둔다. 이 파일의 데이터셋 ID를 `cases.csv`와 대조하고 실행 ID와 문항 ID의 연결을 확인한다. 질문과 조건이 같아도 다른 데이터셋의 모범 답안에 점수가 귀속되는 것을 막기 위해서다. 이어서 `cases.csv`에서 문항 ID로 행을 찾아 실행 기록의 원래 질문·구·동·조건과 대조한다. 조건은 JSON 객체로 비교한다. 값이 다르면 해당 시도에 `input_error`와 원인을 남기고 다음 문항을 처리한다. 채점 입력은 기록된 질문·답변과 `model_input_chunk_ids` 순서로 후보 본문을 역참조한 목록이다. 이 ID는 생성 어댑터 경계의 기록이다. 모델 서버 수신 여부는 별도 확인이 필요하다.
 
 ```sh
 stamp=2026-11-25T064832Z
@@ -92,6 +92,8 @@ uv run --locked python -m scripts.score_answers \
   --cases-csv "eval/snapshots/$stamp/cases.csv" \
   --output-dir results/local/faithfulness-check
 ```
+
+시간대가 없는 실행 시작 시각은 해당 실행의 `runs.csv`에 명시적인 UTC 시각이 있을 때만 복원한다. 시각을 확인할 수 없으면 채점 전에 입력 오류를 기록한다.
 
 각 호출에 새 `evaluation_id`가 부여된다. `attempt_index`는 원본 배열의 1부터 시작하는 위치라서 반환된 실행 기록이 없는 행도 추적할 수 있다. `run_kind`로 고정 근거와 실제 검색 실행을 구분한다. 고정 근거 점수는 별도로 해석한다. `versions_json`은 생성 시점의 구성 버전이며 채점기 버전과 모델은 별도 열에 남는다. `scored_at_utc`는 평가 시도 종료 시각, `duration_ms`는 해당 시도 시간이다. `scored`의 0.0은 유효한 점수다. `no_score`(NaN·누락 등), `input_error`(근거 ID 등), `scorer_error`, `skipped`의 원인은 `reason`으로 확인한다.
 

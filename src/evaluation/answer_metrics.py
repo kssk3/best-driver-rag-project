@@ -3,7 +3,7 @@
 import csv
 import json
 import math
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from importlib.metadata import version
 from pathlib import Path
 from time import perf_counter
@@ -28,7 +28,7 @@ def metric_input(record: RunRecord) -> dict:
     ids = record.model_input_chunk_ids
     if not ids:
         raise InputError("missing_model_input_chunk_ids")
-    chunks = {}
+    chunks: dict[str, str] = {}
     for candidate in record.candidates:
         chunk = candidate.chunk
         if chunk.chunk_id in chunks and chunks[chunk.chunk_id] != chunk.content:
@@ -48,13 +48,56 @@ def metric_input(record: RunRecord) -> dict:
     }
 
 
-async def _score(row, attempt, case, scorer):
+def _load_runs(archive: Path, dataset_id: str) -> dict[str, dict[str, str]]:
+    path = archive.with_name("runs.csv")
+    with path.open(encoding="utf-8-sig", newline="") as stream:
+        reader = csv.DictReader(stream)
+        missing = {"dataset_id", "case_id", "run_id"}.difference(
+            reader.fieldnames or ()
+        )
+        if missing:
+            raise ValueError(f"runs.csv 필수 열 누락: {', '.join(sorted(missing))}")
+        runs: dict[str, dict[str, str]] = {}
+        for run in reader:
+            if run["dataset_id"] != dataset_id:
+                raise ValueError("cases.csv와 runs.csv의 dataset_id가 다릅니다")
+            run_id = run["run_id"]
+            if not run_id:
+                # A failed attempt can have no saved run; its reason comes from evaluation.json.
+                continue
+            if run_id in runs:
+                raise ValueError("runs.csv에 중복 run_id가 있습니다")
+            runs[run_id] = run
+    return runs
+
+
+def _started_at_utc(record: RunRecord, run: dict[str, str]) -> str:
+    if record.started_at.utcoffset() is not None:
+        return record.started_at.astimezone(UTC).isoformat()
+    try:
+        started = datetime.fromisoformat(run.get("started_at_utc") or "")
+    except ValueError as error:
+        raise InputError("missing_run_start_utc") from error
+    if started.utcoffset() != timedelta(0):
+        raise InputError("missing_run_start_utc")
+    return started.isoformat()
+
+
+async def _score(row, attempt, cases, runs, scorer):
+    if not isinstance(attempt, dict):
+        raise InputError("invalid_attempt")
+    if not isinstance(row["case_id"], str) or not row["case_id"].strip():
+        raise InputError("invalid_case_id")
+    case = cases.get(row["case_id"])
     if not case:
         raise InputError("unknown_case")
     if attempt.get("record") is None:
         row.update(status="skipped", reason="no_run_record")
         return
     record = RunRecord.model_validate(attempt["record"])
+    run = runs.get(record.run_id)
+    if run is None or run["case_id"] != row["case_id"]:
+        raise InputError("run_case_mismatch")
     if (
         not record.run_id
         or record.run_id != row["run_id"]
@@ -81,9 +124,7 @@ async def _score(row, attempt, case, scorer):
         versions_json=json.dumps(
             record.options.versions, sort_keys=True, ensure_ascii=False
         ),
-        run_started_at_utc=record.started_at.astimezone(UTC).isoformat()
-        if record.started_at.utcoffset() is not None
-        else "",
+        run_started_at_utc=_started_at_utc(record, run),
     )
     if record.response.status != "answered":
         row.update(status="skipped", reason="response_" + record.response.status)
@@ -121,7 +162,7 @@ async def score_archive(
 ) -> bool:
     """하나의 새 평가에 속한 각 시도와 지표를 기록한다. 오류가 있으면 False."""
     attempts = json.loads(archive.read_text(encoding="utf-8"))
-    if not isinstance(attempts, list) or not all(isinstance(a, dict) for a in attempts):
+    if not isinstance(attempts, list):
         raise ValueError("evaluation.json must contain a list of attempts")
     with cases_csv.open(encoding="utf-8-sig", newline="") as stream:
         reader = csv.DictReader(stream)
@@ -139,10 +180,13 @@ async def score_archive(
         cases = list(reader)
     by_id = {case["case_id"]: case for case in cases}
     datasets = {case["dataset_id"] for case in cases}
-    if len(by_id) != len(cases) or len(datasets) != 1 or "" in datasets:
+    if len(by_id) != len(cases) or len(datasets) != 1 or not all(datasets):
         raise ValueError("expected unique cases from one dataset")
     dataset_id = datasets.pop()
-    if case_id is not None and not any(a.get("case_id") == case_id for a in attempts):
+    runs = _load_runs(archive, dataset_id)
+    if case_id is not None and not any(
+        isinstance(a, dict) and a.get("case_id") == case_id for a in attempts
+    ):
         raise ValueError("no matching attempt")
     evaluation_id = uuid4().hex
     ragas_version = version("ragas")
@@ -152,22 +196,29 @@ async def score_archive(
         writer = csv.DictWriter(stream, fieldnames=FIELDS)
         writer.writeheader()
         for index, attempt in enumerate(attempts, 1):
-            if case_id is not None and attempt.get("case_id") != case_id:
+            fields = attempt if isinstance(attempt, dict) else {}
+            if case_id is not None and fields.get("case_id") != case_id:
                 continue
             start = perf_counter()
             row = {
                 "evaluation_id": evaluation_id,
                 "attempt_index": index,
-                "case_id": attempt.get("case_id"),
-                "configuration": attempt.get("configuration"),
-                "run_id": attempt.get("run_id"),
+                "case_id": fields.get("case_id")
+                if isinstance(fields.get("case_id"), str)
+                else None,
+                "configuration": fields.get("configuration")
+                if isinstance(fields.get("configuration"), str)
+                else None,
+                "run_id": fields.get("run_id")
+                if isinstance(fields.get("run_id"), str)
+                else None,
                 "dataset_id": dataset_id,
                 "metric": "faithfulness",
                 "ragas_version": ragas_version,
                 "judge_model": judge_model,
             }
             try:
-                await _score(row, attempt, by_id.get(row["case_id"]), scorer)
+                await _score(row, attempt, by_id, runs, scorer)
             except InputError as error:
                 row.update(status="input_error", reason=str(error))
             except ValidationError:
