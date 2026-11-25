@@ -4,11 +4,11 @@
 
 팀의 최종 목표는 Streamlit 화면, A/B/C 검색, 동 이름 인식, 질문 다듬기와 getSpot 장소 지도다. 화면과 평가 실행기가 같은 Python RAG 함수를 호출하도록 연결한다.
 
-**검토를 마친 전처리 자료 자료로 지역 해석부터 근거 기반 답변까지 로컬에서 검증할 수 있다.** 공통 런타임을 만들 때 지역 해석기와 검색기, 답변 생성기를 지정한다. 팀 A/B/C 검색기, 운영용 답변 모델, Streamlit 화면 연결은 후속 작업이다.
+팀 `dev`에는 지역 제한 A 벡터 검색기, 고정 근거 답변 검증, 공용 채팅 모델 생성·호출 함수가 있다. B/C 검색과 검색부터 모델 답변·인용까지의 서비스 연결은 후속 작업이다. 팀에 병합된 기능과 답변 담당 브랜치에서 확인한 실험은 [현재 도달지점](ROADMAP.md#현재-도달지점)에서 확인한다.
 
 | 구분 | 현재 상태 |
 | --- | --- |
-| 문서 처리 | PR #8에서 전처리 자료 자료를 제공했고, PR #10에서 HWP 문자 처리와 별지 분류를 보완했다. 자료 준비 명령은 같은 원문의 HTML·JSON 청크를 생성하며, 옵션을 지정하면 임베딩 색인도 만든다. |
+| 문서 처리 | PR #8에서 전처리 자료를 제공했고, PR #10에서 HWP 문자 처리와 별지 분류를 보완했다. 자료 준비 명령은 같은 원문의 HTML·JSON 청크를 생성하며, 옵션을 지정하면 임베딩 색인도 만든다. |
 | 공통 실행 | 팀 함수 연결, 지역별 근거 선택, 인용 검사, 실행 JSON 기록과 평가 실행기 구현 |
 | 직접 실행 | 실제 색인의 근거 조회 CLI와 API 키 없는 합성 응답 데모 실행 가능 |
 | 지역 해석과 답변 | PR #11의 지역 해석기는 연습용 매핑표에 있는 동 4곳의 자치구를 판별한다. 전처리 자료 답변 실험은 미리 지정한 근거로 답변과 인용을 검증한다. 벡터 단독과 BM25+벡터 앙상블의 검색 순위는 별도 실험에서 비교한다. |
@@ -31,7 +31,7 @@ uv run --locked python -m pytest --version
 
 ## 실제 자료 준비와 근거 조회
 
-저장소의 전처리 자료 인계 자료에는 [PR #8의 전처리 결과](https://github.com/kssk3/best-driver-rag-project/pull/8)와 [PR #10의 수정 사항](https://github.com/kssk3/best-driver-rag-project/pull/10)이 반영돼 있다. 저장소 루트에서 아래 명령을 실행하고, 출력 경로에는 아직 없는 폴더를 지정한다.
+저장소의 전처리 인계 자료에는 [PR #8의 전처리 결과](https://github.com/kssk3/best-driver-rag-project/pull/8)와 [PR #10의 수정 사항](https://github.com/kssk3/best-driver-rag-project/pull/10)이 반영돼 있다. 저장소 루트에서 아래 명령을 실행하고, 출력 경로에는 아직 없는 폴더를 지정한다.
 
 ```sh
 uv run --locked python -m scripts.prepare_data --bundle data/handoff/jungeun/ordinance-handoff-2026-11-24 --version v1 --output-dir data/processed/ordinance-v2-prepared
@@ -53,7 +53,7 @@ uv run --locked python -m scripts.prepare_data --bundle data/handoff/jungeun/ord
 uv run --locked python -m scripts.search_index --index data/processed/ordinance-v2-openai-small/index-html.json --index data/processed/ordinance-v2-openai-small/index-json.json --district 송파구
 ```
 
-`--question "질문"`을 지정하면 한 번 조회하고, 생략하면 질문을 반복 입력한다. `/종료`로 끝낸다. 이 명령은 지역을 제한한 코사인 유사도 근거 조회이며 챗봇 답변이나 대화 기억을 제공하지 않는다. 질문 범위 판별과 관련성 하한이 없어 `안녕` 같은 입력에도 무관한 검색 결과가 나올 수 있다. 팀 A/B/C 검색은 연결 전이며 실제 질문에서 관련 별표가 상위 결과에 빠진 사례도 있다. HTML/JSON 검색 품질의 우열은 아직 검증하지 않았다. 결과와 한계, ID 유지 및 재실행 방법은 [실제 전처리 자료 연결](docs/seokho-handoff.md#실제-전처리-자료-연결)에 정리했다.
+`--question "질문"`을 지정하면 한 번 조회하고, 생략하면 질문을 반복 입력한다. `/종료`로 끝낸다. 이 명령은 지역을 제한한 코사인 유사도 검색 결과를 출력한다. 관련성 하한이 없어 `안녕`에도 무관한 결과가 나올 수 있고, 실제 질문에서 관련 별표가 상위 결과에 빠진 사례도 있다. 팀 파이프라인용 [A 벡터 검색기](src/retrieval/search.py)는 별도 진입점이다. HTML·JSON 비교의 범위와 재실행 방법은 [전처리 자료 인계 기록](docs/seokho-handoff.md#실제-전처리-자료-연결)에 있다.
 
 ## 자동 데모와 검증
 
@@ -65,7 +65,7 @@ API 키 없이 합성 문서 3개로 색인부터 답변, 지역 재질문, 근�
 
 ### dev 반영 후 답변과 지역 해석 검증
 
-답변 PR이 머지되면 저장소 루트에서 아래 명령을 실행한다. Python 3.13.14와 uv 0.13.9 이상을 사용한다. 전처리 자료 테스트와 검색 비교는 로컬 자료를 사용하므로 모델 API 키가 필요 없다.
+팀 `dev`에서 지역 해석, 고정 근거 답변, 검색 비교를 확인하는 명령이다. Python 3.13.14와 uv 0.13.9 이상을 사용한다. 아래 테스트와 검색 비교에는 모델 API 키가 필요 없다. 실제 모델을 호출하는 개발 문항 실험은 [평가셋 실행 안내](eval/README.md)를 따른다.
 
 ```sh
 git switch dev
@@ -89,7 +89,7 @@ uv run --locked python -m src.evaluation.answer_experiments.evidence_retrieval_b
 | `configs/`, `prompts/`, `.streamlit/` | 공통 설정, 프롬프트와 화면 설정 |
 | `scripts/` | 수집, 색인과 평가 실행 진입점 |
 | `data/` | 수집 원문, 정제 자료와 색인 |
-| `eval/` | 개발 10문항과 최종 20문항, 정답 및 허용 근거 |
+| `eval/` | 개발·최종 문항과 채점용 정답 근거. 목표 문항 수와 브랜치별 준비 상태는 [평가셋 안내](eval/README.md) 참고 |
 | `results/` | 실행 원본, 평가와 비교 결과 |
 | `tests/` | 단위 검사, 연동 검사와 작은 검증 자료 |
 

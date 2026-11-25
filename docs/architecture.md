@@ -66,8 +66,8 @@ Streamlit 진입점인 루트 `app.py`와 `src/interface/`는 아직 docstring�
 | `src/ingestion/source_review.py` | 구현: 수집 전 사람이 기록한 접근/이용조건 확인 |
 | `scripts/collect.py` | 구현: 수집 실행 진입점 |
 | `src/ingestion/spots.py` | 뼈대: getSpot 원자료 수집 |
-| `src/query/aliases.py` | 뼈대: 품목과 표현 별칭 |
-| `src/query/rewrite.py` | 뼈대: 질문 다듬기 |
+| `src/query/aliases.py` | 품목 별칭과 공식 품목명 매핑, 단일 품목명 정규화 |
+| `src/query/rewrite.py` | 원질문에 공식 품목명을 보완하고, 주입한 함수로 프롬프트 기반 질문 다듬기 콜백을 구성한다. |
 
 공통 청커는 전처리 JSON의 원문 `text`를 사용하며 `search_text` 정규화는 아직 검색 입력에 적용하지 않는다. 새 HWP를 다시 추출하려면 `annexes.py`가 사용하는 별도 `hwp5proc` 환경이 필요하지만, 저장소 인계 자료를 읽는 준비/색인 명령에는 필요하지 않다.
 
@@ -76,9 +76,9 @@ Streamlit 진입점인 루트 `app.py`와 `src/interface/`는 아직 docstring�
 | 파일 | 역할 |
 | --- | --- |
 | `src/retrieval/regions.py` | PR #11에서 구현했다. `resolve_request`는 사용자가 선택한 구, 질문에 적힌 구, 동 4곳의 연습용 매핑표를 사용한다. 지역이 모호하거나 선택한 구와 충돌하면 다시 묻는다. |
-| `src/retrieval/search.py` | A/B/C 검색 |
-| `src/retrieval/spots.py` | 장소 저장과 조회 |
-| `src/evaluation/retrieval_metrics.py` | 검색 지표 |
+| `src/retrieval/search.py` | A 벡터 검색 구현. 지역 조건에 맞는 후보를 코사인 유사도순으로 반환한다. B·C 검색은 후속 구현이다. |
+| `src/retrieval/spots.py` | 제공된 `getSpot` 응답을 파싱하고 지정한 구의 장소를 `PlaceResult` 목록으로 변환한다. |
+| `src/evaluation/retrieval_metrics.py` | 개발·최종셋의 공용 검색 지표를 연결할 위치다. |
 
 ### 답변 생성과 품질 추적 (강성수)
 
@@ -86,7 +86,7 @@ Streamlit 진입점인 루트 `app.py`와 `src/interface/`는 아직 docstring�
 | --- | --- |
 | `src/generation/answer.py` | 답변 가능·재질문·근거 부족·오류를 구분하고, 인용할 때 원문 출처와 문서 버전을 확인한다. |
 | `src/generation/pipeline_adapter.py` | 공통 요청과 선택된 청크를 생성 입력으로 변환하고, 검증한 인용 청크 ID를 반환한다. |
-| `src/evaluation/answer_experiments/` | 벡터 단독과 BM25+벡터 앙상블의 검색 순위 비교, 전처리 자료 답변 검증, CSV 저장을 담당한다. |
+| `src/evaluation/answer_experiments/` | 공통 실험은 벡터와 BM25+벡터 앙상블의 순위 비교, 고정 근거 답변 검증 및 CSV 저장을 담당한다. 답변 작업 브랜치의 색상표 실험은 [평가셋 안내](../eval/README.md)를 따른다. |
 | `src/evaluation/answer_metrics.py` | 답변 품질 자동 평가를 연결할 위치다. |
 | `src/observability/tracing.py` | Langfuse 추적을 연결할 위치다. |
 
@@ -125,7 +125,7 @@ Streamlit 진입점인 루트 `app.py`와 `src/interface/`는 아직 docstring�
 | `scripts/index.py` | 명시한 공용 문서의 색인 생성, HTML/JSON 형식 선택 |
 | `scripts/evaluate.py` | 데모 또는 팀 연결 함수로 평가 실행, 결과 파일 저장 |
 
-PR #8과 #10에서 검토한 전처리 자료를 사용한다. 공통 런타임에는 지역 해석기와 답변 생성기를 콜백으로 연결할 수 있다. 팀 A/B/C 검색기, 운영용 답변 모델, 질문 변환 모델, 장소 DB와 지도 연결은 남아 있다. [전처리 자료 결과표](../results/testData.md)는 로컬 합성 실험에서 측정한 값이다.
+PR #8과 #10의 전처리 자료를 사용한다. 공용 런타임에 주입할 A 벡터 검색기와 [공용 채팅 모델 함수](../src/infrastructure/chat_models.py)가 구현됐다. 검색·생성부터 화면까지의 연결 상태는 [로드맵](../ROADMAP.md#현재-도달지점)에서 확인한다. [전처리 자료 결과표](../results/testData.md)는 별도로 수행한 로컬 비교 실험 기록이다.
 
 초기 파일별 구현 항목과 플로우 차트는 [Notion 구조 문서](https://app.notion.com/p/422dc8b0e1638150b62acfe703074f30?pvs=204)에 있다. 현재 구현된 규격과 동작은 저장소 코드와 최소 구현 인계 문서를 기준으로 확인한다.
 

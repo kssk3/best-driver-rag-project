@@ -1,0 +1,12 @@
+{
+    "index_path": "data/processed/p04-v2-openai-small/index-json.json",
+    "pipeline": {
+        "variant": "A",
+        "rewrite_enabled": false,
+        "top_k": 5,
+        "max_context_chars": 12000,
+        "versions": {
+            "model": "gpt-6-luna"
+        }
+    }
+}
