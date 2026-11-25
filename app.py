@@ -11,7 +11,15 @@ from pathlib import Path
 
 import streamlit as st
 
-from src.interface.adapter import to_place_result, to_view_response
+from src.config import load_settings
+from src.contracts import PipelineRequest
+from src.demo import create_demo_pipeline
+from src.interface.adapter import (
+    run_record_to_places,
+    run_record_to_view,
+    to_place_result,
+    to_view_response,
+)
 from src.interface.chat import render_response
 from src.interface.inspection import render_inspection
 from src.interface.map import render_places
@@ -30,6 +38,21 @@ samples = load_samples()
 place_samples = load_samples(PLACE_SAMPLE_PATH)
 
 
+# 색인 안내 문구
+INDEX_COMMAND = (
+    'uv run --locked python -m scripts.index --documents tests/fixtures/handoff_documents.json '
+    '--output data/indexes/demo.json --demo --dimensions 128'
+)
+
+
+# 합성 데모 파이프라인 생성 함수
+@st.cache_resource
+def load_pipeline():
+    root = Path(__file__).parent
+    settings = load_settings(root / 'configs' / 'demo.json', project_root=root)
+    return create_demo_pipeline(settings)
+
+
 FAVICON_PATH = Path(__file__).parent / '.streamlit' / 'favicon.png'
 
 st.set_page_config(page_title='분리당', page_icon=str(FAVICON_PATH), layout='wide')
@@ -40,14 +63,31 @@ user_tab, inspection_tab, comparison_tab = st.tabs(['사용자 화면', '검증 
 
 
 with user_tab:
+    mode = st.radio('응답 방식', ['예시 응답', '실행(합성 데모)'], horizontal=True)
     district = st.selectbox('지역', ['서대문구', '송파구'])
     question = st.text_input('질문')
-    sample_name = st.selectbox('예시 응답 고르기 (합성)', list(samples))
-    
-    st.caption('지금은 입력한 구와 질문에 상관없이 선택한 예시가 표현됩니다.')
+
+    if mode == '예시 응답':
+        sample_name = st.selectbox('예시 응답 고르기 (합성)', list(samples))
+        st.caption('지금은 입력한 구와 질문에 상관없이 선택한 예시가 표현됩니다.')
+    else:
+        st.caption('합성 문서만 검색하는 데모 실행입니다. 실제 RAG 품질이 아닙니다.')
+
     if st.button('질문하기'):
-        st.session_state['view'] = to_view_response(samples[sample_name], kind='fixture')
-        st.session_state['asked_district'] = district
+        if mode == '예시 응답':
+            st.session_state['view'] = to_view_response(samples[sample_name], kind='fixture')
+            st.session_state['asked_district'] = district
+        elif not question.strip():
+            st.warning('질문을 입력하세요.')
+        else:
+            try:
+                record = load_pipeline().run(PipelineRequest(question=question, district=district))
+            except (FileNotFoundError, ValueError):
+                st.error(f'데모 색인을 불러오지 못했습니다. 먼저 색인을 만드세요: {INDEX_COMMAND}')
+            else:
+                st.session_state['view'] = run_record_to_view(record)
+                st.session_state['places'] = run_record_to_places(record)
+                st.session_state['asked_district'] = district
 
     view = st.session_state.get('view')
     if view is not None:
@@ -55,8 +95,11 @@ with user_tab:
 
     st.divider()
     st.subheader('장소')
-    place_name = st.selectbox('예시 장소 고르기 (합성)', list(place_samples))
-    render_places(to_place_result(place_samples[place_name], kind='fixture'))
+    if mode == '예시 응답':
+        place_name = st.selectbox('예시 장소 고르기 (합성)', list(place_samples))
+        render_places(to_place_result(place_samples[place_name], kind='fixture'))
+    elif 'places' in st.session_state:
+        render_places(st.session_state['places'])
 
 
 with inspection_tab:
