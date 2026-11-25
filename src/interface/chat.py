@@ -1,10 +1,3 @@
-"""질문과 답변 화면.
-
-담당: 이승주
-상태별 모양 구분은 U05에서 추가한다.
-"""
-
-
 import streamlit as st
 
 from src.interface.adapter import Citation, ViewResponse
@@ -35,12 +28,9 @@ def is_safe_url(url: str | None) -> bool:
     return bool(url) and url.startswith(('https://', 'http://'))
 
 
+# 인용을 명확히 전달하기 위한 포매팅
 def format_citation(citation: Citation) -> str:
-    '''인용 한 건을 출처를 구별할 수 있는 한 줄로 만든다.
 
-    제목, 원문 위치, 문서 버전이 있으면 함께 보여 준다. 같은 질문에 서로 다른 문서가
-    인용될 때(예: 웹페이지와 PDF의 일정이 다름) 사용자가 어느 출처인지 알 수 있어야 한다.
-    '''
     # 제목에 대괄호가 있어도 마크다운 링크가 깨지지 않게 막는다.
     label = (citation.title or citation.chunk_id).replace('[', '\\[').replace(']', '\\]')
     if is_safe_url(citation.source_url):
@@ -57,7 +47,9 @@ def format_citation(citation: Citation) -> str:
 def render_response(view: ViewResponse, question: str = '', district: str = '') -> None:
 
     if view.kind == 'fixture':
-        st.caption('예시(합성) 응답입니다. 실제 RAG 실행이 아닙니다. ')
+        st.caption('예시(합성) 응답입니다. 실제 RAG 실행이 아닙니다.')
+    elif view.kind == 'demo':
+        st.caption('합성 데모 실행입니다. 합성 문서만 검색하며 실제 RAG 품질이 아닙니다.')
 
     if view.status == 'answered':
         _render_answered(view)

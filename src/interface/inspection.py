@@ -26,6 +26,8 @@ def render_inspection(view: ViewResponse | None, selected_district: str | None=N
 
     if view.kind == 'fixture':
         st.caption('예시(합성) 응답을 검사합니다. 실제 RAG 실행이 아닙니다.')
+    elif view.kind == 'demo':
+        st.caption('합성 데모 실행을 검사합니다. 실제 RAG 품질이 아닙니다.')
 
     st.subheader('자동 경고')
     alerts = check_response(view, selected_district)
