@@ -25,9 +25,9 @@ UI는 Streamlit으로 구현하고 공통 Python RAG 함수를 직접 호출하�
 
 같은 형식을 각 모듈에 복제하지 않는다. 공용 규격 변경은 호출 코드, 예시, 검증과 문서를 함께 맞춘다. 내부 파일과 함수 구성은 담당자가 정한다.
 
-### P04 지역 해석과 답변 생성 연결
+### 전처리 자료 지역 해석과 답변 생성 연결
 
-`create_runtime`의 지역 해석기로 `src.retrieval.regions.resolve_request`를, 생성기로 `make_answer_generator(draft_p04_answer, decode_conditions=decode_p04_conditions)`를 전달한다. 검색기는 순위순으로 정렬한 `SearchCandidate` 목록을 반환해야 한다. 최종 응답은 `runtime.run(request).response`에서 읽는다. [고정 근거 테스트](../tests/unit/answer_experiments/test_p04_pipeline_answers.py)는 지역 해석 결과와 검색 근거를 미리 지정해 요청·청크·인용을 검증한다. 아래 표는 연희동 질문에서 선택한 구에 따른 검색·생성 입력을 설명한다. PR #13의 [지역 전달 테스트](../tests/unit/test_pipeline_region_handoff.py)는 생성기에 전달된 구·동과 실행 기록에 보존된 원래 요청을 확인한다.
+`create_runtime`의 지역 해석기로 `src.retrieval.regions.resolve_request`를, 생성기로 `make_answer_generator(draft_evidence_answer, decode_conditions=decode_evidence_conditions)`를 전달한다. 검색기는 순위순으로 정렬한 `SearchCandidate` 목록을 반환해야 한다. 최종 응답은 `runtime.run(request).response`에서 읽는다. [고정 근거 테스트](../tests/unit/answer_experiments/test_evidence_pipeline_answers.py)는 지역 해석 결과와 검색 근거를 미리 지정해 요청·청크·인용을 검증한다. 아래 표는 연희동 질문에서 선택한 구에 따른 검색·생성 입력을 설명한다. PR #13의 [지역 전달 테스트](../tests/unit/test_pipeline_region_handoff.py)는 생성기에 전달된 구·동과 실행 기록에 보존된 원래 요청을 확인한다.
 
 | 연희동 수거용기 색상 질문의 입력 조건 | 공통 런타임에서 확인한 결과 |
 | --- | --- |

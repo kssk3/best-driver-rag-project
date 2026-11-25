@@ -39,7 +39,7 @@ def test_already_normalized_text_has_no_change_log(text):
 
 def test_repeated_merge_uses_parent_item_in_newspaper_row_without_mutation():
     path = Path(__file__).resolve().parents[3] / (
-        "data/handoff/jungeun/p04-2026-11-24/processed/annex/2101297_160319453.json"
+        "data/handoff/jungeun/ordinance-handoff-2026-11-24/processed/annex/2101297_160319453.json"
     )
     table = json.loads(path.read_text(encoding="utf-8"))["tables"][0]
     original = deepcopy(table)

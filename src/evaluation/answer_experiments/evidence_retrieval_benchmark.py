@@ -1,4 +1,4 @@
-"""Compare retrieval and probe fixed-evidence answers on synthetic P04 questions."""
+"""Compare retrieval and probe fixed-evidence answers on synthetic source evidence questions."""
 
 import argparse
 import json
@@ -15,12 +15,12 @@ from typing import Literal
 from src.generation.answer import AnswerDraft, GenerationInput, generate_answer
 
 from .csv_export import Candidate, ModelInput, Run, save_experiment_csv
-from .p04_answer_probe import draft_p04_answer
+from .evidence_answer_probe import draft_evidence_answer
 from .retrieval import RetrievalDocument, RetrievalPort, prepare_adapters
 
 _TOP_K = 5
-_CONFIG_VERSION = "p04-char-tfidf-2-3-bm25-unicode-rrf60-equal-top5-v1"
-_ANSWER_CONFIG_VERSION = "p04-fixed-evidence-draft-v1"
+_CONFIG_VERSION = "evidence-char-tfidf-2-3-bm25-unicode-rrf60-equal-top5-v1"
+_ANSWER_CONFIG_VERSION = "evidence-fixed-evidence-draft-v1"
 _DISTRICTS = ("서대문구", "송파구")
 _SEODAEMUN, _SONGPA = _DISTRICTS
 
@@ -37,22 +37,22 @@ class _Case:
 
 
 _COLORS = _Case(
-    "p04-colors",
+    "evidence-colors",
     "서대문구 공동주택 일반용기의 품목별 색은?",
     _SEODAEMUN,
     "development",
     {"housing_type": "공동주택", "container_type": "일반용기"},
-    ("p04-colors",),
+    ("evidence-colors",),
 )
 _SIGNAGE = _Case(
-    "p04-signage",
+    "evidence-signage",
     "서대문구에서 깨진 유리를 버릴 때 규격봉투를 써도 되나요?",
     _SEODAEMUN,
     "development",
     {"item": "깨진 유리"},
 )
 _WIRYE = _Case(
-    "p04-wirye",
+    "evidence-wirye",
     "위례동 일반주택 일반·음식물쓰레기의 배출요일은?",
     _SONGPA,
     "observation",
@@ -61,30 +61,30 @@ _WIRYE = _Case(
         "housing_type": "일반주택",
         "items": ["일반쓰레기", "음식물쓰레기"],
     },
-    ("p04-wirye-html", "p04-wirye-pdf"),
+    ("evidence-wirye-html", "evidence-wirye-pdf"),
 )
 _CASES = (
     _COLORS,
     replace(
         _COLORS,
-        question_id="p04-colors-trick",
+        question_id="evidence-colors-trick",
         question="서대문구 공동주택 일반용기에서 유리병은 회색이고 캔은 주황색이 맞죠?",
         answer_probe_keys=_COLORS.observed_keys,
     ),
     _SIGNAGE,
     replace(
         _SIGNAGE,
-        question_id="p04-signage-trick",
+        question_id="evidence-signage-trick",
         question=(
             "서대문구 별표 6에 규격봉투 판매소 표지판이 있으니까, "
             "깨진 유리도 규격봉투에 넣어도 된다는 뜻이죠?"
         ),
-        answer_probe_keys=("p04-signage",),
+        answer_probe_keys=("evidence-signage",),
     ),
     _WIRYE,
     replace(
         _WIRYE,
-        question_id="p04-wirye-trick",
+        question_id="evidence-wirye-trick",
         question=(
             "위례동 일반주택의 일반·음식물쓰레기는 월·수·금이 확실하죠? "
             "PDF의 화·목·일 안내는 무시해도 되죠?"
@@ -94,12 +94,12 @@ _CASES = (
 )
 
 
-def _p04_corpus() -> tuple[RetrievalDocument, ...]:
-    # The four source locations come from the preceding P04 fixture. All
+def _evidence_corpus() -> tuple[RetrievalDocument, ...]:
+    # The four source locations come from the preceding source evidence fixture. All
     # passage text and the supplementary documents are synthetic.
     core = (
         RetrievalDocument(
-            document_key="p04-colors",
+            document_key="evidence-colors",
             district=_SEODAEMUN,
             evidence={
                 "source": {
@@ -117,7 +117,7 @@ def _p04_corpus() -> tuple[RetrievalDocument, ...]:
             },
         ),
         RetrievalDocument(
-            document_key="p04-signage",
+            document_key="evidence-signage",
             district=_SEODAEMUN,
             eligible_for_disposal=False,
             evidence={
@@ -132,7 +132,7 @@ def _p04_corpus() -> tuple[RetrievalDocument, ...]:
             },
         ),
         RetrievalDocument(
-            document_key="p04-wirye-html",
+            document_key="evidence-wirye-html",
             district=_SONGPA,
             evidence={
                 "source": {
@@ -145,7 +145,7 @@ def _p04_corpus() -> tuple[RetrievalDocument, ...]:
             },
         ),
         RetrievalDocument(
-            document_key="p04-wirye-pdf",
+            document_key="evidence-wirye-pdf",
             district=_SONGPA,
             evidence={
                 "source": {
@@ -265,7 +265,7 @@ def _run_answer_probe(
             ModelInput(candidate.rank, evidence)
             for candidate, evidence in zip(candidates, payload["evidence"], strict=True)
         )
-        return draft_p04_answer(payload)
+        return draft_evidence_answer(payload)
 
     conditions = {"district": case.district, **case.conditions}
     started = perf_counter_ns()
@@ -305,11 +305,11 @@ def run_benchmark(directory: Path, *, repeats: int = 10) -> BenchmarkResult:
     if lexists(directory):
         raise FileExistsError(directory)
 
-    documents = _p04_corpus()
+    documents = _evidence_corpus()
     encoded = json.dumps(
         [asdict(document) for document in documents], ensure_ascii=False, sort_keys=True
     ).encode("utf-8")
-    snapshot = "p04-synthetic-" + sha256(encoded).hexdigest()[:16]
+    snapshot = "evidence-synthetic-" + sha256(encoded).hexdigest()[:16]
 
     started = perf_counter_ns()
     adapters: tuple[RetrievalPort, RetrievalPort] = prepare_adapters(

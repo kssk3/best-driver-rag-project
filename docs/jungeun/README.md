@@ -10,9 +10,9 @@ Python 3.13.14, 통합 기준 dev. 담당 내부 데이터 형식이며 공통 R
 | src/ingestion/collect.py | P01·P02 법령 API 수집과 출처·버전 확인 |
 | src/ingestion/source_review.py | API·문서 이용조건 검토 기록 검사 |
 | scripts/collect.py | 수집 실행 진입점 |
-| src/ingestion/clean.py | P04 본문·부칙 분리와 원문 조건 보존 |
-| src/ingestion/annexes.py | P04 공식 첨부 다운로드, HWP 표·문단 추출, 검수 재적용 |
-| src/ingestion/search_preparation.py | P04 검색용 공백·용어 표기 정리와 병합 셀의 행별 연결 |
+| src/ingestion/clean.py | 본문·부칙 분리와 원문 조건 보존 |
+| src/ingestion/annexes.py | 공식 첨부 다운로드, HWP 표·문단 추출, 검수 재적용 |
+| src/ingestion/search_preparation.py | 검색용 공백·용어 표기 정리와 병합 셀의 행별 연결 |
 | src/ingestion/spots.py | P03 getSpot — 기존 뼈대 |
 | src/query/aliases.py, rewrite.py | P05·P06 별칭·질문 정제 — 기존 뼈대 |
 
@@ -137,7 +137,7 @@ PDF 파일 메타데이터의 생성·수정일 **2026-10-14**와 구분한다.
 화면 코드 수정일이나 배출요일 시행일로 사용하지 않는다.
 PDF는 이전 발행 자료로 보존하며, 웹·지도 중 최신 일정의 우선순위는 미확인이다.
 날짜 구분 반영 승인은 실제 수거요일을 확인한 기록과 별개다.
-[날짜 검증 기록](../../data/handoff/jungeun/p04-2026-11-24/review/schedule_evidence/date_check.json)에 근거와 남은 확인을 기록했다.
+[날짜 검증 기록](../../data/handoff/jungeun/ordinance-handoff-2026-11-24/review/schedule_evidence/date_check.json)에 근거와 남은 확인을 기록했다.
 
 전체 2,643개 셀을 사람이 개별 승인한 상태로 표현하지 않는다.
 HOP 미리보기는 공식 배포 PDF가 아니며 대형 표 일부에 겹침 경고가 있었다.
@@ -165,7 +165,7 @@ uv 0.13.9도 임시 도구로 사용했다. 전역 uv 0.13.5와 팀 의존성·�
 본문·첨부 원본, 전처리 JSON, 출처·변경·검수 기록을 함께 인계할 계획이다.
 기존 data/raw·data/processed 원본과 생성물은 계속 Git 제외 상태다.
 사용자 요청에 따라 PR 공유용 XML·HWP·JSON·검수 스냅샷을 저장소 경로
-`data/handoff/jungeun/p04-2026-11-24/`에 별도로 준비했다.
+`data/handoff/jungeun/ordinance-handoff-2026-11-24/`에 별도로 준비했다.
 해당 브랜치에 포함한 공유 스냅샷이며, 원격 반영 후 같은 저장소 경로에서 확인한다.
 기존 공유본·문서는 로컬 커밋으로 구분했다. 리뷰 수정본의 코드는 bundle_manifest의 파일별 해시로 확인한다.
 원격 반영과 PR 발행은 사용자가 직접 진행한다.
@@ -211,7 +211,7 @@ Python3.13을 유지하며 [PEP 686](https://peps.python.org/pep-0686/)의
 `chunk_id`는 공통 청킹 단계에서 생성한다. 수집·정제 단계에서 새로 만들지 않는다.
 
 TAB6개의 공백 표현과 미해석 Yi/PUA 원문은
-[문자 처리 기록](../../data/handoff/jungeun/p04-2026-11-24/review/source_character_review.json)에 위치별로 기록했다.
+[문자 처리 기록](../../data/handoff/jungeun/ordinance-handoff-2026-11-24/review/source_character_review.json)에 위치별로 기록했다.
 사용 상태값의 기존 이름은 유지하며 숫자·글리프 의미는 추정하지 않는다.
 송파구 별표4의 마지막 개정 표시2017-04-06과 문서 시행일2020-03-19도 구분했다.
 

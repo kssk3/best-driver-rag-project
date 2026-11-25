@@ -129,7 +129,7 @@ info.detail        # 실행 기록에 남긴다. 예: "ValueError: boom"
 
 `pipeline.place_lookup_failed`는 예외 없이 단계 기록에 직접 붙이는 코드다. 이 단계의 `error`에는 `"타입: 메시지"` 대신 콜백이 반환한 `PlaceLookupResult.error`가 들어가며, 비어 있으면 "장소 조회 콜백이 실패 상태를 반환했습니다."를 쓴다.
 
-`pipeline.missing_citation`과 `pipeline.citation_outside_evidence`는 생성기가 청크 ID를 직접 돌려줄 때 걸린다. `make_answer_generator`를 쓰는 P04 생성기는 인용 번호를 먼저 검사하므로, 같은 문제가 `generate` 단계의 `generation.missing_citation`·`generation.invalid_citation`으로 기록된다.
+`pipeline.missing_citation`과 `pipeline.citation_outside_evidence`는 생성기가 청크 ID를 직접 돌려줄 때 걸린다. `make_answer_generator`를 쓰는 전처리 자료 생성기는 인용 번호를 먼저 검사하므로, 같은 문제가 `generate` 단계의 `generation.missing_citation`·`generation.invalid_citation`으로 기록된다.
 
 ### 답변 생성 코드
 

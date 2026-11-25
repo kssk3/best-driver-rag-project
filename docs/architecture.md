@@ -42,7 +42,7 @@ Streamlit 진입점인 루트 `app.py`와 `src/interface/`는 아직 docstring�
 
 | 담당자 | 작업별 참고 파일 | 인계·검증 기준 |
 | --- | --- | --- |
-| 이승주 | [일반 문서 청킹](../src/ingestion/chunking.py), [P04 조문·표 청킹](../src/ingestion/preprocessed_chunking.py), [화면 진입점](../app.py), [화면 모듈](../src/interface/), [최종 평가셋](../eval/README.md) | 청킹 버전과 근거 위치 변경을 검색·답변 담당에게 공유하고, 화면에는 후보 순위와 최종 인용을 구분해 표시한다. |
+| 이승주 | [일반 문서 청킹](../src/ingestion/chunking.py), [전처리 자료 조문·표 청킹](../src/ingestion/preprocessed_chunking.py), [화면 진입점](../app.py), [화면 모듈](../src/interface/), [최종 평가셋](../eval/README.md) | 청킹 버전과 근거 위치 변경을 검색·답변 담당에게 공유하고, 화면에는 후보 순위와 최종 인용을 구분해 표시한다. |
 | 이정은 | [수집·정제 인계](jungeun/README.md), [질문 다듬기](../src/query/rewrite.py), [프롬프트 위치](../prompts/), [질의 전달 규격](TEAM-SETUP.md#질문-지역과-답변) | 원문 근거를 교차 확인하고, 프롬프트 변경은 원질문·조건·변환 질의로 비교한다. |
 | 이명지 | [지역 해석](../src/retrieval/regions.py), [팀 검색 진입점](../src/retrieval/search.py), [기존 색인 생성](../src/ingestion/indexing.py), [저장소 구현](../src/infrastructure/stores.py), [검색 평가 기준](problem.md#지표와-실패-기록) | 검색 시스템 v2에서 OpenSearch 연결을 추진한다. 청크 출처와 지역을 보존한 순위 목록을 답변 담당에게 전달한다. |
 | 강성수 | [답변 정책](../src/generation/answer.py), [공통 생성 어댑터](../src/generation/pipeline_adapter.py), [답변·검색 실험](../src/evaluation/answer_experiments/), [실행 기록](../src/observability/records.py), [결과 비교](../results/testData.md) | 개발 문항의 허용 근거를 갱신하고, 실제 생성 입력과 최종 인용을 구분해 검증한다. |
@@ -51,11 +51,11 @@ Streamlit 진입점인 루트 `app.py`와 `src/interface/`는 아직 docstring�
 
 ## 파일별 구현 상태
 
-아래 표에는 담당자별 구현 상태와 후속 연결 작업을 정리했다. 지역 해석 결과가 검색에 쓰이는 방식과 생성기가 받는 입력은 [지역 해석과 답변 생성 연결](TEAM-SETUP.md#p04-지역-해석과-답변-생성-연결)에서 확인할 수 있다.
+아래 표에는 담당자별 구현 상태와 후속 연결 작업을 정리했다. 지역 해석 결과가 검색에 쓰이는 방식과 생성기가 받는 입력은 [지역 해석과 답변 생성 연결](TEAM-SETUP.md#evidence-지역-해석과-답변-생성-연결)에서 확인할 수 있다.
 
 ### 데이터 수집·정제와 프롬프트 개선 (이정은)
 
-수집/전처리는 [PR 8](https://github.com/kssk3/best-driver-rag-project/pull/8)에서 구현돼 현재 `dev`에 포함됐다. `data/handoff/jungeun/p04-2026-11-24/`의 원본과 전처리 산출물은 공통 로더에 연결했다. 다음 표의 구현 여부는 수집/전처리 코드와 질의 시점 기능을 구분한다.
+수집/전처리는 [PR 8](https://github.com/kssk3/best-driver-rag-project/pull/8)에서 구현돼 현재 `dev`에 포함됐다. `data/handoff/jungeun/ordinance-handoff-2026-11-24/`의 원본과 전처리 산출물은 공통 로더에 연결했다. 다음 표의 구현 여부는 수집/전처리 코드와 질의 시점 기능을 구분한다.
 
 | 파일 | 구현 상태와 역할 |
 | --- | --- |
@@ -86,7 +86,7 @@ Streamlit 진입점인 루트 `app.py`와 `src/interface/`는 아직 docstring�
 | --- | --- |
 | `src/generation/answer.py` | 답변 가능·재질문·근거 부족·오류를 구분하고, 인용할 때 원문 출처와 문서 버전을 확인한다. |
 | `src/generation/pipeline_adapter.py` | 공통 요청과 선택된 청크를 생성 입력으로 변환하고, 검증한 인용 청크 ID를 반환한다. |
-| `src/evaluation/answer_experiments/` | 벡터 단독과 BM25+벡터 앙상블의 검색 순위 비교, P04 답변 검증, CSV 저장을 담당한다. |
+| `src/evaluation/answer_experiments/` | 벡터 단독과 BM25+벡터 앙상블의 검색 순위 비교, 전처리 자료 답변 검증, CSV 저장을 담당한다. |
 | `src/evaluation/answer_metrics.py` | 답변 품질 자동 평가를 연결할 위치다. |
 | `src/observability/tracing.py` | Langfuse 추적을 연결할 위치다. |
 
@@ -94,7 +94,7 @@ Streamlit 진입점인 루트 `app.py`와 `src/interface/`는 아직 docstring�
 
 | 파일 | 역할 |
 | --- | --- |
-| `src/ingestion/preprocessed_chunking.py`, `src/ingestion/chunking.py` | 인계된 청커의 후속 개선. P04 표·비고·예외가 원문 위치와 함께 보존되는지 확인 |
+| `src/ingestion/preprocessed_chunking.py`, `src/ingestion/chunking.py` | 인계된 청커의 후속 개선. 전처리 자료 표·비고·예외가 원문 위치와 함께 보존되는지 확인 |
 | `app.py` | Streamlit 진입점 |
 | `src/interface/chat.py` | 질문과 답변 화면 |
 | `src/interface/map.py` | 장소 목록과 지도 |
@@ -125,7 +125,7 @@ Streamlit 진입점인 루트 `app.py`와 `src/interface/`는 아직 docstring�
 | `scripts/index.py` | 명시한 공용 문서의 색인 생성, HTML/JSON 형식 선택 |
 | `scripts/evaluate.py` | 데모 또는 팀 연결 함수로 평가 실행, 결과 파일 저장 |
 
-PR #8과 #10에서 검토한 전처리 자료를 사용한다. 공통 런타임에는 지역 해석기와 답변 생성기를 콜백으로 연결할 수 있다. 팀 A/B/C 검색기, 운영용 답변 모델, 질문 변환 모델, 장소 DB와 지도 연결은 남아 있다. [P04 결과표](../results/testData.md)는 로컬 합성 실험에서 측정한 값이다.
+PR #8과 #10에서 검토한 전처리 자료를 사용한다. 공통 런타임에는 지역 해석기와 답변 생성기를 콜백으로 연결할 수 있다. 팀 A/B/C 검색기, 운영용 답변 모델, 질문 변환 모델, 장소 DB와 지도 연결은 남아 있다. [전처리 자료 결과표](../results/testData.md)는 로컬 합성 실험에서 측정한 값이다.
 
 초기 파일별 구현 항목과 플로우 차트는 [Notion 구조 문서](https://app.notion.com/p/422dc8b0e1638150b62acfe703074f30?pvs=204)에 있다. 현재 구현된 규격과 동작은 저장소 코드와 최소 구현 인계 문서를 기준으로 확인한다.
 

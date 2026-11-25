@@ -1,4 +1,4 @@
-"""Run both P04 question sets through the shared runtime offline."""
+"""Run both source evidence question sets through the shared runtime offline."""
 
 import json
 from pathlib import Path
@@ -13,14 +13,14 @@ from src.contracts import (
     SearchCandidate,
     SourceDocument,
 )
-from src.evaluation.answer_experiments.p04_answer_probe import (
-    decode_p04_conditions,
-    draft_p04_answer,
-    make_p04_request,
+from src.evaluation.answer_experiments.evidence_answer_probe import (
+    decode_evidence_conditions,
+    draft_evidence_answer,
+    make_evidence_request,
 )
-from src.evaluation.answer_experiments.p04_retrieval_benchmark import (
+from src.evaluation.answer_experiments.evidence_retrieval_benchmark import (
     _CASES,
-    _p04_corpus,
+    _evidence_corpus,
 )
 from src.generation.pipeline_adapter import make_answer_generator
 from src.ingestion.chunking import chunk_documents
@@ -29,7 +29,7 @@ from src.ingestion.preprocessed_chunking import chunk_preprocessed_documents
 from src.runtime import create_runtime
 
 PROJECT = Path(__file__).resolve().parents[3]
-BUNDLE = PROJECT / "data/handoff/jungeun/p04-2026-11-24"
+BUNDLE = PROJECT / "data/handoff/jungeun/ordinance-handoff-2026-11-24"
 COLOR_ID = "seodaemun-rules:attachment:160561037"
 SIGNAGE_ID = "seodaemun-ordinance:attachment:160319461"
 
@@ -43,14 +43,14 @@ def annex_chunks() -> list[Chunk]:
 
 
 def _schedule_chunks() -> list[Chunk]:
-    # The established P04 passages are synthetic excerpts. Use their reviewed URLs
+    # The established source evidence passages are synthetic excerpts. Use their reviewed URLs
     # and the shared chunker's IDs to exercise provenance through the runtime.
     review_path = BUNDLE / "review/schedule_evidence/conflict_evidence.json"
     review = json.loads(review_path.read_text(encoding="utf-8"))
     urls = {entry["source_type"]: entry["url"] for entry in review["sources"]}
     chunks = []
-    for document in _p04_corpus():
-        if not document.document_key.startswith("p04-wirye-"):
+    for document in _evidence_corpus():
+        if not document.document_key.startswith("evidence-wirye-"):
             continue
         evidence = document.evidence
         source = evidence["source"]
@@ -58,7 +58,7 @@ def _schedule_chunks() -> list[Chunk]:
             [
                 SourceDocument(
                     document_id=document.document_key,
-                    version="p04-observation",
+                    version="evidence-observation",
                     title=source["source_type"],
                     content_format="html",
                     content=evidence["text"],
@@ -76,7 +76,7 @@ def _schedule_chunks() -> list[Chunk]:
 
 @pytest.mark.parametrize("case", _CASES, ids=lambda case: case.question_id)
 @pytest.mark.parametrize("content_format", ["html", "json"])
-def test_p04_original_and_trick_questions_use_shared_runtime(
+def test_evidence_original_and_trick_questions_use_shared_runtime(
     case, content_format, annex_chunks, tmp_path
 ):
     if case.case_group == "observation":
@@ -96,7 +96,7 @@ def test_p04_original_and_trick_questions_use_shared_runtime(
 
     def draft(payload):
         draft_inputs.append(payload)
-        return draft_p04_answer(payload)
+        return draft_evidence_answer(payload)
 
     runtime = create_runtime(
         RuntimeSettings(
@@ -109,9 +109,11 @@ def test_p04_original_and_trick_questions_use_shared_runtime(
             SearchCandidate(chunk=chunk, rank=rank)
             for rank, chunk in enumerate(evidence, start=1)
         ],
-        generator=make_answer_generator(draft, decode_conditions=decode_p04_conditions),
+        generator=make_answer_generator(
+            draft, decode_conditions=decode_evidence_conditions
+        ),
     )
-    request = make_p04_request(
+    request = make_evidence_request(
         case.question, district=case.district, conditions=case.conditions
     )
     record = runtime.run(request)
@@ -168,9 +170,9 @@ def test_review_overlay_supplies_color_and_cannot_override_scope(annex_chunks):
     changed = chunk.model_copy(
         update={"content": json.dumps(content, ensure_ascii=False)}
     )
-    generator = make_answer_generator(draft_p04_answer)
+    generator = make_answer_generator(draft_evidence_answer)
     case = _CASES[1]
-    request = make_p04_request(
+    request = make_evidence_request(
         case.question, district=case.district, conditions=case.conditions
     )
     assert "캔 은색" in generator(request, [changed]).answer
@@ -184,13 +186,16 @@ def test_review_overlay_supplies_color_and_cannot_override_scope(annex_chunks):
     assert generator(request, [other_district]).status == "insufficient_evidence"
 
 
-def test_p04_items_encoding_preserves_plain_conditions():
+def test_evidence_items_encoding_preserves_plain_conditions():
     values = ["음식,물", "유리", "음식,물"]
-    request = make_p04_request(
+    request = make_evidence_request(
         "질문", district="송파구", conditions={"items": values, "foo": "[1]"}
     )
-    assert decode_p04_conditions(request.conditions) == {"items": values, "foo": "[1]"}
-    ordinary = make_p04_request(
+    assert decode_evidence_conditions(request.conditions) == {
+        "items": values,
+        "foo": "[1]",
+    }
+    ordinary = make_evidence_request(
         "질문", district="송파구", conditions={"items": '["유리"]'}
     )
-    assert decode_p04_conditions(ordinary.conditions) == {"items": '["유리"]'}
+    assert decode_evidence_conditions(ordinary.conditions) == {"items": '["유리"]'}

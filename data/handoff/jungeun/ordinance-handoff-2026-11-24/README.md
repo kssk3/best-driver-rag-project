@@ -1,4 +1,4 @@
-# B팀 P04 데이터 검수 파일
+# B팀 전처리 자료 데이터 검수 파일
 
 2026-11-24 이정은 / 공유 대상: 양석호와 팀 검토. 원본·전처리 결과·항목별 검수 기록을 담은 PR 검토용 자료.
 
@@ -34,8 +34,8 @@ manifest와 연결된 문서 메타데이터를 함께 읽어야 출처·지역�
 저장소 루트에서 팀 Python 환경을 준비한 후 원본을 다시 추출할 수 있음. 다음은 저장소 루트 기준 예시:
 
 ```zsh
-.venv/bin/python -m src.ingestion.clean --manifest data/handoff/jungeun/p04-2026-11-24/raw/manifest.json --output-dir data/processed/documents/new_body_review
-python -m src.ingestion.annexes --manifest data/handoff/jungeun/p04-2026-11-24/raw/attachments/manifest.json --output-dir data/processed/documents/new_annex_review --review-overlays data/handoff/jungeun/p04-2026-11-24/review/human_review_overlays.json
+.venv/bin/python -m src.ingestion.clean --manifest data/handoff/jungeun/ordinance-handoff-2026-11-24/raw/manifest.json --output-dir data/processed/documents/new_body_review
+python -m src.ingestion.annexes --manifest data/handoff/jungeun/ordinance-handoff-2026-11-24/raw/attachments/manifest.json --output-dir data/processed/documents/new_annex_review --review-overlays data/handoff/jungeun/ordinance-handoff-2026-11-24/review/human_review_overlays.json
 ```
 
 첨부 재처리는 pyhwp==0.1b15와 six·setuptools가 있는 임시 Python3.13 환경 및 hwp5proc 필요.

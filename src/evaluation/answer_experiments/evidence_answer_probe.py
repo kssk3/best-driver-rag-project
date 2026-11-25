@@ -1,4 +1,4 @@
-"""Draft answers for the controlled, offline P04 fixed-evidence experiment."""
+"""Draft answers for the controlled, offline fixed-evidence experiment."""
 
 import json
 import re
@@ -15,7 +15,7 @@ _COLOR_SCOPE = "공동주택 일반용기 설치 기준"
 _IMAGE_SUMMARY = re.compile(
     r'<aside data-review-overlay="image-summary">([^<]*)</aside>\s*$'
 )
-_P04_ITEMS_JSON = "p04_items_json"
+_EVIDENCE_ITEMS_JSON = "evidence_items_json"
 
 
 def _is_item_list(value: object) -> TypeGuard[list[str]]:
@@ -24,34 +24,34 @@ def _is_item_list(value: object) -> TypeGuard[list[str]]:
     )
 
 
-def make_p04_request(
+def make_evidence_request(
     question: str, *, district: str, conditions: Mapping[str, object]
 ) -> PipelineRequest:
     """Use a reserved field for the observation's list in the string-only request."""
     encoded = {}
     for key, value in conditions.items():
-        if key == _P04_ITEMS_JSON:
-            raise ValueError("The P04 item encoding field is reserved")
+        if key == _EVIDENCE_ITEMS_JSON:
+            raise ValueError("The source evidence item encoding field is reserved")
         if key == "items" and _is_item_list(value):
-            encoded[_P04_ITEMS_JSON] = json.dumps(value, ensure_ascii=False)
+            encoded[_EVIDENCE_ITEMS_JSON] = json.dumps(value, ensure_ascii=False)
         elif isinstance(value, str):
             encoded[key] = value
         else:
-            raise ValueError(f"Unsupported P04 condition: {key}")
+            raise ValueError(f"Unsupported source evidence condition: {key}")
     dong = encoded.pop("dong", None)
     return PipelineRequest(
         question=question, district=district, dong=dong, conditions=encoded
     )
 
 
-def decode_p04_conditions(conditions: Mapping[str, str]) -> dict[str, object]:
-    """Decode the explicit P04 item list and pass ordinary strings through."""
+def decode_evidence_conditions(conditions: Mapping[str, str]) -> dict[str, object]:
+    """Decode the explicit source evidence item list and pass ordinary strings through."""
     decoded: dict[str, object] = dict(conditions)
-    if _P04_ITEMS_JSON in conditions:
-        items = json.loads(conditions[_P04_ITEMS_JSON])
+    if _EVIDENCE_ITEMS_JSON in conditions:
+        items = json.loads(conditions[_EVIDENCE_ITEMS_JSON])
         if "items" in conditions or not _is_item_list(items):
-            raise ValueError("Invalid P04 item list")
-        del decoded[_P04_ITEMS_JSON]
+            raise ValueError("Invalid source evidence item list")
+        del decoded[_EVIDENCE_ITEMS_JSON]
         decoded["items"] = items
     return decoded
 
@@ -101,8 +101,8 @@ def _reviewed_colors(evidence: Evidence) -> list[str]:
     return [f"{item} {color}" for item, color in rows.items()]
 
 
-def draft_p04_answer(payload: GenerationInput) -> AnswerDraft:
-    """Use only passages with a scope and format recognized by the P04 probe."""
+def draft_evidence_answer(payload: GenerationInput) -> AnswerDraft:
+    """Use only passages with a scope and format recognized by the source evidence probe."""
     conditions = payload["conditions"]
     question = payload["original_question"]
     housing = conditions.get("housing_type")

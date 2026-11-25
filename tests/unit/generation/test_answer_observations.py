@@ -1,4 +1,4 @@
-"""Synthetic P04 observation cases, separate from development scoring."""
+"""Synthetic source evidence observation cases, separate from development scoring."""
 
 from unittest import TestCase
 from unittest.mock import Mock

@@ -1,4 +1,4 @@
-"""Synthetic P04 development and generation contract cases."""
+"""Synthetic source evidence development and generation contract cases."""
 
 from unittest import TestCase
 from unittest.mock import Mock
