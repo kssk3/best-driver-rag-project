@@ -317,3 +317,33 @@ def test_recoverable_stage_failure_plus_record_failure_hides_successful_answer()
     app = AppTest.from_function(page, default_timeout=10).run()
     assert not any("성공한 답변" in e.value for e in app.error)
     assert any("처리 중 오류" in e.value for e in app.error)
+
+
+def test_primary_failure_keeps_message_even_when_error_codes_collide() -> None:
+    # 일반 예외끼리는 같은 코드(common.unexpected_error)를 받을 수 있다.
+    def page() -> None:
+        from src.interface.adapter import StageError, ViewResponse
+        from src.interface.chat import render_response
+
+        code = "common.unexpected_error"
+        render_response(
+            ViewResponse(
+                "r",
+                "demo",
+                "error",
+                "[가상] 답변 모델에 연결하지 못했습니다.",
+                [],
+                [],
+                None,
+                [],
+                "x",
+                error_code=code,
+                stage_errors=[
+                    StageError("generate", code, None),
+                    StageError("record", code, None),
+                ],
+            )
+        )
+
+    app = AppTest.from_function(page, default_timeout=10).run()
+    assert any("답변 모델에 연결하지 못했습니다" in e.value for e in app.error)

@@ -240,3 +240,21 @@ def test_panel_does_not_say_no_alert_when_a_rule_was_unchecked() -> None:
     app = AppTest.from_function(page, default_timeout=10).run()
     assert not app.success
     assert any("검사하지 못한 규칙" in i.value for i in app.info)
+
+
+def test_panel_computes_rank_shift_with_a_single_stage_score() -> None:
+    view = make_view(
+        candidates=[
+            Candidate(
+                "c1", "서대문구", 0.8, "[가상]", rank=1, stage_scores={"vector": 0.4}
+            ),
+            Candidate(
+                "c2", "서대문구", 0.6, "[가상]", rank=2, stage_scores={"vector": 0.9}
+            ),
+        ],
+    )
+    app = open_panel(view)
+    assert not app.exception
+    assert list(app.dataframe[0].value["순위 이동"]) == ["+1", "-1"]
+    # 단계가 하나라 고르는 칸이 없다
+    assert not any(b.label == "순위 이동 비교" for b in app.selectbox)

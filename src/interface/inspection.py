@@ -67,12 +67,14 @@ def render_inspection(
     if view.candidates:
         cited_ids = {c.chunk_id for c in view.citations}
 
-        # 단계 점수가 둘 이상일 때만 단계 사이의 순위 이동을 계산할 수 있다.
+        # 단계 점수가 하나라도 있으면 그 단계의 순위와 최종 순위를 비교할 수 있다.
         stages = stage_names(view.candidates)
         shifts: dict[str, int] = {}
         if len(stages) >= 2:
             stage = st.selectbox("순위 이동 비교", stages)
             shifts = rank_shifts(view.candidates, stage)
+        elif len(stages) == 1:
+            shifts = rank_shifts(view.candidates, stages[0])
 
         st.dataframe(
             [
@@ -89,10 +91,14 @@ def render_inspection(
             ]
         )
 
-        if len(stages) < 2:
-            st.caption("검색 단계 점수가 하나 이하라 순위 이동을 계산할 수 없습니다.")
+        if not stages:
+            st.caption("검색 단계 점수가 없어 순위 이동을 계산할 수 없습니다.")
         else:
             st.caption("순위 이동은 +가 최종에서 올라간 것, -가 내려간 것입니다.")
+            if len(stages) == 1:
+                st.caption(
+                    f"단계 점수가 하나라 그 단계({stages[0]})와 최종 순위를 비교했습니다."
+                )
 
     else:
         st.info("검색 후보가 없습니다.")
