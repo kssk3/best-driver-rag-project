@@ -7,6 +7,7 @@ from pathlib import Path
 
 from src.config import load_settings
 from src.demo import create_demo_pipeline
+from src.evaluation.csv_export import write_evaluation_csv
 from src.evaluation.runner import evaluate_cases, load_evaluation_cases
 from src.pipeline import RAGPipeline
 
@@ -62,6 +63,7 @@ def main() -> None:
     path.write_text(
         json.dumps(results, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
+    write_evaluation_csv(output, cases, results)
     print(f"{len(results)}회 실행 기록: {path}")
     if any(result["status"] == "error" for result in results):
         raise SystemExit(1)

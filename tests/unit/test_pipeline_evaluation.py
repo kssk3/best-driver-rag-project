@@ -1,5 +1,6 @@
 """합성 콜백으로 호출 경계, 근거 보존과 평가 입력 분리를 검증한다."""
 
+import csv
 import json
 
 import pytest
@@ -15,6 +16,7 @@ from src.contracts import (
     RunRecord,
     SearchCandidate,
 )
+from src.evaluation.csv_export import write_evaluation_csv
 from src.evaluation.runner import (
     EvaluationCaseError,
     evaluate_cases,
@@ -367,6 +369,41 @@ def test_evaluation_keeps_failures_and_continues():
     assert [item["status"] for item in results] == ["error", "answered"]
     assert results[0]["run_id"] is None and results[0]["record"] is None
     assert "합성 구성 실패" in results[0]["error"]
+
+
+def test_csv_keeps_repeated_input_and_citation_ranks_and_first_candidate_positions(
+    tmp_path,
+):
+    class RepeatedEvidencePipeline(RAGPipeline):
+        def run(self, request):
+            record = super().run(request)
+            record.model_input_chunk_ids.append("first")
+            record.response.citations.append(record.response.citations[0])
+            return record
+
+    configured = RepeatedEvidencePipeline(
+        resolver=resolve,
+        retriever=lambda *args, **kwargs: [
+            candidate(chunk("first"), 4),
+            candidate(chunk("second"), 9),
+        ],
+        generator=lambda *args: GenerationResult(
+            status="answered", answer="합성 답변", cited_chunk_ids=["second", "first"]
+        ),
+    )
+    cases = [EvaluationCase(case_id="repeat", question="질문", district="송파구")]
+    write_evaluation_csv(tmp_path, cases, evaluate_cases(cases, {"repeat": configured}))
+
+    with (tmp_path / "runs.csv").open(encoding="utf-8", newline="") as stream:
+        [run] = csv.DictReader(stream)
+    assert json.loads(run["model_input_ranks_json"]) == [4, 9, 4]
+    assert json.loads(run["citation_ranks_json"]) == [9, 4, 9]
+    with (tmp_path / "candidates.csv").open(encoding="utf-8", newline="") as stream:
+        positions = {
+            row["chunk_id"]: (row["model_input_position"], row["citation_position"])
+            for row in csv.DictReader(stream)
+        }
+    assert positions == {"first": ("1", "2"), "second": ("2", "1")}
 
 
 @pytest.mark.parametrize("wrapped", [False, True])
