@@ -124,7 +124,19 @@ async def score_archive(
     if not isinstance(attempts, list) or not all(isinstance(a, dict) for a in attempts):
         raise ValueError("evaluation.json must contain a list of attempts")
     with cases_csv.open(encoding="utf-8-sig", newline="") as stream:
-        cases = list(csv.DictReader(stream))
+        reader = csv.DictReader(stream)
+        required = {
+            "dataset_id",
+            "case_id",
+            "question",
+            "district",
+            "dong",
+            "conditions_json",
+        }
+        missing = required.difference(reader.fieldnames or ())
+        if missing:
+            raise ValueError(f"cases.csv 필수 열 누락: {', '.join(sorted(missing))}")
+        cases = list(reader)
     by_id = {case["case_id"]: case for case in cases}
     datasets = {case["dataset_id"] for case in cases}
     if len(by_id) != len(cases) or len(datasets) != 1 or "" in datasets:

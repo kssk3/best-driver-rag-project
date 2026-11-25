@@ -149,6 +149,38 @@ def test_archive_failures_are_independent(tmp_path):
     ]
 
 
+@pytest.mark.parametrize(
+    "missing",
+    ["question", "case_id", "dataset_id", "district", "dong", "conditions_json"],
+)
+def test_missing_case_header_fails_before_creating_output(tmp_path, capsys, missing):
+    with CASES.open(encoding="utf-8", newline="") as stream:
+        reader = csv.DictReader(stream)
+        fields = [field for field in reader.fieldnames if field != missing]
+        cases = list(reader)
+    snapshot = tmp_path / "cases.csv"
+    with snapshot.open("w", encoding="utf-8", newline="") as stream:
+        writer = csv.DictWriter(stream, fieldnames=fields, extrasaction="ignore")
+        writer.writeheader()
+        writer.writerows(cases)
+
+    output = tmp_path / "scored"
+    with pytest.raises(SystemExit) as error:
+        main(
+            [
+                "--evaluation",
+                str(ARCHIVE),
+                "--cases-csv",
+                str(snapshot),
+                "--output-dir",
+                str(output),
+            ]
+        )
+    assert error.value.code == 2
+    assert f"cases.csv 필수 열 누락: {missing}" in capsys.readouterr().err
+    assert not output.exists()
+
+
 def test_validate_cli_creates_new_table(tmp_path):
     out = tmp_path / "check"
     args = [
