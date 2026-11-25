@@ -116,7 +116,7 @@ def test_body_reference_does_not_start_section(tmp_path: Path, reference: str):
 def test_songpa_original_forms_keep_deleted_and_active_boundaries():
     xml_path = (
         Path(__file__).resolve().parents[3]
-        / "data/handoff/jungeun/p04-2026-11-24/processed/annex"
+        / "data/handoff/jungeun/ordinance-handoff-2026-11-24/processed/annex"
         / "2053883_154690993.xml"
     )
     content = extract_hwp_xml(xml_path)

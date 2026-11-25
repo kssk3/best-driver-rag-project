@@ -68,7 +68,7 @@ class TextReader(HTMLParser):
         self.parts.append(data)
 
 
-base = Path("data/handoff/jungeun/p04-2026-11-24/processed/annex")
+base = Path("data/handoff/jungeun/ordinance-handoff-2026-11-24/processed/annex")
 for key in ("2053883_154690993", "2101297_160319463"):
     xml = (base / f"{key}.xml").read_text(encoding="utf-8")
     raw_json = (base / f"{key}.json").read_text(encoding="utf-8")

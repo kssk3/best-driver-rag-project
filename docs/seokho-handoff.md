@@ -6,7 +6,7 @@
 
 공통 계약, 출처/본문 로더, XML→HTML 변환, 조문/표 행 청킹, 형식별 색인, 팀 콜백 연결, 인용 검사, 실행 기록과 평가 실행기를 구현했다. `SourceDocument` 규격은 유지한다. 실제 자료는 HTML/JSON 각각 557개 청크로 색인하고 근거 조회까지 확인했으며, 공통 응답 흐름은 합성 데모의 답변/지역 재질문/근거 부족으로 검증했다. 팀원이 먼저 읽을 내용은 [Notion 인수인계](https://app.notion.com/p/422dc8b0e16381758494e218a97087aa)에도 정리했다.
 
-기본 입력은 저장소에 포함된 `data/handoff/jungeun/p04-2026-11-24/`다. Python 3.13.14와 uv 0.13.9 이상으로 [환경을 준비](#처음-실행하기)한 뒤 [자료 준비 명령](#준비와-실제-색인-명령)을 실행한다. 외부 API 없이 문서/청크 준비와 합성 데모를 실행할 수 있다. 실제 색인 생성과 근거 조회에는 OpenAI 인증과 네트워크가 필요하며, 생성 색인은 Git에 없으므로 새 환경에서 다시 만들어야 한다. 기존 v2 ZIP도 대체 입력으로 지원한다.
+기본 입력은 저장소에 포함된 `data/handoff/jungeun/ordinance-handoff-2026-11-24/`다. Python 3.13.14와 uv 0.13.9 이상으로 [환경을 준비](#처음-실행하기)한 뒤 [자료 준비 명령](#준비와-실제-색인-명령)을 실행한다. 외부 API 없이 문서/청크 준비와 합성 데모를 실행할 수 있다. 실제 색인 생성과 근거 조회에는 OpenAI 인증과 네트워크가 필요하며, 생성 색인은 Git에 없으므로 새 환경에서 다시 만들어야 한다. 기존 v2 ZIP도 대체 입력으로 지원한다.
 
 양석호는 공용 규격과 런타임, 재현 가능한 실행·평가 기반을 구현해 인계를 마쳤다. 아래 파일별 구현·검증 내역은 당시 기여 기록이다. 후속 작업은 [현재 4인 역할표](../ROADMAP.md#업무-분담과-인계)와 [담당 경로](architecture.md#담당-경로)를 따른다.
 
@@ -16,7 +16,7 @@
 
 ## 실제 전처리 자료 연결
 
-수집과 HWP 전처리의 책임은 [PR 8](https://github.com/kssk3/best-driver-rag-project/pull/8)에 있다. 현재 기본 입력은 이 PR로 저장소에 포함된 `data/handoff/jungeun/p04-2026-11-24/`이며 별도로 받은 v2 ZIP도 지원한다. 공통 기반은 해시와 문서 관계를 확인하고 이미 만들어진 XML/JSON을 읽는다. 원문을 다시 수집하거나 묶음 안의 코드를 실행하지 않는다. 확인한 PR head는 `7598fa3`이며 전처리 파일 44개와 원본 파일 23개가 제공된 ZIP과 바이트 단위로 일치했다.
+수집과 HWP 전처리의 책임은 [PR 8](https://github.com/kssk3/best-driver-rag-project/pull/8)에 있다. 현재 기본 입력은 이 PR로 저장소에 포함된 `data/handoff/jungeun/ordinance-handoff-2026-11-24/`이며 별도로 받은 v2 ZIP도 지원한다. 공통 기반은 해시와 문서 관계를 확인하고 이미 만들어진 XML/JSON을 읽는다. 원문을 다시 수집하거나 묶음 안의 코드를 실행하지 않는다. 확인한 PR head는 `7598fa3`이며 전처리 파일 44개와 원본 파일 23개가 제공된 ZIP과 바이트 단위로 일치했다.
 
 `src/ingestion/xml_adapter.py`의 `xml_to_html`은 본문 `LawService` XML의 조문/부칙과 첨부 `HwpDoc` XML의 문단/표/병합셀을 HTML로 변환한다. 작성자/폰트 메타데이터와 제개정이유는 검색 본문에 넣지 않는다. XML의 공백과 문구를 보존하며 DTD/entity 선언과 잘못된 표 좌표는 거부한다. 같은 원문의 전처리 JSON은 문자열을 유지해 읽는다. `SourceDocument`와 `Chunk`의 `html/json` 계약은 유지한다.
 
@@ -33,15 +33,15 @@
 저장소 루트에서 실행한다. 기본 인계 자료는 Git에 포함돼 있으며 별도 다운로드가 필요 없다. `--version v1`은 원문 버전이고 인계 파일명의 `v2`와 다른 값이다. 출력 폴더는 새 경로여야 한다.
 
 ```powershell
-uv run --locked python -m scripts.prepare_data --bundle data/handoff/jungeun/p04-2026-11-24 --version v1 --output-dir data/processed/p04-v2-prepared
+uv run --locked python -m scripts.prepare_data --bundle data/handoff/jungeun/ordinance-handoff-2026-11-24 --version v1 --output-dir data/processed/ordinance-v2-prepared
 ```
 
-위 명령은 외부 API 없이 준비한다. 별도로 받은 v2 ZIP을 쓰려면 입력만 `--bundle "C:/자료/p04_data_review_2026-11-24_v2.zip"`으로 바꾼다. 실제 색인까지 만들 때는 `OPENAI_API_KEY` 환경변수를 설정한 프로세스에서 다음 명령을 사용한다. `.env` 파일은 자동으로 읽지 않는다. 기존 로컬 키 파일을 사용하려면 `--api-key-file "C:/비공개/openai-key.txt"`처럼 명시적으로 추가한다. 키 내용은 출력하거나 결과 JSON에 기록하지 않는다.
+위 명령은 외부 API 없이 준비한다. 별도로 받은 v2 ZIP을 쓰려면 입력만 `--bundle "받은 ZIP의 실제 경로"`으로 바꾼다. 실제 색인까지 만들 때는 `OPENAI_API_KEY` 환경변수를 설정한 프로세스에서 다음 명령을 사용한다. `.env` 파일은 자동으로 읽지 않는다. 기존 로컬 키 파일을 사용하려면 `--api-key-file "C:/비공개/openai-key.txt"`처럼 명시적으로 추가한다. 키 내용은 출력하거나 결과 JSON에 기록하지 않는다.
 
 `scripts.prepare_data`와 `scripts.search_index`는 `src/infrastructure/embeddings.py`의 `configure_key_file`과 `BoundedEmbeddings`를 함께 사용한다. 명시한 키 파일은 현재 프로세스에만 적용하며, 임베딩 입력은 토큰 한도를 확인해 자동 잘림이나 평균 없이 전송한다.
 
 ```powershell
-uv run --locked python -m scripts.prepare_data --bundle data/handoff/jungeun/p04-2026-11-24 --version v1 --output-dir data/processed/p04-v2-openai-small --openai-model text-embedding-3-small
+uv run --locked python -m scripts.prepare_data --bundle data/handoff/jungeun/ordinance-handoff-2026-11-24 --version v1 --output-dir data/processed/ordinance-v2-openai-small --openai-model text-embedding-3-small
 ```
 
 생성물은 `documents.json`, `identities.json`, `chunks-html.json`, `chunks-json.json`, `report.json`이며 실제 색인을 요청하면 `index-html.json`과 `index-json.json`도 만든다. ZIP 입력은 필요한 원본과 전처리 자료를 `input/`에 보관한다. 검토한 `data/handoff/` 인계 자료는 Git에 포함되지만 새 청크/색인과 실행 결과는 Git 제외 경로에 저장하며 개인 보관 ZIP과 키 파일도 커밋하지 않는다. 실패한 실행도 `report.json`에 상태, 단계와 오류 종류를 남기므로 일부 파일의 존재만으로 성공을 판단하지 않는다.
@@ -50,10 +50,10 @@ uv run --locked python -m scripts.prepare_data --bundle data/handoff/jungeun/p04
 
 ### 실제 근거 조회
 
-현재 확인한 로컬 색인은 `data/processed/p04-v2-openai-small/`에 있다. 이 폴더는 Git에 포함되지 않으므로 새 환경에서는 위 준비 명령으로 생성해야 한다. 같은 임베딩 인증 설정을 사용한다.
+현재 확인한 로컬 색인은 `data/processed/ordinance-v2-openai-small/`에 있다. 이 폴더는 Git에 포함되지 않으므로 새 환경에서는 위 준비 명령으로 생성해야 한다. 같은 임베딩 인증 설정을 사용한다.
 
 ```powershell
-uv run --locked python -m scripts.search_index --index data/processed/p04-v2-openai-small/index-html.json --index data/processed/p04-v2-openai-small/index-json.json --district 송파구
+uv run --locked python -m scripts.search_index --index data/processed/ordinance-v2-openai-small/index-html.json --index data/processed/ordinance-v2-openai-small/index-json.json --district 송파구
 ```
 
 질문을 반복 입력하고 `/종료`로 종료한다. `--question "질문"`으로 한 번만 조회할 수 있고, 이때 `--output results/local/검색기록.json`을 추가하면 전체 근거를 새 파일에 저장한다. 화면에는 청크 본문의 앞부분과 출처를 표시한다. 옵션으로 넘긴 공백 질문/지역은 실행 전에 거부하고 반복 입력 중 빈 질문은 건너뛴다.

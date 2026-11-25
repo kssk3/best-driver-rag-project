@@ -1,4 +1,4 @@
-"""Synthetic P04 cases for the answer experiment export."""
+"""Synthetic source evidence cases for the answer experiment export."""
 
 import csv
 import json
@@ -17,7 +17,7 @@ def read_rows(path):
         return list(csv.DictReader(stream))
 
 
-def p04_runs():
+def evidence_runs():
     district = {"district": "서대문구"}
     signage_question = "서대문구에서 깨진 유리를 버릴 때 규격봉투를 써도 되나요?"
 
@@ -63,7 +63,7 @@ def p04_runs():
             case_group=case_group,
             original_question=question,
             conditions=conditions,
-            retriever="synthetic_p04" if candidates is not None else None,
+            retriever="synthetic_evidence" if candidates is not None else None,
             candidates=candidates,
             model_inputs=actual_inputs,
             answer=answer,
@@ -128,8 +128,8 @@ def p04_runs():
     )
     return [
         attempt(
-            "p04-pending",
-            "p04-signage",
+            "evidence-pending",
+            "evidence-signage",
             signage_question,
             district,
             None,
@@ -137,8 +137,8 @@ def p04_runs():
             None,
         ),
         attempt(
-            "p04-zero",
-            "p04-signage",
+            "evidence-zero",
+            "evidence-signage",
             signage_question,
             district,
             [],
@@ -147,8 +147,8 @@ def p04_runs():
             attempt_number=2,
         ),
         attempt(
-            "p04-filtered",
-            "p04-signage",
+            "evidence-filtered",
+            "evidence-signage",
             signage_question,
             district,
             [signage],
@@ -157,8 +157,8 @@ def p04_runs():
             attempt_number=3,
         ),
         attempt(
-            "p04-colors",
-            "p04-colors",
+            "evidence-colors",
+            "evidence-colors",
             "서대문구 공동주택 일반용기의 품목별 색은?",
             {**district, "housing_type": "공동주택", "container_type": "일반용기"},
             [colors],
@@ -170,8 +170,8 @@ def p04_runs():
             },
         ),
         attempt(
-            "p04-wirye",
-            "p04-wirye",
+            "evidence-wirye",
+            "evidence-wirye",
             "위례동 일반주택 일반·음식물쓰레기의 배출요일은?",
             {
                 "district": "송파구",
@@ -193,18 +193,18 @@ def p04_runs():
     ]
 
 
-def write_p04_sample(directory):
+def write_evidence_sample(directory):
     """Regenerate the synthetic export in a new directory."""
-    csv_export.save_experiment_csv(directory, p04_runs())
+    csv_export.save_experiment_csv(directory, evidence_runs())
 
 
 class CsvExportTests(TestCase):
-    def test_p04_waiting_zero_and_filtered_remain_distinct_after_reading_both_csvs(
+    def test_evidence_waiting_zero_and_filtered_remain_distinct_after_reading_both_csvs(
         self,
     ):
         with TemporaryDirectory() as tmp:
-            output = Path(tmp) / "p04"
-            write_p04_sample(output)
+            output = Path(tmp) / "evidence"
+            write_evidence_sample(output)
             runs = {row["run_id"]: row for row in read_rows(output / "runs.csv")}
             candidates = read_rows(output / "candidates.csv")
 
@@ -212,7 +212,7 @@ class CsvExportTests(TestCase):
         self.assertEqual(
             {row["experiment_kind"] for row in runs.values()}, {"synthetic"}
         )
-        pending = runs["p04-pending"]
+        pending = runs["evidence-pending"]
         self.assertEqual(pending["run_state"], "pending")
         for field in (
             "candidate_count",
@@ -222,39 +222,42 @@ class CsvExportTests(TestCase):
             "evaluation_score",
         ):
             self.assertEqual(pending[field], "")
-        zero = runs["p04-zero"]
+        zero = runs["evidence-zero"]
         self.assertEqual(zero["run_state"], "completed")
         self.assertEqual(zero["candidate_count"], "0")
         self.assertEqual(zero["status"], "insufficient_evidence")
         self.assertEqual(json.loads(zero["citations_json"]), [])
-        filtered = runs["p04-filtered"]
+        filtered = runs["evidence-filtered"]
         self.assertEqual(filtered["candidate_count"], "1")
         self.assertEqual(filtered["status"], "insufficient_evidence")
         self.assertEqual(json.loads(filtered["model_inputs_json"]), [])
         self.assertEqual(
             [
                 runs[key]["attempt"]
-                for key in ("p04-pending", "p04-zero", "p04-filtered")
+                for key in ("evidence-pending", "evidence-zero", "evidence-filtered")
             ],
             ["1", "2", "3"],
         )
         self.assertFalse(
-            {"p04-pending", "p04-zero"} & {row["run_id"] for row in candidates}
+            {"evidence-pending", "evidence-zero"}
+            & {row["run_id"] for row in candidates}
         )
-        signage = next(row for row in candidates if row["run_id"] == "p04-filtered")
+        signage = next(
+            row for row in candidates if row["run_id"] == "evidence-filtered"
+        )
         self.assertEqual(signage["attachment_id"], "160319461")
         self.assertEqual(signage["used_in_model_input"], "false")
         self.assertEqual(signage["cited_in_answer"], "false")
 
     def test_wirye_is_an_observation_with_each_null_chunk_citation_linked(self):
         with TemporaryDirectory() as tmp:
-            output = Path(tmp) / "p04"
-            write_p04_sample(output)
+            output = Path(tmp) / "evidence"
+            write_evidence_sample(output)
             runs = read_rows(output / "runs.csv")
             candidates = read_rows(output / "candidates.csv")
 
         [observation] = [row for row in runs if row["case_group"] == "observation"]
-        self.assertEqual(observation["run_id"], "p04-wirye")
+        self.assertEqual(observation["run_id"], "evidence-wirye")
         self.assertEqual(observation["evaluation_score"], "")
         self.assertEqual(observation["status"], "insufficient_evidence")
         ranked = {
@@ -284,7 +287,7 @@ class CsvExportTests(TestCase):
             self.assertEqual(row["cited_in_answer"], "true")
 
     def test_color_evidence_preserves_korean_commas_quotes_and_newlines(self):
-        colors = p04_runs()[3]
+        colors = evidence_runs()[3]
         with TemporaryDirectory() as tmp:
             output = Path(tmp) / "colors"
             csv_export.save_experiment_csv(output, [colors])
@@ -300,7 +303,7 @@ class CsvExportTests(TestCase):
         self.assertEqual(run["status"], "answered")
 
     def test_error_is_retained_with_unknown_candidate_count(self):
-        pending = p04_runs()[0]
+        pending = evidence_runs()[0]
         failed = replace(
             pending,
             answer={
@@ -322,7 +325,7 @@ class CsvExportTests(TestCase):
         self.assertEqual(candidates, [])
 
     def test_wrong_source_rank_and_unseen_citation_reject_the_entire_batch(self):
-        pending, _, _, colors, observation = p04_runs()
+        pending, _, _, colors, observation = evidence_runs()
         wrong_input = csv_export.ModelInput(1, observation.model_inputs[0].evidence)
         cases = [
             replace(colors, model_inputs=[wrong_input]),
@@ -332,15 +335,15 @@ class CsvExportTests(TestCase):
         with TemporaryDirectory() as tmp:
             for invalid in cases:
                 with self.subTest(invalid=invalid):
-                    output = Path(tmp) / "p04"
+                    output = Path(tmp) / "evidence"
                     with self.assertRaises(ValueError):
                         csv_export.save_experiment_csv(output, [pending, invalid])
                     self.assertFalse(output.exists())
 
     def test_existing_batch_survives_repeat_writes(self):
         with TemporaryDirectory() as tmp:
-            output = Path(tmp) / "p04"
-            write_p04_sample(output)
+            output = Path(tmp) / "evidence"
+            write_evidence_sample(output)
             before = {path.name: path.read_bytes() for path in output.iterdir()}
             with self.assertRaises(FileExistsError):
                 csv_export.save_experiment_csv(output, [])
@@ -357,35 +360,35 @@ class CsvExportTests(TestCase):
             write(path, columns, rows)
 
         with TemporaryDirectory() as tmp:
-            output = Path(tmp) / "p04"
+            output = Path(tmp) / "evidence"
             with patch.object(
                 csv_export, "_write_rows", side_effect=fail_on_candidates
             ):
                 with self.assertRaises(OSError):
-                    write_p04_sample(output)
+                    write_evidence_sample(output)
             self.assertEqual(list(Path(tmp).iterdir()), [])
 
     def test_pending_attempt_cannot_have_a_finished_response_time(self):
-        pending = replace(p04_runs()[0], response_ms=3.0)
+        pending = replace(evidence_runs()[0], response_ms=3.0)
         with TemporaryDirectory() as tmp:
-            output = Path(tmp) / "p04"
+            output = Path(tmp) / "evidence"
             with self.assertRaises(ValueError):
                 csv_export.save_experiment_csv(output, [pending])
             self.assertFalse(output.exists())
 
     def test_answered_requires_at_least_one_grounded_citation(self):
-        colors = p04_runs()[3]
+        colors = evidence_runs()[3]
         answer = {**colors.answer, "citations": []}
         for model_inputs in ([], colors.model_inputs):
             with self.subTest(model_inputs=model_inputs), TemporaryDirectory() as tmp:
-                output = Path(tmp) / "p04"
+                output = Path(tmp) / "evidence"
                 invalid = replace(colors, answer=answer, model_inputs=model_inputs)
                 with self.assertRaises(ValueError):
                     csv_export.save_experiment_csv(output, [invalid])
                 self.assertFalse(output.exists())
 
     def test_model_input_uses_validated_rank_when_evidence_has_a_rank_field(self):
-        observation = p04_runs()[-1]
+        observation = evidence_runs()[-1]
         html_input, pdf_input = observation.model_inputs
         evidence_with_rank = {**html_input.evidence, "rank": pdf_input.rank}
         observation = replace(

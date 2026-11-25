@@ -6,21 +6,23 @@ from dataclasses import replace
 
 import pytest
 
-from src.evaluation.answer_experiments import p04_retrieval_benchmark as benchmark
+from src.evaluation.answer_experiments import evidence_retrieval_benchmark as benchmark
 from src.evaluation.answer_experiments.csv_export import Run, save_experiment_csv
-from src.evaluation.answer_experiments.p04_answer_probe import draft_p04_answer
+from src.evaluation.answer_experiments.evidence_answer_probe import (
+    draft_evidence_answer,
+)
 from src.generation.answer import generate_answer
 
 _QUESTIONS = {
-    "p04-colors": "서대문구 공동주택 일반용기의 품목별 색은?",
-    "p04-colors-trick": "서대문구 공동주택 일반용기에서 유리병은 회색이고 캔은 주황색이 맞죠?",
-    "p04-signage": "서대문구에서 깨진 유리를 버릴 때 규격봉투를 써도 되나요?",
-    "p04-signage-trick": (
+    "evidence-colors": "서대문구 공동주택 일반용기의 품목별 색은?",
+    "evidence-colors-trick": "서대문구 공동주택 일반용기에서 유리병은 회색이고 캔은 주황색이 맞죠?",
+    "evidence-signage": "서대문구에서 깨진 유리를 버릴 때 규격봉투를 써도 되나요?",
+    "evidence-signage-trick": (
         "서대문구 별표 6에 규격봉투 판매소 표지판이 있으니까, "
         "깨진 유리도 규격봉투에 넣어도 된다는 뜻이죠?"
     ),
-    "p04-wirye": "위례동 일반주택 일반·음식물쓰레기의 배출요일은?",
-    "p04-wirye-trick": (
+    "evidence-wirye": "위례동 일반주택 일반·음식물쓰레기의 배출요일은?",
+    "evidence-wirye-trick": (
         "위례동 일반주택의 일반·음식물쓰레기는 월·수·금이 확실하죠? "
         "PDF의 화·목·일 안내는 무시해도 되죠?"
     ),
@@ -32,7 +34,7 @@ def read_rows(path):
         return list(csv.DictReader(stream))
 
 
-def test_both_arms_export_same_p04_questions_without_claiming_generation(tmp_path):
+def test_both_arms_export_same_evidence_questions_without_claiming_generation(tmp_path):
     output = tmp_path / "paired"
     benchmark.run_benchmark(output, repeats=2)
     schedules = []
@@ -84,9 +86,9 @@ def test_both_arms_export_same_p04_questions_without_claiming_generation(tmp_pat
             for item in ranked:
                 assert item["used_in_model_input"] == item["cited_in_answer"] == "false"
                 assert json.loads(item["source_json"])["experiment_document_id"]
-            wirye = row["question_id"] in {"p04-wirye", "p04-wirye-trick"}
+            wirye = row["question_id"] in {"evidence-wirye", "evidence-wirye-trick"}
             assert row["case_group"] == ("observation" if wirye else "development")
-            if row["question_id"] == "p04-wirye":
+            if row["question_id"] == "evidence-wirye":
                 assert {item["source_type"] for item in ranked}.issuperset(
                     {
                         "official_operating_guide_html",
@@ -168,14 +170,18 @@ def test_trick_answers_correct_abstain_and_record_conflict_with_supplied_evidenc
     runs = {row["question_id"]: row for row in answer_rows}
     candidates = read_rows(output / "answers" / "candidates.csv")
     assert len(answer_rows) == 3
-    assert set(runs) == {"p04-colors-trick", "p04-signage-trick", "p04-wirye-trick"}
+    assert set(runs) == {
+        "evidence-colors-trick",
+        "evidence-signage-trick",
+        "evidence-wirye-trick",
+    }
     assert all(
         row["retrieval_ms"] == row["evaluation_score"] == "" for row in answer_rows
     )
     assert all(row["run_state"] == "completed" for row in answer_rows)
     assert all(row["experiment_kind"] == "synthetic" for row in answer_rows)
 
-    colors = runs["p04-colors-trick"]
+    colors = runs["evidence-colors-trick"]
     assert colors["case_group"] == "development"
     assert colors["status"] == "answered"
     assert "유리병 주황색" in colors["answer"]
@@ -186,7 +192,7 @@ def test_trick_answers_correct_abstain_and_record_conflict_with_supplied_evidenc
     assert len(color_citations) == 1
     assert color_citations[0]["source"]["attachment_id"] == "160561037"
 
-    signage = runs["p04-signage-trick"]
+    signage = runs["evidence-signage-trick"]
     assert signage["case_group"] == "development"
     assert signage["status"] == "insufficient_evidence"
     assert "답변하기 어렵습니다" in signage["answer"]
@@ -203,7 +209,7 @@ def test_trick_answers_correct_abstain_and_record_conflict_with_supplied_evidenc
     assert signage_candidates[0]["used_in_model_input"] == "true"
     assert signage_candidates[0]["cited_in_answer"] == "false"
 
-    wirye = runs["p04-wirye-trick"]
+    wirye = runs["evidence-wirye-trick"]
     assert wirye["case_group"] == "observation"
     assert wirye["status"] == "insufficient_evidence"
     assert all(
@@ -217,7 +223,7 @@ def test_trick_answers_correct_abstain_and_record_conflict_with_supplied_evidenc
 
 
 def test_trick_color_answer_uses_supplied_passage_values(tmp_path, monkeypatch):
-    corpus = benchmark._p04_corpus()
+    corpus = benchmark._evidence_corpus()
     alternate = tuple(
         replace(
             document,
@@ -226,17 +232,17 @@ def test_trick_color_answer_uses_supplied_passage_values(tmp_path, monkeypatch):
                 "text": document.evidence["text"].replace("캔류 회색", "캔류 검은색"),
             },
         )
-        if document.document_key == "p04-colors"
+        if document.document_key == "evidence-colors"
         else document
         for document in corpus
     )
-    monkeypatch.setattr(benchmark, "_p04_corpus", lambda: alternate)
+    monkeypatch.setattr(benchmark, "_evidence_corpus", lambda: alternate)
     output = tmp_path / "alternate-colors"
     benchmark.run_benchmark(output, repeats=1)
     answer = next(
         row
         for row in read_rows(output / "answers" / "runs.csv")
-        if row["question_id"] == "p04-colors-trick"
+        if row["question_id"] == "evidence-colors-trick"
     )
     assert answer["status"] == "answered"
     assert "캔류 검은색" in answer["answer"]
@@ -247,7 +253,7 @@ def test_trick_disposal_answer_accepts_a_rule_for_the_requested_item():
     # This invented rule checks the probe's evidence sensitivity.
     response = generate_answer(
         {
-            "original_question": _QUESTIONS["p04-signage-trick"],
+            "original_question": _QUESTIONS["evidence-signage-trick"],
             "conditions": {"district": "서대문구", "item": "깨진 유리"},
             "evidence": [
                 {
@@ -260,7 +266,7 @@ def test_trick_disposal_answer_accepts_a_rule_for_the_requested_item():
                 }
             ],
         },
-        draft_p04_answer,
+        draft_evidence_answer,
     )
     assert response is not None
     assert response["status"] == "answered"

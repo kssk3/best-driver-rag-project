@@ -54,7 +54,7 @@ git diff --check origin/dev
 
 발행정보의 근거는 공식 PDF 2쪽 목차 왼쪽 녹색 상자와 날짜 검증 기록에 남겼다. 발행정보 쪽 이미지는 로컬 검토본에 보관했다.
 
-관련 자료는 #8, #9 및 [인계 자료](data/handoff/jungeun/p04-2026-11-24/README.md)에서 확인할 수 있다.
+관련 자료는 #8, #9 및 [인계 자료](data/handoff/jungeun/ordinance-handoff-2026-11-24/README.md)에서 확인할 수 있다.
 
 ---
 

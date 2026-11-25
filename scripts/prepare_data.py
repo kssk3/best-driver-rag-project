@@ -105,7 +105,7 @@ def _prepare_data(args, output: Path, report: dict) -> None:
 def prepare(args) -> dict:
     project = Path(__file__).resolve().parents[1]
     output = (
-        args.output_dir or project / "data/processed" / f"p04-{uuid4().hex}"
+        args.output_dir or project / "data/processed" / f"prepared-{uuid4().hex}"
     ).resolve()
     output.mkdir(parents=True, exist_ok=False)
     report = {
