@@ -307,7 +307,10 @@ class PipelineResponse(BaseModel):
     answer: str
     citations: list[Citation] = Field(default_factory=list)
     places: PlaceLookupResult = Field(default_factory=PlaceLookupResult)
+    # error는 기록용 내부 상세("타입: 메시지")이며 화면에는 answer를 표시한다.
     error: str | None = None
+    # 실패 원인 코드(<도메인>.<이유>, docs/ERRORS.md). status가 error일 때만 채운다.
+    error_code: str | None = None
 
 
 class StageRecord(BaseModel):
@@ -315,6 +318,8 @@ class StageRecord(BaseModel):
     status: Literal["ok", "skipped", "error"]
     duration_ms: float = Field(ge=0, allow_inf_nan=False)
     error: str | None = None
+    # 이 단계를 실패시킨 원인 코드. 평가는 (단계 이름, error_code)로 실패를 분류한다.
+    error_code: str | None = None
 
 
 class RunRecord(BaseModel):

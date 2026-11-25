@@ -6,8 +6,9 @@ from time import perf_counter
 from typing import Protocol, TypeVar
 from uuid import uuid4
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
+from src.common.errors import ApplicationError, ErrorCategory, describe_error
 from src.contracts import (
     Chunk,
     Citation,
@@ -35,14 +36,33 @@ _Model = TypeVar("_Model", bound=BaseModel)
 _CORE_STAGES = ("resolve", "rewrite", "retrieve", "context", "generate", "citations")
 
 
+class PipelineContractError(ApplicationError, ValueError):
+    """콜백 결과가 공용 실행 규격을 어긴 경우. 이유별 code는 raise할 때 지정한다.
+
+    ValueError를 함께 상속해 기존 except ValueError 처리와 호환한다.
+    """
+
+    code = "pipeline.contract_violation"
+    category = ErrorCategory.CONTRACT_VIOLATION
+
+
+class PipelineConfigurationError(ApplicationError, ValueError):
+    """실행 옵션이 요구하는 콜백이 연결되지 않은 경우."""
+
+    code = "pipeline.rewriter_not_configured"
+    category = ErrorCategory.CONFIGURATION
+
+
 def _validate_callback_result(model: type[_Model], value: object) -> _Model:
     # 생성 후 수정된 Pydantic 객체도 중첩 청크까지 다시 검사한다.
     payload = value.model_dump() if isinstance(value, BaseModel) else value
-    return model.model_validate(payload)
-
-
-def _error_text(error: Exception) -> str:
-    return f"{type(error).__name__}: {error}"
+    try:
+        return model.model_validate(payload)
+    except ValidationError as error:
+        # 검증 상세는 그대로 남기고, 평가가 콜백 규격 위반으로 분류할 수 있게 코드를 붙인다.
+        raise PipelineContractError(
+            str(error), code="pipeline.invalid_callback_result"
+        ) from error
 
 
 class RAGPipeline:
@@ -88,12 +108,14 @@ class RAGPipeline:
             try:
                 result = operation()
             except Exception as error:
+                info = describe_error(error)
                 stages.append(
                     StageRecord(
                         name=name,
                         status="error",
                         duration_ms=(perf_counter() - began) * 1000,
-                        error=_error_text(error),
+                        error=info.detail,
+                        error_code=info.code,
                     )
                 )
                 raise
@@ -111,19 +133,28 @@ class RAGPipeline:
                 ResolvedQuery, self.resolver(original.model_copy(deep=True))
             )
             if not result.search_query.strip():
-                raise ValueError("해석된 검색 질의는 빈 문자열일 수 없습니다.")
+                raise PipelineContractError(
+                    "해석된 검색 질의는 빈 문자열일 수 없습니다.",
+                    code="pipeline.empty_search_query",
+                )
             if result.status == "needs_clarification":
                 if (
                     not result.clarification_question
                     or not result.clarification_question.strip()
                 ):
-                    raise ValueError("확인이 필요한 경우 추가 질문을 제공해야 합니다.")
+                    raise PipelineContractError(
+                        "확인이 필요한 경우 추가 질문을 제공해야 합니다.",
+                        code="pipeline.missing_clarification_question",
+                    )
             elif (
                 original.district
                 and result.district
                 and original.district != result.district
             ):
-                raise ValueError("해석된 지역이 요청에서 지정한 지역과 다릅니다.")
+                raise PipelineContractError(
+                    "해석된 지역이 요청에서 지정한 지역과 다릅니다.",
+                    code="pipeline.region_mismatch",
+                )
             return result.model_copy(deep=True)
 
         try:
@@ -141,21 +172,24 @@ class RAGPipeline:
 
                     def rewrite() -> str:
                         if self.rewriter is None:
-                            raise ValueError(
+                            raise PipelineConfigurationError(
                                 "리라이트가 활성화됐지만 rewriter가 연결되지 않았습니다."
                             )
                         value = self.rewriter(resolved.model_copy(deep=True))
                         if not isinstance(value, str) or not value.strip():
-                            raise ValueError(
-                                "리라이트 결과는 비어 있지 않은 문자열이어야 합니다."
+                            raise PipelineContractError(
+                                "리라이트 결과는 비어 있지 않은 문자열이어야 합니다.",
+                                code="pipeline.invalid_rewrite_output",
                             )
                         return value
 
                     try:
                         search_query = stage("rewrite", rewrite)
                     except Exception as error:
+                        # 응답은 계속 진행하므로 코드는 rewrite 단계 기록에만 남는다.
+                        detail = describe_error(error).detail
                         warnings.append(
-                            f"리라이트 실패로 기존 검색 질의를 사용합니다: {_error_text(error)}"
+                            f"리라이트 실패로 기존 검색 질의를 사용합니다: {detail}"
                         )
 
                 retrieval_query = resolved.model_copy(
@@ -169,8 +203,9 @@ class RAGPipeline:
                         top_k=options.top_k,
                     )
                     if not isinstance(found, list):
-                        raise ValueError(
-                            "검색 결과는 SearchCandidate 목록이어야 합니다."
+                        raise PipelineContractError(
+                            "검색 결과는 SearchCandidate 목록이어야 합니다.",
+                            code="pipeline.invalid_retrieval_result",
                         )
                     return [
                         _validate_callback_result(SearchCandidate, item).model_copy(
@@ -189,8 +224,9 @@ class RAGPipeline:
                     for candidate in candidates:
                         chunk = candidate.chunk
                         if chunk.chunk_id in seen:
-                            raise ValueError(
-                                f"검색 후보의 chunk_id가 중복됩니다: {chunk.chunk_id}"
+                            raise PipelineContractError(
+                                f"검색 후보의 chunk_id가 중복됩니다: {chunk.chunk_id}",
+                                code="pipeline.duplicate_chunk_id",
                             )
                         seen.add(chunk.chunk_id)
                         applicable = chunk.scope_type == "common" or (
@@ -238,15 +274,17 @@ class RAGPipeline:
                 def citations() -> list[Citation]:
                     by_id = {chunk.chunk_id: chunk for chunk in evidence}
                     if generated.status == "answered" and not generated.cited_chunk_ids:
-                        raise ValueError(
-                            "answered 응답에는 실제 모델 입력 근거의 인용이 필요합니다."
+                        raise PipelineContractError(
+                            "answered 응답에는 실제 모델 입력 근거의 인용이 필요합니다.",
+                            code="pipeline.missing_citation",
                         )
                     result: list[Citation] = []
                     cited: set[str] = set()
                     for chunk_id in generated.cited_chunk_ids:
                         if chunk_id not in by_id:
-                            raise ValueError(
-                                f"모델에 전달하지 않은 청크를 인용했습니다: {chunk_id}"
+                            raise PipelineContractError(
+                                f"모델에 전달하지 않은 청크를 인용했습니다: {chunk_id}",
+                                code="pipeline.citation_outside_evidence",
                             )
                         if chunk_id in cited:
                             continue
@@ -272,12 +310,15 @@ class RAGPipeline:
                     citations=stage("citations", citations),
                 )
         except Exception as error:
+            # 화면에는 원래 예외 메시지 대신 클래스에 고정된 안내 문구를 보인다.
+            info = describe_error(error)
             response = PipelineResponse(
                 request_id=original.request_id,
                 run_id=run_id,
                 status="error",
-                answer="요청을 처리하는 중 오류가 발생했습니다.",
-                error=_error_text(error),
+                answer=info.user_message,
+                error=info.detail,
+                error_code=info.code,
             )
 
         executed = {item.name for item in stages}
@@ -303,9 +344,22 @@ class RAGPipeline:
                         ),
                     ),
                 )
+                # 콜백이 예외 대신 실패 결과를 돌려준 경우도 단계 기록에 실패로 남긴다.
+                # stage()가 방금 추가한 place_lookup 기록이며, 응답과 places는 그대로 둔다.
+                if response.places.status == "error":
+                    reported = (response.places.error or "").strip()
+                    stages[-1] = stages[-1].model_copy(
+                        update={
+                            "status": "error",
+                            "error": reported
+                            or "장소 조회 콜백이 실패 상태를 반환했습니다.",
+                            "error_code": "pipeline.place_lookup_failed",
+                        }
+                    )
             except Exception as error:
+                # 코드는 place_lookup 단계 기록에 남고, 문서 답변 상태는 바꾸지 않는다.
                 response.places = PlaceLookupResult(
-                    status="error", error=_error_text(error)
+                    status="error", error=describe_error(error).detail
                 )
         else:
             stages.append(
@@ -334,16 +388,21 @@ class RAGPipeline:
             try:
                 self.recorder.write(record)
             except Exception as error:
+                info = describe_error(error)
                 record.stages.append(
                     StageRecord(
                         name="record",
                         status="error",
                         duration_ms=(perf_counter() - began) * 1000,
-                        error=_error_text(error),
+                        error=info.detail,
+                        error_code=info.code,
                     )
                 )
                 record.response.status = "error"
+                # 앞 단계에서 이미 실패했다면 최초 원인 코드를 유지한다.
+                if record.response.error_code is None:
+                    record.response.error_code = info.code
                 record.response.error = (
                     record.response.error + "; " if record.response.error else ""
-                ) + f"실행 기록 저장 실패: {_error_text(error)}"
+                ) + f"실행 기록 저장 실패: {info.detail}"
         return record

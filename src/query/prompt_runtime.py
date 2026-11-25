@@ -11,6 +11,7 @@ from src.contracts import (
     ResolvedQuery,
 )
 from src.pipeline import RAGPipeline, Retriever
+from src.query.errors import RewriteConfigurationError
 from src.query.rewrite import QUERY_REWRITE_PROMPT_VERSION, make_prompt_rewriter
 from src.runtime import create_runtime
 
@@ -30,7 +31,9 @@ def create_prompt_rewrite_runtime(
     rewriter = None
     if configured.pipeline.rewrite_enabled:
         if invoke is None:
-            raise ValueError("P09를 켜려면 질문 다듬기 모델 호출을 지정해야 합니다.")
+            raise RewriteConfigurationError(
+                "P09를 켜려면 질문 다듬기 모델 호출을 지정해야 합니다."
+            )
         configured.pipeline.versions["rewrite"] = QUERY_REWRITE_PROMPT_VERSION
         rewriter = make_prompt_rewriter(invoke)
     else:

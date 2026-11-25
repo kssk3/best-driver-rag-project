@@ -134,14 +134,14 @@ def generate_answer(
 
     message = draft.get("message")
     indices = draft.get("citation_indices")
-    if (
-        status != "answered"
-        or not _link_free_prose(message)
-        or not isinstance(indices, list)
-        or not indices
-        or not all(_valid_index(index, model_input["evidence"]) for index in indices)
-    ):
+    # 답변 형식을 먼저 확인하고, 인용 문제는 평가에서 '잘못된 인용'으로 나눌 수 있게
+    # 별도 이유로 남긴다.
+    if status != "answered" or not _link_free_prose(message):
         return _error("invalid_draft")
+    if not isinstance(indices, list) or not indices:
+        return _error("missing_citation")
+    if not all(_valid_index(index, model_input["evidence"]) for index in indices):
+        return _error("invalid_citation")
     return {
         "status": "answered",
         "message": message,
@@ -164,8 +164,10 @@ def _respond_to_conflict(sides: object, evidence: list[Evidence]) -> AnswerOutpu
             return _error("invalid_draft")
         index = side.get("evidence_index")
         excerpt = side.get("excerpt")
-        if not _valid_index(index, evidence) or not isinstance(excerpt, str):
+        if not isinstance(excerpt, str):
             return _error("invalid_draft")
+        if not _valid_index(index, evidence):
+            return _error("invalid_citation")
         entry = evidence[index]
         excerpt = excerpt.strip()
         identity = _source_identity(entry["source"])
