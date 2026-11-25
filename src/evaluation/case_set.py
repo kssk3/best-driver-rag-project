@@ -58,7 +58,7 @@ def _check_item(case: EvaluationCase, item: dict, category: str) -> list[str]:
         if not _text(item.get('reason')):
             problems.append(f'{who}: reason(판정 이유)이 비어 있습니다.')
         if case.expected_status not in (None, 'answered'):
-            problems.append(f'{who}: 답변 간으 문항의 expected_status는 answered여야 합니다.')
+            problems.append(f'{who}: 답변 가능 문항의 expected_status는 answered여야 합니다.')
 
     else:
         if not _text(item.get('absence_reason')):
