@@ -2,12 +2,13 @@
 
 import json
 from pathlib import Path
+from urllib.parse import quote
 
 import pytest
 from streamlit.testing.v1 import AppTest
 
 from src.interface.adapter import to_place_result
-from src.interface.map import split_by_coordinates
+from src.interface.map import MAP_SEARCH_URLS, map_search_links, split_by_coordinates
 
 FIXTURE_PATH = Path(__file__).parent.parent.parent / "fixtures" / "interface" / "sample_places.json"
 APP_PATH = Path(__file__).parent.parent.parent.parent / "app.py"
@@ -108,3 +109,34 @@ def test_place_lookup_error_is_shown_as_error() -> None:
     assert not app.exception
     assert any("조회하지 못했습니다" in e.value for e in app.error)
     assert not any("해당하는 장소가 없습니다" in i.value for i in app.info)
+
+
+def test_map_search_links_use_encoded_address() -> None:
+    address = "서울특별시 서대문구 연희동 1-1"
+    links = map_search_links(address)
+    assert [label for label, _ in links] == [label for label, _ in MAP_SEARCH_URLS]
+    for (_, prefix), (_, url) in zip(MAP_SEARCH_URLS, links):
+        assert url == prefix + quote(address, safe="")
+
+
+@pytest.mark.parametrize("address", [None, "", "   "])
+def test_no_links_without_address(address: str | None) -> None:
+    assert map_search_links(address) == []
+
+
+def test_special_characters_cannot_change_the_link_structure() -> None:
+    # 주소의 / ? & # 가 링크의 경로·검색어 구분으로 읽히면 안 된다.
+    links = map_search_links("a/b?c=1&d#e (3층)")
+    for (_, prefix), (_, url) in zip(MAP_SEARCH_URLS, links):
+        tail = url[len(prefix):]
+        assert url.startswith(prefix)
+        assert not any(char in tail for char in "/?&#=() ")
+
+
+def test_found_places_show_search_links() -> None:
+    app = pick_places("found")
+    assert not app.exception
+    lines = [m.value for m in app.markdown if MAP_SEARCH_URLS[0][1] in m.value]
+    assert len(lines) == 3  # 예시 장소 3곳 모두 주소가 있다
+    assert all("지도에서 보기" in line for line in lines)
+    assert any("좌표 없음: 지도에 표시되지 않음" in line for line in lines)
