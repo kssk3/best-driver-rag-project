@@ -27,7 +27,7 @@ class ModelCallError(ApplicationError, RuntimeError):
 
 
 class ModelOutputError(ApplicationError, TypeError):
-    """모델 응답이 텍스트가 아닌 경우."""
+    """모델 응답에 답변 텍스트가 없거나 공백뿐인 경우."""
 
     code = "infrastructure.llm_invalid_output"
     category = ErrorCategory.CONTRACT_VIOLATION
@@ -67,11 +67,11 @@ def create_chat_model(settings: ChatModelSettings) -> ChatOpenAI:
 def invoke_chat(
     chat: Runnable[LanguageModelInput, BaseMessage], messages: LanguageModelInput
 ) -> str:
-    """모델을 한 번 호출해 텍스트 응답을 돌려준다.
+    """모델을 한 번 호출해 답변 텍스트를 앞뒤 공백까지 그대로 str로 돌려준다.
 
     Raises:
         ModelCallError: 제공자 호출 실패. 시간 초과는 llm_timeout 코드다.
-        ModelOutputError: 응답에 텍스트가 없는 경우.
+        ModelOutputError: 응답에 답변 텍스트가 없거나 공백뿐인 경우.
     OpenAI 오류가 아닌 예외는 외부 장애로 바꾸지 않고 그대로 올린다. 코드 버그 외에
     langchain-openai가 형식이 다른 응답 본문에 내는 ValueError 등도 여기에 해당한다.
     """
@@ -87,11 +87,11 @@ def invoke_chat(
         raise ModelCallError(
             f"모델 호출 실패: {type(error).__name__}: {mask_secrets(str(error))}"
         ) from error
-    if isinstance(reply.content, str):
-        return reply.content
     # Responses API(gpt-6 + tools, codex 등)는 content를 블록 목록으로 준다.
-    # reasoning 같은 다른 블록은 빼고 text 블록만 이어 붙인다.
-    text = reply.text
-    if not text:
+    # reply.text는 문자열이면 그대로, 블록 목록이면 문자열 항목과 text 블록만 이어 붙인
+    # 값이다. tool 호출만 있는 응답은 content가 ""이므로, 형식과 관계없이 같은 기준으로
+    # 거부한다. reply.text는 호출도 되는 str 하위 클래스라 일반 str로 바꿔 돌려준다.
+    text = str(reply.text)
+    if not text.strip():
         raise ModelOutputError("모델이 텍스트 응답을 반환하지 않았습니다.")
     return text

@@ -83,6 +83,18 @@ def test_text_reply_is_returned():
     )
 
 
+@pytest.mark.parametrize(
+    "content",
+    [" 답변\n", [{"type": "text", "text": " 답변\n"}]],
+    ids=["string", "text-block"],
+)
+def test_answer_text_is_returned_unchanged_as_plain_str(content):
+    result = invoke_chat(_FakeChat(AIMessage(content=content)), [("human", "질문")])
+
+    assert result == " 답변\n"
+    assert type(result) is str
+
+
 def test_responses_api_text_blocks_are_returned_as_text():
     # Responses API(gpt-6 + tools 등)에서는 content가 블록 목록으로 온다.
     reply = AIMessage(
@@ -134,8 +146,19 @@ def test_provider_failure_becomes_external_service_error(error, expected_code):
     assert caught.value.__cause__ is error
 
 
-def test_non_text_reply_is_contract_violation():
-    reply = AIMessage(content=[{"type": "image_url", "image_url": {"url": "x"}}])
+@pytest.mark.parametrize(
+    "content",
+    [
+        [{"type": "image_url", "image_url": {"url": "x"}}],
+        "",
+        "  \n",
+        [{"type": "text", "text": " "}],
+    ],
+    ids=["image-only", "empty-string", "blank-string", "blank-text-block"],
+)
+def test_reply_without_answer_text_is_contract_violation(content):
+    # 형식(문자열/블록 목록)과 관계없이 답변 텍스트가 없으면 같은 오류로 분류한다.
+    reply = AIMessage(content=content)
 
     with pytest.raises(ApplicationError) as caught:
         invoke_chat(_FakeChat(reply), [("human", "질문")])
