@@ -1,6 +1,6 @@
 # 평가셋
 
-개발용 `dev.json`과 최종용 `test.json`을 이 폴더에서 별도로 관리한다. 현재 실제 개발/최종 문항 파일은 없다. 실행기 연결을 확인하는 합성 3문항은 `tests/fixtures/handoff_eval.json`에 있으며 최종 평가셋으로 사용하지 않는다. 문항 수, 구성과 채점 기준은 [문제와 평가 기준](../docs/problem.md)을 따른다.
+개발용 `dev.json`과 최종용 `test.json`을 이 폴더에서 별도로 관리한다. 현재 최종 문항 `test.json`과 채점 자료 `test_grading.json`이 있고 개발 문항 `dev.json`은 아직 없다. 실행기 연결을 확인하는 합성 3문항은 `tests/fixtures/handoff_eval.json`에 있으며 최종 평가셋으로 사용하지 않는다. 문항 수, 구성과 채점 기준은 [문제와 평가 기준](../docs/problem.md)을 따른다.
 
 개발문항 초안은 답변 생성과 품질 추적 담당자(강성수), 최종셋 관리는 화면과 관찰 검증 담당자(이승주), 원문 근거 교차 확인은 데이터 수집과 질문 정제 담당자(이정은)가 맡는다.
 
@@ -11,3 +11,16 @@
 정답표와 허용 근거 목록은 채점에만 사용하고 검색 색인, 생성과 질문 다듬기 입력에 전달하지 않는다. 정답을 뒷받침하는 원문 문서는 정상적으로 색인한다. 청킹을 바꾸면 근거 매핑을 갱신한다.
 
 평가 실행기는 문항별 실제 응답과 원본 기록을 반환한다. 기대 상태와 정답을 자동 채점하거나 Hit@5, Ragas 지표를 계산하는 기능은 아직 연결하지 않았다.
+
+## 최종 문항 `test.json`과 채점 자료 `test_grading.json`
+
+- `test.json`은 최종 20문항(직접 검색 10, 표현 변형·조건 구분 7, 근거 없음 3)의 공용 `EvaluationCase` 목록이다. 문항은 AI가 초안을 만들고 이승주가 확정했고, 근거 위치는 이정은의 교차 확인을 마쳤다. `conditions`는 성수님이 쓰는 키(`item`)만 쓰며 13개 문항에 있다. `reference_answer`(모범 정답)는 이 파일과 채점 자료 양쪽에 같은 값으로 둔다.
+- `test_grading.json`은 문항 ID에 연결한 채점 자료다. 답변 가능 17문항에는 필수 사실(`required_facts`), 원문 위치(`evidence`의 `document_id`, `source_location`)와 판정 이유(`reason`)를, 근거 없음 3문항에는 부재 이유(`absence_reason`)를 둔다. 정답은 `chunk_id`가 아니라 청킹 결과와 같은 원문 위치로 적었다. 이 자료는 채점에만 사용하고 검색, 질문 다듬기와 생성 입력에 전달하지 않는다.
+- 두 파일은 `src/evaluation/case_set.py`로 점검한다. 문항 수와 구성, 문항과 채점표의 짝, 필수 사실과 원문 위치와 판정 이유, 두 파일의 `reference_answer` 일치, 개발 문항과의 겹침을 확인한다. 파일 구조는 임시이며 평가 모델이 정해지면 그에 맞춰 바꾼다.
+
+```bash
+uv run --locked python -m src.evaluation.case_set --cases eval/test.json --grading eval/test_grading.json
+# 개발 문항 파일이 있으면 --dev eval/dev.json 을 더해 겹침도 확인한다
+```
+
+- 최종 문항으로 검색 시스템을 돌려 보고 질문이나 정답을 고치지 않는다. 평가와 개선 반복은 개발 문항으로 한다.
