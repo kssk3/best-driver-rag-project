@@ -27,7 +27,7 @@ uv run --locked python -m pytest --version
 
 로컬 uv가 요구 버전보다 낮으면 전역 설치를 바꾸지 않고 `uv tool run --from uv==0.13.9 uv sync --locked`로 같은 환경을 준비할 수 있다. 첫 설치는 Python 배포 서버와 PyPI 연결이 필요하다. 이 방식으로 설치했다면 실행도 `uv tool run --from uv==0.13.9 uv run --locked python --version`처럼 같은 uv 버전을 사용한다. 기존 Python 3.15 가상환경도 동기화하면 `.python-version`에 맞는 3.13.14 환경으로 다시 생성한다.
 
-현재 의존성 파일은 루트의 공용 Python 환경을 관리한다. Streamlit이 포함되어 있다. Selenium과 Langfuse 등 나머지 패키지는 해당 기능을 처음 연결하는 PR에서 의존성과 잠금 파일을 함께 갱신한다. 기존 FastAPI 의존성이 남아 있어도 별도 HTTP 서버 구현을 요구하지 않는다.
+루트 의존성 파일은 Streamlit을 포함한 공용 Python 환경을 관리한다. 공식 웹 안내는 [Selenium 선택 그룹으로 수집한다](docs/official-guide-collection.md). Langfuse 등 새 패키지는 해당 기능을 처음 연결하는 PR에서 의존성과 잠금 파일을 함께 갱신한다. 기존 FastAPI 의존성이 남아 있어도 별도 HTTP 서버 구현을 요구하지 않는다.
 
 Streamlit 화면은 데모 색인을 먼저 만든 뒤 실행한다. 데모 색인은 합성 문서만 쓰며 외부 호출이 없다.
 
