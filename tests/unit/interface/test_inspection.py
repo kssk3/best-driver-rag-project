@@ -37,7 +37,9 @@ def test_district_used_when_asking_is_checked() -> None:
 
 def test_error_is_shown_as_error_in_panel() -> None:
     app = ask("error")
-    assert any("[W7]" in item.value and "검색 호출 실패" in item.value for item in app.error)
+    assert any(
+        "[W7]" in item.value and "검색 호출 실패" in item.value for item in app.error
+    )
 
 
 def test_unknown_model_input_is_not_shown_as_empty() -> None:

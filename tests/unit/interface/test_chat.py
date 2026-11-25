@@ -20,7 +20,9 @@ def ask(sample_name: str, question: str = "") -> AppTest:
 
 
 def test_followup_request_keeps_question_and_district() -> None:
-    request = build_followup_request("가상 질문", "송파구", {"housing_type": " 아파트 "})
+    request = build_followup_request(
+        "가상 질문", "송파구", {"housing_type": " 아파트 "}
+    )
     assert request == {
         "question": "가상 질문",
         "district": "송파구",
@@ -82,7 +84,9 @@ def test_followup_form_keeps_original_question_and_district() -> None:
 
 
 def test_format_citation_escapes_brackets_and_shows_details() -> None:
-    citation = Citation("c1", "https://example.invalid/a", "[가상] 안내", "표 > 행", "v1")
+    citation = Citation(
+        "c1", "https://example.invalid/a", "[가상] 안내", "표 > 행", "v1"
+    )
     assert format_citation(citation) == (
         "- [\\[가상\\] 안내](https://example.invalid/a) · 위치: 표 > 행 · 문서 버전: v1"
     )

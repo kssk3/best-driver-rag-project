@@ -14,42 +14,44 @@ from src.validation import check_response, rank_shifts, stage_names, unchecked_r
 
 def _used_in_model_input(view: ViewResponse, chunk_id: str) -> str:
     if view.model_inputs is None:
-        return '알 수 없음'
-    return '예' if chunk_id in view.model_inputs else '아니오'
+        return "알 수 없음"
+    return "예" if chunk_id in view.model_inputs else "아니오"
 
 
 def _shift_text(shift: int | None) -> str:
     if shift is None:
-        return '-'
-    return f'+{shift}' if shift > 0 else str(shift)
+        return "-"
+    return f"+{shift}" if shift > 0 else str(shift)
 
 
-def render_inspection(view: ViewResponse | None, selected_district: str | None=None) -> None:
+def render_inspection(
+    view: ViewResponse | None, selected_district: str | None = None
+) -> None:
 
     if view is None:
-        st.info('사용자 화면에서 먼저 질문하세요.')
-        return 
+        st.info("사용자 화면에서 먼저 질문하세요.")
+        return
 
-    if view.kind == 'fixture':
-        st.caption('예시(합성) 응답을 검사합니다. 실제 RAG 실행이 아닙니다.')
-    elif view.kind == 'demo':
-        st.caption('합성 데모 실행을 검사합니다. 실제 RAG 품질이 아닙니다.')
+    if view.kind == "fixture":
+        st.caption("예시(합성) 응답을 검사합니다. 실제 RAG 실행이 아닙니다.")
+    elif view.kind == "demo":
+        st.caption("합성 데모 실행을 검사합니다. 실제 RAG 품질이 아닙니다.")
 
-    st.subheader('자동 경고')
+    st.subheader("자동 경고")
     alerts = check_response(view, selected_district)
 
     if not alerts:
-        st.success('경고 없음')
+        st.success("경고 없음")
 
     for alert in alerts:
-        show = st.error if alert.level == 'error' else st.warning
-        show(f'[{alert.code}] {alert.message}')
+        show = st.error if alert.level == "error" else st.warning
+        show(f"[{alert.code}] {alert.message}")
 
     # 정보가 없어 검사하지 못한 규칙은 '경고 없음'과 구별해 알려 준다.
     for rule in unchecked_rules(view):
-        st.info(f'검사하지 못한 규칙: {rule}')
+        st.info(f"검사하지 못한 규칙: {rule}")
 
-    st.subheader('후보 순위')
+    st.subheader("후보 순위")
 
     if view.candidates:
         cited_ids = {c.chunk_id for c in view.citations}
@@ -58,43 +60,45 @@ def render_inspection(view: ViewResponse | None, selected_district: str | None=N
         stages = stage_names(view.candidates)
         shifts: dict[str, int] = {}
         if len(stages) >= 2:
-            stage = st.selectbox('순위 이동 비교', stages)
+            stage = st.selectbox("순위 이동 비교", stages)
             shifts = rank_shifts(view.candidates, stage)
 
-        st.dataframe([
-            {
-                '순위': rank,
-                'chunk_id': c.chunk_id,
-                '지역': c.district or '알 수 없음',
-                '점수': c.score,
-                '모델': _used_in_model_input(view, c.chunk_id),
-                '인용': '예' if c.chunk_id in cited_ids else '아니오',
-                '순위 이동': _shift_text(shifts.get(c.chunk_id)),
-            }
-            for rank, c in enumerate(view.candidates, 1)
-        ])
+        st.dataframe(
+            [
+                {
+                    "순위": rank,
+                    "chunk_id": c.chunk_id,
+                    "지역": c.district or "알 수 없음",
+                    "점수": c.score,
+                    "모델": _used_in_model_input(view, c.chunk_id),
+                    "인용": "예" if c.chunk_id in cited_ids else "아니오",
+                    "순위 이동": _shift_text(shifts.get(c.chunk_id)),
+                }
+                for rank, c in enumerate(view.candidates, 1)
+            ]
+        )
 
         if len(stages) < 2:
-            st.caption('검색 단계 점수가 하나 이하라 순위 이동을 계산할 수 없습니다.')
+            st.caption("검색 단계 점수가 하나 이하라 순위 이동을 계산할 수 없습니다.")
         else:
-            st.caption('순위 이동은 +가 최종에서 올라간 것, -가 내려간 것입니다.')
+            st.caption("순위 이동은 +가 최종에서 올라간 것, -가 내려간 것입니다.")
 
     else:
-        st.info('검색 후보가 없습니다.')
+        st.info("검색 후보가 없습니다.")
 
-    st.subheader('모델 입력 근거')
+    st.subheader("모델 입력 근거")
 
     if view.model_inputs is None:
-        st.info('기록이 없어 알 수 없습니다.')
+        st.info("기록이 없어 알 수 없습니다.")
     elif not view.model_inputs:
-        st.info('모델에 전달된 근거가 없습니다.')
+        st.info("모델에 전달된 근거가 없습니다.")
     else:
         for chunk_id in view.model_inputs:
-            st.markdown(f'- {chunk_id}')
+            st.markdown(f"- {chunk_id}")
 
-    st.subheader('인용')
+    st.subheader("인용")
     if view.citations:
         for citation in view.citations:
             st.markdown(format_citation(citation))
     else:
-        st.info('인용이 없습니다.')
+        st.info("인용이 없습니다.")

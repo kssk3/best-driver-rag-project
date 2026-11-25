@@ -15,7 +15,12 @@ from src.interface.map import (
     split_by_coordinates,
 )
 
-FIXTURE_PATH = Path(__file__).parent.parent.parent / "fixtures" / "interface" / "sample_places.json"
+FIXTURE_PATH = (
+    Path(__file__).parent.parent.parent
+    / "fixtures"
+    / "interface"
+    / "sample_places.json"
+)
 APP_PATH = Path(__file__).parent.parent.parent.parent / "app.py"
 
 
@@ -134,7 +139,7 @@ def test_special_characters_cannot_change_the_link_structure() -> None:
     # 주소의 / ? & # 가 링크의 경로·검색어 구분으로 읽히면 안 된다.
     links = map_search_links("a/b?c=1&d#e (3층)")
     for (_, prefix), (_, url) in zip(MAP_SEARCH_URLS, links):
-        tail = url[len(prefix):]
+        tail = url[len(prefix) :]
         assert url.startswith(prefix)
         assert not any(char in tail for char in "/?&#=() ")
 
@@ -149,7 +154,9 @@ def test_found_places_show_search_links() -> None:
 
 def test_kakao_search_url_uses_kakao_prefix_only() -> None:
     url = kakao_search_url("서울특별시 서대문구 연희동 1-1")
-    assert url == MAP_SEARCH_URLS[0][1] + quote("서울특별시 서대문구 연희동 1-1", safe="")
+    assert url == MAP_SEARCH_URLS[0][1] + quote(
+        "서울특별시 서대문구 연희동 1-1", safe=""
+    )
     assert kakao_search_url(None) is None
     assert kakao_search_url("  ") is None
 

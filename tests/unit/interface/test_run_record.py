@@ -73,7 +73,9 @@ def make_record(
         request=PipelineRequest(question="질문", district="서대문구"),
         options=PipelineOptions(),
         resolved_query=resolved,
-        candidates=[SearchCandidate(chunk=chunk, rank=1, score=0.9)] if answered else [],
+        candidates=[SearchCandidate(chunk=chunk, rank=1, score=0.9)]
+        if answered
+        else [],
         model_input_chunk_ids=["c1"] if answered else [],
         response=PipelineResponse(
             request_id="req-1",
@@ -106,7 +108,9 @@ def test_run_kind_decides_view_kind() -> None:
 
 def test_clarification_without_district_asks_for_district() -> None:
     resolved = ResolvedQuery(
-        search_query="질문", status="needs_clarification", clarification_question="어느 구인가요?"
+        search_query="질문",
+        status="needs_clarification",
+        clarification_question="어느 구인가요?",
     )
     view = run_record_to_view(make_record("needs_clarification", resolved))
     assert view.required_fields == ["district"]
@@ -129,7 +133,10 @@ def test_places_are_converted_with_missing_coordinates() -> None:
         status="found",
         places=[
             PlaceResult(
-                place_id="p1", name="[가상] 수거함", address="[가상] 주소", source_url="https://example.invalid/p1"
+                place_id="p1",
+                name="[가상] 수거함",
+                address="[가상] 주소",
+                source_url="https://example.invalid/p1",
             )
         ],
     )
@@ -149,7 +156,9 @@ def demo_pipeline(tmp_path: Path):
     settings = load_settings(ROOT / "configs" / "demo.json", project_root=ROOT)
     settings.index_path = tmp_path / "index.json"
     settings.runs_path = tmp_path / "runs"
-    documents = load_source_documents(ROOT / "tests" / "fixtures" / "handoff_documents.json")
+    documents = load_source_documents(
+        ROOT / "tests" / "fixtures" / "handoff_documents.json"
+    )
     chunks = chunk_documents(documents, max_characters=settings.max_document_characters)
     index = build_index(chunks, DemoHashEmbeddings(dimensions=settings.demo_dimensions))
     save_index(index, settings.index_path)
@@ -183,8 +192,12 @@ def run_app_in_demo_mode(question: str) -> AppTest:
     return app.button[0].click().run()
 
 
-def test_demo_mode_runs_the_pipeline_and_shows_notice(demo_pipeline, monkeypatch) -> None:
-    monkeypatch.setattr(src.demo, "create_demo_pipeline", lambda settings: demo_pipeline)
+def test_demo_mode_runs_the_pipeline_and_shows_notice(
+    demo_pipeline, monkeypatch
+) -> None:
+    monkeypatch.setattr(
+        src.demo, "create_demo_pipeline", lambda settings: demo_pipeline
+    )
     app = run_app_in_demo_mode("품목알파")
     assert not app.exception
     assert any("합성 데모 실행입니다" in c.value for c in app.caption)
@@ -201,7 +214,9 @@ def test_demo_mode_tells_how_to_build_the_index_when_missing(monkeypatch) -> Non
 
 
 def test_demo_mode_asks_for_a_question_when_empty(demo_pipeline, monkeypatch) -> None:
-    monkeypatch.setattr(src.demo, "create_demo_pipeline", lambda settings: demo_pipeline)
+    monkeypatch.setattr(
+        src.demo, "create_demo_pipeline", lambda settings: demo_pipeline
+    )
     app = run_app_in_demo_mode("   ")
     assert not app.exception
     assert any("질문을 입력하세요" in w.value for w in app.warning)

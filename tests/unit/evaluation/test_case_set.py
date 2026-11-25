@@ -19,12 +19,14 @@ def make_cases() -> list[EvaluationCase]:
     cases = []
     for number in range(1, 21):
         refusal = number >= 18
-        cases.append(EvaluationCase(
-            case_id=f"fx-{number:02d}",
-            question=f"[가상] 질문 {number}",
-            district="서대문구",
-            expected_status="insufficient_evidence" if refusal else "answered",
-        ))
+        cases.append(
+            EvaluationCase(
+                case_id=f"fx-{number:02d}",
+                question=f"[가상] 질문 {number}",
+                district="서대문구",
+                expected_status="insufficient_evidence" if refusal else "answered",
+            )
+        )
     return cases
 
 
@@ -33,12 +35,17 @@ def make_grading() -> dict[str, dict]:
     for number in range(1, 21):
         case_id = f"fx-{number:02d}"
         if number >= 18:
-            grading[case_id] = {"category": "no_evidence", "absence_reason": "[가상] 자료에 없음"}
+            grading[case_id] = {
+                "category": "no_evidence",
+                "absence_reason": "[가상] 자료에 없음",
+            }
         else:
             grading[case_id] = {
                 "category": "direct" if number <= 10 else "variation",
                 "required_facts": ["[가상] 필수 사실"],
-                "evidence": [{"document_id": "fx-doc", "source_location": "가상 표 > 행"}],
+                "evidence": [
+                    {"document_id": "fx-doc", "source_location": "가상 표 > 행"}
+                ],
                 "reason": "[가상] 판정 이유",
             }
     return grading
@@ -87,7 +94,9 @@ def test_case_without_grading_is_reported() -> None:
 def test_grading_without_case_is_reported() -> None:
     grading = make_grading()
     grading["fx-99"] = copy.deepcopy(grading["fx-01"])
-    assert "fx-99: 채점표만 있고 문항이 없습니다." in check_final_set(make_cases(), grading)
+    assert "fx-99: 채점표만 있고 문항이 없습니다." in check_final_set(
+        make_cases(), grading
+    )
 
 
 def test_unknown_category_is_reported() -> None:
@@ -105,12 +114,17 @@ def test_category_counts_are_checked() -> None:
     assert "variation 문항은 7개여야 합니다. 지금은 8개 입니다." in problems
 
 
-@pytest.mark.parametrize("field, expected", [
-    ("required_facts", "required_facts"),
-    ("evidence", "evidence"),
-    ("reason", "reason"),
-])
-def test_answerable_case_needs_facts_evidence_and_reason(field: str, expected: str) -> None:
+@pytest.mark.parametrize(
+    "field, expected",
+    [
+        ("required_facts", "required_facts"),
+        ("evidence", "evidence"),
+        ("reason", "reason"),
+    ],
+)
+def test_answerable_case_needs_facts_evidence_and_reason(
+    field: str, expected: str
+) -> None:
     grading = make_grading()
     del grading["fx-01"][field]
     problems = check_final_set(make_cases(), grading)
@@ -137,13 +151,17 @@ def test_expected_status_must_match_category() -> None:
     cases[17] = cases[17].model_copy(update={"expected_status": "answered"})
     problems = check_final_set(cases, make_grading())
     assert any(p.startswith("fx-01:") and "answered" in p for p in problems)
-    assert any(p.startswith("fx-18:") and "insufficient_evidence" in p for p in problems)
+    assert any(
+        p.startswith("fx-18:") and "insufficient_evidence" in p for p in problems
+    )
 
 
 def test_overlap_with_dev_set_is_reported() -> None:
     final = make_cases()
     dev = [
-        EvaluationCase(case_id="dev-01", question="[가상]  질문 3"),  # 공백만 다른 같은 질문
+        EvaluationCase(
+            case_id="dev-01", question="[가상]  질문 3"
+        ),  # 공백만 다른 같은 질문
         EvaluationCase(case_id="fx-07", question="[가상] 전혀 다른 질문"),  # 같은 ID
     ]
     problems = check_no_overlap(final, dev)
@@ -167,20 +185,28 @@ def write_files(tmp_path: Path, grading: dict) -> tuple[Path, Path]:
     cases_path = tmp_path / "test.json"
     grading_path = tmp_path / "grading.json"
     cases_path.write_text(
-        json.dumps([c.model_dump(mode="json") for c in make_cases()], ensure_ascii=False),
+        json.dumps(
+            [c.model_dump(mode="json") for c in make_cases()], ensure_ascii=False
+        ),
         encoding="utf-8",
     )
-    grading_path.write_text(json.dumps({"grading": grading}, ensure_ascii=False), encoding="utf-8")
+    grading_path.write_text(
+        json.dumps({"grading": grading}, ensure_ascii=False), encoding="utf-8"
+    )
     return cases_path, grading_path
 
 
-def test_main_returns_zero_for_valid_files(tmp_path: Path, capsys: pytest.CaptureFixture) -> None:
+def test_main_returns_zero_for_valid_files(
+    tmp_path: Path, capsys: pytest.CaptureFixture
+) -> None:
     cases_path, grading_path = write_files(tmp_path, make_grading())
     assert main(["--cases", str(cases_path), "--grading", str(grading_path)]) == 0
     assert "문제 없음" in capsys.readouterr().out
 
 
-def test_main_returns_one_and_lists_problems(tmp_path: Path, capsys: pytest.CaptureFixture) -> None:
+def test_main_returns_one_and_lists_problems(
+    tmp_path: Path, capsys: pytest.CaptureFixture
+) -> None:
     grading = make_grading()
     del grading["fx-05"]
     cases_path, grading_path = write_files(tmp_path, grading)
@@ -188,7 +214,16 @@ def test_main_returns_one_and_lists_problems(tmp_path: Path, capsys: pytest.Capt
     assert "fx-05: 채점표가 없습니다." in capsys.readouterr().out
 
 
-def test_main_returns_two_when_file_is_missing(tmp_path: Path, capsys: pytest.CaptureFixture) -> None:
-    code = main(["--cases", str(tmp_path / "none.json"), "--grading", str(tmp_path / "none2.json")])
+def test_main_returns_two_when_file_is_missing(
+    tmp_path: Path, capsys: pytest.CaptureFixture
+) -> None:
+    code = main(
+        [
+            "--cases",
+            str(tmp_path / "none.json"),
+            "--grading",
+            str(tmp_path / "none2.json"),
+        ]
+    )
     assert code == 2
     assert "읽지 못했습니다" in capsys.readouterr().out

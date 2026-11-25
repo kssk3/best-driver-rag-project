@@ -77,13 +77,18 @@ def test_w6_clarification_without_fields() -> None:
 
 def test_w6_clarification_with_fields_is_fine() -> None:
     view = make_view(
-        status="needs_clarification", answer=None, citations=[], required_fields=["item"]
+        status="needs_clarification",
+        answer=None,
+        citations=[],
+        required_fields=["item"],
     )
     assert codes(view) == []
 
 
 def test_w7_error_is_reported_with_error_level() -> None:
-    view = make_view(status="error", answer=None, citations=[], error="[가상] 검색 실패")
+    view = make_view(
+        status="error", answer=None, citations=[], error="[가상] 검색 실패"
+    )
     alerts = check_response(view)
     assert [a.code for a in alerts] == ["W7"]
     assert alerts[0].level == "error"
@@ -110,7 +115,9 @@ def test_w8_not_checked_when_model_input_is_unknown() -> None:
 
 
 def test_w9_error_text_with_non_error_status() -> None:
-    view = make_view(status="insufficient_evidence", citations=[], error="[가상] 내부 오류")
+    view = make_view(
+        status="insufficient_evidence", citations=[], error="[가상] 내부 오류"
+    )
     alerts = check_response(view)
     assert [a.code for a in alerts] == ["W9"]
     assert alerts[0].level == "error"

@@ -7,7 +7,12 @@ import pytest
 
 from src.interface.adapter import to_view_response
 
-FIXTURE_PATH = Path(__file__).parent.parent.parent / "fixtures" / "interface" / "sample_responses.json"
+FIXTURE_PATH = (
+    Path(__file__).parent.parent.parent
+    / "fixtures"
+    / "interface"
+    / "sample_responses.json"
+)
 
 
 def load_samples() -> dict:

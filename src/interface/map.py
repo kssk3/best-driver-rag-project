@@ -14,45 +14,45 @@ from src.interface.adapter import Place, PlaceResult
 from src.interface.chat import is_safe_url
 
 MAP_SEARCH_URLS = (
-    ('카카오맵', 'https://map.kakao.com/link/search/'),
-    ('네이버지도', 'https://map.naver.com/p/search/'),
+    ("카카오맵", "https://map.kakao.com/link/search/"),
+    ("네이버지도", "https://map.naver.com/p/search/"),
 )
 
 
 # 주소로 지도 검색 링크 생성
 def map_search_links(address: str | None) -> list[tuple[str, str]]:
-    text = (address or '').strip()
+    text = (address or "").strip()
     if not text:
         return []
-    return [(label, prefix + quote(text, safe='')) for label, prefix in MAP_SEARCH_URLS]
+    return [(label, prefix + quote(text, safe="")) for label, prefix in MAP_SEARCH_URLS]
 
 
 # 주소의 카카오맵 검색 주소. 주소가 비어 있으면 None
 def kakao_search_url(address: str | None) -> str | None:
     for label, url in map_search_links(address):
-        if label == '카카오맵':
+        if label == "카카오맵":
             return url
     return None
 
 
 def render_places(result: PlaceResult) -> None:
 
-    if result.kind == 'fixture':
-        st.caption('예시(합성) 장소입니다. 실제 조회가 아닙니다.')
+    if result.kind == "fixture":
+        st.caption("예시(합성) 장소입니다. 실제 조회가 아닙니다.")
 
-    if result.status == 'error':
-        st.error('장소를 조회하지 못했습니다. 잠시 후 다시 시도하세요.')
+    if result.status == "error":
+        st.error("장소를 조회하지 못했습니다. 잠시 후 다시 시도하세요.")
         return
 
-    if result.status == 'unavailable':
-        st.info('해당 지역은 조회 서비스 준비 중입니다.')
+    if result.status == "unavailable":
+        st.info("해당 지역은 조회 서비스 준비 중입니다.")
         return
 
-    if result.status == 'empty' or not result.places:
-        st.info('해당하는 장소가 없습니다.')
+    if result.status == "empty" or not result.places:
+        st.info("해당하는 장소가 없습니다.")
         return
 
-    st.caption(f'장소 {len(result.places)}곳')
+    st.caption(f"장소 {len(result.places)}곳")
 
     for place in result.places:
         st.markdown(_place_line(place))
@@ -60,29 +60,29 @@ def render_places(result: PlaceResult) -> None:
     searchable = [place for place in result.places if map_search_links(place.address)]
     if searchable:
         chosen = st.selectbox(
-            '지도에서 볼 장소',
+            "지도에서 볼 장소",
             searchable,
-            format_func=lambda place: f'{place.name} · {place.address}',
+            format_func=lambda place: f"{place.name} · {place.address}",
         )
         st.iframe(kakao_search_url(chosen.address), height=500)
 
-    st.caption('기준 위치가 없으므로 거리순 정렬은 하지 않습니다.')
+    st.caption("기준 위치가 없으므로 거리순 정렬은 하지 않습니다.")
 
 
 def _place_line(place: Place) -> str:
-    types = ', '.join(place.collection_types) or '확인된 수거 종류 없음'
+    types = ", ".join(place.collection_types) or "확인된 수거 종류 없음"
 
     if is_safe_url(place.source_url):
-        source = f'[출처]({place.source_url})'
+        source = f"[출처]({place.source_url})"
     else:
-        source = '출처 링크 없음'
+        source = "출처 링크 없음"
 
-    line = f'- {place.name} · {place.address or '주소 없음'}'
-    line += f' · 수거 종류: {types} · {source}'
+    line = f"- {place.name} · {place.address or '주소 없음'}"
+    line += f" · 수거 종류: {types} · {source}"
     links = map_search_links(place.address)
     if links:
-        line += ' · 지도에서 보기: ' + ' / '.join(
-            f'[{label}]({url})' for label, url in links
+        line += " · 지도에서 보기: " + " / ".join(
+            f"[{label}]({url})" for label, url in links
         )
     return line
 
@@ -105,8 +105,11 @@ def split_by_coordinates(places: list[Place]) -> tuple[list[Place], list[Place]]
 
 def _render_coordinate_map(places: list[Place]) -> None:
     mappable, unmappable = split_by_coordinates(places)
-    st.caption(f'지도 표시 {len(mappable)}곳 · 좌표 없음 {len(unmappable)}곳')
+    st.caption(f"지도 표시 {len(mappable)}곳 · 좌표 없음 {len(unmappable)}곳")
     if mappable:
         st.map(
-            [{'latitude': place.latitude, 'longitude': place.longitude} for place in mappable]
+            [
+                {"latitude": place.latitude, "longitude": place.longitude}
+                for place in mappable
+            ]
         )

@@ -18,8 +18,12 @@ def make_view(**changes) -> ViewResponse:
         answer="[가상] 답변",
         required_fields=[],
         candidates=[
-            Candidate("c1", "서대문구", 0.8, "[가상] 본문 1", rank=1, conditions=["일반주택"]),
-            Candidate("c2", "서대문구", 0.6, "[가상] 본문 2", rank=2, conditions=["공동주택"]),
+            Candidate(
+                "c1", "서대문구", 0.8, "[가상] 본문 1", rank=1, conditions=["일반주택"]
+            ),
+            Candidate(
+                "c2", "서대문구", 0.6, "[가상] 본문 2", rank=2, conditions=["공동주택"]
+            ),
         ],
         model_inputs=["c1", "c2"],
         citations=[Citation("c1", None)],
@@ -45,7 +49,14 @@ def test_w5_reports_chunks_whose_conditions_do_not_contain_the_input() -> None:
 def test_w5_is_silent_when_every_chunk_matches() -> None:
     view = make_view(
         candidates=[
-            Candidate("c1", "서대문구", 0.8, "[가상]", rank=1, conditions=["일반주택 (공동주택 제외)"])
+            Candidate(
+                "c1",
+                "서대문구",
+                0.8,
+                "[가상]",
+                rank=1,
+                conditions=["일반주택 (공동주택 제외)"],
+            )
         ],
         model_inputs=["c1"],
     )
@@ -82,18 +93,27 @@ def test_unchecked_rules_are_empty_when_conditions_were_compared() -> None:
 
 
 def staged(chunk_id: str, rank: int, **scores: float) -> Candidate:
-    return Candidate(chunk_id, "서대문구", None, "[가상]", rank=rank, stage_scores=scores)
+    return Candidate(
+        chunk_id, "서대문구", None, "[가상]", rank=rank, stage_scores=scores
+    )
 
 
 def test_stage_names_keep_first_seen_order() -> None:
-    candidates = [staged("a", 1, vector=0.5, rerank=0.9), staged("b", 2, vector=0.7, bm25=1.0)]
+    candidates = [
+        staged("a", 1, vector=0.5, rerank=0.9),
+        staged("b", 2, vector=0.7, bm25=1.0),
+    ]
     assert stage_names(candidates) == ["vector", "rerank", "bm25"]
     assert stage_names([]) == []
 
 
 def test_rank_shift_is_positive_when_a_chunk_moved_up() -> None:
     # vector만으로는 b가 1등, 최종은 a가 1등
-    candidates = [staged("a", 1, vector=0.4), staged("b", 2, vector=0.9), staged("c", 3, vector=0.1)]
+    candidates = [
+        staged("a", 1, vector=0.4),
+        staged("b", 2, vector=0.9),
+        staged("c", 3, vector=0.1),
+    ]
     assert rank_shifts(candidates, "vector") == {"a": 1, "b": -1, "c": 0}
 
 
@@ -103,7 +123,11 @@ def test_rank_shift_is_zero_when_order_is_unchanged() -> None:
 
 
 def test_rank_shift_skips_candidates_without_that_stage() -> None:
-    candidates = [staged("a", 1, vector=0.4), staged("b", 2), staged("c", 3, vector=0.9)]
+    candidates = [
+        staged("a", 1, vector=0.4),
+        staged("b", 2),
+        staged("c", 3, vector=0.9),
+    ]
     assert rank_shifts(candidates, "vector") == {"a": 1, "c": -1}
 
 
@@ -118,11 +142,21 @@ def test_panel_shows_w5_and_rank_shift_column() -> None:
     view = make_view(
         candidates=[
             Candidate(
-                "c1", "서대문구", 0.8, "[가상]", rank=1, conditions=["일반주택"],
+                "c1",
+                "서대문구",
+                0.8,
+                "[가상]",
+                rank=1,
+                conditions=["일반주택"],
                 stage_scores={"vector": 0.4, "rerank": 0.9},
             ),
             Candidate(
-                "c2", "서대문구", 0.6, "[가상]", rank=2, conditions=["공동주택"],
+                "c2",
+                "서대문구",
+                0.6,
+                "[가상]",
+                rank=2,
+                conditions=["공동주택"],
                 stage_scores={"vector": 0.9, "rerank": 0.5},
             ),
         ],
@@ -143,7 +177,8 @@ def test_panel_says_rank_shift_cannot_be_computed_with_one_stage() -> None:
 
 def test_panel_reports_rules_it_could_not_check() -> None:
     view = make_view(
-        candidates=[Candidate("c1", "서대문구", 0.8, "[가상]", rank=1)], model_inputs=["c1"]
+        candidates=[Candidate("c1", "서대문구", 0.8, "[가상]", rank=1)],
+        model_inputs=["c1"],
     )
     app = open_panel(view)
     assert not app.exception
