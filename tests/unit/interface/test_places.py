@@ -8,7 +8,12 @@ import pytest
 from streamlit.testing.v1 import AppTest
 
 from src.interface.adapter import to_place_result
-from src.interface.map import MAP_SEARCH_URLS, map_search_links, split_by_coordinates
+from src.interface.map import (
+    MAP_SEARCH_URLS,
+    kakao_search_url,
+    map_search_links,
+    split_by_coordinates,
+)
 
 FIXTURE_PATH = Path(__file__).parent.parent.parent / "fixtures" / "interface" / "sample_places.json"
 APP_PATH = Path(__file__).parent.parent.parent.parent / "app.py"
@@ -82,10 +87,11 @@ def test_split_by_coordinates() -> None:
 def test_found_places_show_counts_map_and_no_confirmed_types() -> None:
     app = pick_places("found")
     assert not app.exception
-    assert any("지도 표시 2곳" in c.value and "좌표 없음 1곳" in c.value for c in app.caption)
+    assert any(c.value == "장소 3곳" for c in app.caption)
     assert any("확인된 수거 종류 없음" in m.value for m in app.markdown)
-    assert any("좌표 없음: 지도에 표시되지 않음" in m.value for m in app.markdown)
-    assert len(app.get("deck_gl_json_chart")) == 1
+    # 좌표 지도(st.map)는 쓰지 않는다. 좌표가 없다는 경고도 띄우지 않는다.
+    assert len(app.get("deck_gl_json_chart")) == 0
+    assert not any("지도를 그릴 수 없습니다" in w.value for w in app.warning)
 
 
 def test_empty_places_is_not_an_error() -> None:
@@ -99,7 +105,7 @@ def test_empty_places_is_not_an_error() -> None:
 def test_unavailable_is_neither_empty_nor_error() -> None:
     app = pick_places("unavailable")
     assert not app.exception
-    assert any("아직 연결되지 않았습니다" in i.value for i in app.info)
+    assert any("조회 서비스 준비 중입니다" in i.value for i in app.info)
     assert not any("해당하는 장소가 없습니다" in i.value for i in app.info)
     assert not app.error
 
@@ -139,4 +145,25 @@ def test_found_places_show_search_links() -> None:
     lines = [m.value for m in app.markdown if MAP_SEARCH_URLS[0][1] in m.value]
     assert len(lines) == 3  # 예시 장소 3곳 모두 주소가 있다
     assert all("지도에서 보기" in line for line in lines)
-    assert any("좌표 없음: 지도에 표시되지 않음" in line for line in lines)
+
+
+def test_kakao_search_url_uses_kakao_prefix_only() -> None:
+    url = kakao_search_url("서울특별시 서대문구 연희동 1-1")
+    assert url == MAP_SEARCH_URLS[0][1] + quote("서울특별시 서대문구 연희동 1-1", safe="")
+    assert kakao_search_url(None) is None
+    assert kakao_search_url("  ") is None
+
+
+def test_found_places_embed_kakao_map_for_selected_place() -> None:
+    app = pick_places("found")
+    assert not app.exception
+    frames = app.get("iframe")
+    assert len(frames) == 1
+    assert frames[0].proto.src.startswith("https://map.kakao.com/")
+
+
+def test_no_embedded_map_when_no_places_are_shown() -> None:
+    for name in ("empty", "unavailable", "error"):
+        app = pick_places(name)
+        assert not app.exception
+        assert app.get("iframe") == []
