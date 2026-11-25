@@ -44,7 +44,7 @@ COLUMNS = [
     "plain_median",
     "plain_p90",
     "plain_max",
-    "chunk_ids_sha256",
+    "chunks_sha256",
 ]
 
 
@@ -158,9 +158,14 @@ def summarize(chunks: list[dict]) -> dict:
         "plain_median": int(statistics.median(plain)),
         "plain_p90": _percentile(plain, 0.9),
         "plain_max": max(plain),
-        # chunk_id는 내용·위치·버전을 섞은 해시라서 ID 목록의 해시가 결과 전체의 지문이 된다.
-        "chunk_ids_sha256": hashlib.sha256(
-            "\n".join(sorted(c["chunk_id"] for c in chunks)).encode("utf-8")
+        # chunk_id는 제목·범위·구 목록·조건을 섞지 않으므로 ID가 아니라 청크의 모든 필드를 해시한다.
+        "chunks_sha256": hashlib.sha256(
+            json.dumps(
+                sorted(chunks, key=lambda c: c["chunk_id"]),
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode("utf-8")
         ).hexdigest(),
     }
 

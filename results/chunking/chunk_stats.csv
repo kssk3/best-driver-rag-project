@@ -1,3 +1,3 @@
-﻿chunking_version,format,chunk_count,documents,서대문구,송파구,공통,범위미상,article_chunks,heading_chunks,table_row_chunks,other_chunks,conditions_empty,deleted_marker_chunks,short_chunks,duplicate_plain_chunks,content_min,content_median,content_p90,content_max,plain_min,plain_median,plain_p90,plain_max,chunk_ids_sha256
-preprocessed-v2-row-v1,html,543,14,259,284,0,0,90,14,432,7,543,11,44,31,190,2291,2816,4228,7,259,525,1780,5371d68b6d55333a4f292b38f4748add1f4208b7de279a6d52bfad09185a6a7d
-preprocessed-v2-row-v1,json,543,14,259,284,0,0,90,14,432,7,543,11,16,4,48,1986,2287,2957,42,1884,2264,2845,8842f8fa6e38b4658148595b766f2cf9c82c4365da07baa5fd7a353c6bb3fb11
+﻿chunking_version,format,chunk_count,documents,서대문구,송파구,공통,범위미상,article_chunks,heading_chunks,table_row_chunks,other_chunks,conditions_empty,deleted_marker_chunks,short_chunks,duplicate_plain_chunks,content_min,content_median,content_p90,content_max,plain_min,plain_median,plain_p90,plain_max,chunks_sha256
+preprocessed-v2-row-v1,html,543,14,259,284,0,0,90,14,432,7,543,11,44,31,190,2291,2816,4228,7,259,525,1780,d1e90cbce3b1c8619ca107325bb731f7ccc7cc42aaef93375e5a0f393bf1ecc8
+preprocessed-v2-row-v1,json,543,14,259,284,0,0,90,14,432,7,543,11,16,4,48,1986,2287,2957,42,1884,2264,2845,93af4ecd43ea1764da2b1dd52e94dcf81c4a32d27a7f0ecd7402dc7885087789
