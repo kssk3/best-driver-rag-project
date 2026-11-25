@@ -1,0 +1,21 @@
+{
+  "is_synthetic": true,
+  "description": "getSpot 응답 형식을 본뜬 합성 예시. 2026-11-24 실제 호출(addr=연희동)에서 확인한 필드 구조와 섞임 사례(인천 연희동, 서울시 표기, 도로명 주소)를 재현했다. 장소명·주소는 예시 값이다.",
+  "response": {
+    "header": {"resultCode": "00", "resultMsg": "NORMAL SERVICE."},
+    "body": {
+      "items": {
+        "item": [
+          {"spotNm": "폐형광등·폐건전지 수거함", "addrBase": "서울특별시 서대문구 연희동 1-1", "addrDtl": "연희동 주민센터"},
+          {"spotNm": "폐형광등 폐건전지 수거함", "addrBase": "서울시 서대문구 연희로 10", "addrDtl": ""},
+          {"spotNm": "의류 수거함", "addrBase": "서울특별시 서대문구 연희동 2-2", "addrDtl": ""},
+          {"spotNm": "종량제봉투 판매소", "addrBase": "서울특별시 서대문구 연희로 20", "addrDtl": "편의점"},
+          {"spotNm": "폐건전지 수거함", "addrBase": "인천광역시 서구 연희동 3-3", "addrDtl": ""}
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 1000,
+      "totalCount": 5
+    }
+  }
+}
