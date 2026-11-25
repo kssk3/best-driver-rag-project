@@ -1,0 +1,48 @@
+{
+  "_note": "합성(가상) 장소 예시. 실제 장소·주소·좌표가 아니다. 화면 형식 확인용이며 실제 조회가 아니다. 필드는 PR 9의 PlaceLookupResult 모양을 따른다.",
+  "found": {
+    "status": "found",
+    "places": [
+      {
+        "place_id": "fx-place-1",
+        "name": "[가상] 예시 수거함 A",
+        "address": "[가상] 예시 주소 1",
+        "latitude": 37.57,
+        "longitude": 126.95,
+        "source_url": "https://example.invalid/fx-place-1",
+        "collection_types": ["가상 품목 가"]
+      },
+      {
+        "place_id": "fx-place-2",
+        "name": "[가상] 예시 수거함 B",
+        "address": "[가상] 예시 주소 2",
+        "latitude": 37.58,
+        "longitude": 126.96,
+        "source_url": "",
+        "collection_types": []
+      },
+      {
+        "place_id": "fx-place-3",
+        "name": "[가상] 예시 수거함 C",
+        "address": "[가상] 예시 주소 3",
+        "latitude": null,
+        "longitude": null,
+        "source_url": "https://example.invalid/fx-place-3",
+        "collection_types": ["가상 품목 나"]
+      }
+    ]
+  },
+  "empty": {
+    "status": "empty",
+    "places": []
+  },
+  "unavailable": {
+    "status": "unavailable",
+    "places": []
+  },
+  "error": {
+    "status": "error",
+    "places": [],
+    "error": "[가상] 장소 조회 실패"
+  }
+}

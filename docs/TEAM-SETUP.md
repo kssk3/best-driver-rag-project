@@ -6,7 +6,7 @@
 
 설치는 [README](../README.md)의 루트 uv 환경을 사용한다. `.python-version`, `pyproject.toml`과 `uv.lock`을 함께 확인한다. 공용 의존성을 추가할 때 관련 담당자와 실행 가능성을 확인하고 의존성 파일과 잠금 파일을 함께 갱신한다.
 
-UI는 Streamlit으로 구현하고 공통 Python RAG 함수를 직접 호출하는 것이 목표다. 공통 파이프라인과 평가 실행기는 구현됐으며 같은 `RAGPipeline.run`을 사용한다. Streamlit은 현재 공용 의존성과 확인한 프로젝트 가상환경에 없고, `app.py`와 화면 모듈은 시작 뼈대다. 현재 터미널에서는 `scripts.search_index`로 실제 색인의 근거를 조회하고, 공통 응답 흐름은 `scripts.demo`의 합성 자동 실행으로 확인한다. 실행 방법은 [README](../README.md)를 따른다. 별도 Next.js 프론트엔드, FastAPI 진입점과 Compose 구성은 현재 필수 범위에 포함하지 않는다.
+UI는 Streamlit으로 구현하고 공통 Python RAG 함수를 직접 호출하는 것이 목표다. 공통 파이프라인과 평가 실행기는 구현됐으며 같은 `RAGPipeline.run`을 사용한다. Streamlit은 공용 의존성에 포함되어 있고 `app.py`로 실행한다(데모 색인 선행, 명령은 [README](../README.md)). 지금 화면은 합성 데모 파이프라인에 연결되어 있다. 현재 터미널에서는 `scripts.search_index`로 실제 색인의 근거를 조회하고, 공통 응답 흐름은 `scripts.demo`의 합성 자동 실행으로 확인한다. 실행 방법은 [README](../README.md)를 따른다. 별도 Next.js 프론트엔드, FastAPI 진입점과 Compose 구성은 현재 필수 범위에 포함하지 않는다.
 
 현재 저장소는 로컬 JSON 색인과 외부 호출 없는 해시 임베딩 데모를 제공한다. 제공된 전처리 자료에는 `text-embedding-3-small`을 실제 호출해 HTML/JSON 색인을 생성하고 근거 조회까지 확인했다. 실제 DB와 답변 모델은 연결되지 않았으며, 이 색인 성공은 최종 검색/답변 품질 검증과 구분한다. 선택적 임베딩 연결의 환경변수 이름은 [.env.example](../.env.example)에 있고, 다른 기능에서 필요한 변수도 비밀값 없이 함께 갱신한다.
 
