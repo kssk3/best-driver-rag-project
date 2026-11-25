@@ -6,6 +6,8 @@ from copy import deepcopy
 from html import unescape
 from typing import Literal, NotRequired, TypedDict, TypeGuard
 
+from src.infrastructure.chat_models import ModelCallError, ModelOutputError
+
 # Source links travel in citations. The response body contains prose and excerpts.
 _LINK_MARKUP = re.compile(
     r"""[a-z][a-z0-9+.-]*:// | mailto: | tel: | www\.(?=[a-z0-9]) | //[a-z0-9\[]
@@ -119,6 +121,10 @@ def generate_answer(
     # Resolve citations from the input snapshot even if the adapter edits its copy.
     try:
         draft = draft_answer(deepcopy(model_input))
+    except ModelOutputError:
+        return _error("invalid_draft")
+    except ModelCallError as error:
+        return _error(error.code)
     except Exception:
         return _error("generation_failed")
 

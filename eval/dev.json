@@ -1,0 +1,26 @@
+[
+    {
+        "case_id": "p04-colors-trick",
+        "question": "서대문구 공동주택 일반용기에서 유리병은 회색이고 캔은 주황색이 맞죠?",
+        "district": "서대문구",
+        "conditions": {
+            "housing_type": "공동주택",
+            "container_type": "일반용기"
+        },
+        "expected_status": "answered",
+        "reference_answer": "아니요. 서대문구 공동주택 일반용기 기준으로 유리병은 주황색이고 캔은 회색입니다.",
+        "allowed_chunk_ids": [
+            "chunk-267d3d8946483d4ec51f48803b10fe6968881b0c83a042716d7dfffd08347d17"
+        ]
+    },
+    {
+        "case_id": "p04-songpa-bulky-waste",
+        "question": "송파구에서 대형폐기물을 직접 신고해서 버리려면 언제 신고하고 어디에 내놓아야 하나요?",
+        "district": "송파구",
+        "expected_status": "answered",
+        "reference_answer": "배출일 전에 구청장에게 신고하고 구청장이 지정한 장소에 내놓아야 합니다.",
+        "allowed_chunk_ids": [
+            "chunk-a482ca0127c4c30a5cad3d2bb61487b0db08300bb301abfb63468d07760f23d0"
+        ]
+    }
+]

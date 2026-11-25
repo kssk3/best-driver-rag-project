@@ -4,7 +4,7 @@
 
 ## 현재 구현과 검사 범위
 
-공통 문서 로딩과 제공된 전처리 묶음 연결, 문서 전체 및 조문/표 행 청킹, 로컬 색인, 콜백 기반 파이프라인, 실행 기록과 평가 실행기가 구현되어 있다. 합성 자동 데모와 실제 임베딩 색인의 근거 조회 CLI도 실행할 수 있다. `app.py`의 Streamlit 화면은 아직 파일 뼈대이며, 실제 팀 A/B/C 검색, 답변 모델, 장소 DB와 품질평가 연동은 별도 작업이다. 현재 제공하는 API와 연결 방법은 [공통 기반 최소 인계본](seokho-handoff.md)에 정리한다.
+CI는 공통 기반과 팀 모듈을 저장소의 테스트로 검사한다. 팀 A 검색기와 공용 채팅 모델의 동작은 각각 [검색 테스트](../tests/unit/test_search.py)와 [모델 호출 테스트](../tests/unit/test_chat_models.py)에서 확인할 수 있다. 모델 호출 테스트는 제공자 응답을 모의한다. 서비스 연결과 실제 모델을 사용한 실험의 진행 상태는 [로드맵](../ROADMAP.md#현재-도달지점)을 따른다.
 
 [커버리지 워크플로](../.github/workflows/coverage.yml)는 Ubuntu에서 `.python-version`의 Python을 준비하고 uv `0.13.9`를 설치한 뒤 `uv sync --locked`로 잠금 파일에 맞춰 의존성을 설치한다.
 
@@ -29,7 +29,7 @@ uv run --locked python -m pytest tests --cov --cov-config=.coveragerc --cov-repo
 
 검증용 표본은 `tests/fixtures/`, 단위 테스트는 `tests/unit/`, 연결 테스트는 `tests/integration/`에 있다. 위의 공통 pytest 명령으로 함께 실행한다. `.coveragerc`에는 커버리지 하한을 지정하지 않았다.
 
-로컬 테스트 수와 합성 데모/CLI에서 확인한 동작은 [인계본 검증 기록](seokho-handoff.md#구현-경계와-검증)에 모은다. 해당 결과는 GitHub Actions 실행 성공이나 Codecov 업로드 성공을 뜻하지 않는다.
+로컬 테스트 수와 합성 데모/CLI에서 확인한 동작은 [인계본 검증 기록](handoff.md#구현-경계와-검증)에 모은다. 해당 결과는 GitHub Actions 실행 성공이나 Codecov 업로드 성공을 뜻하지 않는다.
 
 Windows의 기본 pytest 임시 폴더에 권한 오류가 생겼던 환경에서는 다음과 같이 프로젝트 안의 새 임시 경로를 지정해 검사했다. 오류가 없는 환경에서는 위의 공통 명령을 사용한다.
 
@@ -79,7 +79,7 @@ PR 이벤트와 `main` 또는 `dev`에 푸시할 때 검사한다. 테스트가 
 
 `.python-version`은 `3.13.14`, `pyproject.toml`의 `requires-python`은 `==3.13.14`다. 프로젝트는 uv `0.13.9` 이상을 요구하며 CI는 `0.13.9`를 명시적으로 설치한다. `package = false`로 설정되어 있고 개발 의존성 그룹에 `pytest`, `pytest-cov`, `ruff`, `mypy`가 있으며 버전은 `uv.lock`으로 고정한다. 새 기능에 필요한 패키지는 해당 구현 PR에서 추가하고 `uv.lock`과 실제 설치 결과를 함께 확인한다.
 
-LangChain, Ragas, FastAPI 등의 패키지가 선언되어 있어도 해당 기능의 구현이나 외부 서비스 연결이 완료되었다는 뜻은 아니다. 현재 `streamlit`은 프로젝트 의존성에 선언되어 있지 않다. 합성 데모와 CLI는 API 키 없이 실행되며, 실제 OpenAI 임베딩을 선택할 때는 제공자 환경변수가 필요하다. `.env.example`에는 값을 비운 `OPENAI_API_KEY`와 수집용 `LAW_OC` 항목을 둔다.
+LangChain, Ragas, FastAPI 등의 패키지가 선언되어 있어도 해당 기능의 구현이나 외부 서비스 연결이 완료되었다는 뜻은 아니다. 현재 `streamlit`은 프로젝트 의존성에 선언되어 있지 않다. 합성 데모와 로컬 단위 테스트는 API 키 없이 실행할 수 있다. 실제 OpenAI 임베딩으로 검색하거나 모델 답변을 생성할 때는 제공자 환경변수가 필요하다. `.env.example`에는 값을 비운 `OPENAI_API_KEY`와 수집용 `LAW_OC` 항목을 둔다.
 
 [Dependabot 설정](../.github/dependabot.yml)은 루트 Python 의존성인 `uv`와 `github-actions`를 매주 확인한다. 새 Dockerfile 등 별도 관리 대상이 생기면 실제 파일과 실행 환경을 확인한 뒤 해당 항목을 추가한다.
 
