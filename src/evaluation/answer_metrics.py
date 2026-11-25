@@ -3,9 +3,13 @@
 import csv
 import json
 import math
+import os
+from collections.abc import Iterator
+from contextlib import contextmanager
 from datetime import UTC, datetime, timedelta
 from importlib.metadata import version
 from pathlib import Path
+from threading import Lock
 from time import perf_counter
 from uuid import uuid4
 
@@ -18,6 +22,9 @@ FIELDS = (
     "run_started_at_utc versions_json metric ragas_version judge_model status score "
     "reason scored_at_utc duration_ms"
 ).split()
+
+
+_ARCHIVE_CSV_LOCK = Lock()
 
 
 class InputError(ValueError):
@@ -48,15 +55,29 @@ def metric_input(record: RunRecord) -> dict:
     }
 
 
+@contextmanager
+def _archive_rows(path: Path, required: set[str]) -> Iterator[csv.DictReader]:
+    """공식 아카이브의 장문 필드를 읽는 동안만 현재 파일 크기까지 허용한다."""
+    with path.open(encoding="utf-8-sig", newline="") as stream, _ARCHIVE_CSV_LOCK:
+        # csv.field_size_limit is shared by readers. Serialize archive reads and
+        # restore it before yielding control to any asynchronous judge.
+        previous_limit = csv.field_size_limit()
+        csv.field_size_limit(max(previous_limit, os.fstat(stream.fileno()).st_size))
+        try:
+            reader = csv.DictReader(stream)
+            missing = required.difference(reader.fieldnames or ())
+            if missing:
+                raise ValueError(
+                    f"{path.name} 필수 열 누락: {', '.join(sorted(missing))}"
+                )
+            yield reader
+        finally:
+            csv.field_size_limit(previous_limit)
+
+
 def _load_runs(archive: Path, dataset_id: str) -> dict[str, dict[str, str]]:
     path = archive.with_name("runs.csv")
-    with path.open(encoding="utf-8-sig", newline="") as stream:
-        reader = csv.DictReader(stream)
-        missing = {"dataset_id", "case_id", "run_id"}.difference(
-            reader.fieldnames or ()
-        )
-        if missing:
-            raise ValueError(f"runs.csv 필수 열 누락: {', '.join(sorted(missing))}")
+    with _archive_rows(path, {"dataset_id", "case_id", "run_id"}) as reader:
         runs: dict[str, dict[str, str]] = {}
         for run in reader:
             if run["dataset_id"] != dataset_id:
@@ -83,7 +104,7 @@ def _started_at_utc(record: RunRecord, run: dict[str, str]) -> str:
     return started.isoformat()
 
 
-async def _score(row, attempt, cases, runs, scorer):
+async def _score(row, attempt, cases, runs, scorer, seen_run_ids: set[str]):
     if not isinstance(attempt, dict):
         raise InputError("invalid_attempt")
     if not isinstance(row["case_id"], str) or not row["case_id"].strip():
@@ -130,6 +151,9 @@ async def _score(row, attempt, cases, runs, scorer):
         row.update(status="skipped", reason="response_" + record.response.status)
         return
     sample = metric_input(record)
+    if record.run_id in seen_run_ids:
+        raise InputError("duplicate_run_id")
+    seen_run_ids.add(record.run_id)
     if scorer is None:
         row.update(status="skipped", reason="validate_only")
         return
@@ -164,19 +188,15 @@ async def score_archive(
     attempts = json.loads(archive.read_text(encoding="utf-8"))
     if not isinstance(attempts, list):
         raise ValueError("evaluation.json must contain a list of attempts")
-    with cases_csv.open(encoding="utf-8-sig", newline="") as stream:
-        reader = csv.DictReader(stream)
-        required = {
-            "dataset_id",
-            "case_id",
-            "question",
-            "district",
-            "dong",
-            "conditions_json",
-        }
-        missing = required.difference(reader.fieldnames or ())
-        if missing:
-            raise ValueError(f"cases.csv 필수 열 누락: {', '.join(sorted(missing))}")
+    required = {
+        "dataset_id",
+        "case_id",
+        "question",
+        "district",
+        "dong",
+        "conditions_json",
+    }
+    with _archive_rows(cases_csv, required) as reader:
         cases = list(reader)
     by_id = {case["case_id"]: case for case in cases}
     datasets = {case["dataset_id"] for case in cases}
@@ -191,6 +211,7 @@ async def score_archive(
     evaluation_id = uuid4().hex
     ragas_version = version("ragas")
     output.mkdir(parents=True, exist_ok=False)
+    seen_run_ids: set[str] = set()
     ok = True
     with (output / "scores.csv").open("x", encoding="utf-8", newline="") as stream:
         writer = csv.DictWriter(stream, fieldnames=FIELDS)
@@ -218,7 +239,7 @@ async def score_archive(
                 "judge_model": judge_model,
             }
             try:
-                await _score(row, attempt, by_id, runs, scorer)
+                await _score(row, attempt, by_id, runs, scorer, seen_run_ids)
             except InputError as error:
                 row.update(status="input_error", reason=str(error))
             except ValidationError:

@@ -261,6 +261,85 @@ def test_duplicate_run_id_cannot_bind_two_cases(tmp_path):
     assert not output.exists()
 
 
+@pytest.mark.parametrize(
+    ("outcome", "first_valid"),
+    [
+        ("validate", ("skipped", "validate_only")),
+        ("score", ("scored", "")),
+        ("judge_error", ("scorer_error", "judge_failed")),
+    ],
+)
+def test_only_first_valid_attempt_with_same_run_id_is_processed(
+    tmp_path, outcome, first_valid
+):
+    first, _ = json.loads(ARCHIVE.read_text())
+    no_record = dict(first, record=None, status="error")
+    invalid = dict(
+        first, record=dict(first["record"], model_input_chunk_ids=["absent"])
+    )
+    skipped_response = dict(first["record"]["response"], status="error")
+    skipped = dict(
+        first, record=dict(first["record"], response=skipped_response), status="error"
+    )
+    archive = tmp_path / "evaluation.json"
+    archive.write_text(json.dumps([no_record, invalid, skipped, first, first]))
+    archive.with_name("runs.csv").write_bytes(
+        ARCHIVE.with_name("runs.csv").read_bytes()
+    )
+    scorer = (
+        None
+        if outcome == "validate"
+        else AsyncMock(return_value=SimpleNamespace(value=1))
+    )
+    if outcome == "judge_error":
+        scorer.side_effect = RuntimeError("offline judge error")
+    output = tmp_path / "scored"
+    assert not asyncio.run(score_archive(archive, CASES, output, scorer=scorer))
+    result = rows(output)
+    assert [(r["status"], r["reason"]) for r in result] == [
+        ("skipped", "no_run_record"),
+        ("input_error", "unresolved_chunk_id"),
+        ("skipped", "response_error"),
+        first_valid,
+        ("input_error", "duplicate_run_id"),
+    ]
+    assert result[-1]["score"] == ""
+    if scorer is not None:
+        scorer.assert_awaited_once()
+
+
+def test_long_exported_csv_fields_are_preserved_and_parser_limit_restored(tmp_path):
+    from src.evaluation.csv_export import write_evaluation_csv
+    from src.evaluation.runner import load_evaluation_cases
+
+    original_limit = csv.field_size_limit()
+    long_text = '큰 필드에 들어가는 "따옴표", 쉼표와 줄바꿈\n' * 8000
+    assert len(long_text) > 131072
+    cases = load_evaluation_cases(CASES.with_suffix(".json"))
+    cases[0] = cases[0].model_copy(update={"reference_answer": long_text})
+    attempts = json.loads(ARCHIVE.read_text())
+    attempts[0]["record"]["response"]["answer"] = long_text
+    archive = tmp_path / "evaluation.json"
+    archive.write_text(json.dumps(attempts), encoding="utf-8")
+    write_evaluation_csv(tmp_path, cases, attempts)
+
+    async def judge(**sample):
+        assert csv.field_size_limit() == original_limit
+        return SimpleNamespace(value=1)
+
+    scorer = AsyncMock(side_effect=judge)
+    output = tmp_path / "scored"
+    assert asyncio.run(
+        score_archive(archive, tmp_path / "cases.csv", output, scorer=scorer)
+    )
+    assert [r["score"] for r in rows(output)] == ["1.0", "1.0"]
+    assert scorer.await_args_list[0].kwargs["response"] == long_text
+    with pytest.raises(ValueError, match="dataset_id"):
+        asyncio.run(score_archive(archive, CASES, tmp_path / "invalid", scorer=scorer))
+    assert csv.field_size_limit() == original_limit
+    assert scorer.await_count == 2
+
+
 def test_exported_blank_run_ids_preserve_each_missing_attempt(tmp_path):
     from src.evaluation.csv_export import write_evaluation_csv
     from src.evaluation.runner import load_evaluation_cases
