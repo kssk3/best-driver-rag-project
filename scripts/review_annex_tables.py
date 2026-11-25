@@ -11,6 +11,7 @@ from src.ingestion.search_preparation import (
     PreparedRow,
     prepare_table_rows,
     validate_table_row_continuations,
+    validate_table_search_text,
 )
 
 _NEW_ENTRY = re.compile(r"^(?:[0-9]+[.)]|[가-힣][.)]|[※＊*○●]|비\s*고\s*[:：])")
@@ -180,6 +181,21 @@ def review_annex_tables(manifest_path: Path) -> dict:
             raise ValueError(f"{filename}: 첨부 식별자 또는 원본 해시 불일치")
         attachments += 1
         reviewed_tables = record.get("table_row_continuations", {})
+        prepared_tables: list[tuple[dict, list[PreparedRow]]] = []
+        for table in record["tables"]:
+            table_id = table["table_id"]
+            has_reviewed_rows = (
+                isinstance(reviewed_tables, dict) and table_id in reviewed_tables
+            )
+            try:
+                rows = (
+                    validate_table_search_text(table)
+                    if "rows_for_search" in table or has_reviewed_rows
+                    else prepare_table_rows(table)
+                )
+            except ValueError as error:
+                raise ValueError(f"{filename} {table_id}: {error}") from error
+            prepared_tables.append((table, rows))
         if reviewed_tables:
             try:
                 validate_table_row_continuations(record["tables"], reviewed_tables)
@@ -191,13 +207,9 @@ def review_annex_tables(manifest_path: Path) -> dict:
             for position, block in enumerate(blocks)
             if block["type"] == "table"
         }
-        for table in record["tables"]:
+        for table, rows in prepared_tables:
             tables += 1
             table_id = table["table_id"]
-            try:
-                rows = prepare_table_rows(table)
-            except ValueError as error:
-                raise ValueError(f"{filename} {table_id}: {error}") from error
             header_count = max(
                 (cell["rowspan"] for cell in rows[0]["cell_values"]), default=1
             )

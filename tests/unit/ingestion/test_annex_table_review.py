@@ -3,6 +3,8 @@
 import json
 from pathlib import Path
 
+import pytest
+
 from scripts.review_annex_tables import review_annex_tables
 
 _ANNEX_FOLDER = (
@@ -89,3 +91,40 @@ def test_original_reward_rows_are_review_candidates_without_overlay(tmp_path):
         group["source_cell_ids"] for group in groups
     ]
     assert matches[0]["cells"][2]["text"] == "자(법 제8조제1항 또는 제2항)"
+
+
+@pytest.mark.parametrize(
+    ("filename", "table_id", "stored_rows", "error_field"),
+    [
+        ("2053883_154690991.json", "table-1", "missing", None),
+        ("2053883_154690991.json", "table-1", "invalid_log", "normalization_changes"),
+        ("1481479_121237861.json", "table-3", "invalid_rows", "rows_for_search"),
+    ],
+)
+def test_review_checks_persisted_search_history_but_accepts_old_tables(
+    tmp_path, filename, table_id, stored_rows, error_field
+):
+    original = json.loads((_ANNEX_FOLDER / filename).read_text(encoding="utf-8"))
+    table = next(table for table in original["tables"] if table["table_id"] == table_id)
+    if stored_rows == "missing":
+        del table["rows_for_search"]
+    elif stored_rows == "invalid_log":
+        table["rows_for_search"][0]["cell_values"][0]["normalization_changes"] = None
+    else:
+        table["rows_for_search"] = None
+    (tmp_path / filename).write_text(json.dumps(original), encoding="utf-8")
+    manifest_path = tmp_path / "annex_manifest.json"
+    source_data = {
+        field: original[field]
+        for field in ("parent_mst", "attachment_id", "raw_sha256")
+    }
+    manifest_path.write_text(
+        json.dumps({"records": [{**source_data, "output_file": filename}]}),
+        encoding="utf-8",
+    )
+
+    if error_field is None:
+        assert review_annex_tables(manifest_path)["tables_scanned"] == 1
+    else:
+        with pytest.raises(ValueError, match=f"{filename} {table_id}.*{error_field}"):
+            review_annex_tables(manifest_path)
