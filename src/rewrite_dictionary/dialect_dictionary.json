@@ -1,0 +1,230 @@
+{
+  "version": 1,
+  "coverage": ["수도권(경기·강화)", "충청", "전라", "경상", "강원", "제주", "공통 구어"],
+  "purpose": "원질문의 방언·구어를 배출 검색에 쓰는 표준 표현으로 변환",
+  "region_policy": "용례의 지역은 출처 정보다. 배출 대상 지역은 사용자 입력과 지역 해석 결과를 따른다.",
+  "sources": {
+    "gyeonggi": {
+      "title": "경기도 뉴스 경기도 사투리를 소개합니다",
+      "url": "https://gnews.gg.go.kr/news/news_detail.do?newsType=N&number=202009012050439385C059&s_code=C059"
+    },
+    "ganghwa": {
+      "title": "한국민족문화대백과사전 방언",
+      "url": "https://encykorea.aks.ac.kr/Article/E0021747"
+    },
+    "chungcheong": {
+      "title": "국립국어원 국어생활 충청 방언",
+      "url": "https://www.korean.go.kr/nkview/nklife/1987_2/9_9.html"
+    },
+    "chungcheong_ending": {
+      "title": "국립국어원 충청 방언 겨에 대한 상담",
+      "url": "https://www.korean.go.kr/front/onlineQna/onlineQnaView.do?mn_id=73&pageIndex=1&qna_seq=320203"
+    },
+    "conversation_report": {
+      "title": "국립국어원 2025년 일상 대화 자료 수집 및 정제 보고서 107~108쪽",
+      "url": "https://www.korean.go.kr/front/reportData/reportDataView.do?mn_id=207&pageIndex=1&report_seq=1220&searchOrder="
+    },
+    "jeolla": {
+      "title": "국립국어원 전남 방언 어쩧다에 대한 상담",
+      "url": "https://www.korean.go.kr/front/onlineQna/onlineQnaView.do?mn_id=27&pageIndex=1&qna_seq=327714"
+    },
+    "gyeongsang": {
+      "title": "국립국어원 지역 언어문화 상품 개발 보고서",
+      "url": "https://www.korean.go.kr/common/download.do?c_file_name=add45015-fc3a-4704-b904-734ceb9a36e1_0.pdf&file_path=reportData&o_file_name=%EC%A7%80%EC%97%AD+%EC%96%B8%EC%96%B4%EB%AC%B8%ED%99%94+%EC%83%81%ED%92%88+%EA%B0%9C%EB%B0%9C+%EB%B3%B4%EA%B3%A0%EC%84%9C.pdf"
+    },
+    "gyeongsang_ending": {
+      "title": "국립국어원 경상 방언 의문형 어미 노에 대한 상담",
+      "url": "https://www.korean.go.kr/front/onlineQna/onlineQnaView.do?mn_id=261&pageIndex=1&qna_seq=311040"
+    },
+    "gangwon": {
+      "title": "국립국어원 국어생활 강원 방언",
+      "url": "https://www.korean.go.kr/nkview/nklife/1987_3/10_7.html"
+    },
+    "wash": {
+      "title": "국립국어원 씻다의 지역 표현에 대한 상담",
+      "url": "https://www.korean.go.kr/front/onlineQna/onlineQnaView.do?mn_id=216&pageIndex=1&qna_seq=323521"
+    },
+    "jeju_conversation": {
+      "title": "제주특별자치도 구술로 보는 제주어",
+      "url": "https://www.jeju.go.kr/jedu/map/record.htm?page=23"
+    },
+    "jeju_education": {
+      "title": "제주특별자치도 인생 덕목으로 배우는 제주어",
+      "url": "https://www.jeju.go.kr/jedu/data/data.htm?act=download&no=1&page=59&seq=1538049"
+    },
+    "jeju_tourism": {
+      "title": "제주 공식 관광 가이드북",
+      "url": "https://www.visitjeju.net/pdf/Official%20Jeju%20Tourism%20Guidebook_kr.pdf"
+    },
+    "audio_plant_and_utensils": {
+      "title": "국립국어원 지역어 듣기 부추·부침개·밥주걱 등",
+      "url": "https://www.korean.go.kr/front/page/pageView.do?page_id=P000054"
+    },
+    "region_word_course": {
+      "title": "국립국어원 국어문화학교 특별 교육 과정 교재",
+      "url": "https://www.korean.go.kr/common/download.do?c_file_name=4b98b18a-b429-4a11-b211-c8e9f15b557a_0.pdf&file_path=reportData"
+    },
+    "regional_variation": {
+      "title": "국립국어원 2021년 세대별·지역별 언어 다양성 조사",
+      "url": "https://korean.go.kr/common/download.do?c_file_name=66b30406-0208-4bbc-87fc-7976e34478c8.pdf&file_path=reportData"
+    },
+    "local_colloquial_examples": {
+      "title": "분리당 개인 미리보기의 구어 검증 문항",
+      "path": "learning/recycling_chat/evaluation/nationwide_dialect_cases.json"
+    }
+  },
+  "rules": [
+    {
+      "regions": ["수도권(경기·강화)"],
+      "match": "word",
+      "source_ids": ["gyeonggi"],
+      "basis": "확인된 연결 어미를 배출 질문의 동사에 적용",
+      "forms": {"비우구": "비우고", "씻구": "씻고", "없구": "없고", "넣구": "넣고", "묶구": "묶고", "말리구": "말리고", "닫구": "닫고"}
+    },
+    {
+      "regions": ["수도권(경기·강화)"],
+      "match": "ending",
+      "source_ids": ["ganghwa"],
+      "basis": "강화의 의문형을 배출 질문에 적용",
+      "forms": {"가져가이꺄": "가져가나요", "내놓이꺄": "내놓나요"}
+    },
+    {
+      "regions": ["충청"],
+      "match": "word",
+      "source_ids": ["chungcheong", "conversation_report"],
+      "forms": {"워떻게": "어떻게", "워치게": "어떻게", "어터기": "어떻게", "워디": "어디", "워디에": "어디에", "워디서": "어디서", "워디로": "어디로", "워째서": "어째서"}
+    },
+    {
+      "regions": ["충청"],
+      "match": "ending",
+      "source_ids": ["chungcheong_ending"],
+      "basis": "확인된 의문형을 배출 질문의 동사에 적용",
+      "forms": {"버리는 겨": "버리나요", "버리는겨": "버리나요", "내놓는 겨": "내놓나요", "내놓는겨": "내놓나요", "배출하는 겨": "배출하나요", "배출하는겨": "배출하나요"}
+    },
+    {
+      "regions": ["전라"],
+      "match": "word",
+      "source_ids": ["jeolla", "conversation_report"],
+      "forms": {"어쩧게": "어떻게", "있응께": "있으니까", "없응께": "없으니까", "붙었응께": "붙었으니까", "허니께": "하니까"}
+    },
+    {
+      "regions": ["경상"],
+      "match": "ending",
+      "source_ids": ["gyeongsang", "gyeongsang_ending"],
+      "basis": "어떻게 해야 하는지 묻는 뜻과 의문사 문형을 보존",
+      "forms": {"우야꼬": "어떻게 해야 하나요", "어떻게 배출하노": "어떻게 배출하나요", "어떻게 버리노": "어떻게 버리나요", "어떻게 처리하노": "어떻게 처리하나요", "어디에 버리노": "어디에 버리나요", "언제 버리노": "언제 버리나요"}
+    },
+    {
+      "regions": ["강원"],
+      "match": "word",
+      "source_ids": ["gangwon", "wash"],
+      "forms": {"어데": "어디", "어데서": "어디서", "어데에": "어디에", "어데로": "어디로", "씻그다": "씻다", "씻그고": "씻고"}
+    },
+    {
+      "regions": ["강원"],
+      "match": "before_disposal",
+      "source_ids": ["gangwon"],
+      "basis": "양양·고성 자료의 부정 표현을 세척 뒤 배출을 묻는 문형에 적용",
+      "forms": {"아이 씻고": "안 씻고"}
+    },
+    {
+      "regions": ["제주"],
+      "match": "ending",
+      "source_ids": ["jeju_conversation", "jeju_education", "jeju_tourism"],
+      "basis": "일반 의문, 의도, 의무 표현을 각각 보존",
+      "forms": {"어떵 허는고": "어떻게 하나요", "어떵허는고": "어떻게 하나요", "어떵 허젠": "어떻게 하려고 하나요", "어떵허젠": "어떻게 하려고 하나요", "배출해야 허우꽈": "배출해야 하나요", "버려야 허우꽈": "버려야 하나요"}
+    },
+    {
+      "regions": ["제주"],
+      "match": "before_action",
+      "source_ids": ["jeju_conversation", "jeju_education"],
+      "basis": "구체적인 목적 동사가 이어지는 어떵을 어떻게로 변환",
+      "forms": {"어떵": "어떻게"}
+    },
+    {
+      "regions": ["제주"],
+      "match": "word",
+      "source_ids": ["wash", "jeju_tourism"],
+      "forms": {"시스다": "씻다", "시스고": "씻고", "담앙": "담아서"}
+    },
+    {
+      "regions": ["수도권(경기·강화)"],
+      "match": "item",
+      "source_ids": ["gyeonggi"],
+      "forms": {"겨란": "계란", "겨란껍질": "계란껍질", "겨란껍데기": "계란껍데기", "챔기름": "참기름", "챔기름병": "참기름병"}
+    },
+    {
+      "regions": ["충청", "전라", "경상", "제주"],
+      "match": "item",
+      "source_ids": ["audio_plant_and_utensils"],
+      "basis": "자료에 여러 권역의 쓰임이 확인됨",
+      "forms": {"정구지": "부추"}
+    },
+    {
+      "regions": ["경상"],
+      "match": "item",
+      "source_ids": ["audio_plant_and_utensils"],
+      "forms": {"정고지": "부추", "정구치": "부추", "찌짐": "부침개", "찌지미": "부침개", "밥쭈게": "밥주걱", "밥쭈개": "밥주걱"}
+    },
+    {
+      "regions": ["강원", "충청"],
+      "match": "item",
+      "source_ids": ["audio_plant_and_utensils"],
+      "forms": {"분추": "부추"}
+    },
+    {
+      "regions": ["수도권(경기·강화)", "강원", "충청"],
+      "match": "item",
+      "source_ids": ["audio_plant_and_utensils"],
+      "forms": {"밥쭈걱": "밥주걱"}
+    },
+    {
+      "regions": ["전라"],
+      "match": "item",
+      "source_ids": ["audio_plant_and_utensils"],
+      "forms": {"주벅": "밥주걱", "바느질쌍자": "반짇고리"}
+    },
+    {
+      "regions": ["제주"],
+      "match": "item",
+      "source_ids": ["audio_plant_and_utensils", "region_word_course"],
+      "forms": {"지슬": "감자", "바농쌍지": "반짇고리", "밥뽀검": "밥주걱"}
+    },
+    {
+      "regions": ["공통 구어"],
+      "match": "item",
+      "source_ids": ["regional_variation"],
+      "forms": {"테레비": "텔레비전", "티비": "텔레비전", "티브이": "텔레비전"}
+    },
+    {
+      "regions": ["공통 구어"],
+      "match": "before_action",
+      "source_ids": ["local_colloquial_examples"],
+      "basis": "공통 구어 문형으로 취급하며 지역을 특정하지 않음",
+      "forms": {"어케": "어떻게", "어캐": "어떻게", "어디다": "어디에"}
+    },
+    {
+      "regions": ["공통 구어"],
+      "match": "ending",
+      "source_ids": ["local_colloquial_examples"],
+      "basis": "실험에서 쓰는 구어 변형이며 특정 지역으로 분류하지 않음",
+      "forms": {"어캄": "어떻게 해야 하나요", "어케 함": "어떻게 하나요", "어떡함": "어떻게 해야 하나요", "우야지": "어떻게 해야 하나요"}
+    },
+    {
+      "regions": ["공통 구어"],
+      "match": "ending",
+      "source_ids": ["local_colloquial_examples"],
+      "basis": "복합 품목 평가 문항에도 등장하는 표현으로 배출 지역을 추론하지 않음",
+      "forms": {"우야노": "어떻게 해야 하나요", "어케함": "어떻게 하나요", "어떡해요": "어떻게 해야 하나요"}
+    }
+  ],
+  "context_required": [
+    {"expression": "아이", "reason": "명사 아이와 강원 지역 부정 표현을 문맥 없이 구분할 수 없음"},
+    {"expression": "솔", "reason": "부추를 뜻하는 지역어와 솔·소나무 등의 뜻이 겹침"},
+    {"expression": "세우리·새우리", "reason": "부추라는 뜻이 동사 세우리, 새를 기르는 우리라는 표현과 겹침"},
+    {"expression": "소코리", "reason": "국립국어원 자료에 바구니와 발채의 지역어로 각각 나옴"},
+    {"expression": "감제·감저", "reason": "지역 및 시대에 따라 해석이 달라질 수 있음"},
+    {"expression": "어떵허우꽈", "reason": "의견·상태를 묻는 경우가 있어 행위를 어떻게 하는지 묻는 뜻으로 단정하기 어려움"},
+    {"expression": "구·겨·께·노", "reason": "지명이나 다른 단어의 일부와 겹치므로 확인된 문형에서만 처리"}
+  ]
+}
