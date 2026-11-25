@@ -30,7 +30,15 @@ def load_grading(path: Path) -> dict[str, dict]:
     grading = data.get("grading") if isinstance(data, dict) else None
 
     if not isinstance(grading, dict):
-        raise ValueError(grading, dict)
+        raise ValueError(
+            '채점 파일은 {"grading": {문항 ID: 채점 항목}} 형태여야 합니다.'
+        )
+
+    for case_id, item in grading.items():
+        if not isinstance(item, dict):
+            raise ValueError(f"{case_id}: 채점 항목은 객체여야 합니다.")
+        if not isinstance(item.get("category"), str):
+            raise ValueError(f"{case_id}: category는 문자열이어야 합니다.")
 
     return grading
 
@@ -151,7 +159,10 @@ def main(argv: list[str] | None = None) -> int:
         description="최종 평가 문항과 채점표를 점검한다. 평가를 실행하지 않는다."
     )
     parser.add_argument(
-        "--cases", type=Path, required=True, help="최종 문항 파일 (e.g. eval/test.json)"
+        "--cases",
+        type=Path,
+        required=True,
+        help="최종 문항 파일 (e.g. tests/fixtures/interface/final_set/cases.json)",
     )
     parser.add_argument("--grading", type=Path, required=True, help="채점 자료 파일")
     parser.add_argument(

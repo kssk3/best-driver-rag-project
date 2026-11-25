@@ -227,3 +227,22 @@ def test_main_returns_two_when_file_is_missing(
     )
     assert code == 2
     assert "읽지 못했습니다" in capsys.readouterr().out
+
+
+@pytest.mark.parametrize(
+    "grading",
+    [{"fx-01": []}, {"fx-01": {"category": 1}}, {"fx-01": {}}],
+)
+def test_load_grading_rejects_malformed_entries(tmp_path: Path, grading: dict) -> None:
+    path = tmp_path / "grading.json"
+    path.write_text(json.dumps({"grading": grading}), encoding="utf-8")
+    with pytest.raises(ValueError, match="fx-01"):
+        load_grading(path)
+
+
+def test_main_returns_two_for_malformed_grading_entry(
+    tmp_path: Path, capsys: pytest.CaptureFixture
+) -> None:
+    cases_path, grading_path = write_files(tmp_path, {"fx-01": []})
+    assert main(["--cases", str(cases_path), "--grading", str(grading_path)]) == 2
+    assert "fx-01" in capsys.readouterr().out
