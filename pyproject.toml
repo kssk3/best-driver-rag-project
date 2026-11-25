@@ -49,7 +49,11 @@ select = ["E4", "E7", "E9", "F", "I"]
 
 [tool.mypy]
 # 타입 검사는 담당 경로부터 시작해 단계적으로 넓힌다. 범위를 넓힐 때 이 목록에 추가한다.
-files = ["src/generation", "src/evaluation/answer_experiments"]
+files = [
+    "src/generation",
+    "src/evaluation/answer_experiments",
+    "src/evaluation/retrieval_metrics.py",
+]
 # files 밖 모듈(예: src/contracts.py)은 import를 따라가 타입 정보만 쓰고 오류는 보고하지 않는다.
 follow_imports = "silent"
 warn_unused_ignores = true
