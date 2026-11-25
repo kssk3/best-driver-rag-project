@@ -1,0 +1,115 @@
+{
+  "version": 1,
+  "purpose": "외국어 품목명과 외래어 표기, 일본어계 생활어를 검색용 품목명으로 연결",
+  "sources": {
+    "nikl_japanese_refinement": {
+      "title": "국립국어원 일본어 투 용어 순화 자료집",
+      "url": "https://www.korean.go.kr/common/download.do?c_file_name=894c27ab-14f9-4707-95ee-81f1be60899c_0.pdf&file_path=reportData"
+    },
+    "nikl_historical": {
+      "title": "국립국어원 새국어생활의 우리말 속 일본어와 광복 이후 순화",
+      "url": "https://www.korean.go.kr/nkview/nklife/1995_2/5_1.html"
+    },
+    "nikl_everyday": {
+      "title": "국립국어원 바른 국어 생활 교재의 일본어 투와 외래어",
+      "url": "https://www.korean.go.kr/common/download.do?c_file_name=c0cbf5a7-cb03-4e25-9a43-f2f44b4e382a_0.pdf&file_path=etcData"
+    },
+    "nikl_loanword": {
+      "title": "국립국어원 외래어 표기 자료",
+      "url": "https://www.korean.go.kr/nkview/nknews/200212/53_15.html"
+    },
+    "nikl_frying_pan": {
+      "title": "국립국어원 프라이팬 표기 문답",
+      "url": "https://korean.go.kr/front/mcfaq/mcfaqView.do?mcfaq_seq=9136"
+    },
+    "nikl_shirt": {
+      "title": "국립국어원 한국어기초사전 와이셔츠",
+      "url": "https://krdict.korean.go.kr/kor/dicSearch/SearchView?ParaWordNo=22146"
+    },
+    "item_name_translation": {
+      "title": "분리당 품목 사전과 대조한 검색용 번역",
+      "path": "item_catalog.json"
+    }
+  },
+  "rules": [
+    {
+      "category": "일본어계 생활어",
+      "match": "item",
+      "source_ids": ["nikl_japanese_refinement", "nikl_historical"],
+      "basis": "광복 이후 순화 자료에서 확인된 표현 및 검색에 필요한 표기 변형. 낱말별 유입 시기 미확인.",
+      "forms": {
+        "다마네기": "양파", "다마네기껍질": "양파 껍질", "다마네기 껍질": "양파 껍질",
+        "다라이": "대야", "바케쓰": "양동이", "바께쓰": "양동이", "빠께쓰": "양동이",
+        "자부동": "방석", "미싱": "재봉틀", "마호병": "보온병", "마나이타": "도마",
+        "쓰메키리": "손톱깎이", "쓰메끼리": "손톱깎이", "스메끼리": "손톱깎이",
+        "도라이바": "드라이버", "뺀찌": "펜치", "빼빠": "사포", "도란스": "변압기",
+        "도라무": "드럼통", "도당": "함석", "뽐뿌": "펌프", "뿌라그": "플러그",
+        "바리깡": "이발기", "쓰레빠": "슬리퍼", "오봉": "쟁반",
+        "와리바시": "나무젓가락", "벤또": "도시락", "벤또통": "도시락통", "벤또 통": "도시락통",
+        "빤스": "팬티", "빤쓰": "팬티", "베니야판": "합판"
+      }
+    },
+    {
+      "category": "일본어계 문맥 표현",
+      "match": "item",
+      "source_ids": ["nikl_japanese_refinement", "nikl_everyday"],
+      "forms": {
+        "가꾸목": "각목", "깨진 사라": "깨진 접시", "나무 요지": "나무 이쑤시개",
+        "TV 다이": "TV 받침대", "옷 다리는 아이롱": "다리미"
+      }
+    },
+    {
+      "category": "외래어 표기 변형",
+      "match": "item",
+      "source_ids": ["nikl_loanword", "nikl_frying_pan", "nikl_shirt"],
+      "forms": {
+        "와이샤쓰": "와이셔츠", "후라이팬": "프라이팬", "후라이판": "프라이팬",
+        "텔레비젼": "텔레비전", "테잎": "테이프", "테입": "테이프", "리모콘": "리모컨",
+        "스폰지": "스펀지", "에어콘": "에어컨", "카페트": "카펫", "맷리스": "매트리스",
+        "밧데리": "배터리", "밧테리": "배터리"
+      }
+    },
+    {
+      "category": "영어 품목명",
+      "match": "item",
+      "source_ids": ["item_name_translation"],
+      "forms": {
+        "laptop": "노트북", "desktop computer": "데스크톱 컴퓨터", "computer monitor": "컴퓨터 모니터",
+        "computer keyboard": "컴퓨터 키보드", "bluetooth speaker": "블루투스 스피커", "computer speaker": "컴퓨터 스피커",
+        "audio speaker": "오디오 스피커", "air purifier": "공기청정기", "dehumidifier": "제습기",
+        "humidifier": "가습기", "robot vacuum": "로봇청소기", "robot vacuum cleaner": "로봇청소기",
+        "vacuum cleaner": "진공청소기", "microwave oven": "전자레인지", "rice cooker": "밥솥",
+        "air fryer": "에어프라이어", "clothes dryer": "의류건조기", "hair dryer": "헤어드라이어",
+        "hair styler": "헤어 스타일러", "electric kettle": "전기포트", "LG Styler": "LG 스타일러",
+        "AirDresser": "에어드레서", "ShoeDresser": "슈드레서", "massage chair": "안마의자",
+        "foot massager": "발마사지기", "massage gun": "안마건", "treadmill": "러닝머신",
+        "rowing machine": "로잉머신", "exercise bike": "실내 자전거", "dumbbell": "덤벨",
+        "barbell": "바벨", "yoga mat": "요가매트", "sauna heater": "사우나 히터",
+        "wooden board": "나무 판자", "solid wood furniture": "원목 가구",
+        "lab reagent": "실험실 시약", "empty reagent bottle": "빈 시약병",
+        "pesticide container": "농약 용기", "empty pesticide bottle": "빈 농약병",
+        "light bulb": "전구", "LED bulb": "LED 전구", "incandescent bulb": "백열전구",
+        "halogen bulb": "할로겐 전구", "fluorescent tube": "형광등", "LED light fixture": "LED 등기구",
+        "desk lamp": "책상 스탠드", "floor lamp": "장스탠드", "chandelier": "샹들리에",
+        "pendant light": "펜던트 조명", "flashlight": "손전등", "ceiling light": "천장등",
+        "portable monitor": "휴대용 모니터", "laptop charger": "노트북 충전기",
+        "laptop battery": "노트북 배터리", "power bank": "보조배터리",
+        "dehumidifier tank": "제습기 물통", "dehumidifier filter": "제습기 필터",
+        "earbuds charging case": "무선 이어폰 충전 케이스",
+        "bubble mailer": "뽁뽁이 봉투", "paper bubble wrap": "종이 완충재",
+        "avocado pit": "아보카도씨", "peach pit": "복숭아씨", "watermelon rind": "수박 껍질",
+        "treadmill running belt": "러닝머신 벨트",
+        "reagent bottle cap": "시약병 뚜껑", "pesticide bottle cap": "농약병 뚜껑",
+        "fluorescent ballast": "형광등 안정기", "LED bulb cover": "LED 전구 커버"
+      }
+    }
+  ],
+  "context_required": [
+    {"expression": "다마", "reason": "전구·구슬·당구 등 쓰임에 따라 찾을 품목이 달라짐"},
+    {"expression": "아이롱", "reason": "다리미와 머리 인두 양쪽 뜻이 있어 대상 확인이 필요함"},
+    {"expression": "구루마", "reason": "수레의 종류를 특정하려면 모양과 용도를 확인해야 함"},
+    {"expression": "사라·요지", "reason": "다른 우리말 형태 또는 뜻과 겹쳐 대상이 명시된 구에만 적용"},
+    {"expression": "샷시", "reason": "창틀·차량 차대 등 대상으로 쓰일 수 있으며 재질도 단어만으로 결정되지 않음"},
+    {"expression": "PC·dryer·speaker·lamp", "reason": "단독 외국어 표현은 소재나 제품 유형, 다른 뜻과 겹칠 수 있음"}
+  ]
+}

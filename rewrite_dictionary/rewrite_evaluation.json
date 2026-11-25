@@ -1,0 +1,3069 @@
+{
+  "schema_version": 1,
+  "scope": "development_evaluation",
+  "case_count": 120,
+  "datasets": [
+    {
+      "source_file": "rewrite_cases.tsv",
+      "case_count": 54,
+      "data": {
+        "cases": [
+          {
+            "case_id": "rewrite_comparison-01",
+            "suite": "rewrite_comparison",
+            "question": "서대문구에서 우유팩은 어디에 버려요?",
+            "selected_district": "서대문구",
+            "expected_status": "answered",
+            "expected_document_id": "seodaemun-ordinance:attachment:160319453",
+            "expected_source_location": "table-1/row[2]",
+            "expected_search_query": "서대문구에서 우유팩은 어디에 버려요? (종이팩)",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v2"
+          },
+          {
+            "case_id": "rewrite_comparison-02",
+            "suite": "rewrite_comparison",
+            "question": "서대문구에서 종이팩은 어디에 버려요?",
+            "selected_district": "서대문구",
+            "expected_status": "answered",
+            "expected_document_id": "seodaemun-ordinance:attachment:160319453",
+            "expected_source_location": "table-1/row[2]",
+            "expected_search_query": "서대문구에서 종이팩은 어디에 버려요?",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v2"
+          },
+          {
+            "case_id": "rewrite_comparison-03",
+            "suite": "rewrite_comparison",
+            "question": "서대문구에서 우유팩이랑 두유팩은 어떻게 버려요?",
+            "selected_district": "서대문구",
+            "expected_status": "answered",
+            "expected_document_id": "seodaemun-ordinance:attachment:160319453",
+            "expected_source_location": "table-1/row[2]",
+            "expected_search_query": "서대문구에서 우유팩이랑 두유팩은 어떻게 버려요? (종이팩)",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v2"
+          },
+          {
+            "case_id": "rewrite_comparison-04",
+            "suite": "rewrite_comparison",
+            "question": "연희동 단독주택에서 씻지 않은 우유팩은 어떻게 배출해요?",
+            "selected_district": "",
+            "expected_status": "answered",
+            "expected_document_id": "seodaemun-ordinance:attachment:160319453",
+            "expected_source_location": "table-1/row[2]",
+            "expected_search_query": "연희동 단독주택에서 씻지 않은 우유팩은 어떻게 배출해요? (종이팩)",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v2"
+          },
+          {
+            "case_id": "rewrite_comparison-05",
+            "suite": "rewrite_comparison",
+            "question": "서대문구에서 폐건전지는 어디에 버려요?",
+            "selected_district": "서대문구",
+            "expected_status": "answered",
+            "expected_document_id": "seodaemun-ordinance:attachment:160319453",
+            "expected_source_location": "table-2/row[8]",
+            "expected_search_query": "서대문구에서 폐건전지는 어디에 버려요? (전지류)",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v2"
+          },
+          {
+            "case_id": "rewrite_comparison-06",
+            "suite": "rewrite_comparison",
+            "question": "서대문구에서 전지류는 어디에 버려요?",
+            "selected_district": "서대문구",
+            "expected_status": "answered",
+            "expected_document_id": "seodaemun-ordinance:attachment:160319453",
+            "expected_source_location": "table-2/row[8]",
+            "expected_search_query": "서대문구에서 전지류는 어디에 버려요?",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v2"
+          },
+          {
+            "case_id": "rewrite_comparison-07",
+            "suite": "rewrite_comparison",
+            "question": "송파구에서 폐건전지는 어디에 버려요?",
+            "selected_district": "송파구",
+            "expected_status": "insufficient_evidence",
+            "expected_document_id": "",
+            "expected_source_location": "",
+            "expected_search_query": "송파구에서 폐건전지는 어디에 버려요? (전지류)",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v2"
+          },
+          {
+            "case_id": "rewrite_comparison-08",
+            "suite": "rewrite_comparison",
+            "question": "연희동에서 우유팩은 어떻게 버려요?",
+            "selected_district": "송파구",
+            "expected_status": "needs_clarification",
+            "expected_document_id": "",
+            "expected_source_location": "",
+            "expected_search_query": "연희동에서 우유팩은 어떻게 버려요?",
+            "expected_fact_fragment": "어느 구",
+            "reference_checkpoint": "v2"
+          },
+          {
+            "case_id": "followup-01",
+            "suite": "followup",
+            "question": "연희동 빌라에 종이팩 전용 수거함이 없으면, 두유팩을 다른 종이랑 그냥 같이 넣어도 돼요?",
+            "selected_district": "",
+            "expected_status": "answered",
+            "expected_document_id": "seodaemun-ordinance:attachment:160319453",
+            "expected_source_location": "table-1/row[2]",
+            "expected_search_query": "",
+            "expected_fact_fragment": "묶어",
+            "reference_checkpoint": "v2"
+          },
+          {
+            "case_id": "followup-02",
+            "suite": "followup",
+            "question": "서대문구에서 투명 페트병은 라벨을 떼고 뚜껑을 열어서 버려요?",
+            "selected_district": "서대문구",
+            "expected_status": "answered",
+            "expected_document_id": "seodaemun-ordinance:attachment:160319453",
+            "expected_source_location": "table-2/row[4]",
+            "expected_search_query": "",
+            "expected_fact_fragment": "뚜껑을 닫아",
+            "reference_checkpoint": "v2"
+          },
+          {
+            "case_id": "followup-03",
+            "suite": "followup",
+            "question": "서대문구에서 보증금 표시가 있는 빈 유리병은 어디로 가져가요?",
+            "selected_district": "서대문구",
+            "expected_status": "answered",
+            "expected_document_id": "seodaemun-ordinance:attachment:160319453",
+            "expected_source_location": "table-2/row[1]",
+            "expected_search_query": "",
+            "expected_fact_fragment": "소매점",
+            "reference_checkpoint": "v2"
+          },
+          {
+            "case_id": "followup-04",
+            "suite": "followup",
+            "question": "연희동에서 누액이 난 건전지도 일반 폐건전지 수거함에 버려도 돼요?",
+            "selected_district": "",
+            "expected_status": "insufficient_evidence",
+            "expected_document_id": "",
+            "expected_source_location": "",
+            "expected_search_query": "",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v2"
+          },
+          {
+            "case_id": "followup-05",
+            "suite": "followup",
+            "question": "잠실동에서 유리병 뚜껑은 떼고 버려야 해요?",
+            "selected_district": "",
+            "expected_status": "insufficient_evidence",
+            "expected_document_id": "",
+            "expected_source_location": "",
+            "expected_search_query": "",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v2"
+          },
+          {
+            "case_id": "followup-06",
+            "suite": "followup",
+            "question": "연희동에서 제일 가까운 폐건전지 수거함 주소를 알려줘.",
+            "selected_district": "",
+            "expected_status": "insufficient_evidence",
+            "expected_document_id": "",
+            "expected_source_location": "",
+            "expected_search_query": "",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v2"
+          },
+          {
+            "case_id": "disposal_scope-01",
+            "suite": "disposal_scope",
+            "question": "연희동에서 우유팩은 무슨 요일에 버려요?",
+            "selected_district": "",
+            "expected_status": "insufficient_evidence",
+            "expected_document_id": "",
+            "expected_source_location": "",
+            "expected_search_query": "연희동에서 우유팩은 무슨 요일에 버려요?",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v2"
+          },
+          {
+            "case_id": "disposal_scope-02",
+            "suite": "disposal_scope",
+            "question": "연희동에서 우유팩은 몇 시에 버려요?",
+            "selected_district": "",
+            "expected_status": "insufficient_evidence",
+            "expected_document_id": "",
+            "expected_source_location": "",
+            "expected_search_query": "연희동에서 우유팩은 몇 시에 버려요?",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v2"
+          },
+          {
+            "case_id": "disposal_scope-03",
+            "suite": "disposal_scope",
+            "question": "연희동 폐건전지 수거함은 어디에 있나요?",
+            "selected_district": "",
+            "expected_status": "insufficient_evidence",
+            "expected_document_id": "",
+            "expected_source_location": "",
+            "expected_search_query": "연희동 폐건전지 수거함은 어디에 있나요?",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v2"
+          },
+          {
+            "case_id": "short_item-01",
+            "suite": "short_item",
+            "question": "유리병은?",
+            "selected_district": "서대문구",
+            "expected_status": "answered",
+            "expected_document_id": "seodaemun-ordinance:attachment:160319453",
+            "expected_source_location": "table-2/row[1]",
+            "expected_search_query": "",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v4"
+          },
+          {
+            "case_id": "short_item-02",
+            "suite": "short_item",
+            "question": "유리 병은요？",
+            "selected_district": "서대문구",
+            "expected_status": "answered",
+            "expected_document_id": "seodaemun-ordinance:attachment:160319453",
+            "expected_source_location": "table-2/row[1]",
+            "expected_search_query": "",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v4"
+          },
+          {
+            "case_id": "short_item-03",
+            "suite": "short_item",
+            "question": "유리병도?",
+            "selected_district": "서대문구",
+            "expected_status": "answered",
+            "expected_document_id": "seodaemun-ordinance:attachment:160319453",
+            "expected_source_location": "table-2/row[1]",
+            "expected_search_query": "",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v4"
+          },
+          {
+            "case_id": "short_item-04",
+            "suite": "short_item",
+            "question": "유리병이요",
+            "selected_district": "서대문구",
+            "expected_status": "answered",
+            "expected_document_id": "seodaemun-ordinance:attachment:160319453",
+            "expected_source_location": "table-2/row[1]",
+            "expected_search_query": "",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v4"
+          },
+          {
+            "case_id": "short_item-05",
+            "suite": "short_item",
+            "question": "유리병만요?",
+            "selected_district": "서대문구",
+            "expected_status": "answered",
+            "expected_document_id": "seodaemun-ordinance:attachment:160319453",
+            "expected_source_location": "table-2/row[1]",
+            "expected_search_query": "",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v4"
+          },
+          {
+            "case_id": "short_item-06",
+            "suite": "short_item",
+            "question": "우유팩은?",
+            "selected_district": "서대문구",
+            "expected_status": "answered",
+            "expected_document_id": "seodaemun-ordinance:attachment:160319453",
+            "expected_source_location": "table-1/row[2]",
+            "expected_search_query": "우유팩은? (종이팩)",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v4"
+          },
+          {
+            "case_id": "short_item-07",
+            "suite": "short_item",
+            "question": "폐건전지는?",
+            "selected_district": "서대문구",
+            "expected_status": "answered",
+            "expected_document_id": "seodaemun-ordinance:attachment:160319453",
+            "expected_source_location": "table-2/row[8]",
+            "expected_search_query": "",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v4"
+          },
+          {
+            "case_id": "short_item-08",
+            "suite": "short_item",
+            "question": "투명 페트병도?",
+            "selected_district": "서대문구",
+            "expected_status": "answered",
+            "expected_document_id": "seodaemun-ordinance:attachment:160319453",
+            "expected_source_location": "table-2/row[4]",
+            "expected_search_query": "",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v4"
+          },
+          {
+            "case_id": "short_item-09",
+            "suite": "short_item",
+            "question": "깨진 유리병은?",
+            "selected_district": "서대문구",
+            "expected_status": "insufficient_evidence",
+            "expected_document_id": "",
+            "expected_source_location": "",
+            "expected_search_query": "",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v4"
+          },
+          {
+            "case_id": "short_item-10",
+            "suite": "short_item",
+            "question": "오늘 유리병은?",
+            "selected_district": "서대문구",
+            "expected_status": "insufficient_evidence",
+            "expected_document_id": "",
+            "expected_source_location": "",
+            "expected_search_query": "",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v4"
+          },
+          {
+            "case_id": "short_item-11",
+            "suite": "short_item",
+            "question": "유리병 뚜껑은?",
+            "selected_district": "서대문구",
+            "expected_status": "insufficient_evidence",
+            "expected_document_id": "",
+            "expected_source_location": "",
+            "expected_search_query": "",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v4"
+          },
+          {
+            "case_id": "short_item-12",
+            "suite": "short_item",
+            "question": "유리병과 우유팩은?",
+            "selected_district": "서대문구",
+            "expected_status": "insufficient_evidence",
+            "expected_document_id": "",
+            "expected_source_location": "",
+            "expected_search_query": "",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v4"
+          },
+          {
+            "case_id": "short_item-13",
+            "suite": "short_item",
+            "question": "유리컵은?",
+            "selected_district": "서대문구",
+            "expected_status": "insufficient_evidence",
+            "expected_document_id": "",
+            "expected_source_location": "",
+            "expected_search_query": "",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v4"
+          },
+          {
+            "case_id": "short_item-14",
+            "suite": "short_item",
+            "question": "유리병은?",
+            "selected_district": "송파구",
+            "expected_status": "insufficient_evidence",
+            "expected_document_id": "",
+            "expected_source_location": "",
+            "expected_search_query": "",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v4"
+          },
+          {
+            "case_id": "short_item-15",
+            "suite": "short_item",
+            "question": "유리병은?",
+            "selected_district": "",
+            "expected_status": "needs_clarification",
+            "expected_document_id": "",
+            "expected_source_location": "",
+            "expected_search_query": "",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v4"
+          },
+          {
+            "case_id": "dialect_rules-01",
+            "suite": "dialect_rules",
+            "question": "유리병은 어캄?",
+            "selected_district": "서대문구",
+            "expected_status": "answered",
+            "expected_document_id": "seodaemun-ordinance:attachment:160319453",
+            "expected_source_location": "table-2/row[1]",
+            "expected_search_query": "유리병은 어떻게 배출하나요?",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v5"
+          },
+          {
+            "case_id": "dialect_rules-02",
+            "suite": "dialect_rules",
+            "question": "유리병어캄?",
+            "selected_district": "서대문구",
+            "expected_status": "answered",
+            "expected_document_id": "seodaemun-ordinance:attachment:160319453",
+            "expected_source_location": "table-2/row[1]",
+            "expected_search_query": "유리병 어떻게 배출하나요?",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v5"
+          },
+          {
+            "case_id": "dialect_rules-03",
+            "suite": "dialect_rules",
+            "question": "우유팩은 우야지?",
+            "selected_district": "서대문구",
+            "expected_status": "answered",
+            "expected_document_id": "seodaemun-ordinance:attachment:160319453",
+            "expected_source_location": "table-1/row[2]",
+            "expected_search_query": "우유팩은 어떻게 배출하나요? (종이팩)",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v5"
+          },
+          {
+            "case_id": "dialect_rules-04",
+            "suite": "dialect_rules",
+            "question": "연희동에서 폐건전지는 우야노?",
+            "selected_district": "",
+            "expected_status": "answered",
+            "expected_document_id": "seodaemun-ordinance:attachment:160319453",
+            "expected_source_location": "table-2/row[8]",
+            "expected_search_query": "연희동에서 폐건전지는 어떻게 배출하나요? (전지류)",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v5"
+          },
+          {
+            "case_id": "dialect_rules-05",
+            "suite": "dialect_rules",
+            "question": "투명 페트병은 우짜면 되노?",
+            "selected_district": "서대문구",
+            "expected_status": "answered",
+            "expected_document_id": "seodaemun-ordinance:attachment:160319453",
+            "expected_source_location": "table-2/row[4]",
+            "expected_search_query": "투명 페트병은 어떻게 배출하나요? (무색 투명한 폴리에틸렌테레프탈레이트(PET)병)",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v5"
+          },
+          {
+            "case_id": "dialect_rules-06",
+            "suite": "dialect_rules",
+            "question": "유리병 우야꼬?",
+            "selected_district": "서대문구",
+            "expected_status": "answered",
+            "expected_document_id": "seodaemun-ordinance:attachment:160319453",
+            "expected_source_location": "table-2/row[1]",
+            "expected_search_query": "유리병 어떻게 배출하나요?",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v5"
+          },
+          {
+            "case_id": "dialect_rules-07",
+            "suite": "dialect_rules",
+            "question": "빈 유리병 어떡해요?",
+            "selected_district": "서대문구",
+            "expected_status": "answered",
+            "expected_document_id": "seodaemun-ordinance:attachment:160319453",
+            "expected_source_location": "table-2/row[1]",
+            "expected_search_query": "빈 유리병 어떻게 배출하나요?",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v5"
+          },
+          {
+            "case_id": "dialect_rules-08",
+            "suite": "dialect_rules",
+            "question": "유리병 어케버려요?",
+            "selected_district": "서대문구",
+            "expected_status": "answered",
+            "expected_document_id": "seodaemun-ordinance:attachment:160319453",
+            "expected_source_location": "table-2/row[1]",
+            "expected_search_query": "유리병 어떻게 버려요?",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v5"
+          },
+          {
+            "case_id": "dialect_rules-09",
+            "suite": "dialect_rules",
+            "question": "유리병은 우예 버리노?",
+            "selected_district": "서대문구",
+            "expected_status": "answered",
+            "expected_document_id": "seodaemun-ordinance:attachment:160319453",
+            "expected_source_location": "table-2/row[1]",
+            "expected_search_query": "유리병은 어떻게 버리나요?",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v5"
+          },
+          {
+            "case_id": "dialect_rules-10",
+            "suite": "dialect_rules",
+            "question": "유리병 어쩧게 처리해요?",
+            "selected_district": "서대문구",
+            "expected_status": "answered",
+            "expected_document_id": "seodaemun-ordinance:attachment:160319453",
+            "expected_source_location": "table-2/row[1]",
+            "expected_search_query": "유리병 어떻게 처리해요?",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v5"
+          },
+          {
+            "case_id": "dialect_rules-11",
+            "suite": "dialect_rules",
+            "question": "유리병은?",
+            "selected_district": "서대문구",
+            "expected_status": "answered",
+            "expected_document_id": "seodaemun-ordinance:attachment:160319453",
+            "expected_source_location": "table-2/row[1]",
+            "expected_search_query": "유리병은?",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v5"
+          },
+          {
+            "case_id": "dialect_rules-12",
+            "suite": "dialect_rules",
+            "question": "깨진 유리병은 우야지?",
+            "selected_district": "서대문구",
+            "expected_status": "insufficient_evidence",
+            "expected_document_id": "",
+            "expected_source_location": "",
+            "expected_search_query": "깨진 유리병은 어떻게 해야 하나요?",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v5"
+          },
+          {
+            "case_id": "dialect_rules-13",
+            "suite": "dialect_rules",
+            "question": "실수로 깨뜨린 유리병은 어케 처리해요?",
+            "selected_district": "서대문구",
+            "expected_status": "insufficient_evidence",
+            "expected_document_id": "",
+            "expected_source_location": "",
+            "expected_search_query": "실수로 깨뜨린 유리병은 어떻게 처리해요?",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v5"
+          },
+          {
+            "case_id": "dialect_rules-14",
+            "suite": "dialect_rules",
+            "question": "유리병 오늘 저녁에 어캄?",
+            "selected_district": "서대문구",
+            "expected_status": "insufficient_evidence",
+            "expected_document_id": "",
+            "expected_source_location": "",
+            "expected_search_query": "유리병 오늘 저녁에 어떻게 해야 하나요?",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v5"
+          },
+          {
+            "case_id": "dialect_rules-15",
+            "suite": "dialect_rules",
+            "question": "유리병 몇 시에 어케 버려요?",
+            "selected_district": "서대문구",
+            "expected_status": "insufficient_evidence",
+            "expected_document_id": "",
+            "expected_source_location": "",
+            "expected_search_query": "유리병 몇 시에 어떻게 버려요?",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v5"
+          },
+          {
+            "case_id": "dialect_rules-16",
+            "suite": "dialect_rules",
+            "question": "유리병 수거함은 어디에 있노?",
+            "selected_district": "서대문구",
+            "expected_status": "insufficient_evidence",
+            "expected_document_id": "",
+            "expected_source_location": "",
+            "expected_search_query": "유리병 수거함은 어디에 있노?",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v5"
+          },
+          {
+            "case_id": "dialect_rules-17",
+            "suite": "dialect_rules",
+            "question": "유리병하고 두유팩은 우야지?",
+            "selected_district": "서대문구",
+            "expected_status": "insufficient_evidence",
+            "expected_document_id": "",
+            "expected_source_location": "",
+            "expected_search_query": "유리병하고 두유팩은 어떻게 해야 하나요?",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v5"
+          },
+          {
+            "case_id": "dialect_rules-18",
+            "suite": "dialect_rules",
+            "question": "유리병은 어캄?",
+            "selected_district": "송파구",
+            "expected_status": "insufficient_evidence",
+            "expected_document_id": "",
+            "expected_source_location": "",
+            "expected_search_query": "유리병은 어떻게 배출하나요?",
+            "expected_fact_fragment": "",
+            "reference_checkpoint": "v5"
+          },
+          {
+            "case_id": "dialect_rules-19",
+            "suite": "dialect_rules",
+            "question": "어캄?",
+            "selected_district": "서대문구",
+            "expected_status": "needs_clarification",
+            "expected_document_id": "",
+            "expected_source_location": "",
+            "expected_search_query": "",
+            "expected_fact_fragment": "품목",
+            "reference_checkpoint": "v5"
+          },
+          {
+            "case_id": "dialect_rules-20",
+            "suite": "dialect_rules",
+            "question": "우야지?",
+            "selected_district": "",
+            "expected_status": "needs_clarification",
+            "expected_document_id": "",
+            "expected_source_location": "",
+            "expected_search_query": "",
+            "expected_fact_fragment": "품목",
+            "reference_checkpoint": "v5"
+          },
+          {
+            "case_id": "dialect_rules-21",
+            "suite": "dialect_rules",
+            "question": "이거 어케 함?",
+            "selected_district": "서대문구",
+            "expected_status": "needs_clarification",
+            "expected_document_id": "",
+            "expected_source_location": "",
+            "expected_search_query": "",
+            "expected_fact_fragment": "품목",
+            "reference_checkpoint": "v5"
+          },
+          {
+            "case_id": "dialect_rules-22",
+            "suite": "dialect_rules",
+            "question": "연희동에서 유리병은 어캄?",
+            "selected_district": "송파구",
+            "expected_status": "needs_clarification",
+            "expected_document_id": "",
+            "expected_source_location": "",
+            "expected_search_query": "",
+            "expected_fact_fragment": "어느 구",
+            "reference_checkpoint": "v5"
+          }
+        ]
+      }
+    },
+    {
+      "source_file": "nationwide_dialect_cases.json",
+      "case_count": 28,
+      "data": {
+        "schema_version": "1.0",
+        "description": "전국 주요 권역과 공통 구어의 분리배출 검색어 변환을 검토할 문항이다. 문장 전체는 배출 상황에 맞춰 작성한 예문이다. expected_standard는 가능한 표준 표현의 예로 의미가 같은 다른 문장도 통과할 수 있다.",
+        "evaluation_scope": {
+          "region_family": "문항 설계에 참고한 말투의 권역이다. 화자의 출신 지역과 배출 장소를 추론하는 기준으로 사용하지 않는다.",
+          "district": "분리배출 안내를 조회할 때의 사용자 선택이다. 질문 속 행정구역과 충돌하는 경우는 지역 확인을 기대한다.",
+          "expected_kind": "문항이 확인하려는 기능 또는 조건이다. 재작성의 의미 보존과 현재 챗봇의 답변 완성도를 따로 점검한다.",
+          "expected_status": "현재 서대문구와 송파구 안내 범위에서의 기대 응답 상태다. 실제 실행 결과는 평가 기록에 적는다.",
+          "expected_source_location": "근거가 확인된 경우 서대문구 조례 별표 2의 표 행 위치다. 추가 현장 정보가 필요한 경우는 null이다.",
+          "preserve": "반드시 유지할 의미와 구체 표현의 예다. alternatives는 기계 검사의 단서이며 의미를 같은 말로 표현했다면 수동 검토할 수 있다.",
+          "source_based_constructed": "공식 자료에서 확인한 단어 또는 문형을 적용했다. 원어민 발화를 인용한 문장이 아니며 같은 표현이 다른 권역에서도 쓰일 수 있다.",
+          "constructed_review_candidate": "자연스러움 또는 권역 분류에 추가 확인이 필요한 예문이나 권역을 특정하지 않은 구어 문항이다."
+        },
+        "sources": [
+          {
+            "id": "gyeonggi-usage",
+            "title": "경기도 사투리를 소개합니다",
+            "url": "https://gnews.gg.go.kr/news/news_detail.do?newsType=N&number=202009012050439385C059&s_code=C059",
+            "scope": "경기 지역에서 쓰이는 연결 어미 표기 -구의 용례"
+          },
+          {
+            "id": "ganghwa-ending",
+            "title": "한국민족문화대백과사전 방언",
+            "url": "https://encykorea.aks.ac.kr/Article/E0021747",
+            "scope": "강화 지역의 -이꺄와 표준어 의문문 대응"
+          },
+          {
+            "id": "chungcheong-interrogative",
+            "title": "국립국어원 충청 방언 겨",
+            "url": "https://www.korean.go.kr/front/onlineQna/onlineQnaView.do?mn_id=73&pageIndex=1&qna_seq=320203",
+            "scope": "충청 방언 겨와 표준어 거야의 대응"
+          },
+          {
+            "id": "chungcheong-phonology",
+            "title": "국립국어원 국어생활 충청 방언",
+            "url": "https://www.korean.go.kr/nkview/nklife/1987_2/1987_0209.pdf",
+            "scope": "충청 방언 워치게와 표준어 어떻게의 대응"
+          },
+          {
+            "id": "nikl-conversation",
+            "title": "국립국어원 2025년 일상 대화 자료 수집 및 정제 최종보고서",
+            "url": "https://korean.go.kr/common/download.do?c_file_name=3d755482-a5ae-4487-ab36-1dd45fc2eedf.pdf&file_path=reportData&o_file_name=2025%EB%85%84+%EC%9D%BC%EC%83%81+%EB%8C%80%ED%99%94+%EC%9E%90%EB%A3%8C+%EC%88%98%EC%A7%91+%EB%B0%8F+%EC%A0%95%EC%A0%9C_%EC%B5%9C%EC%A2%85%EB%B3%B4%EA%B3%A0%EC%84%9C.pdf",
+            "scope": "충청 워떻게와 전라 -응께 등의 방언 전사 예시"
+          },
+          {
+            "id": "jeolla-how",
+            "title": "국립국어원 전남 방언 어쩧다",
+            "url": "https://www.korean.go.kr/front/onlineQna/onlineQnaView.do?mn_id=27&pageIndex=1&qna_seq=327714",
+            "scope": "어쩧게와 표준어 어떻게의 대응"
+          },
+          {
+            "id": "gyeongsang-question",
+            "title": "국립국어원 지역 언어문화 상품 개발 보고서",
+            "url": "https://www.korean.go.kr/common/download.do?c_file_name=add45015-fc3a-4704-b904-734ceb9a36e1_0.pdf&file_path=reportData&o_file_name=%EC%A7%80%EC%97%AD+%EC%96%B8%EC%96%B4%EB%AC%B8%ED%99%94+%EC%83%81%ED%92%88+%EA%B0%9C%EB%B0%9C+%EB%B3%B4%EA%B3%A0%EC%84%9C.pdf",
+            "scope": "경상 방언 표현 우야꼬의 뜻과 용례"
+          },
+          {
+            "id": "gyeongsang-ending",
+            "title": "국립국어원 경상 방언 의문형 종결 어미 노",
+            "url": "https://www.korean.go.kr/front/onlineQna/onlineQnaView.do?mn_id=261&pageIndex=1&qna_seq=311040",
+            "scope": "의문사가 있는 의문문에서 경상 방언 종결 어미 -노 사용"
+          },
+          {
+            "id": "gangwon-study",
+            "title": "국립국어원 국어생활 국어의 지역 방언 강원",
+            "url": "https://www.korean.go.kr/nkview/nklife/1987_3/10_7.html",
+            "scope": "강원 하위 방언권의 부정사 아이와 의문문 어미 -니 및 -나"
+          },
+          {
+            "id": "jeju-conversation",
+            "title": "제주특별자치도 구술로 보는 제주어",
+            "url": "https://www.jeju.go.kr/jedu/map/record.htm?page=23",
+            "scope": "어떵 허는고와 표준어 어떻게 하는가의 대응"
+          },
+          {
+            "id": "jeju-education",
+            "title": "제주특별자치도 인생 덕목으로 배우는 제주어",
+            "url": "https://www.jeju.go.kr/jedu/data/data.htm?act=download&no=1&page=59&seq=1538049",
+            "scope": "어떵 허젠과 표준어 어떻게 하려고의 대응"
+          },
+          {
+            "id": "jeju-guide",
+            "title": "제주 공식 관광 가이드북",
+            "url": "https://www.visitjeju.net/pdf/Official%20Jeju%20Tourism%20Guidebook_kr.pdf",
+            "scope": "제주어 표현 어떵허우꽈 용례와 번역"
+          },
+          {
+            "id": "seodaemun-annex",
+            "title": "서대문구 폐기물 관리 조례 별표 2",
+            "url": "https://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=160319453&flNm=%5B%EB%B3%84%ED%91%9C+2%5D+%EB%B6%84%EB%A6%AC%EC%88%98%EA%B1%B0%EB%8C%80%EC%83%81+%EC%9E%AC%ED%99%9C%EC%9A%A9%EA%B0%80%EB%8A%A5%EC%9E%90%EC%9B%90%EC%9D%98+%ED%92%88%EB%AA%A9+%EB%B0%8F+%EB%B6%84%EB%A6%AC%EB%B0%B0%EC%B6%9C%EC%9A%94%EB%A0%B9%0A%28%EC%A0%9C14%EC%A1%B0%EC%A0%9C2%ED%95%AD+%EA%B4%80%EB%A0%A8%29",
+            "scope": "종이팩, 유리병, 투명 페트병, 전지류의 품목별 배출요령과 예외"
+          }
+        ],
+        "cases": [
+          {
+            "id": "GG-01",
+            "region_family": "경기",
+            "question": "우유팩 안 비우구 버려도 돼요?",
+            "district": "서대문구",
+            "expected_standard": "우유팩을 비우지 않고 버려도 되나요?",
+            "expected_kind": "condition_preservation",
+            "preserve": [
+              {
+                "concept": "품목",
+                "alternatives": [
+                  "우유팩",
+                  "종이팩"
+                ]
+              },
+              {
+                "concept": "비우지 않는 조건",
+                "alternatives": [
+                  "안 비우",
+                  "비우지 않",
+                  "안 비운"
+                ]
+              }
+            ],
+            "expected_status": "answered",
+            "expected_source_location": "table-1/row[2]",
+            "provenance": "source_based_constructed",
+            "source_ids": [
+              "gyeonggi-usage",
+              "seodaemun-annex"
+            ]
+          },
+          {
+            "id": "GG-02",
+            "region_family": "경기",
+            "question": "유리병은 씻구 내놓으면 돼요?",
+            "district": "서대문구",
+            "expected_standard": "유리병은 씻고 배출하면 되나요?",
+            "expected_kind": "condition_preservation",
+            "preserve": [
+              {
+                "concept": "품목",
+                "alternatives": [
+                  "유리병"
+                ]
+              },
+              {
+                "concept": "세척",
+                "alternatives": [
+                  "씻",
+                  "헹구",
+                  "헹궈"
+                ]
+              }
+            ],
+            "expected_status": "answered",
+            "expected_source_location": "table-2/row[1]",
+            "provenance": "source_based_constructed",
+            "source_ids": [
+              "gyeonggi-usage",
+              "seodaemun-annex"
+            ]
+          },
+          {
+            "id": "GG-03",
+            "region_family": "경기",
+            "question": "보증금 붙은 유리병은 어디로 가져가이꺄?",
+            "district": "서대문구",
+            "expected_standard": "보증금이 붙은 유리병은 어디에 반납하나요?",
+            "expected_kind": "condition_preservation",
+            "preserve": [
+              {
+                "concept": "품목",
+                "alternatives": [
+                  "유리병"
+                ]
+              },
+              {
+                "concept": "보증금",
+                "alternatives": [
+                  "보증금"
+                ]
+              },
+              {
+                "concept": "반납 장소",
+                "alternatives": [
+                  "어디로",
+                  "어디에",
+                  "어디서",
+                  "반납처",
+                  "반환처"
+                ]
+              }
+            ],
+            "expected_status": "answered",
+            "expected_source_location": "table-2/row[1]",
+            "provenance": "source_based_constructed",
+            "source_ids": [
+              "ganghwa-ending",
+              "seodaemun-annex"
+            ]
+          },
+          {
+            "id": "GG-04",
+            "region_family": "경기",
+            "question": "서대문구에 사는데 집에 종이팩 전용수거함이 없구, 우유팩은 어디에 버려요?",
+            "district": null,
+            "expected_standard": "서대문구에서 종이팩 전용수거함이 없으면 우유팩을 어디에 버리나요?",
+            "expected_kind": "condition_preservation",
+            "preserve": [
+              {
+                "concept": "품목",
+                "alternatives": [
+                  "우유팩",
+                  "종이팩"
+                ]
+              },
+              {
+                "concept": "지역",
+                "alternatives": [
+                  "서대문구"
+                ]
+              },
+              {
+                "concept": "전용수거함 부재",
+                "alternatives": [
+                  "수거함이 없",
+                  "수거함 없",
+                  "수거함 부재",
+                  "수거함이 없는"
+                ]
+              }
+            ],
+            "expected_status": "answered",
+            "expected_source_location": "table-1/row[2]",
+            "provenance": "source_based_constructed",
+            "source_ids": [
+              "gyeonggi-usage",
+              "seodaemun-annex"
+            ]
+          },
+          {
+            "id": "CC-01",
+            "region_family": "충청",
+            "question": "유리병 워떻게 버리는 겨?",
+            "district": "서대문구",
+            "expected_standard": "유리병은 어떻게 버리나요?",
+            "expected_kind": "supported_disposal",
+            "preserve": [
+              {
+                "concept": "품목",
+                "alternatives": [
+                  "유리병"
+                ]
+              }
+            ],
+            "expected_status": "answered",
+            "expected_source_location": "table-2/row[1]",
+            "provenance": "source_based_constructed",
+            "source_ids": [
+              "nikl-conversation",
+              "chungcheong-interrogative",
+              "seodaemun-annex"
+            ]
+          },
+          {
+            "id": "CC-02",
+            "region_family": "충청",
+            "question": "다 쓴 건전지는 워치게 내놓는 겨?",
+            "district": "서대문구",
+            "expected_standard": "다 쓴 건전지는 어떻게 배출하나요?",
+            "expected_kind": "supported_disposal",
+            "preserve": [
+              {
+                "concept": "품목",
+                "alternatives": [
+                  "폐건전지",
+                  "건전지",
+                  "전지류"
+                ]
+              },
+              {
+                "concept": "사용 완료",
+                "alternatives": [
+                  "다 쓴",
+                  "다 사용",
+                  "사용한",
+                  "폐건전지"
+                ]
+              }
+            ],
+            "expected_status": "answered",
+            "expected_source_location": "table-2/row[8]",
+            "provenance": "source_based_constructed",
+            "source_ids": [
+              "chungcheong-phonology",
+              "chungcheong-interrogative",
+              "seodaemun-annex"
+            ]
+          },
+          {
+            "id": "CC-03",
+            "region_family": "충청",
+            "question": "연희동에서 우유팩은 무슨 요일에 내놓는 겨?",
+            "district": null,
+            "expected_standard": "연희동에서 우유팩은 무슨 요일에 배출하나요?",
+            "expected_kind": "condition_preservation",
+            "preserve": [
+              {
+                "concept": "품목",
+                "alternatives": [
+                  "우유팩",
+                  "종이팩"
+                ]
+              },
+              {
+                "concept": "동",
+                "alternatives": [
+                  "연희동"
+                ]
+              },
+              {
+                "concept": "배출 요일",
+                "alternatives": [
+                  "요일",
+                  "무슨 날"
+                ]
+              }
+            ],
+            "expected_status": "insufficient_evidence",
+            "expected_source_location": null,
+            "provenance": "source_based_constructed",
+            "source_ids": [
+              "chungcheong-interrogative"
+            ]
+          },
+          {
+            "id": "CC-04",
+            "region_family": "충청",
+            "question": "오늘 저녁에 유리병은 워떻게 내놓는 겨?",
+            "district": "서대문구",
+            "expected_standard": "오늘 저녁에 유리병을 어떻게 배출하나요?",
+            "expected_kind": "condition_preservation",
+            "preserve": [
+              {
+                "concept": "품목",
+                "alternatives": [
+                  "유리병"
+                ]
+              },
+              {
+                "concept": "시간",
+                "alternatives": [
+                  "오늘 저녁",
+                  "오늘저녁",
+                  "금일 저녁"
+                ]
+              }
+            ],
+            "expected_status": "insufficient_evidence",
+            "expected_source_location": null,
+            "provenance": "source_based_constructed",
+            "source_ids": [
+              "nikl-conversation",
+              "chungcheong-interrogative"
+            ]
+          },
+          {
+            "id": "JL-01",
+            "region_family": "전라",
+            "question": "유리병은 어쩧게 버려요?",
+            "district": "서대문구",
+            "expected_standard": "유리병은 어떻게 버리나요?",
+            "expected_kind": "supported_disposal",
+            "preserve": [
+              {
+                "concept": "품목",
+                "alternatives": [
+                  "유리병"
+                ]
+              }
+            ],
+            "expected_status": "answered",
+            "expected_source_location": "table-2/row[1]",
+            "provenance": "source_based_constructed",
+            "source_ids": [
+              "jeolla-how",
+              "seodaemun-annex"
+            ]
+          },
+          {
+            "id": "JL-02",
+            "region_family": "전라",
+            "question": "투명 페트병은 어쩧게 버려야 해요?",
+            "district": "서대문구",
+            "expected_standard": "투명 페트병은 어떻게 버려야 하나요?",
+            "expected_kind": "supported_disposal",
+            "preserve": [
+              {
+                "concept": "품목",
+                "alternatives": [
+                  "투명 페트병",
+                  "투명페트병",
+                  "무색 페트병",
+                  "무색페트병",
+                  "무색 PET병"
+                ]
+              }
+            ],
+            "expected_status": "answered",
+            "expected_source_location": "table-2/row[4]",
+            "provenance": "source_based_constructed",
+            "source_ids": [
+              "jeolla-how",
+              "seodaemun-annex"
+            ]
+          },
+          {
+            "id": "JL-03",
+            "region_family": "전라",
+            "question": "유리병에 뚜껑이 붙어 있응께 어쩧게 버려요?",
+            "district": "서대문구",
+            "expected_standard": "뚜껑이 붙은 유리병은 어떻게 버리나요?",
+            "expected_kind": "condition_preservation",
+            "preserve": [
+              {
+                "concept": "품목",
+                "alternatives": [
+                  "유리병"
+                ]
+              },
+              {
+                "concept": "뚜껑",
+                "alternatives": [
+                  "뚜껑",
+                  "마개"
+                ]
+              }
+            ],
+            "expected_status": "answered",
+            "expected_source_location": "table-2/row[1]",
+            "provenance": "source_based_constructed",
+            "source_ids": [
+              "jeolla-how",
+              "nikl-conversation",
+              "seodaemun-annex"
+            ]
+          },
+          {
+            "id": "JL-04",
+            "region_family": "전라",
+            "question": "서대문구에서 깨진 유리병은 어쩧게 처리해요?",
+            "district": null,
+            "expected_standard": "서대문구에서 깨진 유리병은 어떻게 처리하나요?",
+            "expected_kind": "condition_preservation",
+            "preserve": [
+              {
+                "concept": "품목",
+                "alternatives": [
+                  "유리병"
+                ]
+              },
+              {
+                "concept": "지역",
+                "alternatives": [
+                  "서대문구"
+                ]
+              },
+              {
+                "concept": "파손",
+                "alternatives": [
+                  "깨진",
+                  "깨뜨린",
+                  "파손",
+                  "유리병 조각"
+                ]
+              }
+            ],
+            "expected_status": "insufficient_evidence",
+            "expected_source_location": null,
+            "provenance": "source_based_constructed",
+            "source_ids": [
+              "jeolla-how"
+            ]
+          },
+          {
+            "id": "GS-01",
+            "region_family": "경상",
+            "question": "유리병 우야꼬?",
+            "district": "서대문구",
+            "expected_standard": "유리병은 어떻게 배출하나요?",
+            "expected_kind": "supported_disposal",
+            "preserve": [
+              {
+                "concept": "품목",
+                "alternatives": [
+                  "유리병"
+                ]
+              }
+            ],
+            "expected_status": "answered",
+            "expected_source_location": "table-2/row[1]",
+            "provenance": "source_based_constructed",
+            "source_ids": [
+              "gyeongsang-question",
+              "seodaemun-annex"
+            ]
+          },
+          {
+            "id": "GS-02",
+            "region_family": "경상",
+            "question": "폐건전지는 어떻게 배출하노?",
+            "district": "서대문구",
+            "expected_standard": "폐건전지는 어떻게 배출하나요?",
+            "expected_kind": "supported_disposal",
+            "preserve": [
+              {
+                "concept": "품목",
+                "alternatives": [
+                  "폐건전지",
+                  "건전지",
+                  "전지류"
+                ]
+              }
+            ],
+            "expected_status": "answered",
+            "expected_source_location": "table-2/row[8]",
+            "provenance": "source_based_constructed",
+            "source_ids": [
+              "gyeongsang-ending",
+              "seodaemun-annex"
+            ]
+          },
+          {
+            "id": "GS-03",
+            "region_family": "경상",
+            "question": "깨진 유리병은 우야꼬?",
+            "district": "서대문구",
+            "expected_standard": "깨진 유리병은 어떻게 배출하나요?",
+            "expected_kind": "condition_preservation",
+            "preserve": [
+              {
+                "concept": "품목",
+                "alternatives": [
+                  "유리병"
+                ]
+              },
+              {
+                "concept": "파손",
+                "alternatives": [
+                  "깨진",
+                  "깨뜨린",
+                  "파손",
+                  "유리병 조각"
+                ]
+              }
+            ],
+            "expected_status": "insufficient_evidence",
+            "expected_source_location": null,
+            "provenance": "source_based_constructed",
+            "source_ids": [
+              "gyeongsang-question"
+            ]
+          },
+          {
+            "id": "GS-04",
+            "region_family": "경상",
+            "question": "잠실동에서 투명 페트병 우야꼬?",
+            "district": "서대문구",
+            "expected_standard": "잠실동에서 투명 페트병을 어떻게 배출하나요?",
+            "expected_kind": "needs_region",
+            "preserve": [
+              {
+                "concept": "품목",
+                "alternatives": [
+                  "투명 페트병",
+                  "투명페트병",
+                  "무색 페트병",
+                  "무색페트병",
+                  "무색 PET병"
+                ]
+              },
+              {
+                "concept": "동",
+                "alternatives": [
+                  "잠실동"
+                ]
+              }
+            ],
+            "expected_status": "needs_clarification",
+            "expected_source_location": null,
+            "provenance": "source_based_constructed",
+            "source_ids": [
+              "gyeongsang-question"
+            ]
+          },
+          {
+            "id": "GW-01",
+            "region_family": "강원",
+            "question": "우유팩 아이 씻고 버려도 되니?",
+            "district": "서대문구",
+            "expected_standard": "우유팩을 씻지 않고 버려도 되나요?",
+            "expected_kind": "condition_preservation",
+            "preserve": [
+              {
+                "concept": "품목",
+                "alternatives": [
+                  "우유팩",
+                  "종이팩"
+                ]
+              },
+              {
+                "concept": "세척 부정",
+                "alternatives": [
+                  "씻지 않",
+                  "안 씻",
+                  "헹구지 않",
+                  "안 헹구",
+                  "세척 없이"
+                ]
+              }
+            ],
+            "expected_status": "answered",
+            "expected_source_location": "table-1/row[2]",
+            "provenance": "constructed_review_candidate",
+            "source_ids": [
+              "gangwon-study",
+              "seodaemun-annex"
+            ]
+          },
+          {
+            "id": "GW-02",
+            "region_family": "강원",
+            "question": "투명 페트병은 어떻게 내놓나?",
+            "district": "서대문구",
+            "expected_standard": "투명 페트병은 어떻게 배출하나요?",
+            "expected_kind": "supported_disposal",
+            "preserve": [
+              {
+                "concept": "품목",
+                "alternatives": [
+                  "투명 페트병",
+                  "투명페트병",
+                  "무색 페트병",
+                  "무색페트병",
+                  "무색 PET병"
+                ]
+              }
+            ],
+            "expected_status": "answered",
+            "expected_source_location": "table-2/row[4]",
+            "provenance": "constructed_review_candidate",
+            "source_ids": [
+              "gangwon-study",
+              "seodaemun-annex"
+            ]
+          },
+          {
+            "id": "GW-03",
+            "region_family": "강원",
+            "question": "유리병 뚜껑을 안 빼고 내도 되나?",
+            "district": "서대문구",
+            "expected_standard": "유리병의 뚜껑을 제거하지 않고 배출해도 되나요?",
+            "expected_kind": "condition_preservation",
+            "preserve": [
+              {
+                "concept": "품목",
+                "alternatives": [
+                  "유리병"
+                ]
+              },
+              {
+                "concept": "뚜껑",
+                "alternatives": [
+                  "뚜껑",
+                  "마개"
+                ]
+              },
+              {
+                "concept": "제거 부정",
+                "alternatives": [
+                  "제거하지 않",
+                  "안 빼",
+                  "빼지 않",
+                  "떼지 않",
+                  "안 떼",
+                  "그대로"
+                ]
+              }
+            ],
+            "expected_status": "answered",
+            "expected_source_location": "table-2/row[1]",
+            "provenance": "constructed_review_candidate",
+            "source_ids": [
+              "gangwon-study",
+              "seodaemun-annex"
+            ]
+          },
+          {
+            "id": "GW-04",
+            "region_family": "강원",
+            "question": "우유팩 오늘 저녁에 내놔도 되나?",
+            "district": "서대문구",
+            "expected_standard": "우유팩을 오늘 저녁에 내놓아도 되나요?",
+            "expected_kind": "condition_preservation",
+            "preserve": [
+              {
+                "concept": "품목",
+                "alternatives": [
+                  "우유팩",
+                  "종이팩"
+                ]
+              },
+              {
+                "concept": "시간",
+                "alternatives": [
+                  "오늘 저녁",
+                  "오늘저녁",
+                  "금일 저녁"
+                ]
+              }
+            ],
+            "expected_status": "insufficient_evidence",
+            "expected_source_location": null,
+            "provenance": "constructed_review_candidate",
+            "source_ids": [
+              "gangwon-study"
+            ]
+          },
+          {
+            "id": "JJ-01",
+            "region_family": "제주",
+            "question": "유리병은 어떵 허는고?",
+            "district": "서대문구",
+            "expected_standard": "유리병은 어떻게 배출하나요?",
+            "expected_kind": "supported_disposal",
+            "preserve": [
+              {
+                "concept": "품목",
+                "alternatives": [
+                  "유리병"
+                ]
+              }
+            ],
+            "expected_status": "answered",
+            "expected_source_location": "table-2/row[1]",
+            "provenance": "source_based_constructed",
+            "source_ids": [
+              "jeju-conversation",
+              "seodaemun-annex"
+            ]
+          },
+          {
+            "id": "JJ-02",
+            "region_family": "제주",
+            "question": "우유팩은 어떵 허젠?",
+            "district": "서대문구",
+            "expected_standard": "우유팩은 어떻게 배출하나요?",
+            "expected_kind": "supported_disposal",
+            "preserve": [
+              {
+                "concept": "품목",
+                "alternatives": [
+                  "우유팩",
+                  "종이팩"
+                ]
+              }
+            ],
+            "expected_status": "answered",
+            "expected_source_location": "table-1/row[2]",
+            "provenance": "constructed_review_candidate",
+            "source_ids": [
+              "jeju-education",
+              "seodaemun-annex"
+            ]
+          },
+          {
+            "id": "JJ-03",
+            "region_family": "제주",
+            "question": "투명 페트병은 어떵 배출해야 허우꽈?",
+            "district": "서대문구",
+            "expected_standard": "투명 페트병은 어떻게 배출해야 하나요?",
+            "expected_kind": "supported_disposal",
+            "preserve": [
+              {
+                "concept": "품목",
+                "alternatives": [
+                  "투명 페트병",
+                  "투명페트병",
+                  "무색 페트병",
+                  "무색페트병",
+                  "무색 PET병"
+                ]
+              }
+            ],
+            "expected_status": "answered",
+            "expected_source_location": "table-2/row[4]",
+            "provenance": "constructed_review_candidate",
+            "source_ids": [
+              "jeju-guide",
+              "seodaemun-annex"
+            ]
+          },
+          {
+            "id": "JJ-04",
+            "region_family": "제주",
+            "question": "어떵 허는고?",
+            "district": "서대문구",
+            "expected_standard": "어떻게 하나요?",
+            "expected_kind": "missing_item",
+            "preserve": [],
+            "expected_status": "needs_clarification",
+            "expected_source_location": null,
+            "provenance": "source_based_constructed",
+            "source_ids": [
+              "jeju-conversation"
+            ]
+          },
+          {
+            "id": "COL-01",
+            "region_family": "공통 구어",
+            "question": "유리병은?",
+            "district": "서대문구",
+            "expected_standard": "유리병은 어떻게 배출하나요?",
+            "expected_kind": "supported_disposal",
+            "preserve": [
+              {
+                "concept": "품목",
+                "alternatives": [
+                  "유리병"
+                ]
+              }
+            ],
+            "expected_status": "answered",
+            "expected_source_location": "table-2/row[1]",
+            "provenance": "constructed_review_candidate",
+            "source_ids": [
+              "seodaemun-annex"
+            ]
+          },
+          {
+            "id": "COL-02",
+            "region_family": "공통 구어",
+            "question": "어캄?",
+            "district": null,
+            "expected_standard": "어떻게 해야 하나요?",
+            "expected_kind": "missing_item",
+            "preserve": [],
+            "expected_status": "needs_clarification",
+            "expected_source_location": null,
+            "provenance": "constructed_review_candidate",
+            "source_ids": []
+          },
+          {
+            "id": "COL-03",
+            "region_family": "공통 구어",
+            "question": "이거 와 이래 느리노? 빨리 고쳐도.",
+            "district": "서대문구",
+            "expected_standard": "이것이 왜 이렇게 느린가요? 빨리 고쳐 주세요.",
+            "expected_kind": "out_of_domain",
+            "preserve": [
+              {
+                "concept": "느린 까닭",
+                "alternatives": [
+                  "왜",
+                  "이유"
+                ]
+              },
+              {
+                "concept": "속도",
+                "alternatives": [
+                  "느리",
+                  "느린"
+                ]
+              },
+              {
+                "concept": "수정 요청",
+                "alternatives": [
+                  "고쳐",
+                  "수정"
+                ]
+              },
+              {
+                "concept": "긴급성",
+                "alternatives": [
+                  "빨리",
+                  "신속히"
+                ]
+              }
+            ],
+            "expected_status": "insufficient_evidence",
+            "expected_source_location": null,
+            "provenance": "constructed_review_candidate",
+            "source_ids": []
+          },
+          {
+            "id": "COL-04",
+            "region_family": "공통 구어",
+            "question": "폐건전지 우야지?",
+            "district": null,
+            "expected_standard": "폐건전지를 어떻게 배출하나요?",
+            "expected_kind": "needs_region",
+            "preserve": [
+              {
+                "concept": "품목",
+                "alternatives": [
+                  "폐건전지",
+                  "건전지",
+                  "전지류"
+                ]
+              }
+            ],
+            "expected_status": "needs_clarification",
+            "expected_source_location": null,
+            "provenance": "constructed_review_candidate",
+            "source_ids": []
+          }
+        ]
+      }
+    },
+    {
+      "source_file": "multi_item_cases.json",
+      "case_count": 16,
+      "data": {
+        "schema_version": "1.0",
+        "description": "개인 챗봇 인계 코퍼스에서 복수 품목 질문, 지역 확인, 품목별 조건과 근거를 평가하는 합성 예문이다.",
+        "scope": {
+          "fixture": "공급자 호출 없이 검색 방식을 비교할 때만 같은 구조화 질의를 입력하기 위한 고정 예다. 재작성 품질은 실제 모델 실행에서 따로 검토한다.",
+          "expected_items": "지역 또는 품목을 먼저 확인해야 하는 문항의 기대 품목 목록은 비어 있다. 이름 대안은 같은 품목을 매칭할 때 사용한다.",
+          "expected_evidence": "해당 개인 챗봇에 선택된 문서와 질문 조건을 대조했다. 근거 부족은 이 검토 범위에서 배출 방법을 확인하지 못했다는 뜻이다.",
+          "preserve": "품목별 검색 질의에서 보존할 조건과 표현 예시다. 기대 답변 문구와 별도로 검토한다."
+        },
+        "sources": [
+          {
+            "document_id": "seodaemun-ordinance:attachment:160319453",
+            "title": "서대문구 폐기물 관리 조례 별표 2",
+            "source_url": "https://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=160319453&flNm=%5B%EB%B3%84%ED%91%9C+2%5D+%EB%B6%84%EB%A6%AC%EC%88%98%EA%B1%B0%EB%8C%80%EC%83%81+%EC%9E%AC%ED%99%9C%EC%9A%A9%EA%B0%80%EB%8A%A5%EC%9E%90%EC%9B%90%EC%9D%98+%ED%92%88%EB%AA%A9+%EB%B0%8F+%EB%B6%84%EB%A6%AC%EB%B0%B0%EC%B6%9C%EC%9A%94%EB%A0%B9%0A%28%EC%A0%9C14%EC%A1%B0%EC%A0%9C2%ED%95%AD+%EA%B4%80%EB%A0%A8%29",
+            "processed_path": "data/handoff/jungeun/ordinance-handoff-2026-11-24/processed/annex/2101297_160319453.json"
+          }
+        ],
+        "cases": [
+          {
+            "id": "multi-01",
+            "question": "스치로폼이랑 족발뼈는 우야지?",
+            "district": "서대문구",
+            "fixture": {
+              "search_query": "스티로폼과 족발뼈는 어떻게 배출하나요?",
+              "items": [
+                {
+                  "original_item": "스치로폼",
+                  "item": "스티로폼",
+                  "search_query": "스티로폼은 어떻게 배출하나요?",
+                  "keywords": [
+                    "스티로폼",
+                    "발포합성수지",
+                    "완충재"
+                  ],
+                  "hyde_document": "스티로폼 항목. 발포합성수지 포장재와 완충재 분리배출 안내."
+                },
+                {
+                  "original_item": "족발뼈",
+                  "item": "족발뼈",
+                  "search_query": "족발뼈는 어떻게 배출하나요?",
+                  "keywords": [
+                    "족발뼈",
+                    "돼지뼈"
+                  ],
+                  "hyde_document": "족발뼈 항목. 음식물류 폐기물과 고기를 발라낸 뼈의 배출 구분 안내."
+                }
+              ]
+            },
+            "expected_status": "partial",
+            "expected_resolved_district": "서대문구",
+            "expected_items": [
+              {
+                "item": "스티로폼",
+                "name_alternatives": [
+                  "스티로폼",
+                  "스치로폼",
+                  "발포합성수지",
+                  "발포스티렌"
+                ],
+                "status": "answered",
+                "expected_evidence": [
+                  {
+                    "document_id": "seodaemun-ordinance:attachment:160319453",
+                    "source_location": "table-2/row[6]"
+                  }
+                ],
+                "preserve": [],
+                "scope_note": "포장재와 완충재에 한정해 안내할 수 있다."
+              },
+              {
+                "item": "족발뼈",
+                "name_alternatives": [
+                  "족발뼈"
+                ],
+                "status": "insufficient_evidence",
+                "expected_evidence": [],
+                "preserve": [],
+                "scope_note": "선택한 문서에서 족발뼈의 구체 배출 기준을 확인하지 못했다."
+              }
+            ]
+          },
+          {
+            "id": "multi-02",
+            "question": "유리병하고 우유팩은 어캄?",
+            "district": "서대문구",
+            "fixture": {
+              "search_query": "유리병과 우유팩(종이팩)은 각각 어떻게 배출하나요?",
+              "items": [
+                {
+                  "original_item": "유리병",
+                  "item": "유리병",
+                  "search_query": "유리병을 어떻게 배출하나요?",
+                  "keywords": [
+                    "유리병",
+                    "음료수병"
+                  ],
+                  "hyde_document": "재활용품 분리배출 안내의 음료용 빈 유리병 항목."
+                },
+                {
+                  "original_item": "우유팩",
+                  "item": "종이팩",
+                  "search_query": "우유팩(종이팩)은 어떻게 배출하나요?",
+                  "keywords": [
+                    "우유팩",
+                    "종이팩"
+                  ],
+                  "hyde_document": "종이팩 분리배출 안내의 살균팩·멸균팩과 우유팩 항목."
+                }
+              ]
+            },
+            "expected_status": "answered",
+            "expected_resolved_district": "서대문구",
+            "expected_items": [
+              {
+                "item": "유리병",
+                "name_alternatives": [
+                  "유리 병",
+                  "유리병"
+                ],
+                "status": "answered",
+                "expected_evidence": [
+                  {
+                    "document_id": "seodaemun-ordinance:attachment:160319453",
+                    "source_location": "table-2/row[1]"
+                  }
+                ],
+                "preserve": [],
+                "expected_fact": "병뚜껑을 제거"
+              },
+              {
+                "item": "종이팩",
+                "name_alternatives": [
+                  "종이 팩",
+                  "종이팩",
+                  "우유팩",
+                  "두유팩"
+                ],
+                "status": "answered",
+                "expected_evidence": [
+                  {
+                    "document_id": "seodaemun-ordinance:attachment:160319453",
+                    "source_location": "table-1/row[2]"
+                  }
+                ],
+                "preserve": [],
+                "expected_fact": "종이팩 전용수거함"
+              }
+            ]
+          },
+          {
+            "id": "multi-03",
+            "question": "투명 패트병이랑 폐건전지는 우야노?",
+            "district": "서대문구",
+            "fixture": {
+              "search_query": "투명 페트병과 폐건전지는 어떻게 배출하나요?",
+              "items": [
+                {
+                  "original_item": "투명 패트병",
+                  "item": "투명 페트병",
+                  "search_query": "투명 페트병은 어떻게 배출하나요?",
+                  "keywords": [
+                    "투명 페트병",
+                    "무색 PET병"
+                  ],
+                  "hyde_document": "투명 페트병 항목. 무색 투명한 음료용 폴리에틸렌테레프탈레이트 병 분리배출 안내."
+                },
+                {
+                  "original_item": "폐건전지",
+                  "item": "폐건전지",
+                  "search_query": "폐건전지는 어떻게 배출하나요?",
+                  "keywords": [
+                    "폐건전지",
+                    "전지류"
+                  ],
+                  "hyde_document": "폐건전지 항목. 생활폐기물 재활용 안내의 전지류와 사용한 건전지 항목."
+                }
+              ]
+            },
+            "expected_status": "answered",
+            "expected_resolved_district": "서대문구",
+            "expected_items": [
+              {
+                "item": "투명 페트병",
+                "name_alternatives": [
+                  "투명 페트병",
+                  "투명 패트병",
+                  "무색 PET병",
+                  "무색 투명한 폴리에틸렌테레프탈레이트(PET)병"
+                ],
+                "status": "answered",
+                "expected_evidence": [
+                  {
+                    "document_id": "seodaemun-ordinance:attachment:160319453",
+                    "source_location": "table-2/row[4]"
+                  }
+                ],
+                "preserve": [
+                  {
+                    "concept": "투명한 재질",
+                    "alternatives": [
+                      "투명",
+                      "무색"
+                    ]
+                  }
+                ],
+                "expected_fact": "뚜껑을 닫아"
+              },
+              {
+                "item": "폐건전지",
+                "name_alternatives": [
+                  "폐건전지",
+                  "건전지",
+                  "전지류"
+                ],
+                "status": "answered",
+                "expected_evidence": [
+                  {
+                    "document_id": "seodaemun-ordinance:attachment:160319453",
+                    "source_location": "table-2/row[8]"
+                  }
+                ],
+                "preserve": [],
+                "expected_fact": "전지를 제품에서 분리"
+              }
+            ]
+          },
+          {
+            "id": "multi-04",
+            "question": "연희동에서 유리병, 두유팩, 택배 스티로폼 완충재는 어케 버려요?",
+            "district": null,
+            "fixture": {
+              "search_query": "연희동에서 유리병, 두유팩(종이팩), 택배 스티로폼 완충재를 각각 어떻게 배출하나요?",
+              "items": [
+                {
+                  "original_item": "유리병",
+                  "item": "유리병",
+                  "search_query": "연희동 유리병은 어떻게 배출하나요?",
+                  "keywords": [
+                    "유리병"
+                  ],
+                  "hyde_document": "재활용품 분리배출 안내의 음료용 빈 유리병 항목."
+                },
+                {
+                  "original_item": "두유팩",
+                  "item": "종이팩",
+                  "search_query": "연희동 두유팩(종이팩)은 어떻게 배출하나요?",
+                  "keywords": [
+                    "두유팩",
+                    "종이팩"
+                  ],
+                  "hyde_document": "종이팩 분리배출 안내의 살균팩·멸균팩과 우유팩 항목."
+                },
+                {
+                  "original_item": "택배 스티로폼 완충재",
+                  "item": "스티로폼",
+                  "search_query": "연희동 택배 스티로폼 완충재는 어떻게 배출하나요?",
+                  "keywords": [
+                    "스티로폼",
+                    "택배 완충재",
+                    "발포합성수지"
+                  ],
+                  "hyde_document": "스티로폼 항목. 발포합성수지 포장재와 완충재 분리배출 안내."
+                }
+              ]
+            },
+            "expected_status": "answered",
+            "expected_resolved_district": "서대문구",
+            "expected_items": [
+              {
+                "item": "유리병",
+                "name_alternatives": [
+                  "유리 병",
+                  "유리병"
+                ],
+                "status": "answered",
+                "expected_evidence": [
+                  {
+                    "document_id": "seodaemun-ordinance:attachment:160319453",
+                    "source_location": "table-2/row[1]"
+                  }
+                ],
+                "preserve": []
+              },
+              {
+                "item": "종이팩",
+                "name_alternatives": [
+                  "종이 팩",
+                  "종이팩",
+                  "우유팩",
+                  "두유팩"
+                ],
+                "status": "answered",
+                "expected_evidence": [
+                  {
+                    "document_id": "seodaemun-ordinance:attachment:160319453",
+                    "source_location": "table-1/row[2]"
+                  }
+                ],
+                "preserve": []
+              },
+              {
+                "item": "스티로폼",
+                "name_alternatives": [
+                  "스티로폼",
+                  "스치로폼",
+                  "발포합성수지",
+                  "발포스티렌"
+                ],
+                "status": "answered",
+                "expected_evidence": [
+                  {
+                    "document_id": "seodaemun-ordinance:attachment:160319453",
+                    "source_location": "table-2/row[6]"
+                  }
+                ],
+                "preserve": [
+                  {
+                    "concept": "택배 포장용 완충재",
+                    "alternatives": [
+                      "택배 스티로폼 완충재",
+                      "택배 포장 완충재",
+                      "스티로폼 완충재"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "multi-05",
+            "question": "보증금 있는 유리병은 어디에 반납하고 종이팩은 어떻게 버려요?",
+            "district": "서대문구",
+            "fixture": {
+              "search_query": "보증금이 있는 유리병은 어디에 반납하고 종이팩은 어떻게 배출하나요?",
+              "items": [
+                {
+                  "original_item": "보증금 있는 유리병",
+                  "item": "유리병",
+                  "search_query": "보증금이 있는 유리병을 어디에 반납하나요?",
+                  "keywords": [
+                    "유리병",
+                    "보증금",
+                    "반납"
+                  ],
+                  "hyde_document": "재활용품 분리배출 안내의 음료용 빈 유리병 항목."
+                },
+                {
+                  "original_item": "종이팩",
+                  "item": "종이팩",
+                  "search_query": "종이팩은 어떻게 배출하나요?",
+                  "keywords": [
+                    "종이팩"
+                  ],
+                  "hyde_document": "종이팩 분리배출 안내의 살균팩·멸균팩과 우유팩 항목."
+                }
+              ]
+            },
+            "expected_status": "answered",
+            "expected_resolved_district": "서대문구",
+            "expected_items": [
+              {
+                "item": "유리병",
+                "name_alternatives": [
+                  "유리 병",
+                  "유리병"
+                ],
+                "status": "answered",
+                "expected_evidence": [
+                  {
+                    "document_id": "seodaemun-ordinance:attachment:160319453",
+                    "source_location": "table-2/row[1]"
+                  }
+                ],
+                "preserve": [
+                  {
+                    "concept": "보증금",
+                    "alternatives": [
+                      "보증금"
+                    ]
+                  },
+                  {
+                    "concept": "반납 장소",
+                    "alternatives": [
+                      "어디에 반납",
+                      "반납 장소",
+                      "환불 장소",
+                      "어디서 환불"
+                    ]
+                  }
+                ],
+                "expected_fact": "소매점 등에서 환불"
+              },
+              {
+                "item": "종이팩",
+                "name_alternatives": [
+                  "종이 팩",
+                  "종이팩",
+                  "우유팩",
+                  "두유팩"
+                ],
+                "status": "answered",
+                "expected_evidence": [
+                  {
+                    "document_id": "seodaemun-ordinance:attachment:160319453",
+                    "source_location": "table-1/row[2]"
+                  }
+                ],
+                "preserve": []
+              }
+            ]
+          },
+          {
+            "id": "multi-06",
+            "question": "우유팩을 안 씻었고 투명 페트병 뚜껑은 안 닫았는데 각각 워떻게 버려요?",
+            "district": "서대문구",
+            "fixture": {
+              "search_query": "씻지 않은 우유팩(종이팩)과 투명 페트병 뚜껑을 닫지 않았을 때 각각 어떻게 배출하나요?",
+              "items": [
+                {
+                  "original_item": "우유팩을 안 씻었고",
+                  "item": "종이팩",
+                  "search_query": "씻지 않은 우유팩(종이팩)은 어떻게 배출하나요?",
+                  "keywords": [
+                    "우유팩",
+                    "종이팩",
+                    "씻지 않은"
+                  ],
+                  "hyde_document": "종이팩 분리배출 안내의 살균팩·멸균팩과 우유팩 항목."
+                },
+                {
+                  "original_item": "투명 페트병 뚜껑은 안 닫았는데",
+                  "item": "투명 페트병",
+                  "search_query": "뚜껑을 닫지 않은 투명 페트병은 어떻게 배출하나요?",
+                  "keywords": [
+                    "투명 페트병",
+                    "뚜껑 닫지 않음"
+                  ],
+                  "hyde_document": "투명 페트병 항목. 무색 투명한 음료용 폴리에틸렌테레프탈레이트 병 분리배출 안내."
+                }
+              ]
+            },
+            "expected_status": "answered",
+            "expected_resolved_district": "서대문구",
+            "expected_items": [
+              {
+                "item": "종이팩",
+                "name_alternatives": [
+                  "종이 팩",
+                  "종이팩",
+                  "우유팩",
+                  "두유팩"
+                ],
+                "status": "answered",
+                "expected_evidence": [
+                  {
+                    "document_id": "seodaemun-ordinance:attachment:160319453",
+                    "source_location": "table-1/row[2]"
+                  }
+                ],
+                "preserve": [
+                  {
+                    "concept": "세척하지 않음",
+                    "alternatives": [
+                      "씻지 않",
+                      "안 씻",
+                      "헹구지 않",
+                      "안 헹구"
+                    ]
+                  }
+                ],
+                "expected_fact": "물로 헹구는"
+              },
+              {
+                "item": "투명 페트병",
+                "name_alternatives": [
+                  "투명 페트병",
+                  "투명 패트병",
+                  "무색 PET병",
+                  "무색 투명한 폴리에틸렌테레프탈레이트(PET)병"
+                ],
+                "status": "answered",
+                "expected_evidence": [
+                  {
+                    "document_id": "seodaemun-ordinance:attachment:160319453",
+                    "source_location": "table-2/row[4]"
+                  }
+                ],
+                "preserve": [
+                  {
+                    "concept": "뚜껑을 닫지 않음",
+                    "alternatives": [
+                      "뚜껑을 닫지 않",
+                      "뚜껑은 안 닫",
+                      "뚜껑 안 닫",
+                      "뚜껑이 열린"
+                    ]
+                  }
+                ],
+                "expected_fact": "뚜껑을 닫아"
+              }
+            ]
+          },
+          {
+            "id": "multi-07",
+            "question": "깨진 유리병이랑 우유팩은 우야꼬?",
+            "district": "서대문구",
+            "fixture": {
+              "search_query": "깨진 유리병과 우유팩(종이팩)은 각각 어떻게 배출하나요?",
+              "items": [
+                {
+                  "original_item": "깨진 유리병",
+                  "item": "유리병",
+                  "search_query": "깨진 유리병은 어떻게 배출하나요?",
+                  "keywords": [
+                    "유리병",
+                    "깨진",
+                    "유리 조각"
+                  ],
+                  "hyde_document": "유리병 항목. 깨지거나 파손된 음료병과 유리 조각의 배출 안내."
+                },
+                {
+                  "original_item": "우유팩",
+                  "item": "종이팩",
+                  "search_query": "우유팩(종이팩)은 어떻게 배출하나요?",
+                  "keywords": [
+                    "우유팩",
+                    "종이팩"
+                  ],
+                  "hyde_document": "종이팩 분리배출 안내의 살균팩·멸균팩과 우유팩 항목."
+                }
+              ]
+            },
+            "expected_status": "partial",
+            "expected_resolved_district": "서대문구",
+            "expected_items": [
+              {
+                "item": "유리병",
+                "name_alternatives": [
+                  "유리 병",
+                  "유리병"
+                ],
+                "status": "insufficient_evidence",
+                "expected_evidence": [],
+                "preserve": [
+                  {
+                    "concept": "파손",
+                    "alternatives": [
+                      "깨진",
+                      "깨졌",
+                      "파손",
+                      "부서진",
+                      "유리 조각"
+                    ]
+                  }
+                ],
+                "scope_note": "일반 유리병 행은 파손 유리병의 배출 방법을 명시하지 않는다."
+              },
+              {
+                "item": "종이팩",
+                "name_alternatives": [
+                  "종이 팩",
+                  "종이팩",
+                  "우유팩",
+                  "두유팩"
+                ],
+                "status": "answered",
+                "expected_evidence": [
+                  {
+                    "document_id": "seodaemun-ordinance:attachment:160319453",
+                    "source_location": "table-1/row[2]"
+                  }
+                ],
+                "preserve": []
+              }
+            ]
+          },
+          {
+            "id": "multi-08",
+            "question": "누액 난 폐건전지랑 투명 페트병 어캄?",
+            "district": "서대문구",
+            "fixture": {
+              "search_query": "누액이 난 폐건전지와 투명 페트병은 각각 어떻게 배출하나요?",
+              "items": [
+                {
+                  "original_item": "누액 난 폐건전지",
+                  "item": "폐건전지",
+                  "search_query": "누액이 난 폐건전지는 어떻게 배출하나요?",
+                  "keywords": [
+                    "폐건전지",
+                    "누액",
+                    "새는 건전지"
+                  ],
+                  "hyde_document": "액체가 새는 폐건전지와 전지류 취급 안내."
+                },
+                {
+                  "original_item": "투명 페트병",
+                  "item": "투명 페트병",
+                  "search_query": "투명 페트병은 어떻게 배출하나요?",
+                  "keywords": [
+                    "투명 페트병",
+                    "무색 PET병"
+                  ],
+                  "hyde_document": "투명 페트병 항목. 무색 투명한 음료용 폴리에틸렌테레프탈레이트 병 분리배출 안내."
+                }
+              ]
+            },
+            "expected_status": "partial",
+            "expected_resolved_district": "서대문구",
+            "expected_items": [
+              {
+                "item": "폐건전지",
+                "name_alternatives": [
+                  "폐건전지",
+                  "건전지",
+                  "전지류"
+                ],
+                "status": "insufficient_evidence",
+                "expected_evidence": [],
+                "preserve": [
+                  {
+                    "concept": "누액",
+                    "alternatives": [
+                      "누액",
+                      "액체가 새",
+                      "액이 새",
+                      "유출"
+                    ]
+                  }
+                ],
+                "scope_note": "일반 전지류 행은 누액 건전지의 배출 방법을 명시하지 않는다."
+              },
+              {
+                "item": "투명 페트병",
+                "name_alternatives": [
+                  "투명 페트병",
+                  "투명 패트병",
+                  "무색 PET병",
+                  "무색 투명한 폴리에틸렌테레프탈레이트(PET)병"
+                ],
+                "status": "answered",
+                "expected_evidence": [
+                  {
+                    "document_id": "seodaemun-ordinance:attachment:160319453",
+                    "source_location": "table-2/row[4]"
+                  }
+                ],
+                "preserve": []
+              }
+            ]
+          },
+          {
+            "id": "multi-09",
+            "question": "음식 기름이 잔뜩 묻은 포장용 스티로폼도 재활용되고 유리병은 우야지?",
+            "district": "서대문구",
+            "fixture": {
+              "search_query": "음식 기름이 많이 묻은 포장용 스티로폼도 재활용할 수 있나요? 유리병은 어떻게 배출하나요?",
+              "items": [
+                {
+                  "original_item": "음식 기름이 잔뜩 묻은 포장용 스티로폼",
+                  "item": "스티로폼",
+                  "search_query": "음식 기름이 많이 묻은 포장용 스티로폼도 재활용할 수 있나요?",
+                  "keywords": [
+                    "음식 기름",
+                    "오염된 포장용 스티로폼",
+                    "이물질"
+                  ],
+                  "hyde_document": "스티로폼 항목. 음식물이 많이 묻은 발포스티렌 포장재가 재활용 수거에 해당하는지에 관한 안내."
+                },
+                {
+                  "original_item": "유리병",
+                  "item": "유리병",
+                  "search_query": "유리병은 어떻게 배출하나요?",
+                  "keywords": [
+                    "유리병"
+                  ],
+                  "hyde_document": "재활용품 분리배출 안내의 음료용 빈 유리병 항목."
+                }
+              ]
+            },
+            "expected_status": "answered",
+            "expected_resolved_district": "서대문구",
+            "expected_items": [
+              {
+                "item": "스티로폼",
+                "name_alternatives": [
+                  "스티로폼",
+                  "스치로폼",
+                  "발포합성수지",
+                  "발포스티렌"
+                ],
+                "status": "answered",
+                "expected_evidence": [
+                  {
+                    "document_id": "seodaemun-ordinance:attachment:160319453",
+                    "source_location": "table-2/row[6]"
+                  }
+                ],
+                "preserve": [
+                  {
+                    "concept": "음식 기름 오염",
+                    "alternatives": [
+                      "음식 기름",
+                      "기름때",
+                      "기름 오염"
+                    ]
+                  },
+                  {
+                    "concept": "많은 양",
+                    "alternatives": [
+                      "많이",
+                      "잔뜩",
+                      "심하"
+                    ]
+                  }
+                ],
+                "expected_fact": "이물질이 많이 묻어 있거나",
+                "scope_note": "별표의 심한 오염 발포스티렌 제외 문구가 재활용 가능 여부를 뒷받침한다."
+              },
+              {
+                "item": "유리병",
+                "name_alternatives": [
+                  "유리 병",
+                  "유리병"
+                ],
+                "status": "answered",
+                "expected_evidence": [
+                  {
+                    "document_id": "seodaemun-ordinance:attachment:160319453",
+                    "source_location": "table-2/row[1]"
+                  }
+                ],
+                "preserve": []
+              }
+            ]
+          },
+          {
+            "id": "multi-10",
+            "question": "기름이 잔뜩 묻은 포장용 스티로폼은 어느 봉투에 넣고, 빈 유리병은 어떻게 버려요?",
+            "district": "서대문구",
+            "fixture": {
+              "search_query": "기름이 많이 묻은 포장용 스티로폼은 어떤 봉투에 넣어야 하나요? 빈 유리병은 어떻게 배출하나요?",
+              "items": [
+                {
+                  "original_item": "기름이 잔뜩 묻은 포장용 스티로폼",
+                  "item": "스티로폼",
+                  "search_query": "기름이 많이 묻은 포장용 스티로폼은 어떤 봉투에 넣어야 하나요?",
+                  "keywords": [
+                    "기름",
+                    "오염된 스티로폼",
+                    "봉투"
+                  ],
+                  "hyde_document": "스티로폼 항목. 오염된 발포스티렌 포장재를 넣을 배출 봉투 안내."
+                },
+                {
+                  "original_item": "빈 유리병",
+                  "item": "유리병",
+                  "search_query": "빈 유리병은 어떻게 배출하나요?",
+                  "keywords": [
+                    "빈 유리병",
+                    "유리병"
+                  ],
+                  "hyde_document": "재활용품 분리배출 안내의 음료용 빈 유리병 항목."
+                }
+              ]
+            },
+            "expected_status": "partial",
+            "expected_resolved_district": "서대문구",
+            "expected_items": [
+              {
+                "item": "스티로폼",
+                "name_alternatives": [
+                  "스티로폼",
+                  "스치로폼",
+                  "발포합성수지",
+                  "발포스티렌"
+                ],
+                "status": "insufficient_evidence",
+                "expected_evidence": [],
+                "preserve": [
+                  {
+                    "concept": "기름 오염",
+                    "alternatives": [
+                      "기름"
+                    ]
+                  },
+                  {
+                    "concept": "많은 양",
+                    "alternatives": [
+                      "많이",
+                      "잔뜩",
+                      "심하"
+                    ]
+                  },
+                  {
+                    "concept": "봉투 종류",
+                    "alternatives": [
+                      "어느 봉투",
+                      "어떤 봉투",
+                      "봉투 종류"
+                    ]
+                  }
+                ],
+                "scope_note": "포장재 행에 심한 오염 시 재활용 제외는 나오지만 이 조건에서 사용할 봉투는 명시하지 않는다."
+              },
+              {
+                "item": "유리병",
+                "name_alternatives": [
+                  "유리 병",
+                  "유리병"
+                ],
+                "status": "answered",
+                "expected_evidence": [
+                  {
+                    "document_id": "seodaemun-ordinance:attachment:160319453",
+                    "source_location": "table-2/row[1]"
+                  }
+                ],
+                "preserve": [
+                  {
+                    "concept": "비어 있음",
+                    "alternatives": [
+                      "빈 유리병",
+                      "내용물을 비운",
+                      "비어 있는"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "multi-11",
+            "question": "깨진 유리병이랑 누액 난 폐건전지는 우야지?",
+            "district": "서대문구",
+            "fixture": {
+              "search_query": "깨진 유리병과 누액이 난 폐건전지를 각각 어떻게 배출하나요?",
+              "items": [
+                {
+                  "original_item": "깨진 유리병",
+                  "item": "유리병",
+                  "search_query": "깨진 유리병을 어떻게 배출하나요?",
+                  "keywords": [
+                    "깨진 유리병",
+                    "유리 조각"
+                  ],
+                  "hyde_document": "깨진 유리병과 유리 조각의 배출 안내."
+                },
+                {
+                  "original_item": "누액 난 폐건전지",
+                  "item": "폐건전지",
+                  "search_query": "누액이 난 폐건전지를 어떻게 배출하나요?",
+                  "keywords": [
+                    "누액",
+                    "폐건전지"
+                  ],
+                  "hyde_document": "액체가 새는 폐건전지의 배출 안내."
+                }
+              ]
+            },
+            "expected_status": "insufficient_evidence",
+            "expected_resolved_district": "서대문구",
+            "expected_items": [
+              {
+                "item": "유리병",
+                "name_alternatives": [
+                  "유리 병",
+                  "유리병"
+                ],
+                "status": "insufficient_evidence",
+                "expected_evidence": [],
+                "preserve": [
+                  {
+                    "concept": "파손",
+                    "alternatives": [
+                      "깨진",
+                      "파손",
+                      "유리 조각"
+                    ]
+                  }
+                ]
+              },
+              {
+                "item": "폐건전지",
+                "name_alternatives": [
+                  "폐건전지",
+                  "건전지",
+                  "전지류"
+                ],
+                "status": "insufficient_evidence",
+                "expected_evidence": [],
+                "preserve": [
+                  {
+                    "concept": "누액",
+                    "alternatives": [
+                      "누액",
+                      "액체가 새",
+                      "액이 새",
+                      "유출"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "multi-12",
+            "question": "송파구에서 유리병이랑 폐건전지는 어캄?",
+            "district": "송파구",
+            "fixture": {
+              "search_query": "송파구에서 유리병과 폐건전지는 각각 어떻게 배출하나요?",
+              "items": [
+                {
+                  "original_item": "유리병",
+                  "item": "유리병",
+                  "search_query": "송파구 유리병은 어떻게 배출하나요?",
+                  "keywords": [
+                    "송파구",
+                    "유리병"
+                  ],
+                  "hyde_document": "재활용품 분리배출 안내의 음료용 빈 유리병 항목."
+                },
+                {
+                  "original_item": "폐건전지",
+                  "item": "폐건전지",
+                  "search_query": "송파구 폐건전지는 어떻게 배출하나요?",
+                  "keywords": [
+                    "송파구",
+                    "폐건전지"
+                  ],
+                  "hyde_document": "폐건전지 항목. 생활폐기물 재활용 안내의 전지류와 사용한 건전지 항목."
+                }
+              ]
+            },
+            "expected_status": "insufficient_evidence",
+            "expected_resolved_district": "송파구",
+            "expected_items": [
+              {
+                "item": "유리병",
+                "name_alternatives": [
+                  "유리 병",
+                  "유리병"
+                ],
+                "status": "insufficient_evidence",
+                "expected_evidence": [],
+                "preserve": []
+              },
+              {
+                "item": "폐건전지",
+                "name_alternatives": [
+                  "폐건전지",
+                  "건전지",
+                  "전지류"
+                ],
+                "status": "insufficient_evidence",
+                "expected_evidence": [],
+                "preserve": []
+              }
+            ],
+            "scope_note": "선택 코퍼스의 송파구 조례·규칙 조문에는 두 품목의 배출 방법 근거를 찾지 못했다."
+          },
+          {
+            "id": "multi-13",
+            "question": "잠실동에서 유리병이랑 우유팩은 어캄?",
+            "district": "서대문구",
+            "fixture": {
+              "search_query": "잠실동에서 유리병과 우유팩(종이팩)은 각각 어떻게 배출하나요?",
+              "items": [
+                {
+                  "original_item": "유리병",
+                  "item": "유리병",
+                  "search_query": "잠실동 유리병은 어떻게 배출하나요?",
+                  "keywords": [
+                    "유리병"
+                  ],
+                  "hyde_document": "음료용 빈 유리병 분리배출 안내."
+                },
+                {
+                  "original_item": "우유팩",
+                  "item": "종이팩",
+                  "search_query": "잠실동 우유팩(종이팩)은 어떻게 배출하나요?",
+                  "keywords": [
+                    "우유팩",
+                    "종이팩"
+                  ],
+                  "hyde_document": "우유팩 등을 포함한 종이팩류 분리배출 안내."
+                }
+              ]
+            },
+            "expected_status": "needs_clarification",
+            "expected_resolved_district": null,
+            "expected_items": [],
+            "scope_note": "선택한 서대문구와 질문에 나온 잠실동의 소속 구가 충돌한다."
+          },
+          {
+            "id": "multi-14",
+            "question": "유리병이랑 종이팩은 우야지?",
+            "district": null,
+            "fixture": {
+              "search_query": "유리병과 종이팩은 각각 어떻게 배출하나요?",
+              "items": [
+                {
+                  "original_item": "유리병",
+                  "item": "유리병",
+                  "search_query": "유리병은 어떻게 배출하나요?",
+                  "keywords": [
+                    "유리병"
+                  ],
+                  "hyde_document": "음료용 빈 유리병 분리배출 안내."
+                },
+                {
+                  "original_item": "종이팩",
+                  "item": "종이팩",
+                  "search_query": "종이팩은 어떻게 배출하나요?",
+                  "keywords": [
+                    "종이팩"
+                  ],
+                  "hyde_document": "우유팩 등을 포함한 종이팩류 분리배출 안내."
+                }
+              ]
+            },
+            "expected_status": "needs_clarification",
+            "expected_resolved_district": null,
+            "expected_items": [],
+            "scope_note": "배출 지역 확인이 필요하다."
+          },
+          {
+            "id": "multi-15",
+            "question": "어캄?",
+            "district": "서대문구",
+            "fixture": {
+              "search_query": "어떻게 해야 하나요?",
+              "items": []
+            },
+            "expected_status": "needs_clarification",
+            "expected_resolved_district": "서대문구",
+            "expected_items": [],
+            "scope_note": "배출 품목이 생략되어 품목 확인이 필요하다."
+          },
+          {
+            "id": "multi-16",
+            "question": "유리컵하고 폐건전지는 어떵 허는고?",
+            "district": "서대문구",
+            "fixture": {
+              "search_query": "유리컵과 폐건전지는 각각 어떻게 배출하나요?",
+              "items": [
+                {
+                  "original_item": "유리컵",
+                  "item": "유리컵",
+                  "search_query": "유리컵은 어떻게 배출하나요?",
+                  "keywords": [
+                    "유리컵",
+                    "컵 유리"
+                  ],
+                  "hyde_document": "음료 컵으로 쓰는 유리컵의 배출 방법 안내."
+                },
+                {
+                  "original_item": "폐건전지",
+                  "item": "폐건전지",
+                  "search_query": "폐건전지는 어떻게 배출하나요?",
+                  "keywords": [
+                    "폐건전지",
+                    "전지류"
+                  ],
+                  "hyde_document": "폐건전지 항목. 생활폐기물 재활용 안내의 전지류와 사용한 건전지 항목."
+                }
+              ]
+            },
+            "expected_status": "partial",
+            "expected_resolved_district": "서대문구",
+            "expected_items": [
+              {
+                "item": "유리컵",
+                "name_alternatives": [
+                  "유리컵"
+                ],
+                "status": "insufficient_evidence",
+                "expected_evidence": [],
+                "preserve": [],
+                "scope_note": "일반 유리병 행을 유리컵의 근거로 쓰지 않는다."
+              },
+              {
+                "item": "폐건전지",
+                "name_alternatives": [
+                  "폐건전지",
+                  "건전지",
+                  "전지류"
+                ],
+                "status": "answered",
+                "expected_evidence": [
+                  {
+                    "document_id": "seodaemun-ordinance:attachment:160319453",
+                    "source_location": "table-2/row[8]"
+                  }
+                ],
+                "preserve": []
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "source_file": "personal_retrieval_cases.json",
+      "case_count": 22,
+      "data": {
+        "schema_version": "1.0",
+        "dataset_scope": "development_only",
+        "description": "개인 포크에서 새로 연결한 품목별 근거와 적용 지역을 확인하는 개발용 합성 문항이다. 구현 중 작성한 문항이며 독립 평가로 사용하지 않는다.",
+        "source_scope": "서대문구·송파구 조례와 시행규칙, 서대문구 별표 2, 시각 검증한 송파구 공식 안내 PDF 9개 발췌를 같은 색인에 넣었다. 근거 부족은 이 색인과 확인한 적용 조건 범위에서의 판정이다.",
+        "sources": [
+          {
+            "document_id": "seodaemun-ordinance:attachment:160319453",
+            "district": "서대문구",
+            "url": "https://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=160319453&flNm=%5B%EB%B3%84%ED%91%9C+2%5D+%EB%B6%84%EB%A6%AC%EC%88%98%EA%B1%B0%EB%8C%80%EC%83%81+%EC%9E%AC%ED%99%9C%EC%9A%A9%EA%B0%80%EB%8A%A5%EC%9E%90%EC%9B%90%EC%9D%98+%ED%92%88%EB%AA%A9+%EB%B0%8F+%EB%B6%84%EB%A6%AC%EB%B0%B0%EC%B6%9C%EC%9A%94%EB%A0%B9%0A%28%EC%A0%9C14%EC%A1%B0%EC%A0%9C2%ED%95%AD+%EA%B4%80%EB%A0%A8%29",
+            "evidence_field": "row.cells[origin_col=2].text"
+          },
+          {
+            "document_id": "seodaemun-rules",
+            "district": "서대문구",
+            "url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2101385",
+            "evidence_field": "text",
+            "subsection": "제3조제1항제1호"
+          },
+          {
+            "document_id": "songpa-rules",
+            "district": "송파구",
+            "url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=1481479",
+            "evidence_field": "text",
+            "subsection": "제2조제1항제1호"
+          }
+        ],
+        "cases": [
+          {
+            "id": "cardboard-fold",
+            "question": "테이프 붙은 골판지 박스는 우야지?",
+            "district": "서대문구",
+            "expected_status": "answered",
+            "items": [
+              {
+                "item": "골판지",
+                "document_id": "seodaemun-ordinance:attachment:160319453",
+                "source_location": "table-1/row[1]",
+                "status": "answered",
+                "expected_fragment": "테이프ㆍ철핀"
+              }
+            ]
+          },
+          {
+            "id": "newspaper-bundle",
+            "question": "연희동에서 폐신문지는 어케 내놔요?",
+            "district": null,
+            "expected_status": "answered",
+            "items": [
+              {
+                "item": "신문지",
+                "document_id": "seodaemun-ordinance:attachment:160319453",
+                "source_location": "table-1/row[3]",
+                "status": "answered",
+                "expected_fragment": "차곡차곡 쌓은 후 묶어서"
+              }
+            ]
+          },
+          {
+            "id": "notebook-spiral",
+            "question": "스프링 달린 공책은 어쩧게 버려요?",
+            "district": "서대문구",
+            "expected_status": "answered",
+            "items": [
+              {
+                "item": "책자·공책",
+                "document_id": "seodaemun-ordinance:attachment:160319453",
+                "source_location": "table-1/row[4]",
+                "status": "answered",
+                "expected_fragment": "공책의 스프링"
+              }
+            ]
+          },
+          {
+            "id": "paper-cup-rinse",
+            "question": "일회용 종이컵은 어떻게 처리해요?",
+            "district": "서대문구",
+            "expected_status": "answered",
+            "items": [
+              {
+                "item": "종이컵",
+                "document_id": "seodaemun-ordinance:attachment:160319453",
+                "source_location": "table-1/row[5]",
+                "status": "answered",
+                "expected_fragment": "압착하여 봉투에 넣거나 한데 묶어서"
+              }
+            ]
+          },
+          {
+            "id": "beverage-can-rinse",
+            "question": "마신 알루미늄캔은 워떻게 배출해요?",
+            "district": "서대문구",
+            "expected_status": "answered",
+            "items": [
+              {
+                "item": "금속캔",
+                "document_id": "seodaemun-ordinance:attachment:160319453",
+                "source_location": "table-1/row[7]",
+                "status": "answered",
+                "expected_fragment": "플라스틱 뚜껑 등"
+              }
+            ]
+          },
+          {
+            "id": "scrap-metal",
+            "question": "철사못은 어디에 버려요?",
+            "district": "서대문구",
+            "expected_status": "answered",
+            "items": [
+              {
+                "item": "고철",
+                "document_id": "seodaemun-ordinance:attachment:160319453",
+                "source_location": "table-2/row[2]",
+                "status": "answered",
+                "expected_fragment": "봉투에 넣거나 끈으로 묶어서"
+              }
+            ]
+          },
+          {
+            "id": "plastic-tray",
+            "question": "플라스틱 트레이는 어떤 식으로 버려요?",
+            "district": "서대문구",
+            "expected_status": "answered",
+            "items": [
+              {
+                "item": "합성수지 용기",
+                "document_id": "seodaemun-ordinance:attachment:160319453",
+                "source_location": "table-2/row[5]",
+                "status": "answered",
+                "expected_fragment": "부착상표 등을 제거"
+              }
+            ]
+          },
+          {
+            "id": "old-clothing",
+            "question": "헌옷은 우야꼬?",
+            "district": "서대문구",
+            "expected_status": "answered",
+            "items": [
+              {
+                "item": "의류",
+                "document_id": "seodaemun-ordinance:attachment:160319453",
+                "source_location": "table-2/row[7]",
+                "status": "answered",
+                "expected_fragment": "인근에 비치된 수거함"
+              }
+            ]
+          },
+          {
+            "id": "intact-fluorescent",
+            "question": "다 쓴 폐형광등은 어떻게 내놓나?",
+            "district": "서대문구",
+            "expected_status": "answered",
+            "items": [
+              {
+                "item": "형광등",
+                "document_id": "seodaemun-ordinance:attachment:160319453",
+                "source_location": "table-2/row[9]",
+                "status": "answered",
+                "expected_fragment": "깨지지 않은 상태로"
+              }
+            ]
+          },
+          {
+            "id": "small-appliance",
+            "question": "소형 폐가전 버릴라는데 어캄?",
+            "district": "서대문구",
+            "expected_status": "answered",
+            "items": [
+              {
+                "item": "소형가전",
+                "document_id": "seodaemun-ordinance:attachment:160319453",
+                "source_location": "table-2/row[10]",
+                "status": "answered",
+                "expected_fragment": "구청 접수 후 배출"
+              }
+            ]
+          },
+          {
+            "id": "seodaemun-coal-ash",
+            "question": "서대문구에서 연탄재는 워치게 버려요?",
+            "district": null,
+            "expected_status": "answered",
+            "items": [
+              {
+                "item": "연탄재",
+                "document_id": "seodaemun-rules",
+                "source_location": "조문/조[3] (조문번호 000300)",
+                "status": "answered",
+                "expected_fragment": "규격봉투 등에 담아 분리"
+              }
+            ]
+          },
+          {
+            "id": "songpa-coal-ash",
+            "question": "집에서 나온 연탄재는 어떵 허는고?",
+            "district": "송파구",
+            "expected_status": "answered",
+            "items": [
+              {
+                "item": "연탄재",
+                "document_id": "songpa-rules",
+                "source_location": "조문/조[2] (조문번호 000200)",
+                "status": "answered",
+                "expected_fragment": "순수한 연탄재만 비닐 등의 용기"
+              }
+            ]
+          },
+          {
+            "id": "matching-different-rows",
+            "question": "금속캔이랑 골판지 박스는 어떻게 버려요?",
+            "district": "서대문구",
+            "expected_status": "answered",
+            "items": [
+              {
+                "item": "금속캔",
+                "document_id": "seodaemun-ordinance:attachment:160319453",
+                "source_location": "table-1/row[7]",
+                "status": "answered",
+                "expected_fragment": "플라스틱 뚜껑 등"
+              },
+              {
+                "item": "골판지",
+                "document_id": "seodaemun-ordinance:attachment:160319453",
+                "source_location": "table-1/row[1]",
+                "status": "answered",
+                "expected_fragment": "테이프ㆍ철핀"
+              }
+            ]
+          },
+          {
+            "id": "broken-fluorescent-with-can",
+            "question": "깨진 폐형광등이랑 통조림캔은 어캄?",
+            "district": "서대문구",
+            "expected_status": "partial",
+            "items": [
+              {
+                "item": "형광등",
+                "document_id": null,
+                "source_location": null,
+                "status": "insufficient_evidence"
+              },
+              {
+                "item": "금속캔",
+                "document_id": "seodaemun-ordinance:attachment:160319453",
+                "source_location": "table-1/row[7]",
+                "status": "answered",
+                "expected_fragment": "플라스틱 뚜껑 등"
+              }
+            ]
+          },
+          {
+            "id": "laminated-cardboard-with-newspaper",
+            "question": "안쪽 비닐이 종이에서 분리되지 않는 골판지 보냉 박스랑 신문지는 어캄?",
+            "district": "서대문구",
+            "expected_status": "partial",
+            "items": [
+              {
+                "item": "골판지",
+                "document_id": null,
+                "source_location": null,
+                "status": "insufficient_evidence"
+              },
+              {
+                "item": "신문지",
+                "document_id": "seodaemun-ordinance:attachment:160319453",
+                "source_location": "table-1/row[3]",
+                "status": "answered",
+                "expected_fragment": "차곡차곡 쌓은 후 묶어서"
+              }
+            ]
+          },
+          {
+            "id": "songpa-unconfirmed-item",
+            "question": "송파구에서 종이컵 버리는 법 알려줘요.",
+            "district": "송파구",
+            "expected_status": "insufficient_evidence",
+            "items": [
+              {
+                "item": "종이컵",
+                "document_id": null,
+                "source_location": null,
+                "status": "insufficient_evidence"
+              }
+            ]
+          },
+          {
+            "id": "district-conflict",
+            "question": "잠실동에서 연탄재는 우야지?",
+            "district": "서대문구",
+            "expected_status": "needs_clarification",
+            "items": []
+          },
+          {
+            "id": "songpa-pdf-compound",
+            "question": "스치로폼이랑 족발뼈는 우야지?",
+            "district": "송파구",
+            "expected_resolved_district": "송파구",
+            "expected_status": "answered",
+            "items": [
+              {
+                "item": "스티로폼",
+                "status": "answered",
+                "document_id": "songpa-recycling-guide",
+                "source_location": "PDF 6쪽 · 인쇄 10쪽 · 흰색 스티로폼류",
+                "expected_fragment": "테이프"
+              },
+              {
+                "item": "족발뼈",
+                "status": "answered",
+                "document_id": "songpa-recycling-guide",
+                "source_location": "PDF 10쪽 · 인쇄 18쪽 · 음식물류 폐기물 배출 방식",
+                "expected_fragment": "종량제 봉투"
+              }
+            ]
+          },
+          {
+            "id": "songpa-pdf-battery",
+            "question": "다 쓴 폐건전지는 어디에 버려요?",
+            "district": "송파구",
+            "expected_resolved_district": "송파구",
+            "expected_status": "answered",
+            "items": [
+              {
+                "item": "폐건전지",
+                "status": "answered",
+                "document_id": "songpa-recycling-guide",
+                "source_location": "PDF 8쪽 · 인쇄 15쪽 · 폐건전지·보조배터리",
+                "expected_fragment": "전용 수거함"
+              }
+            ]
+          },
+          {
+            "id": "songpa-pdf-broken-glass",
+            "question": "깨진 유리병은 어캄?",
+            "district": "송파구",
+            "expected_resolved_district": "송파구",
+            "expected_status": "answered",
+            "items": [
+              {
+                "item": "유리병",
+                "status": "answered",
+                "document_id": "songpa-recycling-guide",
+                "source_location": "PDF 6쪽 · 인쇄 11쪽 · 깨진 유리",
+                "expected_fragment": "특수규격마대"
+              }
+            ]
+          },
+          {
+            "id": "songpa-pdf-intact-glass",
+            "question": "안 깨진 유리병은 어캄?",
+            "district": "송파구",
+            "expected_resolved_district": "송파구",
+            "expected_status": "answered",
+            "items": [
+              {
+                "item": "유리병",
+                "status": "answered",
+                "document_id": "songpa-recycling-guide",
+                "source_location": "PDF 6쪽 · 인쇄 11쪽 · 유리병류",
+                "expected_fragment": "물로 헹군"
+              }
+            ]
+          },
+          {
+            "id": "songpa-pdf-damaged-battery",
+            "question": "액이 새는 폐건전지는 우야지?",
+            "district": "송파구",
+            "expected_resolved_district": "송파구",
+            "expected_status": "insufficient_evidence",
+            "items": [
+              {
+                "item": "폐건전지",
+                "status": "insufficient_evidence",
+                "document_id": null,
+                "source_location": null
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
