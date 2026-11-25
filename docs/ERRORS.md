@@ -164,3 +164,19 @@ info.detail        # 실행 기록에 남긴다. 예: "ValueError: boom"
 `rewrite.py`의 모델 호출과 출력 검사에 적용했다. 실행 중 정제 실패는 기존 파이프라인이 잡아 지역 해석이 끝난 `resolved.search_query`로 검색을 계속한다. `prompt_runtime.py`에서 호출 함수가 누락된 경우는 런타임 생성 시 실패하며 검색 복귀와는 별개다.
 
 `rewrite_question()`의 반환 필드는 변경하지 않았다. 실행 중 정제 실패의 코드는 [파이프라인 연결](#파이프라인-연결)에 따라 `rewrite` 단계 기록의 `error_code`에 남으며, `category`는 아직 기록하지 않는다. 모델 요청·응답 본문은 상세 메시지에 넣지 않는다.
+
+## 환경 설정과 모델 호출
+
+공용 모듈이 제공하는 오류 코드다. 기존 진입점과 생성·정제 모듈은 아직 이 모듈을 호출하지 않으며, 연결은 각 담당자와 맞춘 뒤 별도 변경으로 진행한다.
+
+| 모듈 | 클래스 | 기존 타입 | 분류 | 코드 |
+| --- | --- | --- | --- | --- |
+| [`src/common/env.py`](../src/common/env.py) | `MissingEnvironmentError` | `ValueError` | `configuration` | `common.missing_env` |
+| | `EnvironmentFileMissingError` | `FileNotFoundError` | `configuration` | `common.env_file_missing` |
+| [`src/infrastructure/chat_models.py`](../src/infrastructure/chat_models.py) | `ModelCallError` | `RuntimeError` | `external_service` | 기본 `infrastructure.llm_call_failed`, 시간 초과는 `infrastructure.llm_timeout` |
+| | `ModelOutputError` | `TypeError` | `contract_violation` | `infrastructure.llm_invalid_output` |
+
+- `require_env(name)`은 값이 없거나 공백뿐일 때 실패하며, 메시지에는 변수 이름만 넣고 값은 넣지 않는다. `load_environment()`는 진입점에서만 호출하고 이미 설정된 환경변수를 덮어쓰지 않는다. 경로를 생략했을 때 `.env`가 없으면 그대로 진행한다.
+- `create_chat_model()`은 `OPENAI_API_KEY`가 없으면 SDK 예외 대신 `common.missing_env`로 실패한다. 기본값은 재시도 0회, timeout 30초다. SDK의 자동 재시도는 기록에 남지 않아 시도 수와 응답 시간을 왜곡하므로, 재시도가 필요하면 호출하는 쪽에서 시도마다 기록하며 수행한다.
+- `invoke_chat()`은 OpenAI 오류만 `ModelCallError`로 바꾸고 원래 예외를 `__cause__`로 보존한다. 다른 예외는 바꾸지 않아 `common.unexpected_error`로 기록된다. 코드 버그뿐 아니라 langchain-openai가 형식이 다른 응답 본문(호환 프록시 등)에 내는 `ValueError`·`KeyError`도 여기에 해당한다. 제공자 메시지에 포함된 키 형식 문자열은 가린다. Responses API 응답처럼 content가 블록 목록이면 문자열 항목과 text 블록만 이어 붙여 돌려주며, 앞뒤 공백은 그대로 둔다. 문자열이든 블록 목록이든 답변 텍스트가 없거나 공백뿐이면(tool 호출만 있는 응답 포함) `infrastructure.llm_invalid_output`이다.
+- 로그는 각 모듈에서 `logging.getLogger(__name__)`을 쓰고, 진입점이 [`src/common/log_setup.py`](../src/common/log_setup.py)의 `configure_logging()`을 한 번 호출한다. 이 함수가 붙인 핸들러의 출력에서는 `sk-…` 형식 키가 메시지, 인자와 traceback 모두에서 가려진다. 다른 곳에서 먼저 붙인 루트 핸들러(`logging.basicConfig`, `OPENAI_LOG` 환경변수로 켠 SDK 로그 등)는 바꾸지 않으므로 그 출력은 가려지지 않는다.
