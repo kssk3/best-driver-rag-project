@@ -104,6 +104,20 @@ def resolve_region(question: str) -> dict:
     return {"status": "ok", "district": district, "dong": dong}
 
 
+def _confirmed_selected_district(request: PipelineRequest) -> bool:
+    """사용자가 충돌을 알고 고른 구로 확정했는가.
+
+    파이프라인은 해석된 구가 요청의 구와 다르면 오류를 내므로, 확정 값은 요청의 구(고른 구)와
+    같을 때만 인정한다. 지원하지 않는 구는 인정하지 않는다.
+    """
+    selected = request.district
+    return (
+        selected is not None
+        and selected in SUPPORTED_DISTRICTS
+        and request.conditions.get("district") == selected
+    )
+
+
 def _ask_unsupported(
     request: PipelineRequest, district: str, dong: str | None
 ) -> ResolvedQuery:
@@ -134,10 +148,15 @@ def resolve_request(request: PipelineRequest) -> ResolvedQuery:
     해석 입력: 질문 속 동 → (없으면) 화면에서 받은 동(request.dong)
                → (그래도 없으면) 질문 속 구 이름 또는 화면에서 고른 구.
     검사 순서: ambiguous → unsupported → no_dong → 고른 구와 충돌 → ok.
+    고른 구와 충돌해서 되묻기를 받은 사용자가 고른 구를 그대로 확정하면
+    (conditions["district"]가 고른 구와 같다) 같은 충돌을 되풀이해 묻지 않고 고른 구로 해석한다.
+    이때 고른 구와 맞지 않는 동은 버리고 구만 쓴다(region_status는 no_dong).
+    ambiguous와 unsupported는 확정으로 덮지 않는다.
     질문 다듬기는 다른 단계 담당이므로 search_query는 항상 원질문을 쓴다.
     """
     region = resolve_region(request.question)
     selected = request.district  # 사용자가 화면에서 고른 구 (없으면 None)
+    confirmed = _confirmed_selected_district(request)
 
     # 질문에 동이 없으면 화면에서 따로 받은 동도 같은 규칙(매핑·지원 범위·충돌)으로
     # 해석한다. 검사 없이 복사하면 송파구/연희동처럼 맞지 않는 짝이 검색으로 넘어간다.
@@ -170,7 +189,12 @@ def resolve_request(request: PipelineRequest) -> ResolvedQuery:
         named = find_district(request.question)
 
         # 질문 속 구와 고른 구가 다르면 어느 쪽으로도 덮어쓰지 않고 되묻는다.
-        if named is not None and selected is not None and named != selected:
+        if (
+            named is not None
+            and selected is not None
+            and named != selected
+            and not confirmed
+        ):
             return ResolvedQuery(
                 search_query=request.question,
                 status="needs_clarification",
@@ -181,7 +205,7 @@ def resolve_request(request: PipelineRequest) -> ResolvedQuery:
                 ),
             )
 
-        district = named or selected
+        district = selected if confirmed else named or selected
         if district is None:
             return ResolvedQuery(
                 search_query=request.question,
@@ -204,6 +228,13 @@ def resolve_request(request: PipelineRequest) -> ResolvedQuery:
     # 고른 구와 다르면 어느 쪽으로도 덮어쓰지 않고 되묻는다.
     # (파이프라인은 고른 구와 다른 구를 resolved로 받으면 오류를 낸다.)
     if selected is not None and selected != region["district"]:
+        if confirmed:
+            # 사용자가 충돌을 알고 고른 구로 확정했다. 맞지 않는 동은 버리고 구만 쓴다.
+            return ResolvedQuery(
+                search_query=request.question,
+                region_status="no_dong",
+                district=selected,
+            )
         return ResolvedQuery(
             search_query=request.question,
             status="needs_clarification",

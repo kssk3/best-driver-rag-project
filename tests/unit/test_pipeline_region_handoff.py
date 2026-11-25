@@ -84,3 +84,39 @@ def test_generator_keeps_selected_district_when_question_has_no_dong():
 
     assert observed["request"]["district"] == "서대문구"
     assert observed["request"]["dong"] is None
+
+
+def test_confirmed_selected_district_gets_past_conflict_in_a_full_run():
+    # 질문은 송파구, 화면은 서대문구, 사용자가 서대문구를 확정 → 되묻기 없이 서대문구로 진행한다.
+    observed: dict = {}
+    runner = RAGPipeline(
+        resolver=resolve_request,
+        retriever=_retrieve,
+        generator=_capturing_generator(observed),
+    )
+
+    record = runner.run(
+        PipelineRequest(
+            question="송파구 페트병 언제 버려요?",
+            district="서대문구",
+            conditions={"district": "서대문구"},
+        )
+    )
+
+    assert record.response.status == "answered"
+    assert record.resolved_query.district == "서대문구"
+    assert observed["request"]["district"] == "서대문구"
+
+
+def test_same_conflict_without_confirmation_still_asks():
+    runner = RAGPipeline(
+        resolver=resolve_request,
+        retriever=_retrieve,
+        generator=_capturing_generator({}),
+    )
+
+    record = runner.run(
+        PipelineRequest(question="송파구 페트병 언제 버려요?", district="서대문구")
+    )
+
+    assert record.response.status == "needs_clarification"

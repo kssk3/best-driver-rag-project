@@ -163,3 +163,70 @@ def test_resolve_request_checks_structured_dong_against_selected_district():
     assert result.status == "needs_clarification"
     assert "송파구" in result.clarification_question
     assert "서대문구" in result.clarification_question
+
+
+# ---------------------------------------------------------------------------
+# 충돌 되묻기에 고른 구로 확정하면 같은 되묻기를 되풀이하지 않는다
+# ---------------------------------------------------------------------------
+
+
+def test_resolve_request_uses_selected_district_when_user_confirms_it_over_named_district():
+    # 질문은 송파구, 화면은 서대문구인데 사용자가 서대문구를 확정했다.
+    request = PipelineRequest(
+        question="송파구 페트병 언제 버려요?",
+        district="서대문구",
+        conditions={"district": "서대문구"},
+    )
+    result = resolve_request(request)
+
+    assert result.status == "resolved"
+    assert result.region_status == "no_dong"
+    assert result.district == "서대문구"
+    assert result.dong is None
+
+
+def test_resolve_request_drops_conflicting_dong_when_user_confirms_selected_district():
+    # 질문 속 연희동(서대문구)과 고른 송파구가 충돌, 사용자가 송파구를 확정했다.
+    # 맞지 않는 동은 버리고 구만 쓴다.
+    request = PipelineRequest(
+        question="연희동 페트병 언제 버려요?",
+        district="송파구",
+        conditions={"district": "송파구"},
+    )
+    result = resolve_request(request)
+
+    assert result.status == "resolved"
+    assert result.region_status == "no_dong"
+    assert result.district == "송파구"
+    assert result.dong is None
+
+
+def test_resolve_request_ignores_confirmation_that_differs_from_selected_district():
+    # 확정 값이 요청의 구와 다르면 인정하지 않는다(파이프라인이 구 불일치를 오류로 보기 때문).
+    request = PipelineRequest(
+        question="송파구 페트병 언제 버려요?",
+        district="서대문구",
+        conditions={"district": "송파구"},
+    )
+    result = resolve_request(request)
+
+    assert result.status == "needs_clarification"
+    assert "송파구" in result.clarification_question
+    assert "서대문구" in result.clarification_question
+
+
+def test_resolve_request_does_not_let_confirmation_cover_unsupported_or_shared_dong():
+    confirmed = {"district": "서대문구"}
+    unsupported = resolve_request(
+        PipelineRequest(
+            question="역삼동 쓰레기 언제?", district="서대문구", conditions=confirmed
+        )
+    )
+    shared = resolve_request(
+        PipelineRequest(
+            question="신사동 쓰레기 언제?", district="서대문구", conditions=confirmed
+        )
+    )
+
+    assert unsupported.region_status == "unsupported"
+    assert shared.region_status == "ambiguous"
