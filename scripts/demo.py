@@ -7,6 +7,7 @@ from uuid import uuid4
 
 from src.config import load_settings
 from src.demo import create_demo_pipeline
+from src.evaluation.csv_export import write_evaluation_csv
 from src.evaluation.runner import evaluate_cases, load_evaluation_cases
 from src.infrastructure.embeddings import DemoHashEmbeddings
 from src.infrastructure.stores import save_index
@@ -51,6 +52,7 @@ def main() -> None:
     (output / "summary.json").write_text(
         json.dumps(summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
+    write_evaluation_csv(output, cases, results)
     print(f"합성 데모 완료: 목록 {len(manifest)}건, 청크 {len(chunks)}개")
     for result in results:
         print(f"{result['case_id']}: {result['status']}")

@@ -133,17 +133,19 @@ info.detail        # 실행 기록에 남긴다. 예: "ValueError: boom"
 
 ### 답변 생성 코드
 
-`src/generation/pipeline_adapter.py`의 `AnswerGenerationError`는 `(ApplicationError, RuntimeError)`이며 메시지는 기존처럼 실패 이유(`invalid_draft` 등)다. 실패 이유는 어댑터가 직접 붙이는 값(`condition_decode_failed`, `pending_evidence`, `invalid_citation`)과 `answer.py`에서 넘어오는 `error_kind`(현재 `invalid_input`, `generation_failed`, `invalid_draft`, `missing_citation`, `invalid_citation`)다. `answer.py`는 이유를 다음 순서로 정한다.
+`src/generation/pipeline_adapter.py`의 `AnswerGenerationError`는 `(ApplicationError, RuntimeError)`이며 메시지는 기존처럼 실패 이유(`invalid_draft` 등)다. 생성 도메인의 실패 이유는 어댑터가 직접 붙이는 값(`condition_decode_failed`, `pending_evidence`, `invalid_citation`)과 `answer.py`에서 넘어오는 `error_kind`(현재 `invalid_input`, `generation_failed`, `invalid_draft`, `missing_citation`, `invalid_citation`)다. `answer.py`는 이유를 다음 순서로 정한다.
 
 - 일반 답변: 상태가 `answered`가 아니거나 본문이 비었거나 링크가 있으면 `invalid_draft`다. 본문이 올바를 때 `citation_indices`가 없거나 목록이 아니거나 비어 있으면 `missing_citation`, 목록 안에 근거 범위 밖 번호나 정수가 아닌 값(문자열, `True`, `None` 등)이 하나라도 있으면 `invalid_citation`이다.
 - 출처 충돌 응답: 근거 측면을 차례로 검사한다. 측면이 객체가 아니거나 발췌문이 문자열이 아니면 `invalid_draft`, 근거 번호가 잘못되면 `invalid_citation`이다. 발췌문이 원문에 없거나 링크가 있음, 같은 출처의 반복, 측면이 둘 미만, 발췌문이 모두 같음은 `invalid_draft`다. 앞 측면의 번호 오류가 먼저 발견되면 뒤 측면의 형식 오류는 확인하지 않는다.
 - 어댑터는 인용된 청크 ID가 비었거나 전달한 청크에 없으면 `invalid_citation`으로 둔다.
 
-코드는 다음과 같이 정해진다.
+평가용 답변 모델에서 시간 초과가 나면 `generate` 단계와 최종 응답에 `infrastructure.llm_timeout`이, 다른 OpenAI 호출 오류에는 `infrastructure.llm_call_failed`가 기록된다. 호출이 끝났지만 응답이 비었거나 JSON 문법·초안 스키마 검증에 실패하면 `generation.invalid_draft`다. 예상하지 못한 초안 콜백 예외는 `generation.generation_failed`로 남는다. 모델의 응답 본문과 제공자 오류 메시지는 이 오류를 통해 실행 기록에 복사하지 않는다.
+
+답변 생성 도메인의 코드는 다음과 같다.
 
 | 코드 | 뜻 | 기록을 본 뒤 할 일 |
 | --- | --- | --- |
-| `generation.<이유>` | 원인이 분류된 생성 실패. 예: `generation.generation_failed`는 답변 초안 함수(모델 호출)의 실패, `generation.invalid_citation`은 잘못된 인용 번호나 청크 | 이유에 맞게 원인을 확인한다. |
+| `generation.<이유>` | `generation.generation_failed`는 초안 콜백의 예상하지 못한 예외, `generation.invalid_citation`은 잘못된 인용 번호나 청크를 뜻한다. | 이유에 맞게 원인을 확인한다. |
 | `generation.invalid_error_kind` | 실패 이유 값이 한 구간의 snake_case가 아니어서 코드로 쓸 수 없음. 에러 처리 중에 새 오류가 나지 않도록 하는 방어 장치 | `answer.py`의 `error_kind` 값이 바뀌었는지 확인한다. |
 | `generation.failed` | 코드 없이 `AnswerGenerationError`를 던진 미분류 오류(클래스 기본값) | 그 `raise`에 이유와 코드를 붙인다. |
 
@@ -167,7 +169,7 @@ info.detail        # 실행 기록에 남긴다. 예: "ValueError: boom"
 
 ## 환경 설정과 모델 호출
 
-공용 모듈이 제공하는 오류 코드다. 기존 진입점과 생성·정제 모듈은 아직 이 모듈을 호출하지 않으며, 연결은 각 담당자와 맞춘 뒤 별도 변경으로 진행한다.
+평가용 답변 생성기는 공용 채팅 모듈로 모델을 만들고 호출한다. 호출과 초안 검증에서 생기는 오류가 실행 기록에 어떻게 나타나는지는 [답변 생성 코드](#답변-생성-코드)를 참고한다.
 
 | 모듈 | 클래스 | 기존 타입 | 분류 | 코드 |
 | --- | --- | --- | --- | --- |
