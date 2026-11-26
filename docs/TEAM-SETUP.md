@@ -11,7 +11,7 @@
 | 공용 요청·응답·콜백 | [자료형](../src/contracts.py), [콜백 인자](../src/runtime.py), [호출 순서](../src/pipeline.py)를 확인한다. `create_runtime`에는 지역 해석기·검색기·생성기를 전달하고 필요하면 질문 다듬기·장소 조회 콜백을 추가한다. `run(request)`가 반환한 `RunRecord`의 `record.response`에서 최종 응답을 읽는다. [연결 테스트](../tests/integration/test_handoff_runtime.py) |
 | 자료 준비·청킹·색인 | [준비 명령](../README.md#실제-자료-준비와-근거-조회)과 [준비 코드](../scripts/prepare_data.py)에서 전처리 묶음이 형식별 청크·색인이 되는 경로를 확인한다. [검색 명령](../scripts/search_index.py)은 지정한 구의 근거를 순위순으로 출력한다. 표 행을 수정할 때는 [청킹 테스트](../tests/unit/test_preprocessed_chunking.py)에서 원문 위치와 표의 맥락이 보존되는지 확인한다. |
 | 서비스 검색·화면 | [팀 검색기](../src/retrieval/search.py)의 `make_vector_retriever(index, embedder)`는 A 방식의 지역 제한 상위 후보를 반환한다. B/C와 [화면 진입점](../app.py)의 서비스 연결은 남아 있다. [검색 비교 실험](../src/evaluation/answer_experiments/evidence_retrieval_benchmark.py)은 별도 실험 자료에서 벡터와 앙상블을 비교한다. [A 검색 테스트](../tests/unit/test_search.py) |
-| 지역·질문 다듬기·장소 | [지역 해석기](../src/retrieval/regions.py), [질문 다듬기](../src/query/rewrite.py), [질문 다듬기와 검색 연결 테스트](../tests/unit/query/test_search_rewrite.py)에서 성공·실패 시 실제 검색 질의를 확인한다. 장소 파싱은 [`parse_places`](../src/retrieval/spots.py)와 [getSpot 테스트](../tests/unit/test_spots.py)를 대조한다. [공용 오류 코드](ERRORS.md) |
+| 지역·질문 다듬기 | [지역 해석기](../src/retrieval/regions.py), [질문 다듬기](../src/query/rewrite.py), [질문 다듬기와 검색 연결 테스트](../tests/unit/query/test_search_rewrite.py)에서 성공·실패 시 실제 검색 질의를 확인한다. 장소 조회는 2026-11-26 팀 합의로 폐기 예정이다([`parse_places`](../src/retrieval/spots.py)와 [getSpot 테스트](../tests/unit/test_spots.py)는 정리 전까지 남아 있다). [공용 오류 코드](ERRORS.md) |
 | 답변·인용 | [생성 모듈 안내](../src/generation/AGENTS.md), [어댑터](../src/generation/pipeline_adapter.py), [답변 정책](../src/generation/answer.py)과 [고정 근거 테스트](../tests/unit/answer_experiments/test_evidence_pipeline_answers.py)를 확인한다. 검색 후보, 생성기에 전달한 청크, 최종 인용을 차례로 대조한다. 외부 모델에 보낸 요청은 모델 호출부에서 확인한다. |
 | 평가·검증 | [채점 기준](problem.md#평가셋과-최종-80건), [브랜치별 평가셋과 실행 명령](../eval/README.md), [실행기](../src/evaluation/runner.py)를 확인한다. 실행기는 질문·위치·조건으로 요청을 만들고, 모범 답안과 허용 청크 ID는 채점에 사용한다. [CI 검사 명령](CI-AND-DEPENDENCIES.md) |
 
@@ -35,7 +35,7 @@ PR #24의 [공용 채팅 모듈](../src/infrastructure/chat_models.py)은 `creat
 | 질문과 검색 질의 | 원질문, 사용자 조건, 해석한 지역, 변환 질의, 변환 상태 |
 | 검색 결과 | 후보 식별자, 본문, 출처와 조건, 단계별 점수와 순위 |
 | 생성 입력과 인용 | `RunRecord.candidates`는 검색 후보, `model_input_chunk_ids`는 생성기에 전달한 청크의 순서, `response.citations`는 최종 답변이 인용한 근거를 담는다. |
-| 장소 결과 | 문서 청크와 별도 형식, 장소명, 주소, 좌표, 출처, 확인된 수거 종류 |
+| 장소 결과(폐기 예정, 2026-11-26 합의) | 문서 청크와 별도 형식, 장소명, 주소, 좌표, 출처, 확인된 수거 종류 |
 | 실행 기록 | 요청과 실행 식별자, 실행 유형, 설정과 자료 버전, 단계별 상태, 시간과 오류 |
 
 같은 형식을 각 모듈에 복제하지 않는다. 공용 규격 변경은 호출 코드, 예시, 검증과 문서를 함께 맞춘다. 내부 파일과 함수 구성은 담당자가 정한다.
@@ -61,7 +61,7 @@ PR #24의 [공용 채팅 모듈](../src/infrastructure/chat_models.py)은 `creat
 - 생성기는 원질문을 기준으로 답한다. 유사한 문장을 검색했다는 사실만으로 질문의 지역이나 예외 조건까지 답할 수 있다고 판단하지 않는다.
 - 상태는 `answered`, `needs_clarification`, `insufficient_evidence`, `error`를 구분한다. 실행 오류를 정보 부족 대응 성공으로 집계하지 않는다.
 - 인용 ID와 URL은 실제 근거에 연결한다. 검색 후보에 있었지만 실제 모델 입력에는 없었던 자료와 답변 인용을 혼동하지 않는다.
-- 장소의 수거 종류를 확인하지 않고 요청 품목을 받는다고 단정하지 않는다. 결과 없음, 조회 오류와 좌표 누락을 구분하고 기준 위치 없이 가까운 순서를 만들지 않는다.
+- (장소 조회 폐기 예정) 장소의 수거 종류를 확인하지 않고 요청 품목을 받는다고 단정하지 않는다. 결과 없음, 조회 오류와 좌표 누락을 구분하고 기준 위치 없이 가까운 순서를 만들지 않는다.
 
 현재 리라이트 실패 시 공통 흐름은 지역 해석기가 전달한 기존 `ResolvedQuery.search_query`로 돌아간다. 원질문 복귀 요구를 맞추려면 지역 해석기는 이 값에 원질문을 보존하고 실제 문장 변환은 리라이트 콜백에서 수행해야 한다. 실제 원질문은 `RunRecord.request`, 해석 결과는 `resolved_query`, 최종 검색 질의는 `search_query`로 구분해 기록한다.
 

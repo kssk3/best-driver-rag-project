@@ -157,7 +157,7 @@ save_index(index, "data/indexes/example.json")
 | 문서와 검색 근거 | `SourceDocument`, `Chunk`, `SearchCandidate` |
 | 사용자 요청과 해석된 검색 질의 | `PipelineRequest`, `ResolvedQuery`, `PipelineOptions` |
 | 생성 결과와 최종 응답 | `GenerationResult`, `Citation`, `PipelineResponse` |
-| 별도 장소 조회 | `PlaceResult`, `PlaceLookupResult` |
+| 별도 장소 조회(폐기 예정) | `PlaceResult`, `PlaceLookupResult` |
 | 실행과 평가 입력 | `StageRecord`, `RunRecord`, `EvaluationCase` |
 
 `PipelineOptions.variant`의 A/B/C는 연결할 검색 방식의 선택값이다. 공용 타입이 이 값을 받는다는 사실만으로 팀의 Vector, Hybrid, reranker가 구현된 것은 아니다. 응답 상태는 `answered`, `needs_clarification`, `insufficient_evidence`, `error`를 구분한다. 장소는 문서 청크와 별도 결과로 전달하며, 좌표나 수거 가능한 품목을 추정해서 채우지 않는다.
@@ -172,7 +172,7 @@ save_index(index, "data/indexes/example.json")
 | `rewriter` | `(ResolvedQuery) -> str` | 해석된 검색 질의 변환. 원래 요청의 `conditions`는 아직 전달되지 않음 |
 | `retriever` | `(ResolvedQuery, *, variant, top_k) -> list[SearchCandidate]` | A/B/C 검색 구현 |
 | `generator` | `(PipelineRequest, list[Chunk]) -> GenerationResult` | 원질문과 실제 입력 근거를 사용한 답변/인용 ID |
-| `place_lookup` | `(PipelineRequest, ResolvedQuery) -> PlaceLookupResult` | 장소 조회, 생략 가능 |
+| `place_lookup` | `(PipelineRequest, ResolvedQuery) -> PlaceLookupResult` | 장소 조회, 생략 가능. 2026-11-26 합의로 폐기 예정 |
 
 다음은 준비된 팀 함수를 받는 연결 함수 예시다. 실제 모델이나 DB는 콜백을 만드는 담당 코드에서 준비한다.
 
