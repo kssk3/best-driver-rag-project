@@ -78,7 +78,9 @@ def read_team_settings(path: str) -> RuntimeSettings:
 
 
 @st.cache_resource(
-    max_entries=2, hash_funcs={RuntimeSettings: RuntimeSettings.model_dump_json}
+    max_entries=2,
+    hash_funcs={RuntimeSettings: RuntimeSettings.model_dump_json},
+    show_spinner=False,  # 화면의 '답변을 찾고 있어요...'와 겹쳐 두 번 보이지 않게 한다.
 )
 def _build_pipeline(team_settings: RuntimeSettings, file_versions: TeamFileVersions):
     pipeline = create_a_catalog_runtime(team_settings)
@@ -384,6 +386,12 @@ view = current_view()
 if view is None and "pending" not in st.session_state:
     render_landing()
 else:
+    if "pending" in st.session_state:
+        # 랜딩에서 넘어오는 동안 검색이 끝날 때까지 옛 랜딩 요소가 흐리게 남는다. 숨긴다.
+        st.html(
+            '<style>[data-stale="true"],[data-testid="stForm"]:has([data-stale="true"])'
+            "{display:none !important}</style>"
+        )
     search_bar(compact=True)
     if "pending" in st.session_state:
         run_pending()  # 성공하면 st.rerun()으로 결과를 다시 그린다. 실패하면 오류가 보인다.
