@@ -13,12 +13,10 @@ Python 3.13.14, 통합 기준 dev. 담당 내부 데이터 형식이며 공통 R
 | src/ingestion/clean.py | 본문·부칙 분리와 원문 조건 보존 |
 | src/ingestion/annexes.py | 공식 첨부 다운로드, HWP 표·문단 추출, 검수 재적용 |
 | src/ingestion/search_preparation.py | 검색용 공백·용어 표기 정리와 병합 셀의 행별 연결 |
-| src/ingestion/spots.py | P03 getSpot — 기존 뼈대 |
 | src/query/aliases.py, rewrite.py | P05·P06 별칭·질문 정제 — 기존 뼈대 |
 
 로더·청킹·색인, 공통 contracts/config/runtime/pipeline과 다른 담당자의 코드는
-변경하지 않았다. HTML/Selenium 수집과 getSpot은 구현하지 않았다.
-configs/query, prompts/query와 관련 테스트·표본 폴더는 이후 작업용 빈 위치다.
+변경하지 않았다. HTML/Selenium 수집은 구현하지 않았다.
 
 ## 수집 실행
 

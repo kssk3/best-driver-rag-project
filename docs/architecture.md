@@ -13,7 +13,7 @@ The [roadmap](../ROADMAP.md#현재-도달지점) tracks the merged team implemen
 ├─ src/                      공통 설정, 규격, 런타임, 파이프라인과 검증
 │  ├─ ingestion/             수집과 정제, 로더, 청킹과 색인
 │  ├─ query/                 별칭과 질문 다듬기
-│  ├─ retrieval/             A/B/C 검색, 지역 해석, 장소 저장과 조회
+│  ├─ retrieval/             A/B/C 검색과 지역 해석
 │  ├─ generation/            근거 기반 생성과 응답 정책
 │  ├─ infrastructure/        저장소, 임베딩과 외부 자원 연결
 │  ├─ interface/             Chat, run inspection and score comparison
@@ -21,9 +21,9 @@ The [roadmap](../ROADMAP.md#현재-도달지점) tracks the merged team implemen
 │  └─ observability/         실행 원본 기록과 Langfuse 연결
 ├─ scripts/                  합성 자동 데모, 자료 준비/근거 조회, 색인과 평가 명령, 수집 진입점
 ├─ data/
-│  ├─ raw/                   수집 원문과 장소 원자료
+│  ├─ raw/                   수집 원문
 │  ├─ handoff/               검토 후 Git에 포함한 실제 전처리 인계 자료
-│  ├─ processed/             정제 문서, 청크와 장소 자료
+│  ├─ processed/             정제 문서와 청크
 │  └─ indexes/               재생성 가능한 색인
 ├─ eval/                     개발셋과 최종셋, 정답과 허용 근거
 ├─ results/                  실행별 원본과 평가 결과
@@ -65,19 +65,17 @@ The [Streamlit app](../app.py) calls `pipeline.run(request)` and converts its `R
 | `src/ingestion/search_preparation.py` | 구현: 병합 셀을 반영한 행 표현과 변경 이력을 남기는 제한적 용어 정규화 |
 | `src/ingestion/source_review.py` | 구현: 수집 전 사람이 기록한 접근/이용조건 확인 |
 | `scripts/collect.py` | 구현: 수집 실행 진입점 |
-| `src/ingestion/spots.py` | 뼈대: getSpot 원자료 수집 |
 | `src/query/aliases.py` | 품목 별칭과 공식 품목명 매핑, 단일 품목명 정규화 |
 | `src/query/rewrite.py` | 원질문에 공식 품목명을 보완하고, 주입한 함수로 프롬프트 기반 질문 다듬기 콜백을 구성한다. |
 
 공통 청커는 전처리 JSON의 원문 `text`를 사용하며 `search_text` 정규화는 아직 검색 입력에 적용하지 않는다. 새 HWP를 다시 추출하려면 `annexes.py`가 사용하는 별도 `hwp5proc` 환경이 필요하지만, 저장소 인계 자료를 읽는 준비/색인 명령에는 필요하지 않다.
 
-### 검색과 지역 및 장소 조회 (이명지)
+### 검색과 지역 해석 (이명지)
 
 | 파일 | 역할 |
 | --- | --- |
 | `src/retrieval/regions.py` | Resolves district and dong from the request using the [Seoul mapping table](../data/reference/README.md). Ambiguous and conflicting inputs can trigger clarification. |
 | `src/retrieval/search.py` | Applies district filtering. A ranks by vector similarity, B fuses vector and BM25 ranks, and C passes the fused candidates to the configured [reranker](../src/retrieval/rerankers.py). |
-| `src/retrieval/spots.py` | 제공된 `getSpot` 응답을 파싱하고 지정한 구의 장소를 `PlaceResult` 목록으로 변환한다. |
 | `src/evaluation/retrieval_metrics.py` | Computes Hit@k against allowed chunk IDs and aggregates eligible cases by configuration. |
 
 ### 답변 생성과 품질 추적 (강성수)
@@ -106,7 +104,7 @@ The [Streamlit app](../app.py) calls `pipeline.run(request)` and converts its `R
 | 파일 | 역할 |
 | --- | --- |
 | `src/config.py` | 명시한 JSON 설정 읽기와 실행 경로 설정 |
-| `src/contracts.py` | 문서/청크, 요청/응답, 장소, 실행 기록과 평가 문항 타입 |
+| `src/contracts.py` | 문서/청크, 요청/응답, 실행 기록과 평가 문항 타입 |
 | `src/runtime.py` | 호출자가 준비한 팀 콜백과 기록기 연결, 실제 DB/모델 자동 생성 없음 |
 | `src/pipeline.py` | 콜백 호출 순서, 생성 입력 선택, 인용 확인과 상태/오류 기록 |
 | `src/ingestion/loaders.py` | 출처 목록과 본문을 갖춘 공용 문서 파일을 별도 로딩 |
@@ -139,13 +137,11 @@ flowchart TD
     Q --> S["Retrieve and rank candidates"]
     S --> G["Select context, generate answer and validate citations"]
     G --> O["Record response and stages"]
-    G -.-> L["Optional place lookup for a resolved request"]
-    L -.-> O
     O --> UI
     O --> E
 ```
 
-The solid retrieval path is used by team chat and the evaluation runner. The dotted branch marks the optional place lookup callback. The shipped team chat factory leaves it unset, and the app has no map view. The synthetic CLI uses its own callbacks. See the [shared contracts](TEAM-SETUP.md) for clarification and error handling.
+The retrieval path is used by team chat and the evaluation runner. The synthetic CLI uses its own callbacks. See the [shared contracts](TEAM-SETUP.md) for clarification and error handling.
 
 통합 코드는 검색과 생성 모듈의 공용 호출 지점을 사용한다. 내부 파일 분리와 알고리즘 선택은 각 담당자가 정하며, 공용 입출력, 의존성, DB 구조와 실행 기록 변경은 사용하는 담당자와 맞춘다.
 
