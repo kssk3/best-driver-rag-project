@@ -4,7 +4,7 @@
 
 - **개발셋** [dev.json](dev.json): 10문항(답변 가능 8, 근거 없음 2). 처음 2문항(서대문구 공동주택 수거용기 색상, 송파구 대형폐기물 신고·배출)에 8문항을 더했다. [채점 메모](dev-scoring-notes.json)는 문항별 허용 청크, 원문 위치, 필수 사실을 담는다. 튜닝에 쓴다.
 - **최종셋** [test.json](test.json): 20문항(직접 검색 10, 표현 변형·조건 구분 7, 근거 없음 3, 서대문구와 송파구 각 10). 채점 자료는 [test-grading.json](test-grading.json)이다. 이 파일을 만든 시점(2026-11-26)부터 개발과 튜닝에 쓰지 않는다. 개발셋, 화면 점검용 문항(`tests/fixtures/interface/screen_check_set`)과 허용 근거 청크가 겹치지 않는다.
-- **상태**: 질문·정답·근거는 AI가 청크 원문을 읽고 쓴 **초안**이다. 필수 사실이 근거 청크에 실제로 있는지, 근거 없음 문항의 핵심 단어가 해당 구 청크 543개에 없는지는 기계로 확인했지만 **사람의 원문 대조는 아직 하지 않았다**(`checked_at`이 비어 있음). 대조하기 전에는 최종 평가셋으로 확정하지 않는다.
+- **상태**: 질문·정답·근거는 AI가 청크 원문을 읽고 쓴 **초안**이다. 필수 사실이 근거 청크에 실제로 있는지, 근거 없음 문항의 핵심 단어가 해당 구 청크 543개에 없는지는 기계로 확인했다. 최종셋은 팀이 실행 전에 확인했고 문제가 없다고 했다(2026-11-26, 승주님 전달). 문항별 대조 기록은 없어 `checked_at`은 비어 있다. 2026-11-26에 A/B/C와 C+질문 다듬기를 한 번씩 실행했고 결과는 [보고서](../report.md) 7장에 있다. 실행 뒤 `test-v07-sd-food-container-apartment`의 정답 표현(가격과 판매이윤 열)에 결함이 의심돼 원문 대조가 필요하다.
 - **허용 청크 ID**는 청킹 버전 `preprocessed-v2-row-v1`(543청크)의 값이다. 청킹을 바꿔 ID가 달라지면 근거 매핑을 갱신하고 최종 평가 전에 다시 고정한다.
 - 구성과 겹침 점검: `uv run --locked python -m src.evaluation.case_set --cases eval/test.json --grading eval/test-grading.json --dev eval/dev.json`. 같은 점검이 `tests/unit/evaluation/test_eval_sets.py`에도 있다.
 - 실행기 연결 검사용 [합성 3문항](../tests/fixtures/handoff_eval.json)은 따로 관리한다. [팀 평가 기준](../docs/problem.md)
