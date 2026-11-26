@@ -2,16 +2,14 @@
 
 서대문구와 송파구 주민이 품목과 배출 상황을 질문하면 공식 문서에서 근거를 찾아 배출 방법과 출처를 안내하는 서비스를 만든다. 필요한 조건은 되묻고, 자료에 답이 없으면 정보 부족을 알린다.
 
-팀의 최종 목표는 Streamlit 화면, A/B/C 검색, 동 이름 인식, 질문 다듬기와 getSpot 장소 지도다. 화면과 평가 실행기가 같은 Python RAG 함수를 호출하도록 연결한다.
+Streamlit answers disposal questions for Seodaemun-gu and Songpa-gu using the team ordinance index. The [roadmap](ROADMAP.md#현재-도달지점) tracks implementation and remaining delivery goals.
 
-팀 `dev`에는 지역 제한 A 벡터 검색기, 고정 근거 답변 검증, 공용 채팅 모델 생성·호출 함수가 있다. 공용 평가 CLI에서는 같은 문항을 A/B/C로 실행하고 저장된 답변을 채점할 수 있다. 팀에 병합된 기능과 답변 담당 브랜치에서 확인한 실험은 [현재 도달지점](ROADMAP.md#현재-도달지점)에서 확인한다.
-
-| 구분 | 현재 상태 |
+| To do this | Use |
 | --- | --- |
-| 문서 처리 | PR #8에서 전처리 자료를 제공했고, PR #10에서 HWP 문자 처리와 별지 분류를 보완했다. 자료 준비 명령은 같은 원문의 HTML·JSON 청크를 생성하며, 옵션을 지정하면 임베딩 색인도 만든다. |
-| 공통 실행 | 팀 함수 연결, 지역별 근거 선택, 인용 검사, 실행 JSON 기록과 평가 실행기 구현 |
-| 직접 실행 | 실제 색인의 근거 조회 CLI와 API 키 없는 합성 응답 데모 실행 가능 |
-| 지역 해석과 답변 | PR #11의 지역 해석기는 연습용 매핑표에 있는 동 4곳의 자치구를 판별한다. 전처리 자료 답변 실험은 미리 지정한 근거로 답변과 인용을 검증한다. 벡터 단독과 BM25+벡터 앙상블의 검색 순위는 별도 실험에서 비교한다. |
+| Ask a question against the team index | Start [team chat](#팀-색인과-리라이트-비교). The default launcher uses C (hybrid retrieval and reranking) with catalog rewriting enabled. An A vector-search configuration is also available. |
+| Check the pipeline without a model key | Run the [synthetic demo](#자동-데모와-검증) for answer, clarification and insufficient-evidence examples. |
+| Compare retrieval and answers | Run the [A/B/C evaluation](eval/README.md#abc-실검색-답변-비교) with rewriting off, or use the separate A rewrite comparison below. Review the saved runs before scoring. |
+| Check how a neighborhood was resolved | The [resolver](src/retrieval/regions.py) uses the [Seoul administrative and legal dong table](data/reference/README.md). The service provides disposal guidance for the two supported districts. |
 
 현재 담당자와 변경 사항을 전달할 대상은 [4인 역할표](ROADMAP.md#업무-분담과-인계), 작업별 참고 파일은 [담당 경로](docs/architecture.md#담당-경로)에서 확인한다. 기존 공통 기반의 구현 범위와 검증 결과는 [양석호의 인계 기록](docs/handoff.md)에 있으며, 담당자별 연결 지점은 [Notion 인수인계](https://app.notion.com/p/422dc8b0e16381758494e218a97087aa)에서도 확인할 수 있다. 검색/생성 연결 함수가 준비돼 있다는 사실과 실제 서비스가 동작한다는 사실을 구분한다.
 
@@ -29,7 +27,7 @@ uv run --locked python -m pytest --version
 
 루트 의존성 파일은 Streamlit을 포함한 공용 Python 환경을 관리한다. 공식 웹 안내는 [Selenium 선택 그룹으로 수집한다](docs/official-guide-collection.md). Langfuse SDK도 `uv sync --locked`로 설치된다. 팀 계정으로 기존 실험을 조회하거나 각자 실행한 A/B/C 기록을 팀 EC2에 보내려면 [팀 Langfuse 설정](docs/TEAM-SETUP.md#팀-langfuse-설정)을 따른다. 기존 FastAPI 의존성이 남아 있어도 별도 HTTP 서버 구현을 요구하지 않는다.
 
-Streamlit 화면은 데모 색인을 먼저 만든 뒤 실행한다. 데모 색인은 합성 문서만 쓰며 외부 호출이 없다.
+For the synthetic Streamlit demo, build the fixture index first and leave `RAG_CHAT_SETTINGS` unset. These commands use local documents and hash embeddings.
 
 ```bash
 uv run --locked python -m scripts.index --documents tests/fixtures/handoff_documents.json --output data/indexes/demo.json --demo --dimensions 128
@@ -71,7 +69,7 @@ RAG_CHAT_SETTINGS=configs/team-a-rewrite-chat.json \
   uv run --locked --env-file .env streamlit run app.py
 ```
 
-화면에서 쓰는 C 재정렬 + 질문 다듬기 설정은 [C 실행 설정](configs/team-c-rewrite-chat.json)이다. 다음 한 줄은 색인이 없으면 먼저 만들고(OpenAI 임베딩 호출, 약 543청크) 그 설정으로 화면을 띄운다. `.env`에 `OPENAI_API_KEY`가 필요하다.
+The launcher defaults to the [C chat configuration](configs/team-c-rewrite-chat.json). Set `OPENAI_API_KEY` in the local `.env`. If the default team index is missing, the launcher builds it using OpenAI embeddings. It checks the chunk fingerprint of both existing and newly built default indexes against the [JSON baseline](results/chunking/chunk_stats.csv) before starting Streamlit. If a custom settings file points elsewhere, prepare that index yourself.
 
 ```sh
 uv run --locked --env-file .env python -m scripts.run_chat
@@ -110,7 +108,7 @@ uv run --locked python -m pytest -q tests/unit/generation tests/unit/answer_expe
 uv run --locked python -m src.evaluation.answer_experiments.evidence_retrieval_benchmark --output-dir results/local/evidence-team-check --repeats 10
 ```
 
-검색 비교를 다시 실행할 때마다 새 출력 폴더를 지정한다. 전체 테스트 명령은 `uv run --locked python -m pytest -q tests`다. PR #11을 통합한 브랜치에서 위의 답변·지역 해석 테스트 68개와 하위 검사 25개가 통과했다. 같은 환경에서 전체 테스트 403개와 하위 검사 25개가 통과했다. 두 실행 모두 기존 LangChain Community 사용 중단 예정 경고가 1건 발생했다.
+Use a new output directory for each benchmark run. The full test command is `uv run --locked python -m pytest -q tests`. The PR #11 integration run recorded 68 focused tests and 403 full-suite tests, each with 25 subtests and one LangChain Community deprecation warning. These counts describe that historical revision.
 
 [전처리 자료 질문별 결과표](results/testData.md)에서 세 사례의 검색 순위, 답변, 인용을 CSV 원본과 대조할 수 있다. 동 이름에서 추론한 구를 검색기와 생성기가 각각 어떻게 사용하는지는 [지역 해석과 답변 생성 연결](docs/TEAM-SETUP.md#전처리-자료-지역-해석과-답변-생성-연결)에 정리했다.
 
