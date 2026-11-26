@@ -20,7 +20,8 @@ from src.contracts import RunRecord
 FIELDS = (
     "evaluation_id attempt_index dataset_id case_id configuration run_id run_kind "
     "run_started_at_utc versions_json metric ragas_version judge_model status score "
-    "reason scored_at_utc duration_ms"
+    "reason scored_at_utc duration_ms variant rewrite_enabled reported_configuration "
+    "comparison_eligible comparison_exclusion_reason"
 ).split()
 
 
@@ -104,6 +105,80 @@ def _started_at_utc(record: RunRecord, run: dict[str, str]) -> str:
     return started.isoformat()
 
 
+def _comparison_metadata(
+    record: RunRecord, run: dict[str, str], reported_configuration: object
+) -> dict[str, str]:
+    """원본의 구성 이름과 검색 방식을 대조하고 실검색 비교에서 제외할 사유를 반환한다."""
+    configuration = run.get("configuration") or ""
+    if (
+        reported_configuration is not None
+        and "configuration" in run
+        and configuration != reported_configuration
+    ):
+        raise InputError("run_configuration_mismatch")
+
+    # 내보내기도 생략된 옵션에 기본값 A를 쓸 수 있어 원본 JSON의 명시 여부를 확인한다.
+    variant = (
+        record.options.variant if "variant" in record.options.model_fields_set else ""
+    )
+    if variant and run.get("variant") and run["variant"] != variant:
+        raise InputError("run_variant_mismatch")
+    rewrite = (
+        json.dumps(record.options.rewrite_enabled)
+        if "rewrite_enabled" in record.options.model_fields_set
+        else ""
+    )
+    if (
+        rewrite
+        and run.get("rewrite_enabled")
+        and run["rewrite_enabled"].lower() != rewrite
+    ):
+        raise InputError("run_rewrite_mismatch")
+    if ("run_kind" in run and run["run_kind"] != record.run_kind) or (
+        "run_kind" in record.options.model_fields_set
+        and record.options.run_kind != record.run_kind
+    ):
+        raise InputError("run_kind_mismatch")
+
+    retrieval = [stage.status for stage in record.stages if stage.name == "retrieve"]
+    if len(retrieval) > 1:
+        raise InputError("ambiguous_retrieval_stage")
+    if (
+        retrieval
+        and "retrieval_status" in run
+        and run["retrieval_status"] != retrieval[0]
+    ):
+        raise InputError("retrieval_status_mismatch")
+
+    exclusion: str
+    if record.run_kind != "rag":
+        exclusion = record.run_kind
+    elif not configuration.strip():
+        exclusion = "missing_run_configuration"
+    elif reported_configuration is None:
+        exclusion = "missing_reported_configuration"
+    elif "variant" in run and not run["variant"]:
+        exclusion = "missing_run_variant"
+    elif not variant:
+        exclusion = "missing_recorded_variant"
+    elif not rewrite or ("rewrite_enabled" in run and not run["rewrite_enabled"]):
+        exclusion = "missing_recorded_rewrite"
+    elif rewrite == "true":
+        exclusion = "rewrite_enabled"
+    elif not retrieval:
+        exclusion = "missing_retrieval_stage"
+    elif retrieval[0] != "ok":
+        exclusion = "retrieval_" + retrieval[0]
+    else:
+        exclusion = ""
+    return {
+        "configuration": configuration,
+        "variant": variant,
+        "rewrite_enabled": rewrite,
+        "comparison_exclusion_reason": exclusion,
+    }
+
+
 async def _score(row, attempt, cases, runs, scorer, seen_run_ids: set[str]):
     if not isinstance(attempt, dict):
         raise InputError("invalid_attempt")
@@ -140,6 +215,7 @@ async def _score(row, attempt, cases, runs, scorer, seen_run_ids: set[str]):
         raise InputError("invalid_snapshot_conditions")
     if conditions != record.request.conditions:
         raise InputError("snapshot_conditions_mismatch")
+    row.update(_comparison_metadata(record, run, attempt.get("configuration")))
     row.update(
         run_kind=record.run_kind,
         versions_json=json.dumps(
@@ -150,6 +226,8 @@ async def _score(row, attempt, cases, runs, scorer, seen_run_ids: set[str]):
     if record.response.status != "answered":
         row.update(status="skipped", reason="response_" + record.response.status)
         return
+    if run.get("status") and run["status"] != record.response.status:
+        raise InputError("run_status_mismatch")
     sample = metric_input(record)
     if record.run_id in seen_run_ids:
         raise InputError("duplicate_run_id")
@@ -227,11 +305,11 @@ async def score_archive(
                 "case_id": fields.get("case_id")
                 if isinstance(fields.get("case_id"), str)
                 else None,
-                "configuration": fields.get("configuration")
-                if isinstance(fields.get("configuration"), str)
-                else None,
                 "run_id": fields.get("run_id")
                 if isinstance(fields.get("run_id"), str)
+                else None,
+                "reported_configuration": fields.get("configuration")
+                if isinstance(fields.get("configuration"), str)
                 else None,
                 "dataset_id": dataset_id,
                 "metric": "faithfulness",
@@ -244,6 +322,11 @@ async def score_archive(
                 row.update(status="input_error", reason=str(error))
             except ValidationError:
                 row.update(status="input_error", reason="invalid_run_record")
+            if row["status"] != "scored":
+                row["comparison_exclusion_reason"] = row["reason"]
+            row["comparison_eligible"] = (
+                "false" if row["comparison_exclusion_reason"] else "true"
+            )
             row["scored_at_utc"] = datetime.now(UTC).isoformat()
             row["duration_ms"] = round((perf_counter() - start) * 1000, 3)
             writer.writerow(row)

@@ -97,6 +97,46 @@ uv run --locked python -m scripts.score_answers \
 
 한 번의 채점에서 같은 `run_id`로 유효한 입력이 반복되면 첫 시도만 처리하고 뒤의 행에는 `duplicate_run_id`를 기록한다. 각 호출에 새 `evaluation_id`가 부여된다. `attempt_index`는 원본 배열의 1부터 시작하는 위치라서 반환된 실행 기록이 없는 행도 추적할 수 있다. `run_kind`로 고정 근거와 실제 검색 실행을 구분한다. 고정 근거 점수는 별도로 해석한다. `versions_json`은 생성 시점의 구성 버전이며 채점기 버전과 모델은 별도 열에 남는다. `scored_at_utc`는 평가 시도 종료 시각, `duration_ms`는 해당 시도 시간이다. `scored`의 0.0은 유효한 점수다. `no_score`(NaN·누락 등), `input_error`(근거 ID 등), `scorer_error`, `skipped`의 원인은 `reason`으로 확인한다.
 
+### 실검색 A/B/C 점수 비교
+
+같은 문항에 A/B/C가 각각 답하면 세 답변을 같은 Faithfulness 채점기로 평가한다. 각 점수는 그 답변의 `run_id`에 연결된다. 예를 들어 구성 이름이 `configured`이고 실제 검색 방식이 B이면, 그 점수는 B에 속한다. 점수표에서 다음 열을 확인한다.
+
+| 열 | 의미 |
+| --- | --- |
+| `reported_configuration` | 평가 시도에 적힌 구성 이름. 실행 기록을 저장하지 못했을 때도 시도를 추적하는 데 쓴다. |
+| `configuration` | 같은 실행의 `runs.csv`에 기록된 구성 이름. 평가 시도에 이름이 있으면 대조한다. |
+| `variant`, `rewrite_enabled` | 실행 시 명시한 검색 방식과 질문 다듬기 사용 여부. 실행 표에도 값이 있으면 대조한다. |
+| `comparison_eligible`, `comparison_exclusion_reason` | 기본 A/B/C 평균에 넣을 수 있는지와 제외 사유. |
+
+**기본 A/B/C 평균에는 `comparison_eligible=true`인 행만 넣는다.** 구성 이름을 대조할 수 있고, 검색 방식이 명시됐으며, 질문 다듬기를 끈 실제 검색 실행(`rag`)에서 `retrieve` 단계가 성공하고 숫자 점수를 얻어야 한다. 유효한 `0.0`은 건수와 평균에 포함한다.
+
+- C에서 질문 다듬기를 켠 실행은 로드맵의 별도 실험이다. 개별 점수와 `rewrite_enabled=true`를 보존하며 기본 C 평균에서는 제외한다. 고정 근거·데모 실행, 검색 단계를 건너뛴 실행도 진단용 점수를 보존한다.
+- 두 기록의 구성 이름, 검색 방식, 질문 다듬기 설정 또는 실행 유형이 충돌하면 해당 행은 채점 전 `input_error`가 된다. 검색 단계가 중복되거나 기록된 단계 상태가 실행 표와 다를 때도 마찬가지다. 답변을 채점하려는데 실행 표에는 실패로 기록돼 있으면 `run_status_mismatch`가 남는다. 다음 정상 행은 계속 처리한다.
+- 11월 25일 팀 A 보관본에는 `runs.csv`의 `configuration` 열이 없다. 두 답변은 채점할 수 있지만 숫자 점수를 얻어도 `missing_run_configuration`으로 비교에서 제외한다. 원본에서 생략한 검색 방식이나 질문 다듬기 설정도 기본값으로 채워 집계하지 않는다. 이전 형식의 점수표를 비교하려면 보관본에서 새 점수표를 만든다.
+- 저장된 실행 없음, 검증 전용 실행, 근거 ID 누락, 채점기 실패, NaN은 점수와 평균의 분모에서 빠진다. 해당 시도의 `reason`에서 원인을 확인한다.
+
+아래 예시는 한 번의 평가에서 나온 `scores.csv`를 읽는다. 숫자 점수가 하나도 없는 방식에는 평균 대신 ‘—’를 표시한다. 방식별 건수나 문항이 다르면 어떤 문항이 빠졌는지 확인한 뒤 같은 문항과 채점 조건으로 비교한다.
+
+```sh
+python - results/local/faithfulness-smoke/scores.csv <<'PYTHON'
+import csv
+import sys
+from statistics import mean
+
+scores = {variant: [] for variant in ("A", "B", "C")}
+with open(sys.argv[1], newline="", encoding="utf-8") as stream:
+    for row in csv.DictReader(stream):
+        if row["comparison_eligible"] == "true":
+            scores[row["variant"]].append(float(row["score"]))
+
+for variant, values in scores.items():
+    average = f"{mean(values):.3f}" if values else "—"
+    print(f"{variant}  {len(values)}건  평균 {average}")
+PYTHON
+```
+
+### 승인 후 실제 모델로 한 문항 채점
+
 승인 후 한 문항의 모델 스모크를 실행하려면 위 명령에서 새 출력 폴더를 지정하고 `--case-id p04-colors-trick --judge-model gpt-4o-mini`를 추가한다. 해당 모델에 접근할 수 있는 `OPENAI_API_KEY`가 필요하다. 저장된 질문·답변에서 진술을 추출하고, 진술이 있으면 생성 입력 근거로 지지 여부를 판정한다(문항당 논리 호출 1~2회). 검색·임베딩·답변 재생성은 호출하지 않는다. 필수 사실 충족은 스냅샷의 채점 메모와, 표시한 인용의 타당성은 인용한 원문과 각각 대조한다. [Ragas Faithfulness](https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/faithfulness/)
 
 ### 승인 후 Langfuse 업로드
