@@ -32,6 +32,10 @@ class InputError(ValueError):
     """원문을 포함하지 않는 평가 입력 오류 코드."""
 
 
+class JudgeError(Exception):
+    """채점 어댑터가 만든 원문 없는 단계·유형 코드."""
+
+
 def metric_input(record: RunRecord) -> dict:
     ids = record.model_input_chunk_ids
     if not ids:
@@ -237,6 +241,9 @@ async def _score(row, attempt, cases, runs, scorer, seen_run_ids: set[str]):
         return
     try:
         result = await scorer(**sample)
+    except JudgeError as error:
+        row.update(status="scorer_error", reason=str(error))
+        return
     except Exception:
         row.update(status="scorer_error", reason="judge_failed")
         return

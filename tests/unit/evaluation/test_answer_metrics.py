@@ -505,7 +505,7 @@ def test_validate_cli_creates_new_table(tmp_path):
 def test_judge_cli_with_installed_ragas(tmp_path, monkeypatch):
     monkeypatch.setenv("RAGAS_DO_NOT_TRACK", "true")
     monkeypatch.setenv("OPENAI_API_KEY", "offline-test")
-    import httpx
+    import httpx2
     from ragas.llms.base import InstructorLLM
 
     from scripts.upload_scores import main as preview_scores
@@ -514,7 +514,7 @@ def test_judge_cli_with_installed_ragas(tmp_path, monkeypatch):
         pytest.fail("채점 테스트에서 HTTP 요청을 시도했습니다")
 
     monkeypatch.setattr(
-        httpx.AsyncHTTPTransport, "handle_async_request", unexpected_request
+        httpx2.AsyncHTTPTransport, "handle_async_request", unexpected_request
     )
 
     calls = []

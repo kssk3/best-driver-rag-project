@@ -97,6 +97,8 @@ uv run --locked python -m scripts.score_answers \
 
 한 번의 채점에서 같은 `run_id`로 유효한 입력이 반복되면 첫 시도만 처리하고 뒤의 행에는 `duplicate_run_id`를 기록한다. 각 호출에 새 `evaluation_id`가 부여된다. `attempt_index`는 원본 배열의 1부터 시작하는 위치라서 반환된 실행 기록이 없는 행도 추적할 수 있다. `run_kind`로 고정 근거와 실제 검색 실행을 구분한다. 고정 근거 점수는 별도로 해석한다. `versions_json`은 생성 시점의 구성 버전이며 채점기 버전과 모델은 별도 열에 남는다. `scored_at_utc`는 평가 시도 종료 시각, `duration_ms`는 해당 시도 시간이다. `scored`의 0.0은 유효한 점수다. `no_score`(NaN·누락 등), `input_error`(근거 ID 등), `scorer_error`, `skipped`의 원인은 `reason`으로 확인한다.
 
+채점기 오류는 점수를 비운다. 예를 들어 `judge_statements_http_429`는 진술 추출 중 받은 HTTP 429, `judge_verdicts_invalid_response`는 근거 대조 응답을 해석할 수 없었다는 뜻이다. `connection`과 `timeout`은 서버 수신 여부를 확정하지 않는다. 기존 결과에 남은 `judge_failed`만으로는 이 유형들을 구분할 수 없다.
+
 ### 실검색 A/B/C 점수 비교
 
 같은 문항에 A/B/C가 각각 답하면 세 답변을 같은 Faithfulness 채점기로 평가한다. 각 점수는 그 답변의 `run_id`에 연결된다. 예를 들어 구성 이름이 `configured`이고 실제 검색 방식이 B이면, 그 점수는 B에 속한다. 점수표에서 다음 열을 확인한다.
@@ -137,7 +139,7 @@ PYTHON
 
 ### 승인 후 실제 모델로 한 문항 채점
 
-승인 후 한 문항의 모델 스모크를 실행하려면 위 명령에서 새 출력 폴더를 지정하고 `--case-id p04-colors-trick --judge-model gpt-4o-mini`를 추가한다. 해당 모델에 접근할 수 있는 `OPENAI_API_KEY`가 필요하다. 저장된 질문·답변에서 진술을 추출하고, 진술이 있으면 생성 입력 근거로 지지 여부를 판정한다(문항당 논리 호출 1~2회). 검색·임베딩·답변 재생성은 호출하지 않는다. 필수 사실 충족은 스냅샷의 채점 메모와, 표시한 인용의 타당성은 인용한 원문과 각각 대조한다. [Ragas Faithfulness](https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/faithfulness/)
+승인 후 한 문항의 모델 스모크를 실행하려면 위 명령에서 새 출력 폴더를 지정하고 `--case-id p04-colors-trick --judge`를 추가한다. 팀 고정 판단 모델인 `gpt-6-luna`에 접근할 수 있는 `OPENAI_API_KEY`가 필요하다. 저장된 질문·답변에서 진술을 추출하고, 진술이 있으면 생성 입력 근거로 지지 여부를 판정한다(답변 한 건당 최대 2회, 자동 재시도 0회). 검색·임베딩·답변 재생성은 호출하지 않는다. 필수 사실 충족은 스냅샷의 채점 메모와, 표시한 인용의 타당성은 인용한 원문과 각각 대조한다. [Ragas Faithfulness](https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/faithfulness/)
 
 ### 승인 후 Langfuse 업로드
 
