@@ -25,6 +25,8 @@ uv run --locked --env-file .env python -m scripts.prepare_data --bundle data/han
 ```sh
 uv run --locked --env-file .env python -m scripts.evaluate --cases eval/test.json --settings configs/abc-answer-eval-settings.json --factory src.evaluation.answer_experiments.abc_runtimes:create_abc_runtimes --output-dir results/local/<새 출력 폴더>
 uv run --locked --env-file .env python -m scripts.score_answers --judge --evaluation results/local/<새 출력 폴더>/evaluation.json --cases-csv results/local/<새 출력 폴더>/cases.csv --output-dir results/local/<채점 출력 폴더>
+uv run --locked --env-file .env python -m scripts.score_relevancy results/local/<새 출력 폴더>
+uv run --locked python -m src.evaluation.comparison results/local/<새 출력 폴더>
 uv run --locked python -m scripts.summarize_runs results/local/<새 출력 폴더>/runs.csv
 uv run --locked --env-file .env python -m scripts.score_quality --runs results/local/<새 출력 폴더>/runs.csv --candidates results/local/<새 출력 폴더>/candidates.csv --cases eval/test.json --grading eval/test-grading.json --output-dir results/local/<품질 채점 폴더>
 ```

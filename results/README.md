@@ -141,6 +141,17 @@ PYTHON
 
 승인 후 한 문항의 모델 스모크를 실행하려면 위 명령에서 새 출력 폴더를 지정하고 `--case-id p04-colors-trick --judge`를 추가한다. 팀 고정 판단 모델인 `gpt-6-luna`에 접근할 수 있는 `OPENAI_API_KEY`가 필요하다. 저장된 질문·답변에서 진술을 추출하고, 진술이 있으면 생성 입력 근거로 지지 여부를 판정한다(답변 한 건당 최대 2회, 자동 재시도 0회). 팀 공통 옵션은 HTTP 리다이렉트를 따라가지 않는다. 예를 들어 근거 대조 중 308을 받으면 해당 답변은 빈 점수와 `judge_verdicts_http_308`로 기록한다. 검색·임베딩·답변 재생성은 호출하지 않는다. 필수 사실 충족은 스냅샷의 채점 메모와, 표시한 인용의 타당성은 인용한 원문과 각각 대조한다. [Ragas Faithfulness](https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/faithfulness/)
 
+### Answer Relevancy와 ID 기준 정밀도·재현율 사후 계산
+
+저장된 실행 폴더(`runs.csv`, `candidates.csv`, `cases.csv`)에서 두 가지를 더 계산한다. 정의는 [문제와 평가 기준](../docs/problem.md)의 `answer_relevancy`, `context_precision_id_at_5`, `context_recall_id_at_5`다.
+
+```sh
+uv run --locked --env-file .env python -m scripts.score_relevancy results/<실행 폴더>
+uv run --locked python -m src.evaluation.comparison results/<실행 폴더>
+```
+
+`score_relevancy`는 판정 모델과 임베딩을 호출하므로 비용이 든다. 실행 폴더에 `relevancy.csv`를 쓰고, 정보 부족 안내는 0.0으로 나오므로 `status` 열로 구분해 평균을 낸다. 한 행이 실패하면 `score`를 비우고 `error`에 오류 종류만 남긴다. `comparison`은 모델 호출 없이 구성별 평균과 표본 수를 출력하고, 허용 근거가 없는 문항은 평균과 표본 수에서 뺀다. 최종 20문항 결과와 해석은 [비교 보고서 7.6절](../report.md)에 있다.
+
 ### 진술별 Faithfulness 판정 확인
 
 새 출력 폴더에서 `scripts.score_answers --judge`를 실행하면 `scores.csv`와 같은 위치에 `judgment-details.jsonl`이 생긴다. 실제 채점에 들어간 각 실행의 `model_input_chunk_ids`는 생성기에 넘긴 순서다. `statements`는 추출된 진술 목록이고 `verdicts`는 판단 모델이 돌려준 진술·지지 여부(1/0)·사유다. 두 목록은 각각 반환된 순서와 문구를 보존한다. 사유는 전체 근거에 대한 모델의 설명이다. 단계가 결과를 돌려주기 전에 실패하면 그 목록은 `null`, 반환한 항목이 없으면 `[]`로 기록한다. 기존 점수만 있는 평가에서는 당시 판정 사유를 복원할 수 없다.
