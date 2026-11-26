@@ -81,22 +81,13 @@ def test_deployment_host_validation(host, valid):
         assert "LANGFUSE_HOST" in result.stderr
 
 
-@pytest.mark.parametrize(
-    "with_email", [False, True], ids=["without-email", "with-email"]
-)
-def test_compose_deployment(tmp_path, with_email):
+def test_compose_requires_host_validation_for_public_services(tmp_path):
     if not shutil.which("docker"):
         pytest.skip("Docker CLI is required to render the deployment manifest")
     for filename in ("compose.yaml", "validate-host.sh"):
         shutil.copy(DEPLOY / filename, tmp_path)
     env = {key: "0" * 64 for key in SECRETS}
     env.update(PATH=os.environ["PATH"], LANGFUSE_HOST="team.example.org")
-    email = {
-        "SMTP_CONNECTION_URL": "smtps://user:test%2Bvalue@mail.example.org:465",
-        "EMAIL_FROM_ADDRESS": "langfuse@example.org",
-    }
-    if with_email:
-        (tmp_path / ".env").write_text("".join(f"{k}={v}\n" for k, v in email.items()))
     config = subprocess.run(
         ["docker", "compose", "config", "--format", "json"],
         cwd=tmp_path,
@@ -111,14 +102,6 @@ def test_compose_deployment(tmp_path, with_email):
             services[name]["depends_on"]["validate-host"]["condition"]
             == "service_completed_successfully"
         )
-    for name, service in services.items():
-        for key, value in email.items():
-            expected = (
-                value
-                if with_email and name in {"langfuse-web", "langfuse-worker"}
-                else None
-            )
-            assert service.get("environment", {}).get(key) == expected
     gate = services["validate-host"]
     (mount,) = gate["volumes"]
     assert Path(mount["source"]).resolve() == (tmp_path / "validate-host.sh").resolve()

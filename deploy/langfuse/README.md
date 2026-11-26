@@ -23,19 +23,6 @@ docker compose logs --tail=50 langfuse-web langfuse-worker proxy
 
 4. `https://팀도메인/api/public/health`와 웹 로그인 화면을 확인한다. 관리자가 조직과 프로젝트를 만들고 팀원에게 해당 프로젝트 조회 권한을 부여한다. 점수 조회는 각자의 계정으로 한다. 업로드용 API 키는 해당 서버의 대상 프로젝트에서 발급한 쌍을 사용한다. 기존 키의 발급 서버·프로젝트가 다르면 새 프로젝트에서 발급한다.
 
-## EC2에서 팀원 초대 메일 사용하기
-
-초대 메일을 사용할 때는 서버의 `deploy/langfuse/.env`에 다음 두 줄을 추가한다. 아래는 Amazon SES 서울 리전 예시다.
-
-```dotenv
-SMTP_CONNECTION_URL=smtps://SMTP_USERNAME:SMTP_PASSWORD@email-smtp.ap-northeast-2.amazonaws.com:465
-EMAIL_FROM_ADDRESS=langfuse@example.org
-```
-
-`SMTP_USERNAME`과 `SMTP_PASSWORD`에는 해당 리전에서 발급한 SES SMTP 자격 증명을 넣고, 비밀번호의 특수문자는 URL 인코딩한다. 발신 주소는 같은 리전에서 인증한 주소나 도메인에 속해야 한다. SES 샌드박스에서는 수신 주소도 인증해야 한다. [Langfuse 메일 설정](https://langfuse.com/self-hosting/configuration/transactional-emails) · [AWS SES SMTP 연결](https://docs.aws.amazon.com/ses/latest/dg/smtp-connect.html)
-
-같은 폴더에서 `docker compose config --quiet`로 구성을 검사한 뒤 `docker compose up -d`로 적용한다. 조직 관리자가 팀원 한 명을 초대해 수신한 링크가 팀 도메인으로 열리는지 확인한다.
-
 ## 점수 전송과 확인
 
 업로드를 수행할 컴퓨터의 프로젝트 루트 `.env`에 `LANGFUSE_BASE_URL=https://팀도메인`, `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`를 설정한다. 서버의 `deploy/langfuse/.env`는 인프라용이다. 아래 예시는 [채점 절차](../../results/README.md)에 따라 숫자 점수가 저장된 폴더를 사용한다.
