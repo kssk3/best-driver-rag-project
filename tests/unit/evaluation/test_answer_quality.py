@@ -236,3 +236,14 @@ def test_check_inputs_stops_when_a_cited_row_is_missing() -> None:
     )
     candidates[0]["citation_position"] = "1"
     assert check_inputs(runs, candidates, questions, grading) == []
+
+
+def test_check_inputs_compares_an_explicit_empty_citation_list_but_not_a_missing_one() -> (
+    None
+):
+    runs, candidates, questions, grading = inputs()
+    candidates[0]["citation_position"] = "1"  # 후보 파일에만 인용 표시가 붙음
+    problems = check_inputs(runs, candidates, questions, grading)
+    assert any("인용 순위" in p for p in problems)  # 실행 기록은 명시적 []
+    del runs[0]["citation_ranks_json"]  # 값이 없는 예전 기록은 건너뛴다
+    assert check_inputs(runs, candidates, questions, grading) == []

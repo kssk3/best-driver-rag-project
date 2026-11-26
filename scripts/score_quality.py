@@ -102,12 +102,15 @@ def check_inputs(
             problems.append(
                 f"{run['case_id']} {run.get('variant', '')}: 실행 기록의 후보 {count}개와 candidates의 후보 행 {len(rows)}개가 다릅니다(파일이 불완전)."
             )
-        ranks = json.loads(run.get("citation_ranks_json") or "[]")
-        cited = sorted(int(r["rank"]) for r in rows if r.get("citation_position"))
-        if ranks and cited != sorted(ranks):
-            problems.append(
-                f"{run['case_id']} {run.get('variant', '')}: 인용 순위 {sorted(ranks)}가 candidates의 인용 행 {cited}과 다릅니다."
-            )
+        # 값이 없는 예전 기록("")과 명시적인 빈 배열("[]")을 구분한다. 기록됐으면 빈 배열도 대조한다.
+        raw_ranks = run.get("citation_ranks_json") or ""
+        if raw_ranks != "":
+            ranks = sorted(json.loads(raw_ranks))
+            cited = sorted(int(r["rank"]) for r in rows if r.get("citation_position"))
+            if cited != ranks:
+                problems.append(
+                    f"{run['case_id']} {run.get('variant', '')}: 인용 순위 {ranks}가 candidates의 인용 행 {cited}과 다릅니다."
+                )
     case_ids = {r["case_id"] for r in runs}
     for case_id in sorted(case_ids - set(questions)):
         problems.append(f"{case_id}: 문항 파일(--cases)에 없습니다.")
