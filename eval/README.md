@@ -10,7 +10,7 @@
 
 정답표와 허용 근거 목록은 채점에만 사용하고 검색 색인, 생성과 질문 다듬기 입력에 전달하지 않는다. 정답을 뒷받침하는 원문 문서는 정상적으로 색인한다. 청킹을 바꾸면 근거 매핑을 갱신한다.
 
-두 문항을 팀 A 검색기로 각각 평가하고 검색 후보와 답변을 비교하려면 [평가 실행 명령과 CSV 안내](../results/README.md#평가할-때마다-저장하는-csv)를 따른다. 아래 색상표 실험은 한 문항에서 허용된 청크가 상위 5개 안에 있는지(Hit@5), 그중 첫 청크가 몇 위인지를 확인한다. 전체 개발셋 지표 집계, Ragas 자동 채점과 Langfuse 전송은 후속 작업이다.
+두 문항을 팀 A 검색기로 각각 평가하고 검색 후보와 답변을 비교하려면 [평가 실행 명령과 CSV 안내](../results/README.md#평가할-때마다-저장하는-csv)를 따른다. 아래 색상표 실험은 한 문항에서 허용된 청크가 상위 5개 안에 있는지(Hit@5), 그중 첫 청크가 몇 위인지를 확인한다. 저장된 A/B/C 답변은 같은 Faithfulness 채점기로 평가한다. 아래의 단일 문항 검색 결과는 그 문항의 적중 여부를 나타낸다.
 
 ## 색상표 개발 문항 실행
 
@@ -41,7 +41,7 @@
 
 동일 문항을 벡터 검색(A), 벡터·BM25 결합 검색(B), 결합 후보를 재정렬하는 검색(C)으로 각각 실행한다. 세 구성은 색인, 질의 임베더, 지역 해석, 컨텍스트 상한과 답변 생성 모델·프롬프트를 공유하고 질문 다듬기를 끈다. 공식 Hit@5 비교에는 세 구성의 `top_k`를 동일하게 5 이상으로 설정한다. B의 최종 후보는 결합 순위의 앞 `top_k`개다. C는 같은 순위에서 최대 `max(top_k, 20)`개를 재정렬한 뒤 앞 `top_k`개를 반환한다.
 
-[설정 예시](../configs/abc-answer-eval-settings.json)의 `index_path`에 준비한 팀 색인 경로를 넣고, `versions.model`과 `versions.reranker_model`에는 각각 사용할 생성 모델과 C 재정렬 모델을 지정한다. 아래 첫 명령은 실제 모델을 호출한다. 한 문항에서 세 방식 모두 근거를 찾아 답하면 질의 임베딩 3회, 답변 생성 3회, C 재정렬 1회의 논리 호출이 예상된다. 두 번째 명령은 저장된 입력만 검증한다. 승인 후 실제로 채점할 때는 새 출력 폴더와 `--judge-model 판정모델ID`를 지정한다. API 키를 저장소 루트의 `.env`에 보관한다면 두 번째 명령도 `uv run --locked --env-file .env python -m scripts.score_answers`로 시작한다.
+[설정 예시](../configs/abc-answer-eval-settings.json)의 `index_path`에 준비한 팀 색인 경로를 넣고, `versions.model`과 `versions.reranker_model`에는 각각 사용할 생성 모델과 C 재정렬 모델을 지정한다. 아래 첫 명령은 실제 모델을 호출한다. 한 문항에서 세 방식 모두 근거를 찾아 답하면 질의 임베딩 3회, 답변 생성 3회, C 재정렬 1회의 논리 호출이 예상된다. 두 번째 명령은 저장된 입력만 검증한다. 승인 후 실제로 채점할 때는 새 출력 폴더와 `--judge`를 지정한다. 팀 비교에서는 저장된 각 답변을 `gpt-6-luna`로 채점하며 자동 재시도는 0회다. API 키를 저장소 루트의 `.env`에 보관한다면 두 번째 명령도 `uv run --locked --env-file .env python -m scripts.score_answers`로 시작한다.
 
 ```sh
 uv run --locked --env-file .env python -m scripts.evaluate \
@@ -56,3 +56,5 @@ uv run --locked python -m scripts.score_answers \
 ```
 
 각 문항은 구성별로 다른 `run_id`를 받는다. `runs.csv`의 `versions_json`에서 구성별 후보 정책을, C에서는 재정렬 모델과 프롬프트 해시도 확인할 수 있다. 재정렬 실패는 `failed_stage=retrieve`, 검색 성공 후 답변 생성 실패는 `failed_stage=generate`로 기록된다. 두 경우 모두 답변 점수는 비워 두며, 정상 답변이 받은 0점은 점수로 보존한다. [답변 점수표와 집계 기준](../results/README.md#실검색-abc-점수-비교)
+
+실행 중 공용 채팅 호출을 추적하려면 위 첫 명령 앞에 `RAG_LANGFUSE_TRACE=1`을 붙인다. 다음 채점부터는 `--judge`가 `scores.csv`와 `judgment-details.jsonl`을 함께 생성한다. 근거가 부족하다는 판정은 같은 trace에서 추출 진술과 판정 대상 진술·사유를 열어 검토한다. [팀 인증 설정](../docs/TEAM-SETUP.md#팀-langfuse-설정) · [업로드 명령](../results/README.md#진술별-faithfulness-판정-확인)

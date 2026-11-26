@@ -123,7 +123,8 @@ def test_demo_pipeline_keeps_each_district_conditions_and_citations_separate(tmp
     assert len({record.run_id for record in records}) == 2
 
 
-def test_index_then_evaluate_cli_with_default_index_dimensions(tmp_path):
+@pytest.mark.parametrize("trace_setting", ["off", "missing_key", "bad_url"])
+def test_index_then_evaluate_cli_with_default_index_dimensions(tmp_path, trace_setting):
     index = tmp_path / "index.json"
     result = cli(
         "scripts.index",
@@ -149,7 +150,16 @@ def test_index_then_evaluate_cli_with_default_index_dimensions(tmp_path):
         str(output),
         "--demo",
     )
-    result = cli(*arguments)
+    env = {k: v for k, v in os.environ.items() if not k.startswith("LANGFUSE_")}
+    env.update(
+        RAG_LANGFUSE_TRACE="0" if trace_setting == "off" else "1",
+        LANGFUSE_BASE_URL="https://demo.invalid"
+        if trace_setting == "missing_key"
+        else "private-url",
+    )
+    result = cli(*arguments, env=env)
+    assert result.stderr.count("Langfuse 초기화 실패") == int(trace_setting != "off")
+    assert "private-url" not in result.stderr
     assert result.returncode == 0, result.stderr
     path = output / "evaluation.json"
     rows = json.loads(path.read_text(encoding="utf-8"))
