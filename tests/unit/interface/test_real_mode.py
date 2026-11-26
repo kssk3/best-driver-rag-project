@@ -125,3 +125,69 @@ def test_real_mode_failure_shows_the_error_type_but_never_the_raw_error(
     assert any("RuntimeError" in text and "prepare_data" in text for text in texts)
     assert not any("sk-secret-key" in text for text in texts)
     assert "view" not in app.session_state
+
+
+class _AskThenAnswer:
+    """되묻기를 먼저 돌려주고, 구를 확정한 요청에는 답변을 돌려준다."""
+
+    def __init__(self, fail_on_followup: bool = False):
+        self.requests: list[PipelineRequest] = []
+        self.fail_on_followup = fail_on_followup
+
+    def run(self, request):
+        self.requests.append(request)
+        record = _real_record()
+        if not request.district_confirmed:
+            clarification = PipelineResponse(
+                request_id="req-1",
+                run_id="run-1",
+                status="needs_clarification",
+                answer="어느 구 기준으로 알려 드릴까요?",
+            )
+            return record.model_copy(update={"response": clarification})
+        if self.fail_on_followup:
+            raise RuntimeError("sk-secret-key")
+        return record
+
+
+def _ask_clarification(monkeypatch, pipeline: _AskThenAnswer) -> AppTest:
+    monkeypatch.setattr(
+        importlib.import_module(RUNTIMES), "create_a_runtime", lambda s: pipeline
+    )
+    app = _ask_in_real_mode("송파구에서 대형폐기물은 어떻게 버려요?")
+    assert any("어느 구 기준" in w.value for w in app.warning)
+    return app
+
+
+def test_followup_in_real_mode_is_actually_sent_with_the_confirmed_district(
+    monkeypatch,
+) -> None:
+    pipeline = _AskThenAnswer()
+    app = _ask_clarification(monkeypatch, pipeline)
+
+    app.text_input[1].set_value("송파구")
+    app.button[1].click().run()
+
+    assert not app.exception
+    second = pipeline.requests[1]
+    assert (second.district, second.district_confirmed) == ("송파구", True)
+    assert second.question == "송파구에서 대형폐기물은 어떻게 버려요?"
+    assert any("[가상] 실제 검색 답변" in s.value for s in app.success)
+    assert not app.json  # 예시 미리보기가 아니라 실제로 보냈다
+    assert (
+        app.session_state["asked_district"] == "송파구"
+    )  # 이어지는 되묻기도 이 구를 기준으로 한다
+
+
+def test_followup_failure_keeps_the_form_and_hides_the_raw_error(monkeypatch) -> None:
+    pipeline = _AskThenAnswer(fail_on_followup=True)
+    app = _ask_clarification(monkeypatch, pipeline)
+
+    app.text_input[1].set_value("송파구")
+    app.button[1].click().run()
+
+    texts = [error.value for error in app.error]
+    assert not app.exception
+    assert any("RuntimeError" in text for text in texts)
+    assert not any("sk-secret-key" in text for text in texts)
+    assert any("어느 구 기준" in w.value for w in app.warning)  # 다시 시도할 수 있다

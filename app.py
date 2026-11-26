@@ -78,6 +78,32 @@ def load_pipeline(real: bool = False):
     return create_demo_pipeline(settings)
 
 
+# 실행 모드에서 파이프라인을 돌려 결과를 session_state에 둔다. 준비에 실패하면 화면에 알리고 False.
+def ask_pipeline(mode: str, request: PipelineRequest) -> bool:
+    real = mode == "실행(실제 검색)"
+    try:
+        record = load_pipeline(real).run(request)
+    except Exception as error:  # 색인·키·설정 문제로 화면이 멈추지 않게 한다.
+        if real:
+            # 오류 원문에는 키 조각이나 파일 경로가 섞일 수 있어 종류 이름까지만 보인다.
+            st.error(
+                f"실제 검색을 준비하지 못했습니다({type(error).__name__}). "
+                "색인이 있는지, .env의 OPENAI_API_KEY를 넘겨 실행했는지 확인하세요. "
+                f"색인 만들기: {REAL_INDEX_COMMAND}"
+            )
+        else:
+            st.error(
+                f"데모 색인을 불러오지 못했습니다. 먼저 색인을 만드세요: {INDEX_COMMAND}"
+            )
+        return False
+    st.session_state["view"] = run_record_to_view(record)
+    st.session_state["places"] = run_record_to_places(record)
+    st.session_state["asked_question"] = request.question
+    st.session_state["asked_district"] = request.district or ""
+    st.session_state["asked_mode"] = mode
+    return True
+
+
 FAVICON_PATH = Path(__file__).parent / ".streamlit" / "favicon.png"
 
 st.set_page_config(page_title="분리당", page_icon=str(FAVICON_PATH), layout="wide")
@@ -128,29 +154,7 @@ with user_tab:
         elif not question.strip():
             st.warning("질문을 입력하세요.")
         else:
-            real = mode == "실행(실제 검색)"
-            try:
-                record = load_pipeline(real).run(
-                    PipelineRequest(question=question, district=district)
-                )
-            except Exception as error:  # 색인·키·설정 문제로 화면이 멈추지 않게 한다.
-                if real:
-                    # 오류 원문에는 키 조각이나 파일 경로가 섞일 수 있어 종류 이름까지만 보인다.
-                    st.error(
-                        f"실제 검색을 준비하지 못했습니다({type(error).__name__}). "
-                        "색인이 있는지, .env의 OPENAI_API_KEY를 넘겨 실행했는지 확인하세요. "
-                        f"색인 만들기: {REAL_INDEX_COMMAND}"
-                    )
-                else:
-                    st.error(
-                        f"데모 색인을 불러오지 못했습니다. 먼저 색인을 만드세요: {INDEX_COMMAND}"
-                    )
-            else:
-                st.session_state["view"] = run_record_to_view(record)
-                st.session_state["places"] = run_record_to_places(record)
-                st.session_state["asked_question"] = question
-                st.session_state["asked_district"] = district
-                st.session_state["asked_mode"] = mode
+            ask_pipeline(mode, PipelineRequest(question=question, district=district))
 
     # 응답 방식을 바꾸면 다른 방식으로 만든 이전 응답은 사용자 화면과 검증 패널 모두에서 숨긴다.
     view = st.session_state.get("view")
@@ -158,10 +162,16 @@ with user_tab:
         view = None
     if view is not None:
         # 입력창이 아니라 제출 당시의 질문·지역으로 그린다.
+        def send_followup(fields: dict) -> None:
+            # 되묻기에 답한 요청을 같은 방식으로 실제 실행한다. 성공하면 새 응답으로 다시 그린다.
+            if ask_pipeline(mode, PipelineRequest(**fields)):
+                st.rerun()
+
         render_response(
             view,
             question=st.session_state.get("asked_question", ""),
             district=st.session_state.get("asked_district", ""),
+            on_followup=None if mode == "예시 응답" else send_followup,
         )
 
     st.divider()

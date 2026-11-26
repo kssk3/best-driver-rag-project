@@ -1,3 +1,5 @@
+from collections.abc import Callable
+
 import streamlit as st
 
 from src.interface.adapter import Citation, ViewResponse
@@ -59,7 +61,13 @@ def format_citation(citation: Citation) -> str:
     return line
 
 
-def render_response(view: ViewResponse, question: str = "", district: str = "") -> None:
+def render_response(
+    view: ViewResponse,
+    question: str = "",
+    district: str = "",
+    on_followup: Callable[[dict], None] | None = None,
+) -> None:
+    # on_followup: 되묻기에 답하면 만든 요청을 실제로 보내는 함수. 없으면(예시 응답) 요청을 보여 주기만 한다.
 
     if view.kind == "fixture":
         st.caption("예시(합성) 응답입니다. 실제 RAG 실행이 아닙니다.")
@@ -75,7 +83,7 @@ def render_response(view: ViewResponse, question: str = "", district: str = "") 
         _render_answered(view)
 
     elif view.status == "needs_clarification":
-        _render_clarification(view, question, district)
+        _render_clarification(view, question, district, on_followup)
 
     elif view.status == "insufficient_evidence":
         _render_insufficient_evidence(view)
@@ -100,7 +108,12 @@ def _render_answered(view: ViewResponse) -> None:
         st.markdown(format_citation(citation))
 
 
-def _render_clarification(view: ViewResponse, question: str, district: str) -> None:
+def _render_clarification(
+    view: ViewResponse,
+    question: str,
+    district: str,
+    on_followup: Callable[[dict], None] | None,
+) -> None:
 
     st.warning(view.answer or "질문하신 내용은 추가 정보가 필요합니다.")
 
@@ -116,8 +129,11 @@ def _render_clarification(view: ViewResponse, question: str, district: str) -> N
 
     if submitted:
         request = build_followup_request(question, district, extra_conditions)
-        st.caption("다시 보낼 요청입니다. 실제 전송이 아닌 예시입니다.")
-        st.json(request)
+        if on_followup is not None:
+            on_followup(request)
+        else:
+            st.caption("다시 보낼 요청입니다. 실제 전송이 아닌 예시입니다.")
+            st.json(request)
 
 
 def _render_insufficient_evidence(view: ViewResponse) -> None:
