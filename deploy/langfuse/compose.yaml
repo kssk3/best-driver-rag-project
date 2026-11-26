@@ -6,6 +6,8 @@ x-langfuse-env: &langfuse-env
   SALT: ${SALT:?set SALT}
   ENCRYPTION_KEY: ${ENCRYPTION_KEY:?set ENCRYPTION_KEY}
   TELEMETRY_ENABLED: "false"
+  SMTP_CONNECTION_URL:
+  EMAIL_FROM_ADDRESS:
   CLICKHOUSE_URL: http://clickhouse:8123
   CLICKHOUSE_MIGRATION_URL: clickhouse://clickhouse:9000
   CLICKHOUSE_CLUSTER_ENABLED: "false"
