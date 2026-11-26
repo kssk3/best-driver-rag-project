@@ -301,13 +301,12 @@ def test_resolve_request_resolves_shared_dong_when_confirmed_district_is_a_candi
     monkeypatch,
 ):
     # 여러 구에 있는 동(ambiguous)을 되묻고 사용자가 후보 구를 확정하면 그 구와 그 동으로 해석한다.
-    # find_dong은 매핑표가 아니라 긴 이름 순 목록(DONG_NAMES_LONGEST_FIRST)으로 동을 찾으므로 둘 다 설정한다.
     monkeypatch.setitem(DONG_TO_DISTRICTS, "공통동", ["서대문구", "송파구"])
-    monkeypatch.setattr(
-        regions,
-        "DONG_NAMES_LONGEST_FIRST",
-        ["공통동", *regions.DONG_NAMES_LONGEST_FIRST],
-    )
+    # find_dong이 매핑표의 복사본(긴 이름 순 목록)을 쓰는 구현이면 그 목록에도 넣는다.
+    # 복사본 없이 매핑표를 직접 정렬하는 구현이면 이 속성이 없으므로 건너뛴다.
+    names = getattr(regions, "DONG_NAMES_LONGEST_FIRST", None)
+    if names is not None:
+        monkeypatch.setattr(regions, "DONG_NAMES_LONGEST_FIRST", ["공통동", *names])
     question = "공통동 쓰레기 언제?"
 
     asked = resolve_request(PipelineRequest(question=question))
