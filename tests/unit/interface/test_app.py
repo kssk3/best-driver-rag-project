@@ -1,4 +1,4 @@
-"""app.py가 오류 없이 실행되고 예시 응답임을 알리는지 확인한다."""
+"""app.py가 오류 없이 실행되고 응답 방식을 알맞게 보여 주는지 확인한다."""
 
 import json
 from hashlib import sha256
@@ -22,15 +22,11 @@ from src.runtime import create_runtime
 APP_PATH = Path(__file__).parent.parent.parent.parent / "app.py"
 
 
-def test_app_shows_fixture_notice_after_click(monkeypatch) -> None:
+def test_app_without_settings_offers_only_synthetic_demo(monkeypatch) -> None:
     monkeypatch.delenv("RAG_CHAT_SETTINGS", raising=False)
     app = AppTest.from_file(str(APP_PATH), default_timeout=10).run()
     assert not app.exception
-    assert app.radio[0].options == ["예시 응답", "합성 데모"]
-
-    app.button[0].click().run()
-    assert not app.exception
-    assert any("예시(합성)" in caption.value for caption in app.caption)
+    assert app.radio[0].options == ["합성 데모"]
 
 
 @pytest.mark.parametrize("use_relative_path", [False, True])

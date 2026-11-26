@@ -5,7 +5,6 @@
 공용 입출력과 함수 규격은 사용하는 담당자와 합의한 뒤 추가한다.
 """
 
-import json
 from os import getenv
 from pathlib import Path
 
@@ -22,8 +21,6 @@ from src.evaluation.answer_experiments.answer_evaluation_runtimes import (
 from src.interface.adapter import (
     run_record_to_places,
     run_record_to_view,
-    to_place_result,
-    to_view_response,
 )
 from src.interface.chat import render_response
 from src.interface.comparison import (
@@ -34,24 +31,6 @@ from src.interface.inspection import render_inspection
 from src.interface.map import render_places
 from src.pipeline import PipelineConfigurationError
 from src.rewrite_dictionary import catalog
-
-# [임시] 예시(합성) 응답을 읽는다.
-SAMPLE_PATH = (
-    Path(__file__).parent / "tests" / "fixtures" / "interface" / "sample_responses.json"
-)
-PLACE_SAMPLE_PATH = (
-    Path(__file__).parent / "tests" / "fixtures" / "interface" / "sample_places.json"
-)
-
-
-def load_samples(path: Path = SAMPLE_PATH) -> dict:
-    data = json.loads(path.read_text(encoding="utf-8"))
-    return {key: value for key, value in data.items() if not key.startswith("_")}
-
-
-samples = load_samples()
-place_samples = load_samples(PLACE_SAMPLE_PATH)
-
 
 # 색인 안내 문구
 INDEX_COMMAND = (
@@ -198,17 +177,15 @@ user_tab, inspection_tab, comparison_tab = st.tabs(
 
 
 with user_tab:
-    modes = ["예시 응답", "합성 데모"]
+    modes = ["합성 데모"]
     if TEAM_SETTINGS_PATH:
         modes.append(TEAM_INDEX_MODE)
-    mode = st.radio("응답 방식", modes, horizontal=True)
+    # 설정이 있으면 실행을 기본으로 둔다. 합성 데모는 색인 없이 확인하는 용도다.
+    mode = st.radio("응답 방식", modes, index=len(modes) - 1, horizontal=True)
     district = st.selectbox("지역", ["서대문구", "송파구"])
     question = st.text_input("질문")
 
-    if mode == "예시 응답":
-        sample_name = st.selectbox("예시 응답 고르기 (합성)", list(samples))
-        st.caption("지금은 입력한 구와 질문에 상관없이 선택한 예시가 표현됩니다.")
-    elif mode == TEAM_INDEX_MODE:
+    if mode == TEAM_INDEX_MODE:
         st.caption("설정한 팀 색인에서 검색해 답변합니다.")
     else:
         st.caption("합성 문서만 검색하는 데모 실행입니다. 실제 RAG 품질이 아닙니다.")
@@ -220,14 +197,7 @@ with user_tab:
         # 이전 되묻기에서 입력한 값이 다음 되묻기에 미리 채워지지 않게 한다.
         for key in [k for k in st.session_state if k.startswith("followup:")]:
             del st.session_state[key]
-        if mode == "예시 응답":
-            st.session_state["view"] = to_view_response(
-                samples[sample_name], kind="fixture"
-            )
-            st.session_state["asked_question"] = question
-            st.session_state["asked_district"] = district
-            st.session_state["asked_mode"] = mode
-        elif not question.strip():
+        if not question.strip():
             st.warning("질문을 입력하세요.")
         else:
             ask_pipeline(mode, PipelineRequest(question=question, district=district))
@@ -247,15 +217,12 @@ with user_tab:
             view,
             question=st.session_state.get("asked_question", ""),
             district=st.session_state.get("asked_district", ""),
-            on_followup=None if mode == "예시 응답" else send_followup,
+            on_followup=None if view.kind == "fixture" else send_followup,
         )
 
     st.divider()
     st.subheader("장소")
-    if mode == "예시 응답":
-        place_name = st.selectbox("예시 장소 고르기 (합성)", list(place_samples))
-        render_places(to_place_result(place_samples[place_name], kind="fixture"))
-    elif "places" in st.session_state:
+    if "places" in st.session_state:
         render_places(st.session_state["places"])
 
 
@@ -267,7 +234,8 @@ with comparison_tab:
     st.subheader("답변 근거 충실도")
     st.caption(
         "같은 평가의 scores.csv에서 비교할 수 있는 행(comparison_eligible=true)만 "
-        "방식별로 집계합니다. 검색 적중률(Hit@k)은 다른 지표라 섞지 않습니다."
+        "방식별로 집계합니다. 검색 적중률(Hit@k)은 다른 지표라 섞지 않습니다. "
+        "점수는 판정 모델의 편차가 있어, 같은 답변도 다시 채점하면 달라질 수 있습니다."
     )
     if not SCORES_CSV_PATH:
         st.info(

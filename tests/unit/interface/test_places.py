@@ -33,8 +33,8 @@ PLACES = load_places()
 
 
 def pick_places(name: str) -> AppTest:
-    app = AppTest.from_file(str(APP_PATH), default_timeout=10).run()
-    app.selectbox[2].select(name)
+    app = AppTest.from_file(str(APP_PATH), default_timeout=10)
+    app.session_state["places"] = to_place_result(PLACES[name], kind="fixture")
     return app.run()
 
 
