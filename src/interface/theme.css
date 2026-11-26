@@ -10,16 +10,6 @@
   --lav-soft: #f1eaf9;
   --lav-line: #cbb8e6;
   --lav-ink: #6a4a94;
-  /* 배경 띠: 본문 좌우 여백(40px)과 오른쪽 패널 자리만큼 화면 끝까지 넓힌다 */
-  --band-left: -40px;
-  --band-right: calc(-38vw - 24px);
-  --hero-band: linear-gradient(180deg, #f4f3ee, #eaf0e8);
-  --hero-band-top: 12px; /* 헤더와 겹치지 않게 */
-  --hero-band-bottom: 110px; /* 아래로 50px 내린 문구와 칩 줄바꿈까지 덮는다 */
-  --info-band: #fff;
-  --info-pad: 36px;
-  --blob: radial-gradient(circle, #dcebdd 0%, #e9f1e7 60%, transparent 72%);
-  --blob-size: 78%;
 }
 
 /* 서비스처럼 보이도록 Streamlit 기본 도구줄·푸터를 숨긴다 */
@@ -133,40 +123,6 @@ footer {
   font-size: 13px;
   padding: 4px 12px;
   min-height: 0;
-}
-
-/* 히어로 배경 띠 */
-[data-testid="stHorizontalBlock"]:has(.hero-copy) {
-  position: relative;
-  z-index: 0;
-  margin-bottom: calc(var(--hero-band-bottom) - 16px);
-}
-[data-testid="stHorizontalBlock"]:has(.hero-copy)::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  top: calc(-1 * var(--hero-band-top));
-  bottom: calc(-1 * var(--hero-band-bottom));
-  left: var(--band-left);
-  right: var(--band-right);
-  background: var(--hero-band);
-}
-/* 마스코트 뒤 블롭 */
-[data-testid="stColumn"]:has([data-testid="stImage"]) {
-  position: relative;
-  z-index: 0;
-}
-[data-testid="stColumn"]:has([data-testid="stImage"])::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  top: 50%;
-  left: 50%;
-  width: var(--blob-size);
-  aspect-ratio: 1;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  background: var(--blob);
 }
 
 .foot {
@@ -660,4 +616,13 @@ a.brand:hover b {
 .st-key-answerbox [data-testid="stLayoutWrapper"] > [data-testid="stVerticalBlock"] [data-testid="stCaptionContainer"] {
   font-size: 0.75rem;
   color: var(--sub);
+}
+
+/* 지역 칩과 예시 질문 칩은 높이를 똑같이 */
+.st-key-pick_district button,
+.st-key-examples button {
+  height: 27px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
 }
