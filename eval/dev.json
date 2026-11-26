@@ -38,7 +38,7 @@
     "question": "송파구 큰 대로변 상가는 쓰레기를 몇 시에 내놓을 수 있나요?",
     "district": "송파구",
     "expected_status": "answered",
-    "reference_answer": "송파구 주요 가로변(왕복 2차선 이상의 대로)은 매일 오후 10시부터 새벽 1시까지 건물 내(외) 지정장소 등에 배출할 수 있고, 대로변 배출은 금지됩니다.",
+    "reference_answer": "송파구 주요 가로변(왕복 2차선 이상의 대로)은 매일 오후 10시부터 새벽 1시까지 내놓을 수 있습니다. 건물 내(외) 지정장소나 상가 앞에 배출하며 대로변 자체에 내놓는 것은 금지됩니다.",
     "allowed_chunk_ids": [
       "chunk-4082cac88ad6a32cefb66ff8121891dde4438a359757c4f525ba8b8dfe26a9a6",
       "chunk-2401227c07717ca42b995673ac088e66e0ecf0f5c9702b9fc168261ab962b5ea"

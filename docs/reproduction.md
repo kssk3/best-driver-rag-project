@@ -26,7 +26,10 @@ uv run --locked --env-file .env python -m scripts.prepare_data --bundle data/han
 uv run --locked --env-file .env python -m scripts.evaluate --cases eval/test.json --settings configs/abc-answer-eval-settings.json --factory src.evaluation.answer_experiments.abc_runtimes:create_abc_runtimes --output-dir results/local/<새 출력 폴더>
 uv run --locked --env-file .env python -m scripts.score_answers --judge --evaluation results/local/<새 출력 폴더>/evaluation.json --cases-csv results/local/<새 출력 폴더>/cases.csv --output-dir results/local/<채점 출력 폴더>
 uv run --locked python -m scripts.summarize_runs results/local/<새 출력 폴더>/runs.csv
+uv run --locked --env-file .env python -m scripts.score_quality --runs results/local/<새 출력 폴더>/runs.csv --candidates results/local/<새 출력 폴더>/candidates.csv --cases eval/test.json --grading eval/test-grading.json --output-dir results/local/<품질 채점 폴더>
 ```
+
+`score_quality`는 정답 충족, 근거 적합, 근거 없음 대응을 0/1로 채점해 `quality.csv`에 남긴다(판정 모델 호출, 실행당 최대 3회). 판정 응답을 읽지 못한 행은 0점이 아니라 점수 없음으로 남고 요약에서 따로 센다. 모델 판정이어서 사람의 검토가 필요하다.
 
 출력 폴더는 기존 결과를 덮어쓰지 않도록 항상 새 이름을 쓴다. 호출 수와 비용은 [결과 안내](../results/README.md)를 본다.
 
