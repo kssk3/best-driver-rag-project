@@ -380,30 +380,68 @@ def test_resolve_request_still_asks_when_the_confirmed_pair_does_not_match():
 
 
 # 되묻기에서 지원 밖 후보 구를 고르면 같은 되묻기를 되풀이하지 않고 지원 밖으로 안내한다
-@pytest.mark.parametrize(
-    "question, picked",
-    [
-        ("삼성동에서 대형폐기물은 어떻게 버려요?", "강남구"),
-        ("삼성동에서 대형폐기물은 어떻게 버려요?", "관악구"),
-        ("강남구 삼성동에서 대형폐기물은 어떻게 버려요?", "강남구"),
-        ("강남구 삼성동에서 대형폐기물은 어떻게 버려요?", "관악구"),
-    ],
-)
+@pytest.mark.parametrize("picked", ["강남구", "관악구"])
 def test_resolve_request_says_unsupported_when_user_picks_an_unsupported_candidate(
-    question, picked
+    picked,
 ):
+    question = "삼성동에서 대형폐기물은 어떻게 버려요?"
     asked = resolve_request(PipelineRequest(question=question, district="서대문구"))
     picked_result = resolve_request(
         PipelineRequest(question=question, district=picked, district_confirmed=True)
     )
 
-    assert asked.region_status == "ambiguous"  # 첫 요청은 기존대로 되묻는다.
+    assert asked.region_status == "ambiguous"  # 구가 없는 질문은 기존대로 되묻는다.
     assert picked_result.status == "needs_clarification"
     assert picked_result.region_status == "unsupported"
     assert picked_result.district == picked
     assert f"{picked}는 아직 지원하지 않아요" in (
         picked_result.clarification_question or ""
     )
+
+
+# 질문에 후보 구가 적혀 있으면 모호함이 풀린 것이므로 되묻지 않는다
+@pytest.mark.parametrize("written", ["강남구", "관악구"])
+def test_resolve_request_does_not_ask_again_when_the_question_names_a_candidate_district(
+    written,
+):
+    result = resolve_request(
+        PipelineRequest(
+            question=f"{written} 삼성동에서 대형폐기물은 어떻게 버려요?",
+            district="서대문구",
+        )
+    )
+
+    assert result.region_status == "unsupported"
+    assert result.district == written
+    assert f"{written}는 아직 지원하지 않아요" in (result.clarification_question or "")
+
+
+def test_resolve_request_uses_the_written_candidate_district_when_it_is_supported(
+    monkeypatch,
+):
+    monkeypatch.setitem(DONG_TO_DISTRICTS, "공통동", ["서대문구", "송파구"])
+    names = getattr(regions, "DONG_NAMES_LONGEST_FIRST", None)
+    if names is not None:
+        monkeypatch.setattr(regions, "DONG_NAMES_LONGEST_FIRST", ["공통동", *names])
+
+    result = resolve_request(
+        PipelineRequest(question="송파구 공통동 쓰레기 언제?", district="송파구")
+    )
+
+    assert result.status == "resolved"
+    assert (result.district, result.dong, result.region_status) == (
+        "송파구",
+        "공통동",
+        "ok",
+    )
+
+
+def test_resolve_request_still_asks_when_the_written_district_is_not_a_candidate():
+    result = resolve_request(
+        PipelineRequest(question="서대문구 삼성동 쓰레기 언제?", district="서대문구")
+    )
+
+    assert result.region_status == "ambiguous"  # 서대문구는 삼성동의 후보가 아니다.
 
 
 def test_resolve_request_keeps_asking_when_the_picked_district_is_not_a_candidate():
