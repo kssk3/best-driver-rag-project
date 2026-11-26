@@ -1,0 +1,2 @@
+dataset_id,case_id,question,district,dong,conditions_json,expected_status,reference_answer,allowed_chunk_ids_json
+64a1657c59ca6bdd2943284ede9eb909953997ae6a421935860dabd852976c2d,test-d10-sp-reusable-bag-corrected,송파구 조례는 재사용 종량제봉투의 제작과 판매에 대해 무엇을 정하고 있나요?,송파구,,{},answered,"구청장은 1회용 비닐봉투 사용량을 줄이기 위해 재사용 종량제봉투를 제작할 수 있고, 유통매장에서 구입이 편리하도록 판매방법 개선과 고객 홍보를 추진해야 합니다.","[""chunk-225a2d424691e440b65fda01dc6c8eac1393e3834339b4ccfee961965979d3b2""]"
