@@ -71,6 +71,12 @@ RAG_CHAT_SETTINGS=configs/team-a-rewrite-chat.json \
   uv run --locked --env-file .env streamlit run app.py
 ```
 
+화면에서 쓰는 C 재정렬 + 질문 다듬기 설정은 [C 실행 설정](configs/team-c-rewrite-chat.json)이다. 다음 한 줄은 색인이 없으면 먼저 만들고(OpenAI 임베딩 호출, 약 543청크) 그 설정으로 화면을 띄운다. `.env`에 `OPENAI_API_KEY`가 필요하다.
+
+```sh
+uv run --locked --env-file .env python -m scripts.run_chat
+```
+
 A 검색의 OFF/ON을 같은 질문·색인·검색 옵션·답변 모델로 한 번에 실행한다. 출력 경로에는 새 이름을 사용한다.
 
 ```sh
