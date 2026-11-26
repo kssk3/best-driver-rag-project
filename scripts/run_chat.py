@@ -66,6 +66,11 @@ def build_team_index(index: Path) -> None:
     )
     if not (building / index.name).exists():
         sys.exit(f"색인 생성이 끝났지만 {index.name}이 없습니다: {building}")
+    # 기준선과 다른 새 색인은 기본 경로로 옮기지 않는다(확인용으로 임시 폴더에 남긴다).
+    if problem := baseline_mismatch(building / index.name):
+        sys.exit(
+            f"새로 만든 색인을 사용하지 않습니다.\n{problem}\n확인용 폴더: {building}"
+        )
     if out.exists():
         out.rename(out.with_name(f"{out.name}.incomplete-{uuid4().hex[:8]}"))
     building.rename(out)
