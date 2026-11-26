@@ -74,19 +74,20 @@ def run_config(run: dict[str, str]) -> str:
 
 
 def fill_failed_rows(runs: list[dict[str, str]]) -> list[dict[str, str]]:
-    """실행 기록 없이 실패한 행의 구성 이름과 리라이트 여부를 같은 구성의 다른 행에서 채운다."""
-    rewrite: dict[str, set[str]] = {}
+    """실행 기록 없이 실패한 행의 variant와 리라이트 여부를, 같은 configuration의 성공 행에서 채운다."""
+    known: dict[str, set[tuple[str, str]]] = {}
     for r in runs:
-        if r.get("rewrite_enabled"):
-            rewrite.setdefault(run_config(r), set()).add(r["rewrite_enabled"])
+        if r.get("variant") and r.get("rewrite_enabled"):
+            known.setdefault(r.get("configuration", ""), set()).add(
+                (r["variant"], r["rewrite_enabled"])
+            )
     filled = []
     for r in runs:
-        config = run_config(r)
-        known = rewrite.get(config, set())
-        value = r.get("rewrite_enabled") or (
-            next(iter(known)) if len(known) == 1 else ""
-        )
-        filled.append({**r, "variant": config, "rewrite_enabled": value})
+        found = known.get(r.get("configuration", ""), set())
+        if not r.get("variant") and len(found) == 1:
+            variant, rewrite = next(iter(found))
+            r = {**r, "variant": variant, "rewrite_enabled": rewrite}
+        filled.append({**r, "variant": run_config(r)})
     return filled
 
 
@@ -127,7 +128,8 @@ def check_inputs(
         # 값이 없는 예전 기록("")과 명시적인 빈 배열("[]")을 구분한다. 기록됐으면 빈 배열도 대조한다.
         raw_ranks = run.get("citation_ranks_json") or ""
         if raw_ranks != "":
-            ranks = sorted(json.loads(raw_ranks))
+            # candidates.csv는 같은 후보의 첫 인용 위치만 남기므로 중복 인용은 한 번으로 본다.
+            ranks = sorted(set(json.loads(raw_ranks)))
             cited = sorted(int(r["rank"]) for r in rows if r.get("citation_position"))
             if cited != ranks:
                 problems.append(

@@ -229,6 +229,6 @@
 
 ## 9. 재현과 기록
 
-- 재현 절차와 재실행 기록 양식: [docs/reproduction.md](docs/reproduction.md). 실행·점수는 팀 Langfuse에 쌓인다.
+- 재현 절차와 재실행 기록 양식: [docs/reproduction.md](docs/reproduction.md). Langfuse 기록은 선택이다(추적은 `RAG_LANGFUSE_TRACE=1`, 점수는 별도 업로드 명령. 절차는 재현 문서 참고).
 - 기여 근거: [contributions.md](contributions.md). 평가셋 안내: [eval/README.md](eval/README.md).
 - 제출 태그 `ax1-project3-submit`은 최종 검증 뒤 제출 커밋에 붙인다. 아직 없다.

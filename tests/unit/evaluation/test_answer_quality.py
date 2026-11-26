@@ -282,13 +282,20 @@ def test_a_recordless_failure_joins_its_configuration_in_a_mixed_bundle() -> Non
         "dataset_id": "d",
         "case_id": "c2",
         "variant": "",
-        "configuration": "A",
+        "configuration": "rewrite-off",
         "rewrite_enabled": "",
         "status": "error",
         "candidate_count": "0",
     }
     runs = [runs[0], failure]
-    runs[0]["configuration"] = "A"
+    runs[0]["configuration"] = "rewrite-off"
     runs = fill_failed_rows(runs)
     assert (runs[1]["variant"], runs[1]["rewrite_enabled"]) == ("A", "False")
+    assert check_inputs(runs, candidates, questions, grading) == []
+
+
+def test_check_inputs_accepts_a_run_that_cites_the_same_candidate_twice() -> None:
+    runs, candidates, questions, grading = inputs()
+    runs[0]["citation_ranks_json"] = "[1, 1]"
+    candidates[0]["citation_position"] = "1"
     assert check_inputs(runs, candidates, questions, grading) == []
