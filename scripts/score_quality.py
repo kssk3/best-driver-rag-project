@@ -12,7 +12,7 @@ import json
 from pathlib import Path
 
 from src.evaluation.answer_quality import KEYS, Judge, score_run, summarize
-from src.evaluation.runner import load_evaluation_cases
+from src.evaluation.runner import _unique_keys, load_evaluation_cases
 
 COLUMNS = [
     "run_id",
@@ -30,7 +30,9 @@ def load_grading(paths: list[Path]) -> dict[str, dict]:
     """채점 자료를 하나로 합친다. 형식은 {"grading": {...}}(최종셋)과 {문항 ID: 항목}(개발셋 메모) 둘 다 읽는다."""
     merged: dict[str, dict] = {}
     for path in paths:
-        data = json.loads(path.read_text(encoding="utf-8-sig"))
+        data = json.loads(
+            path.read_text(encoding="utf-8-sig"), object_pairs_hook=_unique_keys
+        )
         items = data["grading"] if "grading" in data else data
         if duplicated := sorted(set(items) & set(merged)):
             raise SystemExit(

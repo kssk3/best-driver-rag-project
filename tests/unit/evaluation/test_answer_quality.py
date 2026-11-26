@@ -312,3 +312,13 @@ def test_load_grading_rejects_a_case_id_that_appears_in_two_files(tmp_path) -> N
     except SystemExit:
         return
     raise AssertionError("겹치는 문항 ID를 막아야 한다")
+
+
+def test_load_grading_rejects_a_repeated_key_inside_one_file(tmp_path) -> None:
+    path = tmp_path / "a.json"
+    path.write_text('{"grading": {"c1": {"a": 1}, "c1": {"a": 2}}}', encoding="utf-8")
+    try:
+        load_grading([path])
+    except ValueError:
+        return
+    raise AssertionError("한 파일 안의 중복 키를 막아야 한다")
