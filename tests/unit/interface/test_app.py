@@ -1,4 +1,4 @@
-"""app.py가 오류 없이 실행되고 예시 응답임을 알리는지 확인한다."""
+"""app.py가 오류 없이 실행되고 응답 방식을 알맞게 보여 주는지 확인한다."""
 
 import json
 from hashlib import sha256
@@ -22,15 +22,11 @@ from src.runtime import create_runtime
 APP_PATH = Path(__file__).parent.parent.parent.parent / "app.py"
 
 
-def test_app_shows_fixture_notice_after_click(monkeypatch) -> None:
+def test_app_without_settings_offers_only_synthetic_demo(monkeypatch) -> None:
     monkeypatch.delenv("RAG_CHAT_SETTINGS", raising=False)
     app = AppTest.from_file(str(APP_PATH), default_timeout=10).run()
     assert not app.exception
-    assert app.radio[0].options == ["예시 응답", "실행(합성 데모)"]
-
-    app.button[0].click().run()
-    assert not app.exception
-    assert any("예시(합성)" in caption.value for caption in app.caption)
+    assert app.radio[0].options == ["합성 데모"]
 
 
 @pytest.mark.parametrize("use_relative_path", [False, True])
@@ -83,7 +79,7 @@ def test_app_uses_explicit_team_runtime_settings(
         answer_evaluation_runtimes, "create_a_catalog_runtime", make_runtime
     )
     app = AppTest.from_file(str(APP_PATH), default_timeout=10).run()
-    app.radio[0].set_value("실행(팀 색인)").run()
+    app.radio[0].set_value("실행").run()
     app.selectbox[0].set_value("송파구")
     question = "잠실동에서 안 씻은 우유펙은요?"
     app.text_input[0].set_value(question)
@@ -127,7 +123,7 @@ def test_app_distinguishes_team_settings_from_index_errors(
     monkeypatch.setenv("RAG_CHAT_SETTINGS", str(config))
 
     app = AppTest.from_file(str(APP_PATH), default_timeout=10).run()
-    app.radio[0].set_value("실행(팀 색인)").run()
+    app.radio[0].set_value("실행").run()
     app.text_input[0].set_value("우유팩은 어떻게 버려요?")
     app.button[0].click().run()
 
@@ -166,7 +162,7 @@ def test_app_reports_missing_key_before_creating_embedding_provider(
     )
 
     app = AppTest.from_file(str(APP_PATH), default_timeout=10).run()
-    app.radio[0].set_value("실행(팀 색인)").run()
+    app.radio[0].set_value("실행").run()
     app.text_input[0].set_value("우유팩은 어떻게 버려요?")
     app.button[0].click().run()
 
@@ -183,7 +179,10 @@ def test_app_reports_missing_key_before_creating_embedding_provider(
     (
         ({"variant": "A"}, "pipeline.versions.model"),
         ({"variant": "B", "versions": {"model": "offline-model"}}, "pipeline.variant"),
-        ({"variant": "C", "versions": {"model": "offline-model"}}, "pipeline.variant"),
+        (
+            {"variant": "C", "versions": {"model": "offline-model"}},
+            "pipeline.versions.reranker_model",
+        ),
     ),
 )
 def test_app_reports_team_configuration_field_before_opening_index(
@@ -196,7 +195,7 @@ def test_app_reports_team_configuration_field_before_opening_index(
     monkeypatch.setattr(answer_evaluation_runtimes, "load_index", load_index)
 
     app = AppTest.from_file(str(APP_PATH), default_timeout=10).run()
-    app.radio[0].set_value("실행(팀 색인)").run()
+    app.radio[0].set_value("실행").run()
     app.text_input[0].set_value("우유팩은 어떻게 버려요?")
     app.button[0].click().run()
 
@@ -236,7 +235,7 @@ def test_app_reloads_team_runtime_when_same_settings_file_changes(
     factory = Mock(side_effect=make_runtime)
     monkeypatch.setattr(answer_evaluation_runtimes, "create_a_catalog_runtime", factory)
     app = AppTest.from_file(str(APP_PATH), default_timeout=10).run()
-    app.radio[0].set_value("실행(팀 색인)").run()
+    app.radio[0].set_value("실행").run()
     question = "우유팩은 어떻게 버려요?"
     app.text_input[0].set_value(question)
     app.button[0].click().run()
@@ -325,7 +324,7 @@ def test_app_refreshes_same_path_index_and_active_catalog(
     second = synthetic_index("최신 합성 근거")
     save_index(first, index_path)
     app = AppTest.from_file(str(APP_PATH), default_timeout=10).run()
-    app.radio[0].set_value("실행(팀 색인)").run()
+    app.radio[0].set_value("실행").run()
     question = "우유팩은 어떻게 버려요?"
     app.text_input[0].set_value(question)
 

@@ -288,3 +288,30 @@ def test_citation_problems_get_their_own_reason(draft_output, kind):
 
     assert str(error.value) == kind
     assert error.value.code == f"generation.{kind}"
+
+
+def test_region_left_only_in_conditions_does_not_reach_the_model_input():
+    # 해석기가 동을 버려 요청의 dong이 비었는데 일반 조건에 연희동이 남아 있으면
+    # 송파구와 연희동이 함께 모델 입력에 들어갈 수 있었다. 최상위 필드만 기준으로 삼는다.
+    draft = Mock(
+        return_value={
+            "status": "answered",
+            "message": "근거 안내",
+            "citation_indices": [0],
+        }
+    )
+    request = PipelineRequest(
+        question="질문",
+        district="송파구",
+        conditions={"item": "병", "dong": "연희동", "district": "서대문구"},
+    )
+    make_answer_generator(draft)(request, [_chunk()])
+    assert draft.call_args.args[0]["conditions"] == {"district": "송파구", "item": "병"}
+
+    # 요청에 구·동이 모두 없으면 조건에 남은 지역도 모델 입력에 넣지 않는다.
+    draft.reset_mock()
+    make_answer_generator(draft)(
+        PipelineRequest(question="질문", conditions={"dong": "연희동", "item": "병"}),
+        [_chunk()],
+    )
+    assert draft.call_args.args[0]["conditions"] == {"item": "병"}

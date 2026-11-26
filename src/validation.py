@@ -86,16 +86,21 @@ def check_response(
             )
         )
 
-    # [W6] 추가 정보가 필요하다면서 물어볼 게 없다.
-    if view.status == "needs_clarification" and not view.required_fields:
+    # [W6] 추가 정보가 필요하다면서 물어볼 게 없다. 지원 밖 안내는 물어볼 게 없는 정상 안내다.
+    if (
+        view.status == "needs_clarification"
+        and not view.required_fields
+        and view.region_status != "unsupported"
+    ):
         alerts.append(
             Alert("W6", "warning", "추가 정보가 필요하지만 물어볼 항목이 없습니다.")
         )
 
     # [W7] 오류는 정상 거절과 다른 상태이다.
     if view.status == "error":
+        code = f" (오류 코드: {view.error_code})" if view.error_code else ""
         alerts.append(
-            Alert("W7", "error", f"오류 응답: {view.error or '오류 내용 없음'}")
+            Alert("W7", "error", f"오류 응답: {view.error or '오류 내용 없음'}{code}")
         )
 
     # [W8] 모델이 받은 근거 중 화면 후보에 없는 것이 있다.

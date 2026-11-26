@@ -28,6 +28,7 @@ def make_chunk(
     scope = scope_type or ("common" if districts == [] else "district")
     return {
         "scope_type": scope,
+        "title": "합성 제목",
         "chunking_version": chunking_version,
         "content_format": fmt,
         "chunk_id": f"id-{doc}-{location}",
@@ -298,3 +299,27 @@ def test_main_rejects_mixed_formats_and_versions(tmp_path: Path) -> None:
         make_chunk("b", "<p>나</p>", chunking_version="v2"),
     ]
     assert main(["--chunks", str(write_chunks(tmp_path, mixed_version))]) == 2
+
+
+def test_chunks_fingerprint_ignores_order() -> None:
+    first = summarize(CHUNKS)["chunks_sha256"]
+    assert summarize(list(reversed(CHUNKS)))["chunks_sha256"] == first
+
+
+@pytest.mark.parametrize(
+    "field, value",
+    [
+        ("chunk_id", "id-other"),
+        ("content", "<p>다른 본문</p>"),
+        # chunk_id에 섞이지 않는 메타데이터도 색인과 인용에 전달되므로 지문에 들어가야 한다.
+        ("title", "다른 제목"),
+        ("scope_type", "unknown"),
+        ("districts", ["송파구"]),
+        ("conditions", ["일반주택"]),
+    ],
+)
+def test_chunks_fingerprint_changes_with_any_chunk_field(field: str, value) -> None:
+    first = summarize(CHUNKS)["chunks_sha256"]
+    changed = [dict(c) for c in CHUNKS]
+    changed[0][field] = value
+    assert summarize(changed)["chunks_sha256"] != first

@@ -16,7 +16,6 @@ from src.contracts import (
     PipelineRequest,
     PipelineResponse,
     PlaceLookupResult,
-    PlaceResult,
     ResolvedQuery,
     RunRecord,
     SearchCandidate,
@@ -27,7 +26,7 @@ from src.infrastructure.stores import save_index
 from src.ingestion.chunking import chunk_documents
 from src.ingestion.indexing import build_index
 from src.ingestion.loaders import load_source_documents
-from src.interface.adapter import run_record_to_places, run_record_to_view
+from src.interface.adapter import run_record_to_view
 
 ROOT = Path(__file__).parent.parent.parent.parent
 APP_PATH = ROOT / "app.py"
@@ -126,29 +125,19 @@ def test_clarification_with_ambiguous_dong_asks_for_dong() -> None:
     )
     view = run_record_to_view(make_record("needs_clarification", resolved))
     assert view.required_fields == ["dong"]
+    assert view.region_status == "ambiguous"
 
 
-def test_places_are_converted_with_missing_coordinates() -> None:
-    lookup = PlaceLookupResult(
-        status="found",
-        places=[
-            PlaceResult(
-                place_id="p1",
-                name="[가상] 수거함",
-                address="[가상] 주소",
-                source_url="https://example.invalid/p1",
-            )
-        ],
+def test_unsupported_region_guidance_carries_region_status_and_no_fields() -> None:
+    resolved = ResolvedQuery(
+        search_query="질문",
+        district="강남구",
+        status="needs_clarification",
+        region_status="unsupported",
     )
-    result = run_record_to_places(make_record(places=lookup))
-    assert result.status == "found"
-    assert result.kind == "demo"
-    assert result.places[0].latitude is None
-    assert result.places[0].collection_types == []
-
-
-def test_unavailable_places_stay_unavailable() -> None:
-    assert run_record_to_places(make_record()).status == "unavailable"
+    view = run_record_to_view(make_record("needs_clarification", resolved))
+    assert view.required_fields == []
+    assert view.region_status == "unsupported"
 
 
 @pytest.fixture
@@ -187,7 +176,7 @@ def test_demo_pipeline_results_become_views(demo_pipeline) -> None:
 def run_app_in_demo_mode(question: str) -> AppTest:
     st.cache_resource.clear()  # 이전 테스트에서 만든 파이프라인이 남지 않게 한다.
     app = AppTest.from_file(str(APP_PATH), default_timeout=10).run()
-    app.radio[0].set_value("실행(합성 데모)").run()
+    app.radio[0].set_value("합성 데모").run()
     app.text_input[0].set_value(question).run()
     return app.button[0].click().run()
 

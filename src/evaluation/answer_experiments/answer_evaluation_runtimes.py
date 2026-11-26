@@ -15,7 +15,12 @@ from src.ingestion.preprocessed_bundle import load_preprocessed_bundle
 from src.ingestion.preprocessed_chunking import chunk_preprocessed_documents
 from src.pipeline import PipelineConfigurationError, RAGPipeline
 from src.retrieval.regions import resolve_request
-from src.retrieval.search import make_vector_retriever
+from src.retrieval.rerankers import (
+    MAX_PASSAGE_CHARS,
+    RERANK_SYSTEM_PROMPT,
+    make_openai_reranker,
+)
+from src.retrieval.search import HYBRID_DEPTH, RRF_K, make_vector_retriever
 from src.rewrite_dictionary import catalog
 from src.rewrite_dictionary.runtime import make_catalog_rewriter
 from src.runtime import create_runtime
@@ -61,25 +66,38 @@ def _embedding_settings(raw_identity: str) -> tuple[str, int | None]:
 
 
 def _a_runtime_factory(
-    settings: RuntimeSettings, *, allow_rewrite: bool
+    settings: RuntimeSettings, *, allow_rewrite: bool, allow_c: bool = False
 ) -> Callable[[bool], RAGPipeline]:
-    """색인과 모델을 한 번 준비하고 실행별 리라이트 설정만 바꾼다."""
+    """색인과 모델을 한 번 준비하고 실행별 리라이트 설정만 바꾼다.
+
+    allow_c가 참이면 variant C(B 후보를 LLM으로 재정렬)도 받는다. 그때만 재정렬 모델이 필요하다.
+    """
     config = settings.model_copy(deep=True)
     options = config.pipeline
     model = _configured_model(config)
-    if options.variant != "A" or (options.rewrite_enabled and not allow_rewrite):
+    variants = ("A", "C") if allow_c else ("A",)
+    if options.variant not in variants or (
+        options.rewrite_enabled and not allow_rewrite
+    ):
         raise PipelineConfigurationError(
-            "A 검색으로 설정하세요."
+            ("A 또는 C 검색으로 설정하세요." if allow_c else "A 검색으로 설정하세요.")
             if allow_rewrite
             else "A 검색과 리라이트 OFF로 설정하세요.",
             code="evaluation.unsupported_configuration",
+        )
+    reranker_model = options.versions.get("reranker_model", "").strip()
+    if options.variant == "C" and not reranker_model:
+        raise PipelineConfigurationError(
+            "pipeline.versions.reranker_model에 C 재정렬 모델 ID를 지정하세요.",
+            code="evaluation.missing_reranker_model",
         )
 
     index = load_index(config.index_path)
     embedding_model, dimensions = _embedding_settings(index.metadata.embedding_identity)
     require_env("OPENAI_API_KEY")
     embedder = create_openai_embeddings(embedding_model, dimensions)
-    retrieve = make_vector_retriever(index, embedder)
+    reranker = make_openai_reranker(reranker_model) if options.variant == "C" else None
+    retrieve = make_vector_retriever(index, embedder, reranker=reranker)
 
     options.run_kind = "rag"
     for unused in (
@@ -99,6 +117,17 @@ def _a_runtime_factory(
             "prompt": sha256(SYSTEM_PROMPT.encode()).hexdigest(),
         }
     )
+    if options.variant == "C":
+        # abc_runtimes.create_abc_runtimes의 C와 같은 후보 정책·재정렬 기록값이다.
+        depth = max(options.top_k, HYBRID_DEPTH)
+        options.versions.update(
+            candidate_policy=(
+                f"vector+bm25/rrf-v1(k={RRF_K},depth={depth})"
+                f"+llm-rerank-v1(passage_chars={MAX_PASSAGE_CHARS})"
+            ),
+            reranker_model=reranker_model,
+            reranker_prompt=sha256(RERANK_SYSTEM_PROMPT.encode()).hexdigest(),
+        )
     generate = make_answer_generator(make_model_draft(model))
 
     def build(rewrite_enabled: bool) -> RAGPipeline:
@@ -129,8 +158,8 @@ def create_a_runtime(settings: RuntimeSettings) -> RAGPipeline:
 
 
 def create_a_catalog_runtime(settings: RuntimeSettings) -> RAGPipeline:
-    """설정한 팀 A 색인과 확장 사전을 실제 챗봇 검색에 연결한다."""
-    return _a_runtime_factory(settings, allow_rewrite=True)(
+    """설정한 팀 색인과 확장 사전을 실제 챗봇 검색에 연결한다. variant는 A 또는 C다."""
+    return _a_runtime_factory(settings, allow_rewrite=True, allow_c=True)(
         settings.pipeline.rewrite_enabled
     )
 

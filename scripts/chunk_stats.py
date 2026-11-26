@@ -15,6 +15,8 @@ import statistics
 from collections import Counter
 from pathlib import Path
 
+from src.ingestion.chunk_fingerprint import chunks_fingerprint
+
 # 이 길이(태그를 뺀 글자 수)보다 짧으면 맥락이 부족한 청크로 센다. 기준은 정해진 값이 아니라 점검용 임시 기준이다.
 SHORT_PLAIN_CHARS = 100
 
@@ -43,6 +45,7 @@ COLUMNS = [
     "plain_median",
     "plain_p90",
     "plain_max",
+    "chunks_sha256",
 ]
 
 
@@ -156,6 +159,7 @@ def summarize(chunks: list[dict]) -> dict:
         "plain_median": int(statistics.median(plain)),
         "plain_p90": _percentile(plain, 0.9),
         "plain_max": max(plain),
+        "chunks_sha256": chunks_fingerprint(chunks),
     }
 
 

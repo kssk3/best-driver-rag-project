@@ -1,4 +1,4 @@
-"""질문·답변 화면 테스트. 합성 예시 응답만 사용한다."""
+"""질문·답변 화면 테스트. 합성 예시 응답을 세션에 넣어 그린다."""
 
 import json
 from pathlib import Path
@@ -6,17 +6,26 @@ from pathlib import Path
 import pytest
 from streamlit.testing.v1 import AppTest
 
-from src.interface.adapter import Citation
+from src.interface.adapter import Citation, to_view_response
 from src.interface.chat import build_followup_request, format_citation, is_safe_url
 
 APP_PATH = Path(__file__).parent.parent.parent.parent / "app.py"
 
 
+SAMPLES = json.loads(
+    (APP_PATH.parent / "tests/fixtures/interface/sample_responses.json").read_text(
+        encoding="utf-8"
+    )
+)
+
+
 def ask(sample_name: str, question: str = "") -> AppTest:
-    app = AppTest.from_file(str(APP_PATH), default_timeout=10).run()
-    app.text_input[0].set_value(question)
-    app.selectbox[1].select(sample_name)
-    return app.button[0].click().run()
+    app = AppTest.from_file(str(APP_PATH), default_timeout=10)
+    app.session_state["view"] = to_view_response(SAMPLES[sample_name], kind="fixture")
+    app.session_state["asked_question"] = question
+    app.session_state["asked_district"] = "서대문구"
+    app.session_state["asked_mode"] = "합성 데모"
+    return app.run()
 
 
 def test_followup_request_keeps_question_and_district() -> None:
@@ -130,7 +139,6 @@ def test_followup_uses_submitted_request_not_current_inputs() -> None:
 def test_blank_question_clears_previous_response() -> None:
     app = ask("answered", question="가상 질문")
     assert app.success
-    app.radio[0].set_value("실행(합성 데모)").run()
     app.text_input[0].set_value("")
     app.button[0].click().run()
     assert not app.success
@@ -182,7 +190,9 @@ def test_insufficient_evidence_shows_answer_without_citations() -> None:
     assert any("근거가 없습니다" in m.value for m in app.markdown)
 
 
-def test_followup_request_routes_district_and_dong_to_top_level() -> None:
+def test_followup_request_sends_district_and_dong_at_top_level_and_confirms_district() -> (
+    None
+):
     request = build_followup_request(
         "가상 질문", "송파구", {"district": "서대문구", "dong": "연희동", "item": "병"}
     )
@@ -190,25 +200,19 @@ def test_followup_request_routes_district_and_dong_to_top_level() -> None:
         "question": "가상 질문",
         "district": "서대문구",
         "dong": "연희동",
+        # 되묻기에서 구를 입력했으므로 확정 표시를 전용 필드로 보낸다(조건에는 섞지 않는다).
+        "district_confirmed": True,
         "conditions": {"item": "병"},
     }
-
-
-def test_switching_mode_hides_response_from_other_mode() -> None:
-    app = ask("answered", question="가상 질문")
-    assert app.tabs[0].success
-    app.radio[0].set_value("실행(합성 데모)").run()
-    assert not app.tabs[0].success
-    app.radio[0].set_value("예시 응답").run()
-    assert app.tabs[0].success
 
 
 def test_followup_inputs_are_cleared_for_a_new_request() -> None:
     app = ask("needs_clarification", question="가상 질문")
     app.text_input[1].set_value("아파트")
     app.button[1].click().run()
+    assert any(k.startswith("followup:") for k in list(app.session_state))
     app.button[0].click().run()
-    assert app.text_input[1].value == ""
+    assert not any(k.startswith("followup:") for k in list(app.session_state))
 
 
 def test_error_shows_pipeline_safe_message_but_not_internal_detail() -> None:

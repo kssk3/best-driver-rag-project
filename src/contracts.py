@@ -216,6 +216,9 @@ class PipelineRequest(BaseModel):
     district: str | None = None
     dong: str | None = None
     conditions: dict[str, str] = Field(default_factory=dict)
+    # 구 충돌·모호함을 되물은 뒤 사용자가 district(고른 구)로 확정했음을 뜻한다.
+    # 조건(conditions)에 섞으면 생성기 입력과 W5 검증에 새므로 별도 필드로 둔다.
+    district_confirmed: bool = False
 
     @field_validator("question")
     @classmethod

@@ -84,6 +84,10 @@ def make_answer_generator(
             )
         except Exception:
             raise _generation_error("condition_decode_failed") from None
+        # 구·동은 요청의 최상위 필드가 기준이다. 조건에 같은 이름이 남아 있으면(예: 해석기가 버린 동)
+        # 모델 입력에 모순된 지역이 함께 들어가므로 지우고 최상위 값만 넣는다.
+        conditions.pop("district", None)
+        conditions.pop("dong", None)
         if request.district is not None:
             conditions["district"] = request.district
         if request.dong is not None:

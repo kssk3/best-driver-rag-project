@@ -84,3 +84,106 @@ def test_generator_keeps_selected_district_when_question_has_no_dong():
 
     assert observed["request"]["district"] == "서대문구"
     assert observed["request"]["dong"] is None
+
+
+def test_confirmed_selected_district_gets_past_conflict_in_a_full_run():
+    # 질문은 송파구, 화면은 서대문구, 사용자가 서대문구를 확정 → 되묻기 없이 서대문구로 진행한다.
+    observed: dict = {}
+    runner = RAGPipeline(
+        resolver=resolve_request,
+        retriever=_retrieve,
+        generator=_capturing_generator(observed),
+    )
+
+    record = runner.run(
+        PipelineRequest(
+            question="송파구 페트병 언제 버려요?",
+            district="서대문구",
+            district_confirmed=True,
+        )
+    )
+
+    assert record.response.status == "answered"
+    assert record.resolved_query.district == "서대문구"
+    assert observed["request"]["district"] == "서대문구"
+
+
+def test_same_conflict_without_confirmation_still_asks():
+    runner = RAGPipeline(
+        resolver=resolve_request,
+        retriever=_retrieve,
+        generator=_capturing_generator({}),
+    )
+
+    record = runner.run(
+        PipelineRequest(question="송파구 페트병 언제 버려요?", district="서대문구")
+    )
+
+    assert record.response.status == "needs_clarification"
+
+
+def test_confirmed_district_does_not_leak_into_generator_conditions():
+    # 확정 표시는 별도 필드라서 생성기가 받는 조건(conditions)에 섞이지 않는다.
+    observed: dict = {}
+    runner = RAGPipeline(
+        resolver=resolve_request,
+        retriever=_retrieve,
+        generator=_capturing_generator(observed),
+    )
+
+    runner.run(
+        PipelineRequest(
+            question="송파구 페트병 언제 버려요?",
+            district="서대문구",
+            conditions={"item": "페트병"},
+            district_confirmed=True,
+        )
+    )
+
+    assert observed["request"]["conditions"] == {"item": "페트병"}
+
+
+def test_confirmation_cannot_drop_a_structured_dong_before_generation():
+    # 고른 송파구 + 화면에서 받은 연희동(서대문구)은 확정해도 검색하지 않고 되묻는다.
+    # 파이프라인이 생성 요청에 request.dong을 되돌려 넣으므로 버릴 수 없다.
+    observed: dict = {}
+    runner = RAGPipeline(
+        resolver=resolve_request,
+        retriever=_retrieve,
+        generator=_capturing_generator(observed),
+    )
+
+    record = runner.run(
+        PipelineRequest(
+            question="페트병 언제 버려요?",
+            district="송파구",
+            dong="연희동",
+            district_confirmed=True,
+        )
+    )
+
+    assert record.response.status == "needs_clarification"
+    assert observed == {}  # 검색도 생성도 하지 않았다
+
+
+def test_generator_receives_the_confirmed_pair_not_the_dong_in_the_original_question():
+    observed: dict = {}
+    runner = RAGPipeline(
+        resolver=resolve_request,
+        retriever=_retrieve,
+        generator=_capturing_generator(observed),
+    )
+
+    runner.run(
+        PipelineRequest(
+            question="연희동 종량제 봉투는?",
+            district="송파구",
+            dong="잠실동",
+            district_confirmed=True,
+        )
+    )
+
+    assert (observed["request"]["district"], observed["request"]["dong"]) == (
+        "송파구",
+        "잠실동",
+    )
