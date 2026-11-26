@@ -1,12 +1,16 @@
 """A(Vector) 검색 단위 테스트. 실제 임베딩 API 없이 손으로 정한 벡터를 쓴다."""
 
 import json
+from pathlib import Path
 
 import pytest
 
 from src.contracts import Chunk, ResolvedQuery, SearchCandidate
 from src.infrastructure.embeddings import DemoHashEmbeddings
+from src.infrastructure.stores import load_index, save_index
 from src.ingestion.indexing import build_index
+from src.ingestion.preprocessed_bundle import load_preprocessed_bundle
+from src.ingestion.preprocessed_chunking import chunk_preprocessed_documents
 from src.retrieval.search import (
     RerankerOutputError,
     RetrievalConfigError,
@@ -16,6 +20,7 @@ from src.retrieval.search import (
     chunk_text,
     cosine_similarity,
     is_in_region,
+    is_searchable,
     make_vector_retriever,
     rerank,
     rrf_merge,
@@ -179,6 +184,70 @@ def test_exclusion_matches_only_listed_table():
 
     results = bm25_search(index, "송파 페트병", "송파구", 5)
     assert {r.chunk.chunk_id for r in results} == {"schedule", "songpa-pet"}
+
+
+def test_remapped_songpa_schedule_stays_excluded_after_index_reload(tmp_path):
+    project = Path(__file__).resolve().parents[2]
+    songpa_id = "songpa-rules:attachment:121237861"
+    prepared = load_preprocessed_bundle(
+        project / "data/handoff/jungeun/ordinance-handoff-2026-11-24",
+        project_root=project,
+        version="remapped",
+        identities={
+            songpa_id: "local-annex",
+            "seodaemun-ordinance:attachment:160319457": songpa_id,
+        },
+    )
+    rows = {
+        "local-annex": {"table-2/row[3]", "table-3/row[3]"},
+        songpa_id: {"table-2/row[1]"},
+    }
+    documents = [d for d in prepared.documents if d.document_id in rows]
+    chunks = [
+        chunk
+        for chunk in chunk_preprocessed_documents(documents)
+        if chunk.source_location in rows[chunk.source_document_id]
+    ]
+    assert {
+        (c.source_document_id, c.source_location, c.content_format) for c in chunks
+    } == {
+        (source_id, location, fmt)
+        for source_id, locations in rows.items()
+        for location in locations
+        for fmt in ("html", "json")
+    }
+
+    embedder = DemoHashEmbeddings()
+    path = tmp_path / "index.json"
+    save_index(build_index(chunks, embedder), path)
+    index = load_index(path)
+    for district, query, allowed_row in (
+        ("송파구", "별표", "table-3/row[3]"),
+        ("서대문구", "생활폐기물용", "table-2/row[1]"),
+    ):
+        expected = {c.chunk_id for c in chunks if c.source_location == allowed_row}
+        for candidates in (
+            vector_search(index, embedder.embed_query(query), district, len(chunks)),
+            bm25_search(index, query, district, len(chunks)),
+        ):
+            assert {c.chunk.chunk_id for c in candidates} == expected
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://example.org/flDownload.do?gubun=ELIS&flSeq=121237861",
+        "https://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=121237862",
+        "https://www.law.go.kr/ordinInfoP.do?gubun=ELIS&flSeq=121237861",
+        "https://www.law.go.kr/flDownload.do?gubun=LAW&flSeq=121237861",
+        "https://[invalid",
+    ],
+)
+def test_other_sources_can_use_the_same_table_location(url):
+    other = make_chunk("other", "district", ["송파구"], "다른 표").model_copy(
+        update={"source_url": url, "source_location": "table-2/row[3]"}
+    )
+    assert is_searchable(other, "송파구")
 
 
 # --- tokenize (BM25용 2글자 조각) -------------------------------------------

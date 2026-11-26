@@ -452,3 +452,85 @@ def test_resolve_request_keeps_asking_when_the_picked_district_is_not_a_candidat
     )
 
     assert result.region_status == "ambiguous"
+
+
+@pytest.mark.parametrize("selected", [None, "서대문구", "송파구"])
+def test_written_district_conflicting_with_unique_dong_needs_confirmation(selected):
+    result = resolve_request(
+        PipelineRequest(
+            question="송파구 연희동에서 페트병은 언제 버려요?", district=selected
+        )
+    )
+
+    assert result.status == "needs_clarification"
+    assert result.district is None
+    assert "송파구" in result.clarification_question
+    assert "서대문구" in result.clarification_question
+
+
+@pytest.mark.parametrize("selected", [None, "송파구"])
+def test_unsupported_written_district_with_unique_dong_stops_search(selected):
+    result = resolve_request(
+        PipelineRequest(
+            question="강남구 잠실동에서 페트병은 언제 버려요?", district=selected
+        )
+    )
+
+    assert result.status == "needs_clarification"
+    assert result.region_status == "unsupported"
+    assert result.district == "강남구"
+    assert "강남구" in result.clarification_question
+
+
+@pytest.mark.parametrize(
+    ("selected", "dong"), [("송파구", None), ("서대문구", "연희동")]
+)
+def test_confirmed_choice_resolves_written_district_and_unique_dong_conflict(
+    selected, dong
+):
+    result = resolve_request(
+        PipelineRequest(
+            question="송파구 연희동에서 페트병은 언제 버려요?",
+            district=selected,
+            district_confirmed=True,
+        )
+    )
+
+    assert result.status == "resolved"
+    assert (result.district, result.dong) == (selected, dong)
+
+
+@pytest.mark.parametrize(
+    "question",
+    [
+        "잠실동에서 이중구조 텀블러는 어떻게 버리나요?",
+        "잠실동에서 중구난방으로 버려진 페트병은 어떻게 버리나요?",
+    ],
+)
+def test_words_containing_district_names_do_not_override_a_unique_dong(question):
+    result = resolve_request(PipelineRequest(question=question, district="송파구"))
+
+    assert (result.status, result.district, result.dong) == (
+        "resolved",
+        "송파구",
+        "잠실동",
+    )
+
+
+@pytest.mark.parametrize(
+    ("question", "district"),
+    [
+        ("중구에서는 어떻게 버리나요?", "중구"),
+        ("송파구쪽에서 페트병 버릴 수 있나요?", "송파구"),
+        ("강남구쪽 잠실동 폐건전지", "강남구"),
+        ("송파구맞나요", "송파구"),
+        ("서울특별시중구에서 버려요", "중구"),
+        ("서울시송파구잠실동에서 버려요", "송파구"),
+        ("서울송파구올림픽로35길에서 버려요", "송파구"),
+        ("서대문구청에 물어볼까요?", "서대문구"),
+    ],
+)
+def test_recognizes_district_mentions_in_korean_questions_and_addresses(
+    question, district
+):
+    assert regions.find_district(question) == district

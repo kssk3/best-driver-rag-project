@@ -82,6 +82,13 @@ SEOUL_DISTRICTS: tuple[str, ...] = (
     "강동구",
 )
 
+# 구 이름은 어절 시작이나 붙여 쓴 서울시 표기 뒤에서 찾는다. 뒤에는 조사, 주소,
+# '쪽에서', '맞나요' 같은 표현도 붙을 수 있다. '중구난방'은 지명이 아닌 한 단어다.
+_DISTRICT_MENTIONS = {
+    district: re.compile(rf"(?<![가-힣])(?:서울(?:특별시|시)?)?(?!중구난방){district}")
+    for district in sorted(SEOUL_DISTRICTS, key=len, reverse=True)
+}
+
 
 def find_district(question: str) -> str | None:
     """질문 속에서 서울 자치구 이름을 찾는다.
@@ -91,8 +98,8 @@ def find_district(question: str) -> str | None:
     Returns:
         찾은 구 이름. 질문에 구 이름이 없으면 None.
     """
-    for district in sorted(SEOUL_DISTRICTS, key=len, reverse=True):
-        if district in question:
+    for district, pattern in _DISTRICT_MENTIONS.items():
+        if pattern.search(question):
             return district
     return None
 
@@ -196,13 +203,13 @@ def resolve_request(request: PipelineRequest) -> ResolvedQuery:
     """
     region = resolve_region(request.question)
     selected = request.district  # 사용자가 화면에서 고른 구 (없으면 None)
+    named = find_district(request.question)
     confirmed = _confirmed_selected_district(request)
 
     if confirmed:
         # 지원하지 않는 구가 질문에 있으면 동이 함께 있어도 확정으로 덮지 않고 안내한다.
-        named_in_question = find_district(request.question)
-        if named_in_question and named_in_question not in SUPPORTED_DISTRICTS:
-            return _ask_unsupported(request, named_in_question, None)
+        if named and named not in SUPPORTED_DISTRICTS:
+            return _ask_unsupported(request, named, None)
         # 사용자가 후속 요청에서 구와 동을 함께 확정했고 서로 맞으면 그 조합이 원질문의 동보다 먼저다.
         if request.dong:
             fixed = resolve_region(request.dong)
@@ -221,14 +228,12 @@ def resolve_request(request: PipelineRequest) -> ResolvedQuery:
 
     # 질문에 후보 구 중 하나가 적혀 있으면("강남구 삼성동") 모호함이 풀린 것이다. 되묻지 않고 그 구로
     # 해석해 아래 ok·지원 밖 판정을 그대로 따른다. 후보에 없는 구는 모호함을 풀지 못한다.
-    if region["status"] == "ambiguous":
-        written = find_district(request.question)
-        if written in region["candidate_districts"]:
-            region = {
-                "status": "ok" if written in SUPPORTED_DISTRICTS else "unsupported",
-                "district": written,
-                "dong": region["dong"],
-            }
+    if region["status"] == "ambiguous" and named in region["candidate_districts"]:
+        region = {
+            "status": "ok" if named in SUPPORTED_DISTRICTS else "unsupported",
+            "district": named,
+            "dong": region["dong"],
+        }
 
     # 신사동처럼 여러 구에 있는 동: 하나로 고르지 않고 후보 구를 보여 주며 되묻는다.
     if region["status"] == "ambiguous":
@@ -271,8 +276,6 @@ def resolve_request(request: PipelineRequest) -> ResolvedQuery:
     # 화면에서 고른 구로 검색한다. 둘 다 없으면 지역을 되묻는다.
     # 동은 확인하지 못했으므로 추측해서 채우지 않는다 (dong=None).
     if region["status"] == "no_dong":
-        named = find_district(request.question)
-
         # 질문 속 구와 고른 구가 다르면 어느 쪽으로도 덮어쓰지 않고 되묻는다.
         if (
             named is not None
@@ -310,6 +313,20 @@ def resolve_request(request: PipelineRequest) -> ResolvedQuery:
         )
 
     # 여기부터는 ok: 질문 속 동이 지원하는 구 하나로 정해진 경우.
+    if named and named != region["district"] and not confirmed:
+        if named not in SUPPORTED_DISTRICTS:
+            return _ask_unsupported(request, named, None)
+        return ResolvedQuery(
+            search_query=request.question,
+            status="needs_clarification",
+            region_status="ok",
+            dong=region["dong"],
+            clarification_question=(
+                f"질문에는 {named}가 있지만 {region['dong']}은 {region['district']}입니다. "
+                "어느 구 기준으로 알려 드릴까요?"
+            ),
+        )
+
     # 고른 구와 다르면 어느 쪽으로도 덮어쓰지 않고 되묻는다.
     # (파이프라인은 고른 구와 다른 구를 resolved로 받으면 오류를 낸다.)
     if selected is not None and selected != region["district"]:

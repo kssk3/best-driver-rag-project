@@ -18,6 +18,7 @@ import math
 import re
 from collections.abc import Callable
 from typing import Any
+from urllib.parse import parse_qs, urlsplit
 
 from rank_bm25 import BM25Plus  # type: ignore[import-untyped]  # 타입 정보(py.typed) 없음
 
@@ -62,23 +63,45 @@ def is_in_region(chunk: Chunk, district: str | None) -> bool:
     return False
 
 
-# 검색에서 빼는 원문 위치: (문서 ID, 위치 접두어).
-# chunk_id는 청킹이 바뀌면 달라지므로 재청킹해도 유지되는 원문 위치로 지정한다.
-EXCLUDED_SOURCES: tuple[tuple[str, str], ...] = (
-    # 송파구 시행규칙 [별표 4] 쓰레기 배출 일시 및 장소 (2017.4.6. 개정)의 동별 배출 요일표.
-    # 구청 웹 안내·지도와 요일이 달라 현재 일정으로 확인되지 않음(docs/jungeun/README.md
-    # '사람 검수와 현재 제한'). 이 표만 보고 요일을 확정하지 않도록 검색에서 뺀다.
-    # 현재 요일이 확정된 자료가 들어오면 이 항목을 지우고 다시 확인한다.
-    ("songpa-rules:attachment:121237861", "table-2/"),
-)
+# 송파 시행규칙 별표 4의 동별 배출 요일은 구청 안내와 달라 검수 대기 중이다.
+# docs/jungeun/README.md '사람 검수와 현재 제한' 참조.
+_SONGPA_RULES_ATTACHMENT = "121237861"
+
+
+def _official_attachment(source_url: str) -> tuple[str, str] | None:
+    try:
+        source = urlsplit(source_url)
+    except ValueError:
+        return None
+    if (
+        source.scheme not in {"http", "https"}
+        or source.hostname not in {"www.law.go.kr", "law.go.kr"}
+        or source.path != "/flDownload.do"
+    ):
+        return None
+    params = parse_qs(source.query, keep_blank_values=True)
+    groups = params.get("gubun", [])
+    numbers = params.get("flSeq", [])
+    if (
+        len(groups) == 1
+        and groups[0]
+        and len(numbers) == 1
+        and re.fullmatch("[0-9]+", numbers[0])
+    ):
+        return groups[0], numbers[0]
+    return None
 
 
 def is_excluded(chunk: Chunk) -> bool:
-    """검색에서 빼기로 한 원문 위치(EXCLUDED_SOURCES)의 청크인지."""
-    return any(
-        chunk.source_document_id == document_id
-        and chunk.source_location.startswith(location_prefix)
-        for document_id, location_prefix in EXCLUDED_SOURCES
+    """로컬 문서 ID를 재지정한 색인에서도 공식 첨부의 요일표만 제외한다."""
+    if not chunk.source_location.startswith("table-2/"):
+        return False
+    attachment = _official_attachment(chunk.source_url)
+    if attachment is not None:
+        return attachment == ("ELIS", _SONGPA_RULES_ATTACHMENT)
+    return (
+        chunk.source_document_id
+        == f"songpa-rules:attachment:{_SONGPA_RULES_ATTACHMENT}"
     )
 
 
