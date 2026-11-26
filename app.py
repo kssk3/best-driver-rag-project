@@ -26,6 +26,10 @@ from src.interface.adapter import (
     to_view_response,
 )
 from src.interface.chat import render_response
+from src.interface.comparison import (
+    format_summary,
+    summarize_scores,
+)
 from src.interface.inspection import render_inspection
 from src.interface.map import render_places
 from src.pipeline import PipelineConfigurationError
@@ -59,6 +63,8 @@ INDEX_COMMAND = (
 PROJECT_ROOT = Path(__file__).resolve().parent
 TEAM_INDEX_MODE = "실행"
 TEAM_SETTINGS_PATH = getenv("RAG_CHAT_SETTINGS", "").strip()
+# 비교 패널이 읽을 scores.csv 경로. 평가마다 새 폴더에 만들어지므로 고정 경로가 없다.
+SCORES_CSV_PATH = getenv("RAG_SCORES_CSV", "").strip()
 
 
 class TeamSettingsFileError(ValueError):
@@ -251,4 +257,23 @@ with inspection_tab:
 
 
 with comparison_tab:
-    st.info("나중에 구현합니다~~~~~")
+    st.subheader("답변 근거 충실도")
+    st.caption(
+        "같은 평가의 scores.csv에서 비교할 수 있는 행(comparison_eligible=true)만 "
+        "방식별로 집계합니다. 검색 적중률(Hit@k)은 다른 지표라 섞지 않습니다."
+    )
+    if not SCORES_CSV_PATH:
+        st.info(
+            "평가 결과를 보려면 RAG_SCORES_CSV에 scores.csv 경로를 지정하고 다시 실행하세요."
+        )
+    else:
+        try:
+            summaries = summarize_scores(PROJECT_ROOT / SCORES_CSV_PATH)
+        except (OSError, ValueError):
+            # 파일 경로와 내용(질문·답변)이 섞일 수 있어 오류 원문은 보이지 않는다.
+            st.error(
+                "점수 파일을 읽지 못했습니다. RAG_SCORES_CSV 경로와 파일의 열을 확인하세요."
+            )
+        else:
+            for column, summary in zip(st.columns(len(summaries)), summaries):
+                column.metric(f"방식 {summary.variant}", format_summary(summary))
