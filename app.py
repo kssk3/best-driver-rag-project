@@ -18,15 +18,13 @@ from src.evaluation.answer_experiments.answer_evaluation_runtimes import (
     MissingEvaluationModelError,
     create_a_catalog_runtime,
 )
+from src.interface import langfuse_scores
 from src.interface.adapter import (
     run_record_to_places,
     run_record_to_view,
 )
 from src.interface.chat import render_response
-from src.interface.comparison import (
-    format_summary,
-    summarize_scores,
-)
+from src.interface.comparison import format_summary
 from src.interface.inspection import render_inspection
 from src.interface.map import render_places
 from src.interface.theme import (
@@ -50,8 +48,6 @@ INDEX_COMMAND = (
 PROJECT_ROOT = Path(__file__).resolve().parent
 TEAM_INDEX_MODE = "실행"
 TEAM_SETTINGS_PATH = getenv("RAG_CHAT_SETTINGS", "").strip()
-# 비교 패널이 읽을 scores.csv 경로. 평가마다 새 폴더에 만들어지므로 고정 경로가 없다.
-SCORES_CSV_PATH = getenv("RAG_SCORES_CSV", "").strip()
 
 
 class TeamSettingsFileError(ValueError):
@@ -295,27 +291,51 @@ def render_result(view) -> None:
         render_places(st.session_state["places"])
 
 
+@st.cache_data(ttl=60, show_spinner=False)
+def cached_scores():
+    # 질문할 때마다 다시 그려지므로 서버 조회는 잠시 재사용한다.
+    return langfuse_scores.load_langfuse_scores()
+
+
+LANGFUSE_MESSAGES = {
+    "not_configured": "Langfuse 주소와 키(LANGFUSE_BASE_URL, LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY)를 설정하고 다시 실행하세요.",
+    "unreachable": "Langfuse 서버에 연결하지 못했습니다. 주소와 네트워크를 확인하세요.",
+}
+
+
 def render_comparison() -> None:
     st.subheader("답변 근거 충실도")
     st.caption(
-        "같은 평가의 scores.csv에서 비교할 수 있는 행(comparison_eligible=true)만 "
-        "방식별로 집계합니다. 검색 적중률(Hit@k)은 다른 지표라 섞지 않습니다."
+        "Langfuse의 faithfulness 점수를 실행 방식(A/B/C)별로 집계합니다. "
+        "같은 평가(데이터셋)끼리만 묶고, 방식을 알 수 없는 점수는 평균에서 뺍니다. "
+        "검색 적중률(Hit@k)은 다른 지표라 섞지 않습니다."
     )
-    if not SCORES_CSV_PATH:
-        st.info(
-            "평가 결과를 보려면 RAG_SCORES_CSV에 scores.csv 경로를 지정하고 다시 실행하세요."
-        )
-        return
     try:
-        summaries = summarize_scores(PROJECT_ROOT / SCORES_CSV_PATH)
-    except (OSError, ValueError):
-        # 파일 경로와 내용(질문·답변)이 섞일 수 있어 오류 원문은 보이지 않는다.
-        st.error(
-            "점수 파일을 읽지 못했습니다. RAG_SCORES_CSV 경로와 파일의 열을 확인하세요."
-        )
+        result = cached_scores()
+    except langfuse_scores.LangfuseReadError as error:
+        # 주소·키·응답 내용은 보이지 않고 오류 종류만 알려 준다.
+        if error.code == "not_configured":
+            st.info(LANGFUSE_MESSAGES["not_configured"])  # 설정 안내이지 오류가 아니다.
+        else:
+            st.error(
+                LANGFUSE_MESSAGES.get(
+                    error.code, f"Langfuse에서 점수를 읽지 못했습니다. ({error.code})"
+                )
+            )
         return
-    for column, summary in zip(st.columns(len(summaries)), summaries):
-        column.metric(f"방식 {summary.variant}", format_summary(summary))
+    if not result.groups:
+        st.info("방식별로 집계할 점수가 아직 없습니다.")
+    for group in result.groups:
+        st.markdown(
+            f"**데이터셋 {group.dataset_id[:8]}** · 최근 실행 {group.latest[:10]}"
+        )
+        for column, summary in zip(st.columns(len(group.summaries)), group.summaries):
+            column.metric(f"방식 {summary.variant}", format_summary(summary))
+    if result.unlinked:
+        st.caption(f"방식을 알 수 없어 평균에서 뺀 점수 {result.unlinked}건")
+    if st.button("새로고침", key="refresh_scores"):
+        cached_scores.clear()
+        st.rerun()
 
 
 def render_dev_panel(view) -> None:
