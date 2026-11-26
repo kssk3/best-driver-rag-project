@@ -156,6 +156,67 @@ def test_upload_cli_retry_across_midnight(tmp_path, monkeypatch, transport):
     assert other["id"] != score["id"] and other["traceId"] != score["traceId"]
 
 
+@pytest.mark.parametrize("variant", ["A", "B", "C", None, "", "unknown"])
+def test_upload_cli_records_only_explicit_archive_variant(tmp_path, transport, variant):
+    scores = tmp_path / "scores.csv"
+    columns = {} if variant is None else {"variant": variant}
+    write_scores(scores, run_kind="rag", configuration="B", **columns)
+    conn = transport.return_value
+    serve(conn, [response(200, {}), response(202, {"message": "Accepted"})])
+    main(
+        ["--scores", str(scores), "--report", str(tmp_path / "upload.csv"), "--upload"]
+    )
+    trace, score = posts(conn)
+    (root,) = json.loads(trace.args[2])["resourceSpans"][0]["scopeSpans"][0]["spans"]
+    assert root["name"] == "archived-run"
+    variant_attrs = [
+        a["value"]
+        for a in root["attributes"]
+        if a["key"] == "langfuse.observation.metadata.variant"
+    ]
+    assert variant_attrs == (
+        [{"stringValue": variant}] if variant in ("A", "B", "C") else []
+    )
+    assert json.loads(score.args[2])[0]["value"] == 0.0
+
+
+@pytest.mark.parametrize("string_metadata", [False, True])
+@pytest.mark.parametrize("server_variant", ["A", "C", None])
+def test_cli_checks_existing_root_variant(
+    tmp_path, transport, string_metadata, server_variant
+):
+    from urllib.parse import parse_qs, urlsplit
+
+    scores = tmp_path / "scores.csv"
+    row = write_scores(scores, run_kind="rag", variant="C")
+    metadata = {"variant": server_variant} if server_variant else {}
+    root = {
+        "traceId": tracing.trace_id_for_run(row["run_id"]),
+        "id": "a" * 16,
+        "isRootObservation": True,
+        "metadata": json.dumps(metadata) if string_metadata else metadata,
+    }
+    conn = transport.return_value
+    conn.getresponse.side_effect = [
+        response(200, {"data": [root], "meta": {}}),
+        response(202, {"message": "Accepted"}),
+    ]
+    report = tmp_path / "report.csv"
+    args = ["--scores", str(scores), "--report", str(report), "--upload"]
+    if server_variant == "A":
+        with pytest.raises(SystemExit) as error:
+            main(args)
+        assert error.value.code == 1
+        assert receipt(report)[0]["reason"] == "root_variant_mismatch"
+        assert posts(conn) == []
+    else:
+        main(args)
+        assert receipt(report)[0]["status"] == "accepted"
+        assert [c.args[1] for c in posts(conn)] == [tracing.SCORES]
+    query = parse_qs(urlsplit(conn.request.call_args_list[0].args[1]).query)
+    assert "metadata" in query["fields"][0].split(",")
+
+
 def test_default_off_and_no_overwrite(tmp_path, monkeypatch):
     monkeypatch.delenv("LANGFUSE_BASE_URL", raising=False)
     scores = tmp_path / "scores.csv"
@@ -534,10 +595,24 @@ def test_otlp_receipt_requires_confirmed_result(body, expected):
 
 
 @pytest.mark.parametrize(
-    "scenario",
-    ["pending", "multiple", "incomplete", "malformed", "unavailable", "wrong_trace"],
+    ("scenario", "extra_args"),
+    [("pending", []), ("pending", ["--retry-missing-spans"])]
+    + [
+        (scenario, flags)
+        for scenario in (
+            "multiple",
+            "incomplete",
+            "bad_cursor",
+            "malformed",
+            "unavailable",
+            "wrong_trace",
+        )
+        for flags in ([], ["--recover-missing-root", "run1", "--retry-missing-spans"])
+    ],
 )
-def test_unconfirmed_root_never_creates_another_root(tmp_path, transport, scenario):
+def test_unconfirmed_root_never_creates_another_root(
+    tmp_path, transport, scenario, extra_args
+):
     client = tracing.langfuse_post()
     scores = tmp_path / "scores.csv"
     row = write_scores(scores, langfuse_project=client.project)
@@ -545,11 +620,14 @@ def test_unconfirmed_root_never_creates_another_root(tmp_path, transport, scenar
     root = {"traceId": trace_id, "id": "a" * 16, "isRootObservation": True}
     rows = {
         "pending": [],
+        "bad_cursor": [],
         "multiple": [root, dict(root, id="b" * 16)],
         "malformed": [dict(root, isRootObservation=False)],
         "wrong_trace": [dict(root, traceId="other")],
     }.get(scenario, [root])
-    meta = {"cursor": "next"} if scenario == "incomplete" else {}
+    meta = {"incomplete": {"cursor": "next"}, "bad_cursor": {"cursor": False}}.get(
+        scenario, {}
+    )
     conn = transport.return_value
     conn.getresponse.return_value = response(
         503 if scenario == "unavailable" else 200, {"data": rows, "meta": meta}
@@ -563,9 +641,167 @@ def test_unconfirmed_root_never_creates_another_root(tmp_path, transport, scenar
                 str(scores),
                 "--report",
                 str(report),
-                "--retry-missing-spans",
+                *extra_args,
             ]
         )
     assert error.value.code == 1
     assert receipt(report)[0]["reason"] == "trace_unconfirmed"
     assert posts(conn) == []
+
+
+@pytest.mark.parametrize("existing_root", [False, True])
+def test_cli_recovers_only_selected_run_and_retries_score(
+    tmp_path, transport, existing_root
+):
+    client = tracing.langfuse_post()
+    scores = tmp_path / "scores.csv"
+    target = write_scores(
+        scores, langfuse_project=client.project, run_kind="rag", variant="C"
+    )
+    other = dict(target, run_id="other")
+    with scores.open("w", newline="") as stream:
+        writer = csv.DictWriter(stream, fieldnames=target)
+        writer.writeheader()
+        writer.writerows([other, target])
+    details = tmp_path / "details.jsonl"
+    details.write_text(
+        "".join(
+            json.dumps(
+                dict(
+                    evaluation_id=r["evaluation_id"],
+                    attempt_index=1,
+                    run_id=r["run_id"],
+                    metric=r["metric"],
+                    model_input_chunk_ids=["chunk1"],
+                    statements=["example"],
+                    verdicts=[
+                        {"statement": "example", "verdict": 0, "reason": "unsupported"}
+                    ],
+                )
+            )
+            + "\n"
+            for r in [other, target]
+        )
+    )
+    before = scores.read_bytes(), details.read_bytes()
+    trace_id = tracing.trace_id_for_run(target["run_id"])
+    root = {"id": "a" * 16, "traceId": trace_id, "isRootObservation": True}
+    roots = [root] if existing_root else []
+    conn = transport.return_value
+    score_posts = []
+    spans = []
+
+    def getresponse():
+        method, path, body, _ = conn.request.call_args.args
+        if method == "GET":
+            if "isRootObservation=true" in path:
+                assert trace_id in path
+                return response(200, {"data": roots, "meta": {}})
+            return response(200, {"data": [], "meta": {}})
+        if path == tracing.TRACES:
+            (span,) = json.loads(body)["resourceSpans"][0]["scopeSpans"][0]["spans"]
+            spans.append(span)
+            if span["name"] == "archived-run":
+                roots.append(dict(root, id=span["spanId"]))
+            return response(200, {})
+        score_posts.append(json.loads(body))
+        return (
+            response(504, {})
+            if len(score_posts) == 1
+            else response(202, {"message": "Accepted"})
+        )
+
+    conn.getresponse.side_effect = getresponse
+    args = [
+        "--scores",
+        str(scores),
+        "--judgments",
+        str(details),
+        "--upload",
+        "--recover-missing-root",
+        target["run_id"],
+    ]
+    first = tmp_path / "first.csv"
+    with pytest.raises(SystemExit) as error:
+        main([*args, "--report", str(first)])
+    assert error.value.code == 1
+    (row,) = receipt(first)
+    assert row["run_id"] == target["run_id"] and row["reason"] == "score_unconfirmed"
+    assert [s["name"] for s in spans] == (
+        ["faithfulness"] if existing_root else ["archived-run", "faithfulness"]
+    )
+    attr = {
+        "key": "langfuse.observation.metadata.variant",
+        "value": {"stringValue": "C"},
+    }
+    if not existing_root:
+        assert attr in spans[0]["attributes"]
+    assert attr not in spans[-1]["attributes"]
+    assert len(roots) == 1 and spans[-1]["parentSpanId"] == roots[0]["id"]
+    assert all(s["traceId"] == trace_id for s in spans)
+    conn.request.reset_mock()
+    second = tmp_path / "second.csv"
+    main([*args, "--report", str(second)])
+    assert [call.args[1] for call in posts(conn)] == [tracing.SCORES]
+    assert score_posts[0] == score_posts[1]
+    (score,) = score_posts[1]
+    assert (score["id"], score["value"], score["timestamp"]) == (
+        row["score_id"],
+        0.0,
+        target["scored_at_utc"],
+    )
+    assert receipt(second)[0]["status"] == "accepted"
+    assert (scores.read_bytes(), details.read_bytes()) == before
+
+
+@pytest.mark.parametrize(
+    ("run_id", "project"), [("unknown", ""), ("", ""), ("run1", "other-project")]
+)
+def test_invalid_recovery_target_rejected_before_transmission(
+    tmp_path, transport, run_id, project
+):
+    scores = tmp_path / "scores.csv"
+    write_scores(scores, langfuse_project=project)
+    report = tmp_path / "report.csv"
+    with pytest.raises(SystemExit) as error:
+        main(
+            [
+                "--scores",
+                str(scores),
+                "--report",
+                str(report),
+                "--upload",
+                "--recover-missing-root",
+                run_id,
+            ]
+        )
+    assert error.value.code == 2
+    transport.assert_not_called()
+    assert not report.exists()
+
+
+def test_recovery_preview_is_offline_and_requires_root_lookup_to_send(
+    tmp_path, transport
+):
+    scores = tmp_path / "scores.csv"
+    write_scores(scores)
+    report = tmp_path / "preview.csv"
+    main(
+        [
+            "--scores",
+            str(scores),
+            "--recover-missing-root",
+            "run1",
+            "--report",
+            str(report),
+        ]
+    )
+    assert receipt(report)[0]["status"] == "dry_run"
+    assert not (tmp_path / "langfuse-spans.sqlite3").exists()
+    transport.assert_not_called()
+    send = Mock()
+    with pytest.raises(ValueError, match="루트"):
+        tracing.publish_scores(
+            scores, tmp_path / "other.csv", send, recover_missing_root="run1"
+        )
+    send.assert_not_called()

@@ -183,3 +183,25 @@ uv run --locked python -m scripts.upload_scores \
 - 새 실행의 `langfuse_project`는 실시간 루트를 기록한 프로젝트의 해시다. 같은 프로젝트에서 루트가 아직 보이지 않거나 조회가 불완전하거나 루트가 여러 개면 해당 행은 `trace_unconfirmed`로 남고 전송을 보류한다. 이 열이 없는 예전 보관본을 실시간 추적했다면 대시보드에서 실행 루트가 보인 뒤 업로드한다. [Langfuse 논리 루트 규칙](https://langfuse.com/docs/api-and-data-platform/features/public-api#logical-root-observations)
 - 타임아웃 등으로 span 접수가 불명확하면 다음 시도에서 서버를 조회한다. 해당 span이 보이면 점수 전송으로 넘어간다. 조회 오류나 아직 보이지 않는 span은 `trace_unconfirmed`로 남긴다. 서버 수집 큐가 비었고 이전 업로드 프로세스가 끝났음을 확인한 뒤, 같은 명령에 `--retry-missing-spans`를 추가하면 다시 조회해 누락된 span만 보낸다.
 - 실서버에서는 보고서의 `trace_id`와 `score_id`로 표시된 값과 채점 날짜를 확인한다. [Langfuse 수집 및 점수 교체 규칙](https://langfuse.com/faq/all/tracing-data-updates)
+
+#### 비교 패널에서 검색 방식 확인
+
+팀 EC2의 `events_only` 모드에서는 `GET /api/public/v3/scores?name=faithfulness&environment=rag&fields=subject`로 점수를 읽는다. `subject.kind`가 `trace`인 점수는 `subject.id`가 trace ID다. `GET /api/public/v2/observations`에 `traceId`, `isRootObservation=true`, `fields=core,basic,metadata`를 지정해 같은 실행의 루트를 찾는다. 목록은 마지막 커서까지 확인한다. [Langfuse Public API](https://langfuse.com/docs/api-and-data-platform/features/public-api)
+
+검색 방식은 루트의 `metadata.variant`에서 읽는다. 실시간 실행은 `rag-pipeline`, 보관본 업로드는 새 `archived-run`에 기록한다. 보관본에는 공통 채점기가 만든 `scores.csv`의 명시적 A/B/C만 복사한다. 열이 없거나 값이 비었거나 다른 값이면 미확인으로 둔다. 이미 접수된 루트는 재사용하므로 같은 점수를 다시 올려도 과거의 빈 값이 채워지지 않는다. 서버 루트와 채점 CSV 양쪽에 A/B/C 값이 있고 서로 다르면 해당 행은 `root_variant_mismatch`로 기록한다. 점수와 상세는 전송하지 않으므로 원본 실행의 `run_id`와 `options.variant`를 대조한 뒤 재시도한다.
+
+공식 비교는 `scores.csv`에서 동일 데이터셋·문항과 `comparison_eligible=true`를 확인한 실행을 기준으로 한다. 루트가 여러 개이거나 검색 방식을 확인할 수 없는 점수는 따로 표시한다. 원본 `run_id`로 귀속을 확인하기 전에는 그룹별 평균에서 제외한다.
+
+#### 실시간 전송이 끝내 실패한 실행 한 건 복구
+
+실행을 보낸 프로세스가 끝났고 서버 수집 큐에도 대기 중인 전송이 없음을 확인한다. `scores.csv`에서 대상 `run_id`를 복사해 아래 `RUN_ID` 자리에 넣는다. 일반 업로드는 같은 프로젝트에서 실시간 루트가 보이지 않으면 계속 보류한다.
+
+```sh
+uv run --locked --env-file .env python -m scripts.upload_scores \
+  --scores judged/scores.csv --judgments judged/judgment-details.jsonl \
+  --recover-missing-root RUN_ID --report judged/recovery-1.csv --upload
+```
+
+이 명령은 지정한 실행의 행만 처리한다. 서버에 루트가 하나면 기존 루트에 연결하고, 정상 조회 결과가 0개면 저장된 실행 시각으로 `archived-run`을 만든다. 조회 오류·불완전한 조회·복수 루트는 `trace_unconfirmed`로 남는다. 점수만 복구할 때는 `--judgments`를 생략한다. 복구한 보관본에는 저장된 점수와 선택한 판정 상세가 표시된다. 유실된 실시간 모델 호출의 토큰·비용은 복원할 수 없다.
+
+재시도할 때는 같은 입력 파일·실행 ID·상태 DB를 사용하고 `--report`에 새 파일명을 지정한다. 점수만 실패했다면 기존 루트와 판정 상세는 재전송하지 않는다. 복구 중 보낸 **span 자체의 접수**도 불명확하면 위의 `--retry-missing-spans` 절차를 따른다.
