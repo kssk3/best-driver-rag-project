@@ -137,6 +137,9 @@ def _get(path: str, params: dict) -> dict:
         data = json.loads(body)
     except LangfuseReadError:
         raise
+    except TimeoutError:
+        # 서버는 열려 있지만 응답이 느린 경우(서버가 바쁠 때)다. 연결 실패와 구별한다.
+        raise LangfuseReadError("timeout") from None
     except (OSError, ValueError):
         raise LangfuseReadError("unreachable") from None
     finally:

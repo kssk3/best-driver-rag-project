@@ -286,13 +286,18 @@ def render_result(view) -> None:
 
 @st.cache_data(ttl=60, show_spinner=False)
 def cached_scores():
-    # 질문할 때마다 다시 그려지므로 서버 조회는 잠시 재사용한다.
-    return langfuse_scores.load_langfuse_scores()
+    # 질문할 때마다 다시 그려지므로 서버 조회는 잠시 재사용한다. 실패(오류 코드)도 같이 재사용해서
+    # 서버가 느릴 때 화면을 그릴 때마다 시간 초과를 기다리지 않게 한다.
+    try:
+        return langfuse_scores.load_langfuse_scores()
+    except langfuse_scores.LangfuseReadError as error:
+        return error.code
 
 
 LANGFUSE_MESSAGES = {
     "not_configured": "Langfuse 주소와 키(LANGFUSE_BASE_URL, LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY)를 설정하고 다시 실행하세요.",
     "unreachable": "Langfuse 서버에 연결하지 못했습니다. 주소와 네트워크를 확인하세요.",
+    "timeout": "Langfuse 서버가 제때 응답하지 않습니다(서버가 바쁜 것 같습니다). 잠시 후 새로고침하세요.",
 }
 
 
@@ -325,18 +330,20 @@ def render_comparison() -> None:
         "검색 적중률(Hit@k)은 다른 지표라 섞지 않습니다. "
         "점수는 판정 모델의 편차가 있어, 같은 답변도 다시 채점하면 달라질 수 있습니다."
     )
-    try:
-        result = cached_scores()
-    except langfuse_scores.LangfuseReadError as error:
+    result = cached_scores()
+    if isinstance(result, str):
         # 주소·키·응답 내용은 보이지 않고 오류 종류만 알려 준다.
-        if error.code == "not_configured":
+        if result == "not_configured":
             st.info(LANGFUSE_MESSAGES["not_configured"])  # 설정 안내이지 오류가 아니다.
         else:
             st.error(
                 LANGFUSE_MESSAGES.get(
-                    error.code, f"Langfuse에서 점수를 읽지 못했습니다. ({error.code})"
+                    result, f"Langfuse에서 점수를 읽지 못했습니다. ({result})"
                 )
             )
+            if st.button("새로고침", key="refresh_scores_error"):
+                cached_scores.clear()
+                st.rerun()
         return
     if not result.groups:
         st.info("방식별로 집계할 점수가 아직 없습니다.")

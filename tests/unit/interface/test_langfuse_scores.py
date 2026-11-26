@@ -280,3 +280,40 @@ def test_refresh_button_reloads_scores(monkeypatch) -> None:
     button(app, "새로고침").click().run()
 
     assert len(calls) == 2
+
+
+def test_a_read_timeout_is_reported_as_slow_not_unreachable(monkeypatch) -> None:
+    monkeypatch.setenv("LANGFUSE_BASE_URL", "https://slow.invalid")
+    monkeypatch.setenv("LANGFUSE_PUBLIC_KEY", "pk")
+    monkeypatch.setenv("LANGFUSE_SECRET_KEY", "sk")
+
+    class Slow:
+        def request(self, *args, **kwargs):
+            raise TimeoutError("read timed out")
+
+        def close(self):
+            pass
+
+    monkeypatch.setattr(
+        langfuse_scores, "HTTPSConnection", lambda *args, **kwargs: Slow()
+    )
+
+    with pytest.raises(LangfuseReadError) as error:
+        langfuse_scores._get("/x", {})
+    assert error.value.code == "timeout"
+
+
+def test_panel_explains_a_slow_server_and_remembers_the_failure(monkeypatch) -> None:
+    calls = []
+
+    def slow():
+        calls.append(1)
+        raise LangfuseReadError("timeout")
+
+    app = open_panel(monkeypatch, slow)
+    app.run()  # 다시 그려도 실패를 잠시 재사용해 또 기다리지 않는다.
+
+    [error] = app.error
+    assert "응답하지 않습니다" in error.value
+    assert len(calls) == 1
+    assert any(b.label == "새로고침" for b in app.button)
