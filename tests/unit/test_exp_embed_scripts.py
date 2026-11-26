@@ -42,3 +42,13 @@ def test_posthoc_runner_accepts_a_transformed_index(tmp_path, monkeypatch) -> No
     fake = type("I", (), {"metadata": type("M", (), {"index_id": transformed})()})()
     monkeypatch.setattr(exp_posthoc_final, "load_index", lambda path: fake)
     exp_posthoc_final.require_variant_index(settings_file(tmp_path, "x.json"))
+
+
+def test_posthoc_runner_rejects_an_index_from_another_transform_version(
+    tmp_path, monkeypatch
+) -> None:
+    old = "index-1-embed-input-exp"  # v1 색인의 실제 ID 형식
+    fake = type("I", (), {"metadata": type("M", (), {"index_id": old})()})()
+    monkeypatch.setattr(exp_posthoc_final, "load_index", lambda path: fake)
+    with pytest.raises(SystemExit):
+        exp_posthoc_final.require_variant_index(settings_file(tmp_path, "x.json"))

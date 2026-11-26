@@ -28,3 +28,22 @@ def test_summarize_shows_a_dash_when_no_run_has_a_time() -> None:
     (only,) = summarize([row("B", "error", "", "x")])
     assert only["mean_ms"] is None
     assert "—" in format_rows([only])
+
+
+def test_summarize_counts_a_recordless_failure_in_its_configuration() -> None:
+    ok = {**row("A", "answered", "1000"), "configuration": "rewrite-off"}
+    failed = {
+        "variant": "",
+        "configuration": "rewrite-off",
+        "rewrite_enabled": "",
+        "status": "error",
+        "duration_ms": "",
+        "error_code": "",
+    }
+    (only,) = summarize([ok, failed])
+    assert (only["variant"], only["total"], only["succeeded"], only["errors"]) == (
+        "A",
+        2,
+        1,
+        1,
+    )

@@ -48,7 +48,8 @@ def set_normalized_search_text(enabled: bool) -> None:
 
 
 TRANSFORM_VERSION = "table-text-v2"  # v1: 7차 리뷰 전 공백 규칙(일반 문장도 합침)
-VARIANT_ID_MARKER = "-embed-input-"
+# 색인 ID에 변환 버전을 넣어, 다른 버전으로 만든 색인(예: v1 "-embed-input-exp")은 사후 실행기가 거절한다.
+VARIANT_ID_MARKER = f"-embed-input-{TRANSFORM_VERSION}-"
 
 
 def variant_index_id(

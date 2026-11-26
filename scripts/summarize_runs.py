@@ -10,13 +10,16 @@ from collections import defaultdict
 from pathlib import Path
 from statistics import mean, median
 
+from scripts.score_quality import fill_failed_rows
+
 # 모델·검색 호출이 정상 끝난 상태. 근거 없음 안내(insufficient_evidence)는 정상 응답이라 성공에 넣는다.
 SUCCESS_STATUSES = ("answered", "insufficient_evidence", "needs_clarification")
 
 
 def summarize(rows: list[dict]) -> list[dict]:
     groups: dict[tuple[str, str], list[dict]] = defaultdict(list)
-    for row in rows:
+    # 실행 기록 없이 실패한 행도 같은 구성의 성공 행과 한 묶음으로 센다.
+    for row in fill_failed_rows(rows):
         key = (
             row.get("variant") or row.get("configuration") or "?",
             row.get("rewrite_enabled", ""),
