@@ -125,6 +125,19 @@ def test_clarification_with_ambiguous_dong_asks_for_dong() -> None:
     )
     view = run_record_to_view(make_record("needs_clarification", resolved))
     assert view.required_fields == ["dong"]
+    assert view.region_status == "ambiguous"
+
+
+def test_unsupported_region_guidance_carries_region_status_and_no_fields() -> None:
+    resolved = ResolvedQuery(
+        search_query="질문",
+        district="강남구",
+        status="needs_clarification",
+        region_status="unsupported",
+    )
+    view = run_record_to_view(make_record("needs_clarification", resolved))
+    assert view.required_fields == []
+    assert view.region_status == "unsupported"
 
 
 @pytest.fixture

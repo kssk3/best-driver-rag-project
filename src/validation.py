@@ -86,8 +86,12 @@ def check_response(
             )
         )
 
-    # [W6] 추가 정보가 필요하다면서 물어볼 게 없다.
-    if view.status == "needs_clarification" and not view.required_fields:
+    # [W6] 추가 정보가 필요하다면서 물어볼 게 없다. 지원 밖 안내는 물어볼 게 없는 정상 안내다.
+    if (
+        view.status == "needs_clarification"
+        and not view.required_fields
+        and view.region_status != "unsupported"
+    ):
         alerts.append(
             Alert("W6", "warning", "추가 정보가 필요하지만 물어볼 항목이 없습니다.")
         )
