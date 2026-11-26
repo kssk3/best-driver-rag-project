@@ -182,7 +182,7 @@ footer {
   border-radius: 14px;
 }
 /* 근거 카드: 목록 기호와 들여쓰기 없이 카드 안쪽 여백만 */
-[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stMarkdownContainer"] ul {
+.st-key-answerbox [data-testid="stLayoutWrapper"] > [data-testid="stVerticalBlock"] [data-testid="stMarkdownContainer"] ul {
   list-style: none;
   padding-left: 0;
   margin: 0;
@@ -290,4 +290,286 @@ footer {
   border: 0;
   color: #fff;
   font-weight: 800;
+}
+
+/* ===== 상세 조정 ===== */
+
+/* 랜딩: 지역·예시 칩은 왼쪽 정렬, 작게. 라벨은 칩 위에 한 줄로 */
+.lbl {
+  display: block;
+  color: var(--sub);
+  font-size: 13px;
+  font-weight: 500;
+  margin: 10px 0 2px;
+}
+.st-key-pick_district button,
+.st-key-examples button {
+  min-height: 0;
+  padding: 2px 10px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  border-radius: 999px;
+}
+.st-key-pick_district [data-testid="stButtonGroup"] {
+  justify-content: flex-start;
+  gap: 6px;
+}
+.st-key-examples [data-testid="stHorizontalBlock"] {
+  justify-content: flex-start;
+  gap: 6px;
+}
+
+/* 대화 화면: 지역 드롭다운 */
+.st-key-district_compact [data-baseweb="select"] > div {
+  border-radius: 12px;
+  background: #fff;
+}
+
+/* 당번이 아바타: 원 없이 머리만, 말풍선 쪽을 바라보게 */
+.avatar {
+  width: 46px;
+  height: auto;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  margin-top: 4px;
+  object-fit: contain;
+}
+
+/* 말풍선: 둥근 상자와 아바타를 향한 꼬리 */
+.st-key-answerbox {
+  position: relative;
+  background: #efe9f6;
+  border-radius: 20px;
+  padding: 16px 22px 18px;
+  margin-left: 8px;
+}
+.st-key-answerbox::before {
+  content: "";
+  position: absolute;
+  left: -9px;
+  top: 18px;
+  width: 0;
+  height: 0;
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-right: 10px solid #efe9f6;
+}
+
+/* 답변 본문: 글씨 크기는 보조 문구와 같게(색은 그대로) */
+.st-key-answerbox [data-testid="stAlert"] {
+  font-size: 0.875rem;
+  line-height: 1.65;
+}
+.st-key-answerbox [data-testid="stAlert"] p {
+  font-size: 0.875rem;
+}
+
+/* 근거 카드 */
+.st-key-answerbox [data-testid="stLayoutWrapper"] > [data-testid="stVerticalBlock"] {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 2px 16px;
+}
+.st-key-answerbox [data-testid="stLayoutWrapper"] > [data-testid="stVerticalBlock"] p {
+  font-size: 13px;
+  line-height: 1.7;
+  margin: 0;
+}
+.st-key-answerbox [data-testid="stLayoutWrapper"] > [data-testid="stVerticalBlock"] ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.st-key-answerbox [data-testid="stLayoutWrapper"] > [data-testid="stVerticalBlock"] li {
+  margin: 0;
+}
+
+/* ===== 대시보드 ===== */
+.sec-title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  color: var(--deep);
+  font-size: 16px;
+  font-weight: 800;
+  margin: 6px 0 2px;
+}
+.sec-title small,
+.mx-title small {
+  color: var(--sub);
+  font-size: 12px;
+  font-weight: 500;
+}
+.mx-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 16px 0 8px;
+  color: var(--lav-ink);
+  font-size: 14px;
+}
+.mx-head span {
+  color: var(--sub);
+  font-size: 12px;
+}
+.mx-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+.mx-card {
+  background: #faf9f6;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+.mx-title {
+  color: var(--deep);
+  font-size: 14px;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+.mx-title small {
+  margin-left: 6px;
+}
+.mx-row {
+  display: grid;
+  grid-template-columns: 20px 1fr 48px 34px;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 13px;
+}
+.mx-row b {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 11px;
+}
+.mx-bar {
+  height: 8px;
+  background: #ebeee6;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.mx-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+}
+.vA {
+  background: var(--green);
+}
+.vB {
+  background: var(--lav);
+}
+.vC {
+  background: #e0a030;
+}
+.mx-val {
+  font-weight: 800;
+  text-align: right;
+}
+.mx-n {
+  color: var(--sub);
+  font-size: 12px;
+}
+
+/* 검증 패널 구역 카드 */
+.st-key-insp_alerts,
+.st-key-insp_rank,
+.st-key-insp_inputs,
+.st-key-insp_cites {
+  background: #faf9f6;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 4px 16px 14px;
+  margin-top: 12px;
+}
+.st-key-devpanel h3 {
+  color: var(--deep);
+  font-size: 15px;
+  font-weight: 800;
+  padding: 0 0 0 10px;
+  margin: 10px 0 6px;
+  border-left: 4px solid var(--lav);
+  line-height: 1.2;
+}
+.st-key-devpanel [data-testid="stAlert"] {
+  border-radius: 12px;
+}
+.st-key-insp_inputs [data-testid="stMarkdownContainer"] ul {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0;
+  margin: 0;
+}
+.st-key-insp_inputs [data-testid="stMarkdownContainer"] li {
+  background: var(--lav-soft);
+  border: 1px solid var(--lav-line);
+  border-radius: 999px;
+  padding: 1px 10px;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 11.5px;
+  word-break: break-all;
+}
+.st-key-insp_cites [data-testid="stMarkdownContainer"] ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.st-key-insp_cites [data-testid="stMarkdownContainer"] li {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 6px 12px;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+.st-key-shift_stage button {
+  min-height: 0;
+  padding: 2px 10px;
+  font-size: 12.5px;
+  border-radius: 999px;
+}
+@media (max-width: 760px) {
+  .mx-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 말풍선 안 여백 정리: 배지와 본문 간격, 본문 왼쪽 들여쓰기, 근거 카드 안쪽 */
+.st-key-answerbox {
+  gap: 0.5rem;
+}
+.st-key-answerbox [data-testid="stAlert"],
+.st-key-answerbox [data-testid="stAlertContainer"] {
+  padding: 0 !important;
+}
+.st-key-answerbox [data-testid="stLayoutWrapper"] > [data-testid="stVerticalBlock"] [data-testid="stMarkdownContainer"] {
+  padding: 8px 0;
+}
+.st-key-answerbox [data-testid="stLayoutWrapper"] > [data-testid="stVerticalBlock"] ul,
+.st-key-answerbox [data-testid="stLayoutWrapper"] > [data-testid="stVerticalBlock"] ol {
+  list-style: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+.st-key-insp_inputs {
+  padding-bottom: 18px;
+}
+.st-key-answerbox [data-testid="stLayoutWrapper"] > [data-testid="stVerticalBlock"] li {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+.st-key-answerbox [data-testid="stLayoutWrapper"] > [data-testid="stVerticalBlock"] [data-testid="stMarkdownContainer"] {
+  margin-bottom: 0 !important;
+  padding: 6px 0;
 }

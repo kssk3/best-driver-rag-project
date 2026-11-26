@@ -13,6 +13,7 @@ HERE = Path(__file__).parent
 BRAND_DIR = HERE.parent.parent / "assets" / "brand"
 HERO_IMAGE = BRAND_DIR / "dang-beoni-cutout.png"
 LOGO_IMAGE = BRAND_DIR / "dang-beoni-head-cutout.png"
+AVATAR_IMAGE = BRAND_DIR / "dang-beoni-chat-avatar.png"
 
 HERO_HTML = """
 <div class="hero-copy">
@@ -32,14 +33,15 @@ def inject_theme() -> None:
 
 
 @cache
-def _logo_uri() -> str:
-    data = base64.b64encode(LOGO_IMAGE.read_bytes()).decode("ascii")
+def _data_uri(path: Path) -> str:
+    data = base64.b64encode(path.read_bytes()).decode("ascii")
     return f"data:image/png;base64,{data}"
 
 
 def brand_html() -> str:
-    return f'<div class="brand"><img src="{_logo_uri()}" alt=""><b>분리당</b></div>'
+    return f'<div class="brand"><img src="{_data_uri(LOGO_IMAGE)}" alt=""><b>분리당</b></div>'
 
 
 def avatar_html() -> str:
-    return f'<img class="avatar" src="{_logo_uri()}" alt="">'
+    # 답변 말풍선 왼쪽의 너구리 머리(좌우 반전해서 말풍선 쪽을 바라본다).
+    return f'<img class="avatar" src="{_data_uri(AVATAR_IMAGE)}" alt="">'

@@ -14,8 +14,3 @@ class VariantSummary:
     count: int
     # None은 숫자 점수가 하나도 없다는 뜻이다. 유효한 0.0 평균과 구별해야 한다.
     mean: float | None
-
-
-def format_summary(summary: VariantSummary) -> str:
-    average = "—" if summary.mean is None else f"{summary.mean:.3f}"
-    return f"{summary.count}건 · 평균 {average}"

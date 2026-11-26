@@ -5,6 +5,7 @@
 공용 입출력과 함수 규격은 사용하는 담당자와 합의한 뒤 추가한다.
 """
 
+from html import escape
 from os import getenv
 from pathlib import Path
 
@@ -22,7 +23,6 @@ from src.interface.adapter import (
     run_record_to_view,
 )
 from src.interface.chat import render_response
-from src.interface.comparison import format_summary
 from src.interface.inspection import render_inspection
 from src.interface.theme import (
     FOOTER_HTML,
@@ -156,9 +156,12 @@ SETTINGS_GUIDE = (
 
 
 def ask(question, district) -> bool:
-    """질문을 처리해 결과를 session_state에 저장한다. 저장했으면 True."""
+    """질문을 접수한다. 접수했으면 True(호출한 쪽이 st.rerun()으로 결과 화면을 그린다).
+
+    실제 검색은 다음 실행에서 한다. 이 실행에서 바로 검색하면 몇 초 동안 랜딩이 그대로 남기 때문이다.
+    """
     # 새 요청이 실패하거나 비어도 이전 응답이 남아 보이지 않게 지운다.
-    for key in ("view", "asked_question", "asked_district"):
+    for key in ("view", "asked_question", "asked_district", "pending"):
         st.session_state.pop(key, None)
     # 이전 되묻기에서 입력한 값이 다음 되묻기에 미리 채워지지 않게 한다.
     for key in [k for k in st.session_state if k.startswith("followup:")]:
@@ -169,8 +172,17 @@ def ask(question, district) -> bool:
     if not question.strip():
         st.warning("질문을 입력하세요.")
         return False
+    st.session_state["pending"] = {"question": question, "district": district}
+    return True
+
+
+def run_pending() -> None:
+    """접수한 질문을 실제로 실행한다. 성공하면 결과 화면으로 다시 그린다."""
+    pending = st.session_state.pop("pending")
     with st.spinner("답변을 찾고 있어요..."):  # 실제 검색은 몇 초 걸린다
-        return ask_pipeline(PipelineRequest(question=question, district=district))
+        done = ask_pipeline(PipelineRequest(**pending))
+    if done:
+        st.rerun()
 
 
 def send_followup(fields: dict) -> None:
@@ -207,25 +219,34 @@ def search_form(button_label):
         return question, button_col.form_submit_button(button_label)
 
 
+def current_district() -> str:
+    pending = st.session_state.get("pending") or {}
+    district = pending.get("district") or st.session_state.get("asked_district")
+    return district if district in DISTRICTS else DISTRICTS[0]
+
+
 def search_bar(compact=False) -> None:
     if compact:
-        # 결과 화면: 지역 pill이 검색창 왼쪽에 한 줄로 붙는다.
-        pill_col, form_col = st.columns([1.6, 6], vertical_alignment="center")
-        with pill_col:
-            district = pick_district()
+        # 대화 화면: 지역은 검색창 왼쪽의 드롭다운이다.
+        select_col, form_col = st.columns([1.3, 6], vertical_alignment="center")
+        district = select_col.selectbox(
+            "지역",
+            DISTRICTS,
+            index=DISTRICTS.index(current_district()),
+            key="district_compact",
+            label_visibility="collapsed",
+        )
         with form_col:
             question, submitted = search_form("다시 묻기")
     else:
         question, submitted = search_form("물어보기")
-        label_col, pill_col = st.columns([2.2, 4.5], vertical_alignment="center")
-        label_col.html('<span class="lbl">어느 지역에 계세요?</span>')
-        with pill_col:
-            district = pick_district()
+        st.html('<span class="lbl">어느 지역에 계세요?</span>')
+        district = pick_district()
     if submitted:
         if not district:
             st.warning("지역을 선택하세요.")
         elif ask(question, district):
-            st.rerun()  # 랜딩에서 결과 화면으로 바꿔 그린다
+            st.rerun()  # 랜딩에서 대화 화면으로 바꿔 그린다
 
 
 def render_header() -> None:
@@ -237,12 +258,11 @@ def render_landing() -> None:
     with copy_col:
         st.html(HERO_HTML)
         search_bar()
+        st.html('<span class="lbl">이런 질문이 많아요!</span>')
         with st.container(key="examples"):
-            cols = st.columns(
-                [2.2] + [1.5] * len(EXAMPLES), vertical_alignment="center"
-            )
-            cols[0].html('<span class="lbl">이런 질문이 많아요!</span>')
-            for index, (col, (label, question)) in enumerate(zip(cols[1:], EXAMPLES)):
+            for index, (col, (label, question)) in enumerate(
+                zip(st.columns(len(EXAMPLES)), EXAMPLES)
+            ):
                 if col.button(label, key=f"example_{index}"):
                     district = st.session_state.get("pick_district")
                     if not district:
@@ -274,11 +294,32 @@ LANGFUSE_MESSAGES = {
 }
 
 
+def metrics_html(group) -> str:
+    """데이터셋 하나의 RAGAS 4대 지표를 카드 4장으로 그린다(값은 모두 우리 코드가 만든 문자열)."""
+    cards = []
+    for name, label, english in langfuse_scores.METRICS:
+        rows = []
+        for item in group.metrics[name]:
+            width = 0 if item.mean is None else max(0.0, min(1.0, item.mean)) * 100
+            value = "—" if item.mean is None else f"{item.mean:.3f}"
+            rows.append(
+                f'<div class="mx-row"><b class="v{item.variant}">{item.variant}</b>'
+                f'<div class="mx-bar"><i class="v{item.variant}" style="width:{width:.0f}%"></i></div>'
+                f'<span class="mx-val">{value}</span><span class="mx-n">{item.count}건</span></div>'
+            )
+        cards.append(
+            f'<div class="mx-card"><div class="mx-title">{label}<small>{english}</small></div>'
+            f"{''.join(rows)}</div>"
+        )
+    return f'<div class="mx-grid">{"".join(cards)}</div>'
+
+
 def render_comparison() -> None:
-    st.subheader("답변 근거 충실도")
+    st.html(
+        '<div class="sec-title">RAGAS 4대 지표 <small>실행 방식(A/B/C)별 평균</small></div>'
+    )
     st.caption(
-        "Langfuse의 faithfulness 점수를 실행 방식(A/B/C)별로 집계합니다. "
-        "같은 평가(데이터셋)끼리만 묶고, 방식을 알 수 없는 점수는 평균에서 뺍니다. "
+        "Langfuse 점수를 같은 평가(데이터셋)끼리 묶어 보여 줍니다. 방식을 알 수 없는 점수는 평균에서 뺍니다. "
         "검색 적중률(Hit@k)은 다른 지표라 섞지 않습니다. "
         "점수는 판정 모델의 편차가 있어, 같은 답변도 다시 채점하면 달라질 수 있습니다."
     )
@@ -298,13 +339,18 @@ def render_comparison() -> None:
     if not result.groups:
         st.info("방식별로 집계할 점수가 아직 없습니다.")
     for group in result.groups:
-        st.markdown(
-            f"**데이터셋 {group.dataset_id[:8]}** · 최근 실행 {group.latest[:10]}"
+        st.html(
+            f'<div class="mx-head">데이터셋 <b>{escape(group.dataset_id[:8])}</b>'
+            f"<span>최근 실행 {escape(group.latest[:10])}</span></div>"
+            + metrics_html(group)
         )
-        for column, summary in zip(st.columns(len(group.summaries)), group.summaries):
-            column.metric(f"방식 {summary.variant}", format_summary(summary))
-    if result.unlinked:
-        st.caption(f"방식을 알 수 없어 평균에서 뺀 점수 {result.unlinked}건")
+    left_out = [
+        f"{label} {result.unlinked[name]}건"
+        for name, label, _ in langfuse_scores.METRICS
+        if result.unlinked[name]
+    ]
+    if left_out:
+        st.caption("방식을 알 수 없어 평균에서 뺀 점수: " + ", ".join(left_out))
     if st.button("새로고침", key="refresh_scores"):
         cached_scores.clear()
         st.rerun()
@@ -335,10 +381,12 @@ render_header()
 if not TEAM_SETTINGS_PATH:
     st.error(SETTINGS_GUIDE)
 view = current_view()
-if view is None:
+if view is None and "pending" not in st.session_state:
     render_landing()
 else:
     search_bar(compact=True)
+    if "pending" in st.session_state:
+        run_pending()  # 성공하면 st.rerun()으로 결과를 다시 그린다. 실패하면 오류가 보인다.
     view = current_view()  # 검색바에서 새 질문이 실패하면 이전 응답이 지워져 있다
     if view is None:
         st.info("질문하면 결과가 여기에 나옵니다.")

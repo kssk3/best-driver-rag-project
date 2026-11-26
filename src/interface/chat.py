@@ -7,8 +7,6 @@ from src.interface.adapter import Citation, ViewResponse
 from src.interface.theme import avatar_html
 
 # 실패해도 응답 상태와 answer를 바꾸지 않고 문서 답변을 이어 가는 단계(docs/ERRORS.md)
-RACCOON_OPENING = "찾아봤구리!"
-RACCOON_CLOSING = "더 궁금하면 물어보구리~"
 RECOVERABLE_STAGES = {"rewrite", "place_lookup"}
 
 REQUIRED_FIELD_LABELS = {
@@ -112,20 +110,16 @@ def render_response(
 def _render_answered(view: ViewResponse) -> None:
 
     with _bubble("근거 확인됨", "ok"):
-        # 당번이 한마디는 답변 본문 밖에 따로 붙인다. 본문과 평가 기록은 그대로다.
-        st.caption(RACCOON_OPENING)
         st.success(view.answer or "(답변 내용 없음)")
         st.markdown("근거")
 
         if not view.citations:
             st.warning("인용된 근거가 없습니다.")
-            st.caption(RACCOON_CLOSING)
             return
 
         for citation in view.citations:
             with st.container(border=True):
                 st.markdown(format_citation(citation))
-        st.caption(RACCOON_CLOSING)
 
 
 def _render_clarification(

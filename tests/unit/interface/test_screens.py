@@ -66,3 +66,15 @@ def test_result_screen_shows_answer_and_dashboard_for_the_same_response() -> Non
     assert [tab.label for tab in app.tabs] == ["검증 패널", "비교 패널"]
     assert app.dataframe  # 아래 대시보드: 같은 응답의 후보 순위
     assert not any("먼저 질문" in item.value for item in app.info)
+
+
+def test_landing_picks_the_district_with_chips_and_the_chat_screen_with_a_dropdown() -> (
+    None
+):
+    landing = _run()
+    assert landing.pills and not landing.selectbox  # 랜딩: 칩
+
+    chat = fixture_app("answered", question="가상 질문", district="송파구")
+    assert not chat.pills or all(p.label != "지역" for p in chat.pills)
+    [select] = [s for s in chat.selectbox if s.label == "지역"]  # 대화 화면: 드롭다운
+    assert select.value == "송파구"
