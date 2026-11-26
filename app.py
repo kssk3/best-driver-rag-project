@@ -29,7 +29,6 @@ from src.interface.theme import (
     FOOTER_HTML,
     HERO_HTML,
     HERO_IMAGE,
-    SECTIONS_HTML,
     brand_html,
     inject_theme,
 )
@@ -277,7 +276,6 @@ def render_landing() -> None:
                     elif ask(question, district):
                         st.rerun()
     image_col.image(str(HERO_IMAGE))
-    st.html(SECTIONS_HTML)
 
 
 def render_result(view) -> None:

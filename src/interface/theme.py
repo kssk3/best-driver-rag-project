@@ -21,27 +21,6 @@ HERO_HTML = """
 </div>
 """
 
-SECTIONS_HTML = """
-<section class="info">
-  <h3>이렇게 도와드려요.</h3>
-  <p class="sub">답만 주지 않고, 어디서 나온 내용인지 같이 보여줘요.</p>
-  <div class="cols">
-    <div class="card"><div class="ico">♻️</div><h4>분리배출 방법</h4><p>품목을 말하면 어떻게 비우고, 무엇과 같이 버릴지 알려줘요.</p></div>
-    <div class="card"><div class="ico">📄</div><h4>근거 출처 표시</h4><p>답변마다 문서 이름·위치·버전을 함께 보여줘요.</p></div>
-    <div class="card"><div class="ico">📍</div><h4>가까운 수거 장소</h4><p>수거함·센터 주소를 지도 링크와 함께 안내해요.</p></div>
-  </div>
-</section>
-<section class="info">
-  <h3>이용 방법</h3>
-  <p class="sub">로그인 없이 바로 이용하실 수 있습니다.</p>
-  <div class="steps">
-    <div class="step"><b>지역 고르기</b><br><span>구마다 배출 기준이 달라요.</span></div>
-    <div class="step"><b>물건 물어보기</b><br><span>말하듯이 적으면 돼요.</span></div>
-    <div class="step"><b>근거와 함께 확인</b><br><span>모자라면 되물어봐요.</span></div>
-  </div>
-</section>
-"""
-
 FOOTER_HTML = """
 <div class="foot">지원 지역: 서대문구 · 송파구 / 합성 데모 데이터 기반 · 실제 배출은 해당 구청 안내를 확인하세요.<br>내부 데모 화면입니다. 오른쪽의 검증·비교 패널은 개발·검증용으로 항상 표시됩니다.</div>
 """
