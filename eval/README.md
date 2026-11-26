@@ -41,7 +41,7 @@
 
 동일 문항을 벡터 검색(A), 벡터·BM25 결합 검색(B), 결합 후보를 재정렬하는 검색(C)으로 각각 실행한다. 세 구성은 색인, 질의 임베더, 지역 해석, 컨텍스트 상한과 답변 생성 모델·프롬프트를 공유하고 질문 다듬기를 끈다. 공식 Hit@5 비교에는 세 구성의 `top_k`를 동일하게 5 이상으로 설정한다. B의 최종 후보는 결합 순위의 앞 `top_k`개다. C는 같은 순위에서 최대 `max(top_k, 20)`개를 재정렬한 뒤 앞 `top_k`개를 반환한다.
 
-[설정 예시](../configs/abc-answer-eval-settings.json)의 `index_path`에 준비한 팀 색인 경로를 넣고, `versions.model`과 `versions.reranker_model`에는 각각 사용할 생성 모델과 C 재정렬 모델을 지정한다. 아래 첫 명령은 실제 모델을 호출한다. 한 문항에서 세 방식 모두 근거를 찾아 답하면 질의 임베딩 3회, 답변 생성 3회, C 재정렬 1회의 논리 호출이 예상된다. 두 번째 명령은 저장된 입력만 검증한다. 승인 후 실제 숫자 점수가 필요하면 새 출력 폴더를 지정하고 `--judge-model`에 판정 모델을 명시한다.
+[설정 예시](../configs/abc-answer-eval-settings.json)의 `index_path`에 준비한 팀 색인 경로를 넣고, `versions.model`과 `versions.reranker_model`에는 각각 사용할 생성 모델과 C 재정렬 모델을 지정한다. 아래 첫 명령은 실제 모델을 호출한다. 한 문항에서 세 방식 모두 근거를 찾아 답하면 질의 임베딩 3회, 답변 생성 3회, C 재정렬 1회의 논리 호출이 예상된다. 두 번째 명령은 저장된 입력만 검증한다. 승인 후 실제로 채점할 때는 새 출력 폴더와 `--judge-model 판정모델ID`를 지정한다. API 키를 저장소 루트의 `.env`에 보관한다면 두 번째 명령도 `uv run --locked --env-file .env python -m scripts.score_answers`로 시작한다.
 
 ```sh
 uv run --locked --env-file .env python -m scripts.evaluate \
