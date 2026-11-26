@@ -9,17 +9,26 @@ from .aliases import item_key
 from .catalog import CATALOG_PATH, load_query_catalog
 from .dialect_rewrite import make_language_rewriter
 from .matching import (
+    active_item_matches,
     compile_item_matcher,
     fold_item_text,
     mentioned_items,
+    selection_spelling_aliases,
+    stated_item_condition,
 )
 
-PROMPT_CONTEXT_SCHEMA_VERSION = "catalog-context-v1"
+PROMPT_CONTEXT_SCHEMA_VERSION = "catalog-context-v2"
 
 
 class ItemContext(TypedDict):
     item: str
     checks: list[str]
+
+
+class StatedItemCondition(TypedDict):
+    expression: str
+    item: str
+    condition: str
 
 
 class FacilityContext(TypedDict):
@@ -40,6 +49,7 @@ class PromptContext(TypedDict):
     language_normalized_question: str | None
     item_aliases: dict[str, str]
     item_context: list[ItemContext]
+    item_mentions: list[StatedItemCondition]
     facility_context: list[FacilityContext]
     ambiguous_expressions: list[AmbiguousExpression]
     omitted_counts: dict[str, int]
@@ -70,6 +80,7 @@ def make_prompt_context_builder(path: Path = CATALOG_PATH) -> PromptContextBuild
     aliases = {
         fold_item_text(term): name for term, name in catalog["item_aliases"].items()
     }
+    spelling_aliases = selection_spelling_aliases(aliases)
     exact_aliases = {
         fold_item_text(term): name
         for term, name in catalog["exact_item_aliases"].items()
@@ -115,10 +126,18 @@ def make_prompt_context_builder(path: Path = CATALOG_PATH) -> PromptContextBuild
         question: str, *, district: str | None = None, dong: str | None = None
     ) -> PromptContext:
         normalized = normalize(question)
-        original_matches = mentioned_items(pattern, question)
+        original_occurrences = active_item_matches(
+            pattern, question, spelling_aliases, aliases
+        )
+        original_matches = mentioned_items(original_occurrences)
+        occurrences = original_occurrences
         matches = original_matches.copy()
         if normalized != question:
-            for term, surface in mentioned_items(pattern, normalized).items():
+            normalized_occurrences = active_item_matches(
+                pattern, normalized, spelling_aliases, aliases
+            )
+            occurrences = original_occurrences + normalized_occurrences
+            for term, surface in mentioned_items(normalized_occurrences).items():
                 matches.setdefault(term, surface)
 
         exact_match = fold_item_text(question)
@@ -159,6 +178,21 @@ def make_prompt_context_builder(path: Path = CATALOG_PATH) -> PromptContextBuild
                     {"place": surface, "checks": profile["conditions_to_preserve"]},
                 )
 
+        # 같은 표준어를 쓰는 품목도 질문에 나온 상태는 각각 남긴다.
+        stated_conditions: dict[tuple[str, str, str], StatedItemCondition] = {}
+        for occurrence in occurrences:
+            surface = occurrence["item"]
+            term = fold_item_text(surface)
+            canonical = aliases.get(term)
+            key = item_key(canonical) if canonical else canonical_terms.get(term)
+            condition = stated_item_condition(occurrence)
+            if key is not None and key in items and condition:
+                item_name = canonical or items[key]["item"]
+                stated_conditions.setdefault(
+                    (key, term, condition),
+                    {"expression": surface, "item": item_name, "condition": condition},
+                )
+
         ambiguous_expressions: list[AmbiguousExpression] = [
             {"expression": surface, "check": ambiguity[term]}
             for term, surface in original_matches.items()
@@ -187,6 +221,9 @@ def make_prompt_context_builder(path: Path = CATALOG_PATH) -> PromptContextBuild
                 _take(list(selected_aliases.items()), 8, "item_aliases", omitted)
             ),
             "item_context": selected_items,
+            "item_mentions": _take(
+                list(stated_conditions.values()), 8, "item_mentions", omitted
+            ),
             "facility_context": selected_places,
             "ambiguous_expressions": _take(
                 ambiguous_expressions, 4, "ambiguous_expressions", omitted

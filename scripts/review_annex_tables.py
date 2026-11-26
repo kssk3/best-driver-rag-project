@@ -4,8 +4,11 @@ import argparse
 import json
 import re
 from collections import Counter
+from collections.abc import Collection
+from hashlib import sha256
 from pathlib import Path
 
+from src.ingestion.annex_review_model import suggest_candidate_decisions
 from src.ingestion.search_preparation import (
     PreparedCell,
     PreparedRow,
@@ -145,8 +148,24 @@ def _nearby_context(blocks: list[dict], table_block: int) -> list[dict]:
     return sorted(candidates, key=lambda candidate: candidate["block_index"])
 
 
-def review_annex_tables(manifest_path: Path) -> dict:
+def review_annex_tables(
+    manifest_path: Path,
+    *,
+    llm_model: str | None = None,
+    llm_approved_hashes: Collection[str] = (),
+    llm_approved_output_hashes: Collection[str] = (),
+) -> dict:
     """원문·검수 기록·전처리 데이터를 읽기 전용으로 검사한다."""
+    if llm_model is None and (llm_approved_hashes or llm_approved_output_hashes):
+        raise ValueError("외부 모델 이용을 확인한 해시는 모델 옵션과 함께 지정하세요.")
+    if llm_model is not None and not llm_model.strip():
+        raise ValueError("외부 모델 이름을 입력하세요.")
+    if any(
+        re.fullmatch(r"[0-9a-f]{64}", value) is None
+        for hashes in (llm_approved_hashes, llm_approved_output_hashes)
+        for value in hashes
+    ):
+        raise ValueError("외부 모델 이용 해시는 소문자 SHA-256이어야 합니다.")
     manifest_path = manifest_path.resolve()
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     if not isinstance(manifest, dict) or not isinstance(manifest.get("records"), list):
@@ -154,7 +173,9 @@ def review_annex_tables(manifest_path: Path) -> dict:
 
     attachments = tables = reviewed_groups = 0
     counts: Counter[str] = Counter()
-    candidates = []
+    candidates: list[dict] = []
+    llm_candidates: list[int] = []
+    approval_exclusions: Counter[str] = Counter()
     seen = set()
     for entry in manifest["records"]:
         if not isinstance(entry, dict):
@@ -170,15 +191,22 @@ def review_annex_tables(manifest_path: Path) -> dict:
         ):
             raise ValueError("첨부 output_file은 중복 없는 JSON 파일명이어야 합니다.")
         seen.add(filename)
-        path = manifest_path.parent / filename
-        if path.resolve().parent != manifest_path.parent:
+        path = (manifest_path.parent / filename).resolve()
+        if path.parent != manifest_path.parent:
             raise ValueError(f"{filename}: 첨부 처리 폴더 밖의 파일 참조")
-        record = json.loads(path.read_text(encoding="utf-8"))
+        record_bytes = path.read_bytes()
+        record = json.loads(record_bytes.decode("utf-8"))
         if not isinstance(record, dict) or any(
             not record.get(field) or record[field] != entry.get(field)
             for field in ("parent_mst", "attachment_id", "raw_sha256")
         ):
             raise ValueError(f"{filename}: 첨부 식별자 또는 원본 해시 불일치")
+        approval_exclusion = None
+        if llm_model is not None:
+            if record["raw_sha256"] not in llm_approved_hashes:
+                approval_exclusion = "raw_sha256_unapproved"
+            elif sha256(record_bytes).hexdigest() not in llm_approved_output_hashes:
+                approval_exclusion = "output_sha256_unapproved"
         attachments += 1
         reviewed_tables = record.get("table_row_continuations", {})
         prepared_tables: list[tuple[dict, list[PreparedRow]]] = []
@@ -237,10 +265,15 @@ def review_annex_tables(manifest_path: Path) -> dict:
                 findings.extend(_nearby_context(blocks, table_blocks[table_id]))
             for finding in findings:
                 counts[finding["kind"]] += 1
+                if llm_model is not None:
+                    if approval_exclusion is None:
+                        llm_candidates.append(len(candidates))
+                    else:
+                        approval_exclusions[approval_exclusion] += 1
                 candidates.append(
                     {**location, "status": "needs_source_review", **finding}
                 )
-    return {
+    report = {
         "use": "manual_review_only",
         "coordinate_base": 0,
         "attachments_scanned": attachments,
@@ -249,14 +282,39 @@ def review_annex_tables(manifest_path: Path) -> dict:
         "candidate_counts": dict(sorted(counts.items())),
         "candidates": candidates,
     }
+    if llm_model is not None:
+        model_report = suggest_candidate_decisions(
+            candidates, llm_candidates, llm_model.strip()
+        )
+        model_report["approval_exclusions"] = dict(sorted(approval_exclusions.items()))
+        report["llm_review"] = model_report
+    return report
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("manifest", type=Path, help="전처리 annex_manifest.json 경로")
+    parser.add_argument("--llm-model", help="후보 검수에 사용할 채팅 모델")
+    parser.add_argument(
+        "--llm-approved-sha256",
+        action="append",
+        default=[],
+        help="외부 모델 이용을 확인한 첨부 원본 SHA-256 (여러 번 지정 가능)",
+    )
+    parser.add_argument(
+        "--llm-approved-output-sha256",
+        action="append",
+        default=[],
+        help="외부 모델 이용을 확인한 전처리 JSON 파일 SHA-256 (여러 번 지정 가능)",
+    )
     args = parser.parse_args()
     try:
-        report = review_annex_tables(args.manifest)
+        report = review_annex_tables(
+            args.manifest,
+            llm_model=args.llm_model,
+            llm_approved_hashes=frozenset(args.llm_approved_sha256),
+            llm_approved_output_hashes=frozenset(args.llm_approved_output_sha256),
+        )
     except (OSError, ValueError) as error:
         parser.exit(1, f"별표 검수 후보 확인 실패: {error}\n")
     print(json.dumps(report, ensure_ascii=False, indent=2))

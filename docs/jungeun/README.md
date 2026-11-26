@@ -171,6 +171,29 @@ uv run --locked python -m scripts.review_annex_tables \
 현재 묶음의 첨부 19건·표 32개에서 기존 검수 8건을 확인했다. 새 행 경계
 후보인 서대문구 별지의 `상호`·`주소`는 서식의 항목명으로 보고 합치지 않았다.
 
+### LLM으로 검수 후보 분류
+
+외부 모델 이용 범위를 확인한 첨부는 원본 HWP와 전처리 JSON을 각각 확인하고,
+확인한 파일의 SHA-256을 `shasum -a 256` 등으로 기록해 아래 두 옵션에 지정한다.
+여러 첨부를 검수할 때는 각 옵션을 반복한다. 명령은 실제로 읽고 파싱한 전처리 JSON
+바이트의 SHA-256을 확인하므로, 파일의 내용이나 공백이 바뀌면 다시 검토해야 한다.
+두 해시를 확인한 후보의 번호·유형·원문 조각만 모델에 보낸다. 기본 명령은 규칙 검수를 실행한다.
+
+```zsh
+uv run --locked python -m scripts.review_annex_tables /path/to/annex_manifest.json \
+  --llm-model gpt-6-luna \
+  --llm-approved-sha256 "$ANNEX_APPROVED_SHA256" \
+  --llm-approved-output-sha256 "$ANNEX_APPROVED_OUTPUT_SHA256"
+```
+
+결과의 `llm_review`에 모델·프롬프트 버전과 후속 원문 대조 제안
+(`review`, `keep`, `uncertain`)을 남긴다. `index`는 `candidates`의 0부터 시작하는 번호다.
+승인 해시가 빠지거나 일치하지 않는 후보는 규칙 보고서에 남기고, 모델에서 제외한
+후보 수는 `approval_exclusions`에 원본·전처리 JSON 해시 사유별로 기록한다.
+모델에 전달할 후보가 없으면 `skipped`를 기록한다. 모델 실패나 응답 형식 오류가
+발생하면 오류 코드를 기록하고 규칙 기반 후보를 볼 수 있다.
+실제 전처리 변경은 원문 대조 후 기존 검수 기록에 반영한다.
+
 ## 청킹 입력과 Markdown 미리보기
 
 팀 청킹은 전처리 JSON과 XML에서 변환한 HTML을 각각 읽어 조문과 표 행으로 나눈다.

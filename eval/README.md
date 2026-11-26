@@ -36,3 +36,23 @@
 고정 근거 실험의 실행 기록에는 실제 답변 모델(`versions.model`)과 시스템 프롬프트의 SHA-256(`versions.prompt`)이 남는다. 자료 버전과 청킹 버전이 각각 하나면 `versions.data`, `versions.chunking`에 기록하고, 여러 개면 `data_versions` 또는 `chunking_versions`에 JSON 배열 문자열로 기록한다. 저장된 검색 결과에 색인 ID가 있으면 `versions.replay_index`에서 원래 검색에 쓰인 색인을 확인할 수 있다.
 
 팀 A 검색 평가를 시작할 때 A 벡터 검색 또는 리라이트 끄기 조건을 어기면 `evaluation.unsupported_configuration`, 색인의 임베딩 제공자·모델·차원 정보를 읽을 수 없거나 지원하지 않으면 `evaluation.invalid_embedding_identity`가 발생한다.
+
+## A/B/C 실검색 답변 비교
+
+동일 문항을 벡터 검색(A), 벡터·BM25 결합 검색(B), 결합 후보를 재정렬하는 검색(C)으로 각각 실행한다. 세 구성은 색인, 질의 임베더, 지역 해석, 컨텍스트 상한과 답변 생성 모델·프롬프트를 공유하고 질문 다듬기를 끈다. 공식 Hit@5 비교에는 세 구성의 `top_k`를 동일하게 5 이상으로 설정한다. B의 최종 후보는 결합 순위의 앞 `top_k`개다. C는 같은 순위에서 최대 `max(top_k, 20)`개를 재정렬한 뒤 앞 `top_k`개를 반환한다.
+
+[설정 예시](../configs/abc-answer-eval-settings.json)의 `index_path`에 준비한 팀 색인 경로를 넣고, `versions.model`과 `versions.reranker_model`에는 각각 사용할 생성 모델과 C 재정렬 모델을 지정한다. 아래 첫 명령은 실제 모델을 호출한다. 한 문항에서 세 방식 모두 근거를 찾아 답하면 질의 임베딩 3회, 답변 생성 3회, C 재정렬 1회의 논리 호출이 예상된다. 두 번째 명령은 저장된 입력만 검증한다. 승인 후 실제로 채점할 때는 새 출력 폴더와 `--judge-model 판정모델ID`를 지정한다. API 키를 저장소 루트의 `.env`에 보관한다면 두 번째 명령도 `uv run --locked --env-file .env python -m scripts.score_answers`로 시작한다.
+
+```sh
+uv run --locked --env-file .env python -m scripts.evaluate \
+  --cases eval/dev.json --settings configs/abc-answer-eval-settings.json \
+  --factory src.evaluation.answer_experiments.abc_runtimes:create_abc_runtimes \
+  --output-dir results/local/abc-off-1
+
+uv run --locked python -m scripts.score_answers \
+  --evaluation results/local/abc-off-1/evaluation.json \
+  --cases-csv results/local/abc-off-1/cases.csv \
+  --output-dir results/local/abc-off-1-checked
+```
+
+각 문항은 구성별로 다른 `run_id`를 받는다. `runs.csv`의 `versions_json`에서 구성별 후보 정책을, C에서는 재정렬 모델과 프롬프트 해시도 확인할 수 있다. 재정렬 실패는 `failed_stage=retrieve`, 검색 성공 후 답변 생성 실패는 `failed_stage=generate`로 기록된다. 두 경우 모두 답변 점수는 비워 두며, 정상 답변이 받은 0점은 점수로 보존한다. [답변 점수표와 집계 기준](../results/README.md#실검색-abc-점수-비교)
