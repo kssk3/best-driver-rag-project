@@ -119,6 +119,10 @@ def hit_rate_by_configuration(
     실행 기록의 실제 variant·rewrite_enabled가 표와 다르면 오류다
     (B 자리에 A 파이프라인을 연결하면 A 점수가 B 성능으로 집계되는 것을 막는다).
 
+    실행 기록의 요청(질문·구·동·조건)도 문항 목록과 같아야 한다.
+    문항 ID는 그대로 두고 지역 등을 고친 뒤 예전 실행 결과를 넘기면,
+    예전 지역으로 찾은 후보가 새 정답으로 채점되기 때문이다.
+
     채점 대상은 정답 근거가 있는 문항 × configurations다. 그 조합이 결과에 정확히 한 번씩
     있어야 한다. 빠지거나 겹치면 분모가 달라져 점수가 틀리므로 0점이 아니라 오류로 알린다.
 
@@ -135,6 +139,7 @@ def hit_rate_by_configuration(
             (configuration, case_id)가 빠지거나 두 번 있을 때,
             실검색이 아닌 기록(demo, fixed_evidence)이 섞였을 때,
             실행 기록의 variant·rewrite_enabled가 기대 설정표와 다를 때,
+            실행 기록의 요청(질문·구·동·조건)이 같은 case_id의 문항과 다를 때,
             파이프라인 top_k가 k보다 작아 Hit@k를 잴 수 없을 때
     """
     _check_k(k)
@@ -143,6 +148,7 @@ def hit_rate_by_configuration(
     case_ids = [case.case_id for case in cases]
     if len(set(case_ids)) != len(case_ids):
         raise RetrievalMetricError("문항 목록에 같은 case_id가 두 번 있습니다.")
+    case_by_id = {case.case_id: case for case in cases}
 
     # ① case_id → 정답 근거 목록. 근거 없는 문항은 Hit@k 대상이 아니라서 넣지 않는다
     allowed_by_case = {
@@ -155,7 +161,7 @@ def hit_rate_by_configuration(
     for result in results:
         case_id = result["case_id"]
         configuration = result["configuration"]
-        if case_id not in case_ids:
+        if case_id not in case_by_id:
             raise RetrievalMetricError(f"문항 목록에 없는 case_id입니다: {case_id!r}")
         if configuration not in configurations:
             raise RetrievalMetricError(
@@ -167,6 +173,8 @@ def hit_rate_by_configuration(
         seen.add(key)
         # 이름표(configuration)와 실제 실행 설정이 맞는지. 채점 대상이 아닌 문항도 확인한다
         _check_settings(result["record"], configuration, configurations[configuration])
+        # 이 기록이 지금 문항으로 실행한 것인지 (같은 ID라도 질문·지역이 바뀌었으면 다른 문항)
+        _check_request(result["record"], case_by_id[case_id])
 
         allowed = allowed_by_case.get(case_id)
         if allowed is None:  # 근거 없는 문항 → 채점 대상 아님
@@ -211,6 +219,25 @@ def _check_settings(
         raise RetrievalMetricError(
             f"구성 {configuration!r}의 실제 실행 설정이 기대와 다릅니다: "
             f"기대 {expected}, 실제 {actual}"
+        )
+
+
+def _check_request(record: dict | None, case: EvaluationCase) -> None:
+    """실행 기록의 요청(질문·구·동·조건)이 문항과 같은지 확인한다."""
+    if record is None:  # 실행 자체가 실패해 기록이 없다 → 대조할 것이 없음 (0점 처리)
+        return
+    request = record["request"]
+    expected = (case.question, case.district, case.dong, case.conditions)
+    actual = (
+        request["question"],
+        request.get("district"),
+        request.get("dong"),
+        request.get("conditions", {}),
+    )
+    if actual != expected:
+        raise RetrievalMetricError(
+            f"문항 {case.case_id!r}의 실행 기록이 지금 문항과 다른 질문·지역으로 실행됐습니다: "
+            f"문항 {expected!r}, 기록 {actual!r}"
         )
 
 

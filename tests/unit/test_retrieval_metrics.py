@@ -174,6 +174,7 @@ def result(
     top_k: int = 5,
     variant: str | None = None,
     rewrite_enabled: bool = False,
+    request: dict | None = None,
 ) -> dict:
     """evaluate_cases 결과 한 줄. top_ids=None이면 실행 오류(record 없음)."""
     if top_ids is None:
@@ -187,6 +188,14 @@ def result(
         "configuration": configuration,
         "record": {
             "run_kind": run_kind,
+            # 실행한 요청. 기본은 case()가 만드는 문항과 같음 (질문 "합성 질문", 지역 없음)
+            "request": request
+            or {
+                "question": "합성 질문",
+                "district": None,
+                "dong": None,
+                "conditions": {},
+            },
             # 실제 실행 설정. 기본은 구성 이름과 같은 variant, 리라이트 OFF
             "options": {
                 "top_k": top_k,
@@ -359,6 +368,40 @@ def test_settings_mismatch_is_rejected_even_for_case_without_evidence():
     results = [result("no-evidence", "A", ["row-1"], variant="B")]
     with pytest.raises(RetrievalMetricError):
         hit_rate_by_configuration(results, cases, expect("A"))
+
+
+@pytest.mark.parametrize(
+    "request_change",
+    [
+        {"district": "서대문구"},  # 문항 ID는 그대로, 지역만 바뀜 (성수님 예시)
+        {"dong": "연희동"},
+        {"question": "예전 질문"},
+        {"conditions": {"주택": "단독"}},
+    ],
+)
+def test_record_from_different_question_or_region_is_rejected(request_change):
+    # 예전 지역으로 찾은 후보를 지금 문항의 정답으로 채점하면 안 된다
+    old_request = {
+        "question": "합성 질문",
+        "district": None,
+        "dong": None,
+        "conditions": {},
+        **request_change,
+    }
+    results = [
+        result("q1", "A", ["row-1"], request=old_request),
+        result("q2", "A", ["row-9"]),
+    ]
+    with pytest.raises(RetrievalMetricError):
+        hit_rate_by_configuration(results, CASES, expect("A"))
+
+
+def test_failed_run_without_record_still_counts_as_miss_after_request_check():
+    # 기록 없는 실행 실패는 대조할 요청이 없으므로 그대로 0점
+    results = [result("q1", "A", None), result("q2", "A", ["row-9"])]
+    assert hit_rate_by_configuration(results, CASES, expect("A"))["A"] == (
+        ConfigurationHitRate(hits=1, cases=2, rate=0.5)
+    )
 
 
 def test_duplicate_case_ids_in_case_list_are_rejected():
