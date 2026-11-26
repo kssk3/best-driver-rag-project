@@ -139,7 +139,7 @@ PYTHON
 
 ### 승인 후 실제 모델로 한 문항 채점
 
-승인 후 한 문항의 모델 스모크를 실행하려면 위 명령에서 새 출력 폴더를 지정하고 `--case-id p04-colors-trick --judge`를 추가한다. 팀 고정 판단 모델인 `gpt-6-luna`에 접근할 수 있는 `OPENAI_API_KEY`가 필요하다. 저장된 질문·답변에서 진술을 추출하고, 진술이 있으면 생성 입력 근거로 지지 여부를 판정한다(답변 한 건당 최대 2회, 자동 재시도 0회). 검색·임베딩·답변 재생성은 호출하지 않는다. 필수 사실 충족은 스냅샷의 채점 메모와, 표시한 인용의 타당성은 인용한 원문과 각각 대조한다. [Ragas Faithfulness](https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/faithfulness/)
+승인 후 한 문항의 모델 스모크를 실행하려면 위 명령에서 새 출력 폴더를 지정하고 `--case-id p04-colors-trick --judge`를 추가한다. 팀 고정 판단 모델인 `gpt-6-luna`에 접근할 수 있는 `OPENAI_API_KEY`가 필요하다. 저장된 질문·답변에서 진술을 추출하고, 진술이 있으면 생성 입력 근거로 지지 여부를 판정한다(답변 한 건당 최대 2회, 자동 재시도 0회). 팀 공통 옵션은 HTTP 리다이렉트를 따라가지 않는다. 예를 들어 근거 대조 중 308을 받으면 해당 답변은 빈 점수와 `judge_verdicts_http_308`로 기록한다. 검색·임베딩·답변 재생성은 호출하지 않는다. 필수 사실 충족은 스냅샷의 채점 메모와, 표시한 인용의 타당성은 인용한 원문과 각각 대조한다. [Ragas Faithfulness](https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/faithfulness/)
 
 ### 승인 후 Langfuse 업로드
 

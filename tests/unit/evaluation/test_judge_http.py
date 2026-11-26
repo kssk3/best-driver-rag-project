@@ -33,27 +33,50 @@ def mock_completion(content):
 
 
 @pytest.mark.parametrize(
-    ("scenario", "status", "score", "reason"),
+    ("scenario", "status", "score", "reason", "expected_calls"),
     [
-        ("supported", "scored", "1.0", ""),
-        ("unsupported", "scored", "0.0", ""),
-        ("statements_http", "scorer_error", "", "judge_statements_http_429"),
-        ("verdicts_schema", "scorer_error", "", "judge_verdicts_invalid_response"),
-        ("statements_connect", "scorer_error", "", "judge_statements_connection"),
+        ("setup_missing_key", "scorer_error", "", "judge_setup_error", 0),
+        ("supported", "scored", "1.0", "", 2),
+        ("unsupported", "scored", "0.0", "", 2),
+        ("statements_http", "scorer_error", "", "judge_statements_http_429", 1),
+        ("verdicts_schema", "scorer_error", "", "judge_verdicts_invalid_response", 2),
+        ("statements_redirect", "scorer_error", "", "judge_statements_http_307", 1),
+        ("verdicts_redirect", "scorer_error", "", "judge_verdicts_http_308", 2),
+        ("statements_timeout", "scorer_error", "", "judge_statements_timeout", 1),
+        ("statements_connect", "scorer_error", "", "judge_statements_connection", 1),
     ],
 )
 def test_judge_http_responses(
-    scenario, status, score, reason, tmp_path, monkeypatch, caplog, capsys
+    scenario,
+    status,
+    score,
+    reason,
+    expected_calls,
+    tmp_path,
+    monkeypatch,
+    caplog,
+    capsys,
 ):
     monkeypatch.setenv("OPENAI_API_KEY", "offline-test")
     monkeypatch.setenv("OPENAI_BASE_URL", "https://offline.invalid/v1")
     monkeypatch.setenv("NO_PROXY", "*")
+    if scenario == "setup_missing_key":
+        monkeypatch.delenv("OPENAI_API_KEY")
+        monkeypatch.delenv("OPENAI_ADMIN_KEY", raising=False)
     calls = []
 
     async def handle(self, request):
         assert request.url.host == "offline.invalid"
-        assert json.loads(request.content)["model"] == "gpt-6-luna"
         calls.append(request.url.path)
+        if request.url.path == "/redirected":
+            return httpx2.Response(429, json={"error": {"message": PRIVATE}})
+        assert json.loads(request.content)["model"] == "gpt-6-luna"
+        if scenario == "statements_redirect":
+            return httpx2.Response(307, headers={"Location": "/redirected"})
+        if scenario == "verdicts_redirect" and len(calls) == 2:
+            return httpx2.Response(308, headers={"Location": "/redirected"})
+        if scenario == "statements_timeout":
+            raise httpx2.ReadTimeout(PRIVATE, request=request)
         if scenario == "statements_http":
             return httpx2.Response(429, json={"error": {"message": PRIVATE}})
         if scenario == "statements_connect":
@@ -88,13 +111,11 @@ def test_judge_http_responses(
     ]
     if status == "scored":
         main(args)
-        assert len(calls) == 2
     else:
         with pytest.raises(SystemExit) as error:
             main(args)
         assert error.value.code == 1
-    assert len(calls) == (1 if scenario.startswith("statements_") else 2)
-    assert set(calls) == {"/v1/chat/completions"}
+    assert calls == ["/v1/chat/completions"] * expected_calls
     path = tmp_path / "out/scores.csv"
     with path.open(newline="", encoding="utf-8") as f:
         (row,) = csv.DictReader(f)

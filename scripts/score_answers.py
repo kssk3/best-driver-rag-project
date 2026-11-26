@@ -19,7 +19,7 @@ async def _run(args):
             nonlocal metric
             if metric is None:
                 os.environ["RAGAS_DO_NOT_TRACK"] = "true"
-                from openai import AsyncOpenAI
+                from openai import AsyncOpenAI, DefaultAsyncHttpxClient
                 from ragas.llms import llm_factory
 
                 from src.evaluation.ragas_judge import ArchivedFaithfulness, judge_stage
@@ -30,7 +30,13 @@ async def _run(args):
                 logger.setLevel(logging.CRITICAL + 1)
                 with judge_stage("setup"):
                     client = await stack.enter_async_context(
-                        AsyncOpenAI(max_retries=0, timeout=30)
+                        AsyncOpenAI(
+                            max_retries=0,
+                            timeout=30,
+                            http_client=DefaultAsyncHttpxClient(follow_redirects=False)
+                            if args.judge
+                            else None,
+                        )
                     )
                     llm = llm_factory(
                         judge_model, client=client, max_retries=0 if args.judge else 1
