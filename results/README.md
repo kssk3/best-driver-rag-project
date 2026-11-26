@@ -159,6 +159,8 @@ uv run --locked --env-file .env python -m scripts.upload_scores \
 
 질문 실행의 자동 추적은 기본값이 꺼짐이다. 팀 프로젝트에 모델 입출력(프롬프트와 근거 포함)을 보낼 실행에서만 `RAG_LANGFUSE_TRACE=1`을 설정한다. 예를 들어 기존 `uv run --locked --env-file .env python -m scripts.evaluate …` 명령 앞에 이 변수를 붙인다. 공용 채팅 어댑터가 요청별 콜백을 사용하므로 답변 생성과 C 재정렬을 같은 trace에서 확인할 수 있다. CLI는 종료 전에 버퍼를 전송한다. 나중에 같은 `run_id`의 저장 답변을 채점해 올리면 실행과 판정을 같은 trace에서 조회할 수 있다.
 
+모델 응답이 사용량을 제공하면 각 채팅 호출의 **Generation**에서 입력·출력 토큰을 확인할 수 있다. Langfuse는 기록된 모델 이름과 적용 시점에 맞는 단가로 비용을 계산한다. 저장 파일만 업로드한 과거 실행, 질의 임베딩, 별도 Ragas 채점 호출의 토큰은 이 콜백의 집계 범위 밖이다. [Langfuse 토큰·비용 안내](https://langfuse.com/docs/observability/features/token-and-cost-tracking)
+
 ### 승인 후 Langfuse 업로드
 
 운영 중인 EC2에 접속할 때는 [팀 Langfuse 설정](../docs/TEAM-SETUP.md#팀-langfuse-설정)을 따른다. 아래 예시는 점수만 전송할 때 사용한다.
