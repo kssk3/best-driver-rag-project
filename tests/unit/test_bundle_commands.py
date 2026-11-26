@@ -64,6 +64,29 @@ def test_search_filters_region_before_ranking():
         rank_entries(index, [1.0], "서대문구", 1)
 
 
+def test_search_cli_skips_excluded_annex_rows():
+    # 송파 시행규칙 [별표 4] 2017 요일표(table-2)는 A·B·C처럼 CLI에서도 빠져야 한다.
+    def chunk(chunk_id, location):
+        return Chunk(
+            chunk_id=chunk_id,
+            source_document_id="songpa-rules:attachment:121237861",
+            source_document_version="v1",
+            title="송파구 시행규칙 별표 4",
+            content_format="json",
+            content='{"text":"test"}',
+            source_url="https://example.org/",
+            source_location=location,
+            scope_type="district",
+            districts=["송파구"],
+            chunking_version="test",
+        )
+
+    chunks = [chunk("old-schedule", "table-2/row-1"), chunk("other", "table-1/row-1")]
+    index = build_index(chunks, DemoHashEmbeddings(4))
+    matches = rank_entries(index, index.entries[0].vector, "송파구", 10)
+    assert [m["chunk"]["chunk_id"] for m in matches] == ["other"]
+
+
 def test_input_failure_records_stage_and_does_not_claim_completion(tmp_path):
     args = SimpleNamespace(
         bundle=tmp_path / "missing",
