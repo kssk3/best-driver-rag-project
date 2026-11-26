@@ -1,0 +1,2 @@
+run_id,case_id,variant,rewrite_enabled,status,answer_correct,citation_valid,absence_ok,answer_correct_reason,citation_valid_reason,absence_ok_reason,judge_model
+f771fc51fa5d4a72a4b673d7fd829eff,test-d10-sp-reusable-bag-corrected,C,true,answered,1,1,,구청장의 재사용 종량제봉투 제작 가능성과 유통매장의 판매방법 개선 및 고객 홍보 추진을 모두 담고 있습니다.,"재사용 종량제봉투의 제작·규격·판매 촉진·광고 및 비용 분담 내용은 제17조의2에, 지정 판매소에서의 구입과 재사용봉투 가격은 제19조 및 별표에 근거한다.",,gpt-6-luna

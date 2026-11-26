@@ -136,5 +136,7 @@ Use a new output directory for each benchmark run. The full test command is `uv 
 - [검사와 의존성 관리](docs/CI-AND-DEPENDENCIES.md): pytest, Codecov, Dependabot과 Gitleaks
 - [출처 목록 로더](docs/source-manifest-loader.md): `sources.json` 필드와 첨부 관계 읽기
 - [공통 기반 최소 인계본](docs/handoff.md): 입력 규격, API, 실행 명령, 현재 한계와 검증 결과
+- [문서 목록](docs/documents.md), [데이터 이용과 보안 점검](docs/data-usage.md): 자료의 출처·이용 조건과 외부 모델 이용 결정
+- [비교 보고서](report.md), [평가셋 안내](eval/README.md), [재현 방법](docs/reproduction.md), [시연 질문](docs/demo-script.md), [기여 기록](contributions.md): 제출 자료
 
 통합 기준 브랜치는 `dev`다. 작업 브랜치는 `feature/<작성자>/<작업명>`으로 만들고, 검증 후 `dev`를 대상으로 PR을 연다. 합성 검증 자료는 `tests/fixtures/`에 있으며 실제 최종 평가셋과 품질 평가 결과는 포함되어 있지 않다.

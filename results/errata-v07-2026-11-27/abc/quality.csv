@@ -1,0 +1,4 @@
+run_id,case_id,variant,rewrite_enabled,status,answer_correct,citation_valid,absence_ok,answer_correct_reason,citation_valid_reason,absence_ok_reason,judge_model
+67530b0bab074a5394960067d22b8104,test-v07-sd-food-container-apartment-corrected,A,false,answered,1,1,,"공동주택 120리터 음식물류 전용용기 납부필증의 판매이윤이 1,080원이라고 답했습니다.","근거에 음식물류 전용용기 납부필증의 공동주택 120ℓ 판매이윤이 1,080원으로 기재되어 있습니다.",,gpt-6-luna
+d0a32bb368114b50b81deba15a353ac6,test-v07-sd-food-container-apartment-corrected,B,false,answered,1,1,,"공동주택 120리터 납부필증의 판매이윤이 1,080원이라고 답했습니다.","근거에 음식물류 전용용기 납부필증의 공동주택 120ℓ 판매이윤이 1,080원으로 제시되어 있습니다.",,gpt-6-luna
+37b6d0a3a1cc4803aec37e9d9c6fb5c3,test-v07-sd-food-container-apartment-corrected,C,false,answered,1,1,,"공동주택 120리터 음식물류 전용용기 납부필증의 판매이윤이 1,080원이라고 답했습니다.","근거에 공동주택용 음식물류 전용용기 납부필증 120ℓ의 판매이윤이 1,080원으로 제시되어 있습니다.",,gpt-6-luna
