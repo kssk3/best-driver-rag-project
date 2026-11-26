@@ -18,6 +18,7 @@ from pydantic import ValidationError
 from ragas.metrics.collections import Faithfulness
 
 from src.evaluation.answer_metrics import JudgeError
+from src.evaluation.judgment_details import JudgmentDetails, Verdict
 
 
 def _error_kind(error: BaseException) -> str:
@@ -59,10 +60,20 @@ def judge_stage(stage: str):
 class ArchivedFaithfulness(Faithfulness):
     """Ragas의 프롬프트, 재시도 설정 및 점수 계산을 그대로 사용한다."""
 
+    details: JudgmentDetails | None = None
+
     async def _create_statements(self, question, response):
         with judge_stage("statements"):
-            return await super()._create_statements(question, response)
+            result = await super()._create_statements(question, response)
+            if self.details is not None:
+                self.details.statements = list(result)
+            return result
 
     async def _create_verdicts(self, statements, context):
         with judge_stage("verdicts"):
-            return await super()._create_verdicts(statements, context)
+            result = await super()._create_verdicts(statements, context)
+            if self.details is not None:
+                self.details.verdicts = [
+                    Verdict(**item.model_dump()) for item in result.statements
+                ]
+            return result

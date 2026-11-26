@@ -14,7 +14,7 @@
 
 답변 작업 브랜치의 색상표 실험에서는 검색 결과 JSON과 그 결과를 사용한 답변 실행 JSON이 따로 생긴다. 답변 기록의 `model_input_chunk_ids`를 검색 순위와 대조하고 `response.citations`에서 실제 인용을 확인한다. 저장된 후보를 다시 사용한 답변 실행의 유형은 `fixed_evidence`다. [실행 명령과 판정 기준](../eval/README.md#색상표-개발-문항-실행)
 
-최초 실패, 재시도와 변경 후 추가 실험은 별도로 남긴다. `RunRecord.duration_ms`는 기록 파일 저장 전까지의 파이프라인 시간이며 리라이트 시간을 포함한다. 토큰 사용량과 API 비용은 자동 수집하지 않는다. Ragas 사후 평가 시간은 아래의 별도 채점 명령이 기록한다. 합성 데모는 `run_kind="demo"`로 기록하며 실제 검색/생성 결과와 구분한다.
+최초 실패, 재시도와 변경 후 추가 실험은 별도로 남긴다. `RunRecord.duration_ms`는 기록 파일 저장 전까지의 파이프라인 시간이며 리라이트 시간을 포함한다. 실행 JSON에는 실행 전체의 토큰 사용량·API 비용 합계가 없다. Ragas 사후 평가 시간은 아래의 별도 채점 명령이 기록한다. 합성 데모는 `run_kind="demo"`로 기록하며 실제 검색/생성 결과와 구분한다.
 
 이 폴더 전체를 Git에서 제외하지 않는다. 제출용 기록은 비밀값과 공유 가능 여부를 검토해 포함하며, 큰 기록은 관리 위치, 버전과 접근 방법을 남긴다. 로컬 실험용 `local/`은 제외한다. [평가 기준](../docs/problem.md)을 기준으로 비교하며 결과를 검색 색인에 넣지 않는다.
 
@@ -141,9 +141,27 @@ PYTHON
 
 승인 후 한 문항의 모델 스모크를 실행하려면 위 명령에서 새 출력 폴더를 지정하고 `--case-id p04-colors-trick --judge`를 추가한다. 팀 고정 판단 모델인 `gpt-6-luna`에 접근할 수 있는 `OPENAI_API_KEY`가 필요하다. 저장된 질문·답변에서 진술을 추출하고, 진술이 있으면 생성 입력 근거로 지지 여부를 판정한다(답변 한 건당 최대 2회, 자동 재시도 0회). 팀 공통 옵션은 HTTP 리다이렉트를 따라가지 않는다. 예를 들어 근거 대조 중 308을 받으면 해당 답변은 빈 점수와 `judge_verdicts_http_308`로 기록한다. 검색·임베딩·답변 재생성은 호출하지 않는다. 필수 사실 충족은 스냅샷의 채점 메모와, 표시한 인용의 타당성은 인용한 원문과 각각 대조한다. [Ragas Faithfulness](https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/faithfulness/)
 
+### 진술별 Faithfulness 판정 확인
+
+새 출력 폴더에서 `scripts.score_answers --judge`를 실행하면 `scores.csv`와 같은 위치에 `judgment-details.jsonl`이 생긴다. 실제 채점에 들어간 각 실행의 `model_input_chunk_ids`는 생성기에 넘긴 순서다. `statements`는 추출된 진술 목록이고 `verdicts`는 판단 모델이 돌려준 진술·지지 여부(1/0)·사유다. 두 목록은 각각 반환된 순서와 문구를 보존한다. 사유는 전체 근거에 대한 모델의 설명이다. 단계가 결과를 돌려주기 전에 실패하면 그 목록은 `null`, 반환한 항목이 없으면 `[]`로 기록한다. 기존 점수만 있는 평가에서는 당시 판정 사유를 복원할 수 없다.
+
+팀 EC2로 상세를 전송할 때는 프로젝트 루트의 `.env`에 `LANGFUSE_BASE_URL`, `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`를 설정한다. 아래에서 `judged`는 다음 채점으로 새로 만든 결과 폴더 경로로 바꾼다.
+
+```sh
+uv run --locked --env-file .env python -m scripts.upload_scores \
+  --scores judged/scores.csv --judgments judged/judgment-details.jsonl \
+  --report judged/upload-1.csv --upload
+```
+
+팀 프로젝트에서 해당 trace를 열고 **archived-run → faithfulness → Output**을 확인한다. `scorer_error`와 `no_score`는 확보한 상세만 올리고 숫자 점수는 건너뛴다. 재전송할 때 같은 두 입력 파일과 새 보고서명을 사용한다. `--judgments`를 생략하면 기존 메타데이터 전송 방식을 사용한다.
+
+### 질문 실행 중 LangChain 추적
+
+질문 실행의 자동 추적은 기본값이 꺼짐이다. 팀 프로젝트에 모델 입출력(프롬프트와 근거 포함)을 보낼 실행에서만 `RAG_LANGFUSE_TRACE=1`을 설정한다. 예를 들어 기존 `uv run --locked --env-file .env python -m scripts.evaluate …` 명령 앞에 이 변수를 붙인다. 공용 채팅 어댑터가 요청별 콜백을 사용하므로 답변 생성과 C 재정렬을 같은 trace에서 확인할 수 있다. CLI는 종료 전에 버퍼를 전송한다. 나중에 같은 `run_id`의 저장 답변을 채점해 올리면 실행과 판정을 같은 trace에서 조회할 수 있다.
+
 ### 승인 후 Langfuse 업로드
 
-팀 서버의 HTTPS 주소, 배포 구성과 점수 조회 방법은 [팀 서버 Docker 실행 안내](../deploy/langfuse/README.md)를 따른다.
+운영 중인 EC2에 접속할 때는 [팀 Langfuse 설정](../docs/TEAM-SETUP.md#팀-langfuse-설정)을 따른다. 아래 예시는 점수만 전송할 때 사용한다.
 
 점수가 저장된 후 별도 명령으로 실행한다. 기본은 네트워크 없는 점검이다. `--report`에는 매 시도마다 새 파일을 지정한다. 정상 상태로 기록된 미채점 행은 건너뛴다. 알 수 없는 상태나 상태와 점수가 모순되는 행은 실패로 기록한다. 예전에 만든 CSV에 같은 평가·실행·지표로 유효한 점수가 여러 개 있으면 첫 행만 전송 대상으로 삼는다. 뒤의 행은 `duplicate_score_identity`로 기록한다. 같은 CSV 전체를 새 보고서로 다시 전송하는 동작은 지원한다.
 

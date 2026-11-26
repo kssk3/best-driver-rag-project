@@ -339,3 +339,58 @@ def test_only_first_valid_row_for_score_id_is_published(
             1.0,
         ]
     assert scores.read_bytes() == original
+
+
+def test_explicit_judgments_share_parent_and_keep_score_identity(tmp_path):
+    score_path = tmp_path / "scores.csv"
+    write_scores(score_path)
+    with score_path.open(newline="") as f:
+        records = list(csv.DictReader(f))
+    details = tmp_path / "details.jsonl"
+
+    def detail(row):
+        return dict(
+            evaluation_id=row["evaluation_id"],
+            run_id=row["run_id"],
+            metric="faithfulness",
+            attempt_index=int(row["attempt_index"]),
+            model_input_chunk_ids=["chunk2", "chunk1"],
+            statements=["a"],
+            verdicts=[{"statement": "a", "reason": "missing", "verdict": 0}],
+        )
+
+    # 별도 실행의 무점수 시도도 진단 내용을 전송한다.
+    records[1]["run_id"] = "other"
+    with score_path.open("w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=records[0])
+        w.writeheader()
+        w.writerows(records)
+    details.write_text("".join(json.dumps(detail(r)) + "\n" for r in records))
+    calls = []
+
+    def post(path, payload):
+        calls.append((path, payload))
+        return True
+
+    for i in range(2):
+        assert tracing.publish_scores(
+            score_path, tmp_path / f"r{i}.csv", post, judgments=details
+        )
+    assert calls[:3] == calls[3:]
+    assert [p for p, _ in calls[:3]] == [tracing.TRACES, tracing.SCORES, tracing.TRACES]
+    original, score = tracing._payloads(records[0])
+    assert calls[1][1] == [score]
+    parent, child = calls[0][1]["resourceSpans"][0]["scopeSpans"][0]["spans"]
+    assert parent == original["resourceSpans"][0]["scopeSpans"][0]["spans"][0]
+    assert (
+        child["traceId"] == score["traceId"]
+        and child["parentSpanId"] == parent["spanId"]
+    )
+    output = json.loads(child["attributes"][-1]["value"]["stringValue"])
+    assert output["score"] == 0 and output["verdicts"][0]["reason"] == "missing"
+    details.write_text(json.dumps(detail(records[1])))
+    with pytest.raises(ValueError, match="누락"):
+        tracing.publish_scores(
+            score_path, tmp_path / "missing.csv", post, judgments=details
+        )
+    assert len(calls) == 6

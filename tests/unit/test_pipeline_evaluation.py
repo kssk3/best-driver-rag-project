@@ -522,3 +522,75 @@ def test_duplicate_json_keys_are_rejected(tmp_path):
     path.write_text('[{"case_id":"a","case_id":"b","question":"Q"}]', encoding="utf-8")
     with pytest.raises(EvaluationCaseError, match="중복 JSON"):
         load_evaluation_cases(path)
+
+
+def test_concurrent_langfuse_callbacks_follow_each_pipeline_run(monkeypatch):
+    from collections import Counter
+    from concurrent.futures import ThreadPoolExecutor
+    from threading import Barrier
+
+    from langchain_core.language_models.fake_chat_models import FakeListChatModel
+    from langfuse import Langfuse
+    from opentelemetry.sdk.trace import TracerProvider
+    from opentelemetry.sdk.trace.export.in_memory_span_exporter import (
+        InMemorySpanExporter,
+    )
+
+    from src.infrastructure.chat_models import invoke_chat
+    from src.observability.live import current_handler, flush_traces
+    from src.observability.tracing import trace_id_for_run
+
+    monkeypatch.delenv("OTEL_SDK_DISABLED", raising=False)
+    monkeypatch.setenv("RAG_LANGFUSE_TRACE", "1")
+    monkeypatch.setenv("LANGFUSE_BASE_URL", "https://langfuse.invalid")
+    monkeypatch.setenv("LANGFUSE_PUBLIC_KEY", "pk-test-concurrent")
+    monkeypatch.setenv("LANGFUSE_SECRET_KEY", "sk-test-concurrent")
+    exporter = InMemorySpanExporter()
+    provider = TracerProvider()
+    client = Langfuse(
+        public_key="pk-test-concurrent",
+        secret_key="sk-test-concurrent",
+        base_url="https://langfuse.invalid",
+        span_exporter=exporter,
+        tracer_provider=provider,
+    )
+    barrier = Barrier(3)
+
+    def run(variant):
+        chat = FakeListChatModel(responses=["fixture"])
+
+        def search(query, **kwargs):
+            if variant == "C":
+                invoke_chat(chat, "rerank")
+            return retrieve(query, **kwargs)
+
+        observed = []
+
+        def answer(req, evidence):
+            barrier.wait(timeout=20)
+            invoke_chat(chat, req.question)
+            observed.append(current_handler().last_trace_id)
+            return generate(req, evidence)
+
+        pipe = RAGPipeline(
+            resolver=resolve,
+            retriever=search,
+            generator=answer,
+            options=PipelineOptions(variant=variant),
+        )
+        record = pipe.run(PipelineRequest(question="테스트 질문", district="송파구"))
+        trace_id = trace_id_for_run(record.run_id)
+        assert observed == [trace_id] and current_handler() is None
+        return trace_id
+
+    try:
+        with ThreadPoolExecutor(max_workers=3) as pool:
+            ids = list(pool.map(run, "ABC"))
+        flush_traces()
+        counts = Counter(
+            format(span.context.trace_id, "032x")
+            for span in exporter.get_finished_spans()
+        )
+        assert [counts[id] for id in ids] == [2, 2, 3]
+    finally:
+        client.shutdown()

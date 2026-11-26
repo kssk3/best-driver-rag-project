@@ -36,6 +36,8 @@ def mock_completion(content):
     ("scenario", "status", "score", "reason", "expected_calls"),
     [
         ("setup_missing_key", "scorer_error", "", "judge_setup_error", 0),
+        ("mixed", "scored", "0.5", "", 2),
+        ("empty", "no_score", "", "non_finite_value", 1),
         ("supported", "scored", "1.0", "", 2),
         ("unsupported", "scored", "0.0", "", 2),
         ("statements_http", "scorer_error", "", "judge_statements_http_429", 1),
@@ -82,7 +84,27 @@ def test_judge_http_responses(
         if scenario == "statements_connect":
             raise httpx2.ConnectError(PRIVATE, request=request)
         if len(calls) == 1:
-            return mock_completion({"statements": ["one claim"]})
+            claims = {"mixed": ["one claim", "another claim"], "empty": []}.get(
+                scenario, ["one claim"]
+            )
+            return mock_completion({"statements": claims})
+        if scenario == "mixed":
+            return mock_completion(
+                {
+                    "statements": [
+                        {
+                            "statement": "one claim",
+                            "verdict": 1,
+                            "reason": "fixed evidence",
+                        },
+                        {
+                            "statement": "reworded claim",
+                            "verdict": 0,
+                            "reason": "missing evidence",
+                        },
+                    ]
+                }
+            )
         if scenario == "verdicts_schema":
             return mock_completion({"statements": PRIVATE})
         return mock_completion(
@@ -123,5 +145,28 @@ def test_judge_http_responses(
     assert row["judge_model"] == "gpt-6-luna"
     assert (row["run_id"], row["case_id"]) == (attempt["run_id"], CASE_ID)
     assert (row["status"], row["score"], row["reason"]) == (status, score, reason)
+    detail = json.loads((path.parent / "judgment-details.jsonl").read_text())
+    assert detail["run_id"] == row["run_id"]
+    assert detail["evaluation_id"] == row["evaluation_id"]
+    assert detail["model_input_chunk_ids"] == attempt["record"]["model_input_chunk_ids"]
+    if scenario == "mixed":
+        assert detail["statements"] == ["one claim", "another claim"]
+        assert detail["verdicts"][1] == {
+            "statement": "reworded claim",
+            "verdict": 0,
+            "reason": "missing evidence",
+        }
+    elif scenario == "empty":
+        assert detail["statements"] == [] and detail["verdicts"] is None
+    elif status == "scorer_error":
+        assert detail["statements"] == (
+            ["one claim"] if scenario.startswith("verdicts") else None
+        )
+        assert detail["verdicts"] is None
+    elif status == "scored":
+        assert detail["verdicts"] == [
+            {"statement": "one claim", "verdict": int(float(score)), "reason": "mock"}
+        ]
+    assert PRIVATE not in json.dumps(detail)
     captured = capsys.readouterr()
     assert PRIVATE not in path.read_text() + captured.out + captured.err + caplog.text

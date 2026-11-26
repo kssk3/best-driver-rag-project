@@ -22,6 +22,7 @@ from src.contracts import (
     SearchCandidate,
     StageRecord,
 )
+from src.observability.live import trace_pipeline
 from src.observability.records import RunRecorder
 
 
@@ -91,6 +92,10 @@ class RAGPipeline:
     def run(self, request: PipelineRequest) -> RunRecord:
         """호출마다 새 실행 ID를 만들고 실패도 error 상태의 기록으로 반환한다."""
         run_id = uuid4().hex
+        with trace_pipeline(run_id, self.options.run_kind, self.options.variant):
+            return self._run(request, run_id)
+
+    def _run(self, request: PipelineRequest, run_id: str) -> RunRecord:
         started_at = datetime.now(timezone.utc)
         started = perf_counter()
         # 콜백이 전달받은 객체를 수정해도 원질문, 설정과 검색 원본을 보존한다.

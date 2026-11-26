@@ -5,7 +5,7 @@ import json
 import math
 import os
 from collections.abc import Iterator
-from contextlib import contextmanager
+from contextlib import ExitStack, contextmanager
 from datetime import UTC, datetime, timedelta
 from importlib.metadata import version
 from pathlib import Path
@@ -16,6 +16,7 @@ from uuid import uuid4
 from pydantic import ValidationError
 
 from src.contracts import RunRecord
+from src.evaluation.judgment_details import JudgmentDetails
 
 FIELDS = (
     "evaluation_id attempt_index dataset_id case_id configuration run_id run_kind "
@@ -183,7 +184,9 @@ def _comparison_metadata(
     }
 
 
-async def _score(row, attempt, cases, runs, scorer, seen_run_ids: set[str]):
+async def _score(
+    row, attempt, cases, runs, scorer, seen_run_ids: set[str], details=None
+):
     if not isinstance(attempt, dict):
         raise InputError("invalid_attempt")
     if not isinstance(row["case_id"], str) or not row["case_id"].strip():
@@ -240,7 +243,11 @@ async def _score(row, attempt, cases, runs, scorer, seen_run_ids: set[str]):
         row.update(status="skipped", reason="validate_only")
         return
     try:
-        result = await scorer(**sample)
+        if details is not None:
+            details.model_input_chunk_ids = list(record.model_input_chunk_ids)
+            result = await scorer(details=details, **sample)
+        else:
+            result = await scorer(**sample)
     except JudgeError as error:
         row.update(status="scorer_error", reason=str(error))
         return
@@ -268,6 +275,7 @@ async def score_archive(
     judge_model="",
     scorer=None,
     case_id=None,
+    record_details=False,
 ) -> bool:
     """하나의 새 평가에 속한 각 시도와 지표를 기록한다. 오류가 있으면 False."""
     attempts = json.loads(archive.read_text(encoding="utf-8"))
@@ -298,7 +306,17 @@ async def score_archive(
     output.mkdir(parents=True, exist_ok=False)
     seen_run_ids: set[str] = set()
     ok = True
-    with (output / "scores.csv").open("x", encoding="utf-8", newline="") as stream:
+    with ExitStack() as files:
+        stream = files.enter_context(
+            (output / "scores.csv").open("x", encoding="utf-8", newline="")
+        )
+        sidecar = (
+            files.enter_context(
+                (output / "judgment-details.jsonl").open("x", encoding="utf-8")
+            )
+            if record_details
+            else None
+        )
         writer = csv.DictWriter(stream, fieldnames=FIELDS)
         writer.writeheader()
         for index, attempt in enumerate(attempts, 1):
@@ -323,8 +341,18 @@ async def score_archive(
                 "ragas_version": ragas_version,
                 "judge_model": judge_model,
             }
+            details = (
+                JudgmentDetails(
+                    evaluation_id=evaluation_id,
+                    attempt_index=index,
+                    run_id=row["run_id"],
+                    metric="faithfulness",
+                )
+                if sidecar and row["run_id"]
+                else None
+            )
             try:
-                await _score(row, attempt, by_id, runs, scorer, seen_run_ids)
+                await _score(row, attempt, by_id, runs, scorer, seen_run_ids, details)
             except InputError as error:
                 row.update(status="input_error", reason=str(error))
             except ValidationError:
@@ -336,6 +364,9 @@ async def score_archive(
             )
             row["scored_at_utc"] = datetime.now(UTC).isoformat()
             row["duration_ms"] = round((perf_counter() - start) * 1000, 3)
+            if sidecar and details and details.model_input_chunk_ids:
+                sidecar.write(details.model_dump_json() + "\n")
+                sidecar.flush()
             writer.writerow(row)
             stream.flush()
             if (

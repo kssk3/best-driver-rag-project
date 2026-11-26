@@ -13,16 +13,16 @@ from src.evaluation.answer_metrics import score_archive
 async def _run(args):
     judge_model = "gpt-6-luna" if args.judge else args.judge_model
     async with AsyncExitStack() as stack:
-        metric = None
+        llm = None
 
-        async def ascore(**sample):
-            nonlocal metric
-            if metric is None:
+        async def ascore(*, details, **sample):
+            nonlocal llm
+            from src.evaluation.ragas_judge import ArchivedFaithfulness, judge_stage
+
+            if llm is None:
                 os.environ["RAGAS_DO_NOT_TRACK"] = "true"
                 from openai import AsyncOpenAI, DefaultAsyncHttpxClient
                 from ragas.llms import llm_factory
-
-                from src.evaluation.ragas_judge import ArchivedFaithfulness, judge_stage
 
                 # Instructor는 실패 시 API 응답 본문을 오류 수준으로도 출력한다.
                 logger = logging.getLogger("instructor")
@@ -41,7 +41,8 @@ async def _run(args):
                     llm = llm_factory(
                         judge_model, client=client, max_retries=0 if args.judge else 1
                     )
-                    metric = ArchivedFaithfulness(llm=llm)
+            metric = ArchivedFaithfulness(llm=llm)
+            metric.details = details
             return await metric.ascore(**sample)
 
         return await score_archive(
@@ -51,6 +52,7 @@ async def _run(args):
             case_id=args.case_id,
             judge_model=judge_model or "",
             scorer=ascore if judge_model else None,
+            record_details=bool(judge_model),
         )
 
 
