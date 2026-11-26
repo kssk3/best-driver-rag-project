@@ -130,6 +130,49 @@ def load_pipeline(team_settings: RuntimeSettings | None = None):
     return pipeline
 
 
+# 실행 모드에서 파이프라인을 돌려 결과를 session_state에 둔다. 실패하면 안내를 보이고 False.
+def ask_pipeline(mode: str, request: PipelineRequest) -> bool:
+    try:
+        team_settings = (
+            read_team_settings(TEAM_SETTINGS_PATH) if mode == TEAM_INDEX_MODE else None
+        )
+        record = load_pipeline(team_settings).run(request)
+    except TeamSettingsFileError:
+        st.error(
+            "팀 실행 설정 파일을 불러오지 못했습니다. RAG_CHAT_SETTINGS 경로와 JSON 설정값을 확인하세요."
+        )
+    except MissingEvaluationModelError:
+        st.error("실행 설정의 pipeline.versions.model에 답변 모델 ID를 지정하세요.")
+    except MissingEnvironmentError:
+        st.error("팀 색인 실행에 필요한 OPENAI_API_KEY 환경변수를 설정하세요.")
+    except TeamResourceChangedError:
+        st.error("팀 색인이나 품목 사전이 갱신되었습니다. 다시 질문하세요.")
+    except (OSError, ValueError) as error:
+        if mode != TEAM_INDEX_MODE:
+            st.error(
+                f"데모 색인을 불러오지 못했습니다. 먼저 색인을 만드세요: {INDEX_COMMAND}"
+            )
+        elif (
+            isinstance(error, PipelineConfigurationError)
+            and error.code == "evaluation.unsupported_configuration"
+        ):
+            st.error(
+                '팀 색인 모드의 실행 설정에서 pipeline.variant를 "A"로 지정하세요.'
+            )
+        else:
+            st.error(
+                "팀 색인을 불러오지 못했습니다. 실행 설정의 index_path와 색인 파일을 확인하세요."
+            )
+    else:
+        st.session_state["view"] = run_record_to_view(record)
+        st.session_state["places"] = run_record_to_places(record)
+        st.session_state["asked_question"] = request.question
+        st.session_state["asked_district"] = request.district or ""
+        st.session_state["asked_mode"] = mode
+        return True
+    return False
+
+
 FAVICON_PATH = Path(__file__).parent / ".streamlit" / "favicon.png"
 
 st.set_page_config(page_title="분리당", page_icon=str(FAVICON_PATH), layout="wide")
@@ -174,49 +217,7 @@ with user_tab:
         elif not question.strip():
             st.warning("질문을 입력하세요.")
         else:
-            try:
-                team_settings = (
-                    read_team_settings(TEAM_SETTINGS_PATH)
-                    if mode == TEAM_INDEX_MODE
-                    else None
-                )
-                record = load_pipeline(team_settings).run(
-                    PipelineRequest(question=question, district=district)
-                )
-            except TeamSettingsFileError:
-                st.error(
-                    "팀 실행 설정 파일을 불러오지 못했습니다. RAG_CHAT_SETTINGS 경로와 JSON 설정값을 확인하세요."
-                )
-            except MissingEvaluationModelError:
-                st.error(
-                    "실행 설정의 pipeline.versions.model에 답변 모델 ID를 지정하세요."
-                )
-            except MissingEnvironmentError:
-                st.error("팀 색인 실행에 필요한 OPENAI_API_KEY 환경변수를 설정하세요.")
-            except TeamResourceChangedError:
-                st.error("팀 색인이나 품목 사전이 갱신되었습니다. 다시 질문하세요.")
-            except (OSError, ValueError) as error:
-                if mode != TEAM_INDEX_MODE:
-                    st.error(
-                        f"데모 색인을 불러오지 못했습니다. 먼저 색인을 만드세요: {INDEX_COMMAND}"
-                    )
-                elif (
-                    isinstance(error, PipelineConfigurationError)
-                    and error.code == "evaluation.unsupported_configuration"
-                ):
-                    st.error(
-                        '팀 색인 모드의 실행 설정에서 pipeline.variant를 "A"로 지정하세요.'
-                    )
-                else:
-                    st.error(
-                        "팀 색인을 불러오지 못했습니다. 실행 설정의 index_path와 색인 파일을 확인하세요."
-                    )
-            else:
-                st.session_state["view"] = run_record_to_view(record)
-                st.session_state["places"] = run_record_to_places(record)
-                st.session_state["asked_question"] = question
-                st.session_state["asked_district"] = district
-                st.session_state["asked_mode"] = mode
+            ask_pipeline(mode, PipelineRequest(question=question, district=district))
 
     # 응답 방식을 바꾸면 다른 방식으로 만든 이전 응답은 사용자 화면과 검증 패널 모두에서 숨긴다.
     view = st.session_state.get("view")
@@ -224,10 +225,16 @@ with user_tab:
         view = None
     if view is not None:
         # 입력창이 아니라 제출 당시의 질문·지역으로 그린다.
+        def send_followup(fields: dict) -> None:
+            # 되묻기에 답한 요청을 같은 방식으로 실제 실행한다. 성공하면 새 응답으로 다시 그린다.
+            if ask_pipeline(mode, PipelineRequest(**fields)):
+                st.rerun()
+
         render_response(
             view,
             question=st.session_state.get("asked_question", ""),
             district=st.session_state.get("asked_district", ""),
+            on_followup=None if mode == "예시 응답" else send_followup,
         )
 
     st.divider()

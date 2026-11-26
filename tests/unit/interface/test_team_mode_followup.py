@@ -1,4 +1,4 @@
-"""화면의 세 번째 응답 방식(실행(실제 검색))을 가짜 파이프라인으로 확인한다. 외부 호출은 하지 않는다."""
+"""실행(팀 색인) 모드의 되묻기 흐름을 가짜 파이프라인으로 확인한다. 외부 호출은 하지 않는다."""
 
 import importlib
 from datetime import datetime, timezone
@@ -8,6 +8,7 @@ import pytest
 import streamlit as st
 from streamlit.testing.v1 import AppTest
 
+from src.common.env import MissingEnvironmentError
 from src.contracts import (
     Chunk,
     Citation,
@@ -21,12 +22,14 @@ from src.contracts import (
 
 APP_PATH = Path(__file__).parent.parent.parent.parent / "app.py"
 RUNTIMES = "src.evaluation.answer_experiments.answer_evaluation_runtimes"
-REAL_MODE = "실행(실제 검색)"
+TEAM_MODE = "실행(팀 색인)"
 
 
 @pytest.fixture(autouse=True)
-def _clear_pipeline_cache():
-    st.cache_resource.clear()  # load_pipeline의 캐시가 테스트끼리 새지 않게 한다
+def _team_mode_and_clear_cache(monkeypatch):
+    # 팀 색인 모드는 설정 경로 환경변수가 있어야 라디오에 나타난다.
+    monkeypatch.setenv("RAG_CHAT_SETTINGS", "configs/team-a-rewrite-chat.json")
+    st.cache_resource.clear()  # 파이프라인 캐시가 테스트끼리 새지 않게 한다
     yield
     st.cache_resource.clear()
 
@@ -73,76 +76,11 @@ def _real_record() -> RunRecord:
     )
 
 
-class _FakePipeline:
-    def run(self, request):
-        return _real_record()
-
-
-def _ask_in_real_mode(question: str) -> AppTest:
+def _ask_in_team_mode(question: str) -> AppTest:
     app = AppTest.from_file(str(APP_PATH), default_timeout=10).run()
-    app.radio[0].set_value(REAL_MODE).run()
+    app.radio[0].set_value(TEAM_MODE).run()
     app.text_input[0].set_value(question)
     return app.button[0].click().run()
-
-
-def test_radio_offers_three_modes_and_starts_on_the_fixture() -> None:
-    app = AppTest.from_file(str(APP_PATH), default_timeout=10).run()
-
-    assert app.radio[0].options == ["예시 응답", "실행(합성 데모)", REAL_MODE]
-    assert app.radio[0].value == "예시 응답"
-
-
-def test_real_mode_uses_the_real_runtime_with_its_own_runs_path_and_shows_a_notice(
-    monkeypatch,
-) -> None:
-    seen = {}
-
-    def fake_create(settings):
-        seen["runs_path"] = settings.runs_path
-        return _FakePipeline()
-
-    monkeypatch.setattr(
-        importlib.import_module(RUNTIMES), "create_a_runtime", fake_create
-    )
-    app = _ask_in_real_mode("피자박스는 어디에 버려요?")
-
-    assert not app.exception
-    assert app.session_state["view"].kind == "real"
-    assert seen["runs_path"].name == "screen-runs"  # 평가 실행 기록과 섞이지 않는다
-    assert any("외부 모델로 전송" in caption.value for caption in app.caption)
-
-
-def test_real_mode_failure_shows_the_error_type_but_never_the_raw_error(
-    monkeypatch,
-) -> None:
-    def boom(settings):
-        raise RuntimeError("sk-secret-key")
-
-    monkeypatch.setattr(importlib.import_module(RUNTIMES), "create_a_runtime", boom)
-    app = _ask_in_real_mode("질문")
-
-    texts = [error.value for error in app.error]
-    assert not app.exception
-    assert any("RuntimeError" in text and "OPENAI_API_KEY" in text for text in texts)
-    assert not any(
-        "prepare_data" in text for text in texts
-    )  # 색인 문제가 아니면 색인을 권하지 않는다
-    assert not any("sk-secret-key" in text for text in texts)
-    assert "view" not in app.session_state
-
-
-def test_real_mode_missing_index_points_to_the_index_command(monkeypatch) -> None:
-    def missing(settings):
-        raise FileNotFoundError("data/processed/x/index-json.json")
-
-    monkeypatch.setattr(importlib.import_module(RUNTIMES), "create_a_runtime", missing)
-    app = _ask_in_real_mode("질문")
-
-    texts = [error.value for error in app.error]
-    assert any("prepare_data" in text for text in texts)
-    assert not any(
-        "index-json.json" in text for text in texts
-    )  # 파일 경로 원문은 숨긴다
 
 
 class _AskThenAnswer:
@@ -164,20 +102,22 @@ class _AskThenAnswer:
             )
             return record.model_copy(update={"response": clarification})
         if self.fail_on_followup:
-            raise RuntimeError("sk-secret-key")
+            raise MissingEnvironmentError("OPENAI_API_KEY")
         return record
 
 
 def _ask_clarification(monkeypatch, pipeline: _AskThenAnswer) -> AppTest:
     monkeypatch.setattr(
-        importlib.import_module(RUNTIMES), "create_a_runtime", lambda s: pipeline
+        importlib.import_module(RUNTIMES),
+        "create_a_catalog_runtime",
+        lambda s: pipeline,
     )
-    app = _ask_in_real_mode("송파구에서 대형폐기물은 어떻게 버려요?")
+    app = _ask_in_team_mode("송파구에서 대형폐기물은 어떻게 버려요?")
     assert any("어느 구 기준" in w.value for w in app.warning)
     return app
 
 
-def test_followup_in_real_mode_is_actually_sent_with_the_confirmed_district(
+def test_followup_in_team_mode_is_actually_sent_with_the_confirmed_district(
     monkeypatch,
 ) -> None:
     pipeline = _AskThenAnswer()
@@ -197,17 +137,17 @@ def test_followup_in_real_mode_is_actually_sent_with_the_confirmed_district(
     )  # 이어지는 되묻기도 이 구를 기준으로 한다
 
 
-def test_followup_failure_keeps_the_form_and_hides_the_raw_error(monkeypatch) -> None:
+def test_followup_failure_shows_the_modes_message_and_keeps_the_form(
+    monkeypatch,
+) -> None:
     pipeline = _AskThenAnswer(fail_on_followup=True)
     app = _ask_clarification(monkeypatch, pipeline)
 
     app.text_input[1].set_value("송파구")
     app.button[1].click().run()
 
-    texts = [error.value for error in app.error]
     assert not app.exception
-    assert any("RuntimeError" in text for text in texts)
-    assert not any("sk-secret-key" in text for text in texts)
+    assert any("OPENAI_API_KEY" in error.value for error in app.error)
     assert any("어느 구 기준" in w.value for w in app.warning)  # 다시 시도할 수 있다
 
 
@@ -237,9 +177,11 @@ def test_unsupported_guidance_has_no_resend_form_and_points_back_to_the_inputs(
     monkeypatch,
 ) -> None:
     monkeypatch.setattr(
-        importlib.import_module(RUNTIMES), "create_a_runtime", lambda s: _Unsupported()
+        importlib.import_module(RUNTIMES),
+        "create_a_catalog_runtime",
+        lambda s: _Unsupported(),
     )
-    app = _ask_in_real_mode("강남구 삼성동에서 대형폐기물은 어떻게 버려요?")
+    app = _ask_in_team_mode("강남구 삼성동에서 대형폐기물은 어떻게 버려요?")
 
     assert not app.exception
     assert any("아직 지원하지 않아요" in w.value for w in app.warning)
