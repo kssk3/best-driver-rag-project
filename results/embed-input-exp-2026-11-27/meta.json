@@ -1,1 +1,1 @@
-{"index": "data/processed/ordinance-v2-openai-small/index-json.json", "rows_changed": 432, "groups": {"exp": "eval/exp/songpa-table-dev.json", "dev": "eval/dev.json"}}
+{"index": "data/processed/ordinance-v2-openai-small/index-json.json", "rows_changed": 432, "groups": {"exp": "eval/exp/songpa-table-dev.json", "dev": "eval/dev.json"}, "reranker_model": "gpt-6-luna", "recorded_after_run": "reranker_model은 실행 때 --reranker-model 기본값(gpt-6-luna)이었다는 사실을 나중에 적었다"}

@@ -1,6 +1,6 @@
 import json
 
-from scripts.score_quality import check_inputs, cited_texts_by_run
+from scripts.score_quality import check_inputs, cited_texts_by_run, run_config
 from src.evaluation.answer_quality import (
     SAFE_REFUSAL,
     parse_verdict,
@@ -247,3 +247,24 @@ def test_check_inputs_compares_an_explicit_empty_citation_list_but_not_a_missing
     assert any("인용 순위" in p for p in problems)  # 실행 기록은 명시적 []
     del runs[0]["citation_ranks_json"]  # 값이 없는 예전 기록은 건너뛴다
     assert check_inputs(runs, candidates, questions, grading) == []
+
+
+def test_recordless_failures_are_told_apart_by_configuration() -> None:
+    runs, candidates, questions, grading = inputs()
+    failures = [
+        {
+            "run_id": f"f{c}",
+            "dataset_id": "d",
+            "case_id": "c1",
+            "variant": "",  # 실행 기록 없이 실패하면 variant가 비어 있다
+            "configuration": c,
+            "rewrite_enabled": "",
+            "status": "error",
+            "candidate_count": "0",
+        }
+        for c in ("A", "B", "C")
+    ]
+    problems = check_inputs(failures, [], questions, {"c1": {}}, allow_subset=True)
+    assert not any("중복" in p for p in problems)
+    assert run_config(failures[0]) == "A"
+    assert run_config({"variant": "B", "configuration": "x"}) == "B"

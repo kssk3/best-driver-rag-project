@@ -68,6 +68,11 @@ def cited_texts_by_run(candidates: list[dict[str, str]]) -> dict[str, list[str]]
     return cited
 
 
+def run_config(run: dict[str, str]) -> str:
+    """구성 이름. 실행 기록 없이 실패한 행은 variant가 비어 있어 configuration으로 구별한다."""
+    return run.get("variant") or run.get("configuration") or ""
+
+
 def check_inputs(
     runs: list[dict[str, str]],
     candidates: list[dict[str, str]],
@@ -120,7 +125,7 @@ def check_inputs(
         )
     seen: dict[tuple[str, str, str], int] = {}
     for r in runs:
-        key = (r["case_id"], r.get("variant", ""), str(r.get("rewrite_enabled", "")))
+        key = (r["case_id"], run_config(r), str(r.get("rewrite_enabled", "")))
         seen[key] = seen.get(key, 0) + 1
     for key, count in seen.items():
         if count > 1:
@@ -157,7 +162,8 @@ def main(argv: list[str] | None = None) -> None:
     grading = load_grading(args.grading)
     questions = {c.case_id: c.question for c in load_evaluation_cases(args.cases)}
     with args.runs.open(encoding="utf-8", newline="") as file:
-        runs = list(csv.DictReader(file))
+        # 실행 기록 없이 실패한 행도 구성(configuration)으로 구별되게 variant를 채운다.
+        runs = [{**r, "variant": run_config(r)} for r in csv.DictReader(file)]
     with args.candidates.open(encoding="utf-8", newline="") as file:
         candidates = list(csv.DictReader(file))
     problems = check_inputs(runs, candidates, questions, grading, args.allow_subset)

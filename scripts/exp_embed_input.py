@@ -154,7 +154,17 @@ def main(argv: list[str] | None = None) -> None:
         writer.writeheader()
         writer.writerows(rows)
     (args.output_dir / "meta.json").write_text(
-        json.dumps({"index": args.index, "rows_changed": changed, "groups": GROUPS}),
+        json.dumps(
+            {
+                "index": args.index,
+                "rows_changed": changed,
+                "groups": GROUPS,
+                "reranker_model": args.reranker_model,
+                "embedding_identity": base.metadata.embedding_identity,
+                "variant_index_id": variant.metadata.index_id,
+                "transform_version": TRANSFORM_VERSION,
+            }
+        ),
         encoding="utf-8",
     )
     for group in GROUPS:
