@@ -220,10 +220,12 @@ with user_tab:
             on_followup=None if view.kind == "fixture" else send_followup,
         )
 
-    st.divider()
-    st.subheader("장소")
-    if "places" in st.session_state:
-        render_places(st.session_state["places"])
+    # 조회할 장소가 없거나 조회 서비스가 아직 연결되지 않았으면 장소 구역을 보여 주지 않는다.
+    places = st.session_state.get("places")
+    if places is not None and places.status != "unavailable":
+        st.divider()
+        st.subheader("장소")
+        render_places(places)
 
 
 with inspection_tab:
