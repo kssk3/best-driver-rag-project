@@ -1,28 +1,15 @@
 """검증 패널 화면 테스트. 합성 예시 응답만 사용한다."""
 
-from pathlib import Path
-
+from screen_helpers import fixture_app, new_app
 from streamlit.testing.v1 import AppTest
-
-APP_PATH = Path(__file__).parent.parent.parent.parent / "app.py"
-
-
-def dev_app() -> AppTest:
-    """예전 사용자 화면의 위젯은 개발자 모드 미리보기 탭으로 옮겨졌다."""
-    app = AppTest.from_file(str(APP_PATH), default_timeout=10)
-    app.session_state["dev"] = True
-    return app
 
 
 def ask(sample_name: str, district: str = "서대문구") -> AppTest:
-    app = dev_app().run()
-    app.selectbox[0].select(district)
-    app.selectbox[1].select(sample_name)
-    return app.button[1].click().run()
+    return fixture_app(sample_name, district=district)
 
 
 def test_panel_asks_for_question_first() -> None:
-    app = dev_app().run()
+    app = new_app().run()
     assert not app.exception
     assert any("먼저 질문" in item.value for item in app.info)
 
@@ -78,10 +65,3 @@ def test_common_scope_candidate_is_labelled_common_not_unknown() -> None:
 
     app = AppTest.from_function(page, default_timeout=10).run()
     assert list(app.dataframe[0].value["지역"]) == ["공통", "알 수 없음"]
-
-
-def test_switching_mode_hides_stale_response_from_inspection_panel() -> None:
-    app = ask("answered")
-    assert not any("먼저 질문" in item.value for item in app.info)
-    app.radio[0].set_value("합성 데모").run()
-    assert any("먼저 질문" in item.value for item in app.info)

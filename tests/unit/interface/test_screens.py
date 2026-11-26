@@ -1,86 +1,64 @@
-"""app.py의 세 화면(랜딩, 결과, 개발자 모드)이 오류 없이 전환되는지 확인한다."""
+"""app.py의 두 화면(랜딩, 결과)과 오른쪽 검증·비교 패널이 오류 없이 전환되는지 확인한다."""
 
-import json
-from pathlib import Path
-
-from streamlit.testing.v1 import AppTest
-
-from src.interface.adapter import to_view_response
-
-ROOT = Path(__file__).parent.parent.parent.parent
-APP_PATH = ROOT / "app.py"
-SAMPLE_PATH = ROOT / "tests" / "fixtures" / "interface" / "sample_responses.json"
-DEMO_MODE = "합성 데모"  # 일반 화면이 쓰는 응답 방식
+from screen_helpers import button, fixture_app, new_app
 
 
-def _run() -> AppTest:
-    app = AppTest.from_file(str(APP_PATH), default_timeout=10).run()
+def _run():
+    app = new_app().run()
     assert not app.exception
     return app
 
 
-def _button(app: AppTest, label: str):
-    return next(button for button in app.button if button.label == label)
-
-
-def test_landing_is_default_and_hides_dev_tabs() -> None:
+def test_landing_is_default_and_shows_dev_panel_beside_it() -> None:
     app = _run()
 
-    assert not app.tabs
-    assert _button(app, "개발자 모드")
+    assert [tab.label for tab in app.tabs] == ["검증 패널", "비교 패널"]
+    assert any("먼저 질문" in item.value for item in app.info)
     assert "view" not in app.session_state
+    assert not app.radio  # 응답 방식 선택은 없다
+
+
+def test_footer_records_that_this_is_an_internal_demo() -> None:
+    app = _run()
+
+    html = " ".join(str(item.value) for item in app.get("html"))
+    assert "내부 데모" in html
 
 
 def test_empty_question_shows_warning_and_stays_on_landing() -> None:
     app = _run()
 
-    _button(app, "물어보기").click().run()
+    button(app, "물어보기").click().run()
 
     assert not app.exception
     assert any("질문을 입력하세요" in warning.value for warning in app.warning)
     assert "view" not in app.session_state
 
 
-def test_result_screen_shows_answer_without_dev_widgets() -> None:
-    raw = json.loads(SAMPLE_PATH.read_text(encoding="utf-8"))["answered"]
-    app = AppTest.from_file(str(APP_PATH), default_timeout=10)
-    app.session_state["view"] = to_view_response(raw, kind="demo")
-    app.session_state["asked_mode"] = DEMO_MODE
+def test_result_screen_shows_answer_and_panel_for_the_same_response() -> None:
+    app = fixture_app("answered", question="가상 질문")
+
+    assert not app.exception
+    assert app.success  # 왼쪽: 답변
+    assert [tab.label for tab in app.tabs] == ["검증 패널", "비교 패널"]
+    assert app.dataframe  # 오른쪽: 같은 응답의 후보 순위
+    assert not any("먼저 질문" in item.value for item in app.info)
+
+
+def test_result_screen_places_follow_the_answer() -> None:
+    app = fixture_app("answered", place_name="found")
+
+    assert not app.exception
+    assert any("장소" in header.value for header in app.subheader)
+    assert any(b.label == "다시 묻기" for b in app.button)
+
+
+def test_response_from_another_mode_is_hidden() -> None:
+    app = new_app()
+    app.session_state["view"] = fixture_app("answered").session_state["view"]
+    app.session_state["asked_mode"] = "다른 방식"
     app.run()
 
     assert not app.exception
-    assert app.success
-    assert not app.tabs
-    assert not app.radio
-
-
-def test_dev_button_opens_dev_mode_with_three_tabs() -> None:
-    app = _run()
-
-    _button(app, "개발자 모드").click().run()
-
-    assert not app.exception
-    assert [tab.label for tab in app.tabs] == [
-        "사용자 화면 미리보기",
-        "검증 패널",
-        "비교 패널",
-    ]
-
-
-def test_dev_query_param_opens_dev_mode() -> None:
-    app = AppTest.from_file(str(APP_PATH), default_timeout=10)
-    app.query_params["dev"] = "1"
-    app.run()
-
-    assert not app.exception
-    assert len(app.tabs) == 3
-
-
-def test_dev_fixture_response_shows_fixture_notice() -> None:
-    app = _run()
-    _button(app, "개발자 모드").click().run()
-
-    _button(app, "질문하기").click().run()
-
-    assert not app.exception
-    assert any("예시(합성)" in caption.value for caption in app.caption)
+    assert not app.success
+    assert any(b.label == "물어보기" for b in app.button)

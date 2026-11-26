@@ -2,10 +2,10 @@
 
 import importlib
 from datetime import datetime, timezone
-from pathlib import Path
 
 import pytest
 import streamlit as st
+from screen_helpers import button, new_app
 from streamlit.testing.v1 import AppTest
 
 from src.common.env import MissingEnvironmentError
@@ -19,16 +19,6 @@ from src.contracts import (
     RunRecord,
     SearchCandidate,
 )
-
-APP_PATH = Path(__file__).parent.parent.parent.parent / "app.py"
-
-
-def dev_app() -> AppTest:
-    """예전 사용자 화면의 위젯은 개발자 모드 미리보기 탭으로 옮겨졌다."""
-    app = AppTest.from_file(str(APP_PATH), default_timeout=10)
-    app.session_state["dev"] = True
-    return app
-
 
 RUNTIMES = "src.evaluation.answer_experiments.answer_evaluation_runtimes"
 TEAM_MODE = "실행"
@@ -86,10 +76,9 @@ def _real_record() -> RunRecord:
 
 
 def _ask_in_team_mode(question: str) -> AppTest:
-    app = dev_app().run()
-    app.radio[0].set_value(TEAM_MODE).run()
+    app = new_app().run()
     app.text_input[0].set_value(question)
-    return app.button[1].click().run()
+    return button(app, "물어보기").click().run()
 
 
 class _AskThenAnswer:
@@ -133,7 +122,7 @@ def test_followup_in_team_mode_is_actually_sent_with_the_confirmed_district(
     app = _ask_clarification(monkeypatch, pipeline)
 
     app.text_input[1].set_value("송파구")
-    app.button[2].click().run()
+    button(app, "다시 질문하기").click().run()
 
     assert not app.exception
     second = pipeline.requests[1]
@@ -153,7 +142,7 @@ def test_followup_failure_shows_the_modes_message_and_keeps_the_form(
     app = _ask_clarification(monkeypatch, pipeline)
 
     app.text_input[1].set_value("송파구")
-    app.button[2].click().run()
+    button(app, "다시 질문하기").click().run()
 
     assert not app.exception
     assert any("OPENAI_API_KEY" in error.value for error in app.error)
@@ -195,32 +184,6 @@ def test_unsupported_guidance_has_no_resend_form_and_points_back_to_the_inputs(
     assert not app.exception
     assert any("아직 지원하지 않아요" in w.value for w in app.warning)
     assert [b.label for b in app.button] == [
-        "개발자 모드 ON",
-        "질문하기",
+        "다시 묻기"
     ]  # 같은 요청을 다시 보내는 버튼이 없다
     assert any("바꿔서 다시 질문" in c.value for c in app.caption)
-
-
-def test_general_screen_uses_the_team_index_and_sends_the_followup(monkeypatch) -> None:
-    pipeline = _AskThenAnswer()
-    monkeypatch.setattr(
-        importlib.import_module(RUNTIMES),
-        "create_a_catalog_runtime",
-        lambda s: pipeline,
-    )
-    app = AppTest.from_file(str(APP_PATH), default_timeout=10).run()
-    app.text_input[0].set_value("송파구에서 대형폐기물은 어떻게 버려요?")
-    next(b for b in app.button if b.label == "물어보기").click().run()
-
-    # 일반 화면은 설정이 있으면 팀 색인(실행)으로 답한다.
-    assert not app.exception
-    assert app.session_state["asked_mode"] == TEAM_MODE
-    assert any("어느 구 기준" in w.value for w in app.warning)
-    assert not app.json  # 예시 미리보기가 아니라 실제로 보낸다
-
-    app.text_input[1].set_value("송파구")
-    next(b for b in app.button if b.label == "다시 질문하기").click().run()
-
-    assert not app.exception
-    assert pipeline.requests[1].district_confirmed
-    assert any("[가상] 실제 검색 답변" in s.value for s in app.success)

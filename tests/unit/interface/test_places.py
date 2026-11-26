@@ -5,6 +5,7 @@ from pathlib import Path
 from urllib.parse import quote
 
 import pytest
+from screen_helpers import fixture_app
 from streamlit.testing.v1 import AppTest
 
 from src.interface.adapter import to_place_result
@@ -21,14 +22,6 @@ FIXTURE_PATH = (
     / "interface"
     / "sample_places.json"
 )
-APP_PATH = Path(__file__).parent.parent.parent.parent / "app.py"
-
-
-def dev_app() -> AppTest:
-    """예전 사용자 화면의 위젯은 개발자 모드 미리보기 탭으로 옮겨졌다."""
-    app = AppTest.from_file(str(APP_PATH), default_timeout=10)
-    app.session_state["dev"] = True
-    return app
 
 
 def load_places() -> dict:
@@ -40,9 +33,7 @@ PLACES = load_places()
 
 
 def pick_places(name: str) -> AppTest:
-    app = dev_app().run()
-    app.selectbox[2].select(name)
-    return app.run()
+    return fixture_app("answered", place_name=name)
 
 
 @pytest.mark.parametrize("name", PLACES)

@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 import streamlit as st
+from screen_helpers import button, new_app
 from streamlit.testing.v1 import AppTest
 
 import src.demo
@@ -31,13 +32,6 @@ from src.interface.adapter import run_record_to_places, run_record_to_view
 
 ROOT = Path(__file__).parent.parent.parent.parent
 APP_PATH = ROOT / "app.py"
-
-
-def dev_app() -> AppTest:
-    """예전 사용자 화면의 위젯은 개발자 모드 미리보기 탭으로 옮겨졌다."""
-    app = AppTest.from_file(str(APP_PATH), default_timeout=10)
-    app.session_state["dev"] = True
-    return app
 
 
 def make_chunk(chunk_id: str, districts: list[str]) -> Chunk:
@@ -193,10 +187,9 @@ def test_demo_pipeline_results_become_views(demo_pipeline) -> None:
 
 def run_app_in_demo_mode(question: str) -> AppTest:
     st.cache_resource.clear()  # 이전 테스트에서 만든 파이프라인이 남지 않게 한다.
-    app = dev_app().run()
-    app.radio[0].set_value("합성 데모").run()
-    app.text_input[0].set_value(question).run()
-    return app.button[1].click().run()
+    app = new_app().run()
+    app.text_input[0].set_value(question)
+    return button(app, "물어보기").click().run()
 
 
 def test_demo_mode_runs_the_pipeline_and_shows_notice(

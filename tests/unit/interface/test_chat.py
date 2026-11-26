@@ -1,29 +1,32 @@
 """질문·답변 화면 테스트. 합성 예시 응답만 사용한다."""
 
 import json
-from pathlib import Path
 
 import pytest
+from screen_helpers import FIXTURES, button, fixture_app
 from streamlit.testing.v1 import AppTest
 
 from src.interface.adapter import Citation
 from src.interface.chat import build_followup_request, format_citation, is_safe_url
 
-APP_PATH = Path(__file__).parent.parent.parent.parent / "app.py"
-
-
-def dev_app() -> AppTest:
-    """예전 사용자 화면의 위젯은 개발자 모드 미리보기 탭으로 옮겨졌다."""
-    app = AppTest.from_file(str(APP_PATH), default_timeout=10)
-    app.session_state["dev"] = True
-    return app
-
 
 def ask(sample_name: str, question: str = "") -> AppTest:
-    app = dev_app().run()
-    app.text_input[0].set_value(question)
-    app.selectbox[1].select(sample_name)
-    return app.button[1].click().run()
+    return fixture_app(sample_name, question=question)
+
+
+def clarification_page(fixtures: str) -> None:
+    # 예시 응답은 실행 모드가 아니라서 되묻기가 요청을 보내지 않고 보여 주기만 한다.
+    import json  # noqa: F811  (from_function은 함수 본문만 복사한다)
+    from pathlib import Path
+
+    from src.interface.adapter import to_view_response
+    from src.interface.chat import render_response
+
+    path = Path(fixtures) / "sample_responses.json"
+    raw = json.loads(path.read_text(encoding="utf-8"))["needs_clarification"]
+    render_response(
+        to_view_response(raw, kind="fixture"), question="가상 질문", district="서대문구"
+    )
 
 
 def test_followup_request_keeps_question_and_district() -> None:
@@ -79,9 +82,11 @@ def test_error_is_not_shown_as_normal_refusal() -> None:
 
 
 def test_followup_form_keeps_original_question_and_district() -> None:
-    app = ask("needs_clarification", question="가상 질문")
-    app.text_input[1].set_value("아파트")
-    app.button[2].click().run()
+    app = AppTest.from_function(
+        clarification_page, args=(str(FIXTURES),), default_timeout=10
+    ).run()
+    app.text_input[0].set_value("아파트")
+    app.button[0].click().run()
     assert not app.exception
     assert json.loads(app.json[0].value) == {
         "question": "가상 질문",
@@ -124,22 +129,11 @@ def test_plain_insufficient_evidence_shows_no_source_list() -> None:
     assert not any("확인한 출처" in item.value for item in app.markdown)
 
 
-def test_followup_uses_submitted_request_not_current_inputs() -> None:
-    app = ask("needs_clarification", question="가상 질문")
-    app.text_input[0].set_value("바뀐 질문")
-    app.selectbox[0].select("송파구")
-    app.text_input[1].set_value("아파트")
-    app.button[2].click().run()
-    assert json.loads(app.json[0].value)["question"] == "가상 질문"
-    assert json.loads(app.json[0].value)["district"] == "서대문구"
-
-
 def test_blank_question_clears_previous_response() -> None:
     app = ask("answered", question="가상 질문")
     assert app.success
-    app.radio[0].set_value("합성 데모").run()
     app.text_input[0].set_value("")
-    app.button[1].click().run()
+    button(app, "다시 묻기").click().run()
     assert not app.success
 
 
@@ -205,21 +199,13 @@ def test_followup_request_sends_district_and_dong_at_top_level_and_confirms_dist
     }
 
 
-def test_switching_mode_hides_response_from_other_mode() -> None:
-    app = ask("answered", question="가상 질문")
-    assert app.tabs[0].success
-    app.radio[0].set_value("합성 데모").run()
-    assert not app.tabs[0].success
-    app.radio[0].set_value("예시 응답").run()
-    assert app.tabs[0].success
-
-
 def test_followup_inputs_are_cleared_for_a_new_request() -> None:
     app = ask("needs_clarification", question="가상 질문")
-    app.text_input[1].set_value("아파트")
-    app.button[2].click().run()
-    app.button[1].click().run()
-    assert app.text_input[1].value == ""
+    app.text_input[1].set_value("아파트").run()
+    assert "followup:housing_type" in app.session_state
+    app.text_input[0].set_value("")
+    button(app, "다시 묻기").click().run()
+    assert not any(key.startswith("followup:") for key in app.session_state)
 
 
 def test_error_shows_pipeline_safe_message_but_not_internal_detail() -> None:

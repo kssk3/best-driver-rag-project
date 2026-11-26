@@ -1,20 +1,10 @@
 """W5(조건 불일치)와 순위 이동 계산 테스트. 합성 값만 사용한다."""
 
-from pathlib import Path
-
+from screen_helpers import new_app, user_mode
 from streamlit.testing.v1 import AppTest
 
 from src.interface.adapter import Candidate, Citation, ViewResponse
 from src.validation import check_response, rank_shifts, stage_names, unchecked_rules
-
-APP_PATH = Path(__file__).parent.parent.parent.parent / "app.py"
-
-
-def dev_app() -> AppTest:
-    """예전 사용자 화면의 위젯은 개발자 모드 미리보기 탭으로 옮겨졌다."""
-    app = AppTest.from_file(str(APP_PATH), default_timeout=10)
-    app.session_state["dev"] = True
-    return app
 
 
 def make_view(**changes) -> ViewResponse:
@@ -139,10 +129,10 @@ def test_rank_shift_skips_candidates_without_that_stage() -> None:
 
 
 def open_panel(view: ViewResponse) -> AppTest:
-    app = dev_app()
+    app = new_app()
     app.session_state["view"] = view
     app.session_state["asked_district"] = "서대문구"
-    app.session_state["asked_mode"] = "예시 응답"  # 앱의 기본 응답 방식
+    app.session_state["asked_mode"] = user_mode()  # 화면이 쓰는 응답 방식
     return app.run()
 
 

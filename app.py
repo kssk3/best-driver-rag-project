@@ -5,7 +5,6 @@
 공용 입출력과 함수 규격은 사용하는 담당자와 합의한 뒤 추가한다.
 """
 
-import json
 from os import getenv
 from pathlib import Path
 
@@ -22,8 +21,6 @@ from src.evaluation.answer_experiments.answer_evaluation_runtimes import (
 from src.interface.adapter import (
     run_record_to_places,
     run_record_to_view,
-    to_place_result,
-    to_view_response,
 )
 from src.interface.chat import render_response
 from src.interface.comparison import (
@@ -33,6 +30,7 @@ from src.interface.comparison import (
 from src.interface.inspection import render_inspection
 from src.interface.map import render_places
 from src.interface.theme import (
+    FOOTER_HTML,
     HERO_HTML,
     HERO_IMAGE,
     SECTIONS_HTML,
@@ -41,24 +39,6 @@ from src.interface.theme import (
 )
 from src.pipeline import PipelineConfigurationError
 from src.rewrite_dictionary import catalog
-
-# [임시] 예시(합성) 응답을 읽는다.
-SAMPLE_PATH = (
-    Path(__file__).parent / "tests" / "fixtures" / "interface" / "sample_responses.json"
-)
-PLACE_SAMPLE_PATH = (
-    Path(__file__).parent / "tests" / "fixtures" / "interface" / "sample_places.json"
-)
-
-
-def load_samples(path: Path = SAMPLE_PATH) -> dict:
-    data = json.loads(path.read_text(encoding="utf-8"))
-    return {key: value for key, value in data.items() if not key.startswith("_")}
-
-
-samples = load_samples()
-place_samples = load_samples(PLACE_SAMPLE_PATH)
-
 
 # 색인 안내 문구
 INDEX_COMMAND = (
@@ -70,8 +50,6 @@ INDEX_COMMAND = (
 PROJECT_ROOT = Path(__file__).resolve().parent
 TEAM_INDEX_MODE = "실행"
 TEAM_SETTINGS_PATH = getenv("RAG_CHAT_SETTINGS", "").strip()
-# 비교 패널이 읽을 scores.csv 경로. 평가마다 새 폴더에 만들어지므로 고정 경로가 없다.
-SCORES_CSV_PATH = getenv("RAG_SCORES_CSV", "").strip()
 # 비교 패널이 읽을 scores.csv 경로. 평가마다 새 폴더에 만들어지므로 고정 경로가 없다.
 SCORES_CSV_PATH = getenv("RAG_SCORES_CSV", "").strip()
 
@@ -146,14 +124,6 @@ def load_pipeline(team_settings: RuntimeSettings | None = None):
 
 
 # 실행 모드에서 파이프라인을 돌려 결과를 session_state에 둔다. 실패하면 안내를 보이고 False.
-GENERIC_ERROR = "지금은 답변을 준비하지 못했습니다. 잠시 후 다시 시도하세요."
-
-
-def show_error(message: str) -> None:
-    # 설정 경로·환경변수·색인 명령 같은 안내는 개발자 모드에서만 보인다.
-    st.error(message if st.session_state.get("dev") else GENERIC_ERROR)
-
-
 # 실행 모드에서 파이프라인을 돌려 결과를 session_state에 둔다. 실패하면 안내를 보이고 False.
 def ask_pipeline(mode: str, request: PipelineRequest) -> bool:
     try:
@@ -162,29 +132,29 @@ def ask_pipeline(mode: str, request: PipelineRequest) -> bool:
         )
         record = load_pipeline(team_settings).run(request)
     except TeamSettingsFileError:
-        show_error(
+        st.error(
             "팀 실행 설정 파일을 불러오지 못했습니다. RAG_CHAT_SETTINGS 경로와 JSON 설정값을 확인하세요."
         )
     except MissingEvaluationModelError:
-        show_error("실행 설정의 pipeline.versions.model에 답변 모델 ID를 지정하세요.")
+        st.error("실행 설정의 pipeline.versions.model에 답변 모델 ID를 지정하세요.")
     except MissingEnvironmentError:
-        show_error("팀 색인 실행에 필요한 OPENAI_API_KEY 환경변수를 설정하세요.")
+        st.error("팀 색인 실행에 필요한 OPENAI_API_KEY 환경변수를 설정하세요.")
     except TeamResourceChangedError:
-        show_error("팀 색인이나 품목 사전이 갱신되었습니다. 다시 질문하세요.")
+        st.error("팀 색인이나 품목 사전이 갱신되었습니다. 다시 질문하세요.")
     except (OSError, ValueError) as error:
         if mode != TEAM_INDEX_MODE:
-            show_error(
+            st.error(
                 f"데모 색인을 불러오지 못했습니다. 먼저 색인을 만드세요: {INDEX_COMMAND}"
             )
         elif (
             isinstance(error, PipelineConfigurationError)
             and error.code == "evaluation.unsupported_configuration"
         ):
-            show_error(
+            st.error(
                 '팀 색인 모드의 실행 설정에서 pipeline.variant를 "A"로 지정하세요.'
             )
         else:
-            show_error(
+            st.error(
                 "팀 색인을 불러오지 못했습니다. 실행 설정의 index_path와 색인 파일을 확인하세요."
             )
     else:
@@ -205,14 +175,12 @@ EXAMPLES = [
     ("🍕 피자박스", "기름 묻은 피자박스는 어디에 버려요?"),
     ("🔋 폐건전지", "폐건전지는 어디에 버려요?"),
 ]
-SAMPLE_MODE = "예시 응답"
 DEMO_MODE = "합성 데모"
-MODES = [SAMPLE_MODE, DEMO_MODE] + ([TEAM_INDEX_MODE] if TEAM_SETTINGS_PATH else [])
-# 일반 화면은 팀 실행 설정이 있으면 그 색인으로, 없으면 합성 데모로 답한다.
+# 화면은 팀 실행 설정이 있으면 그 색인으로, 없으면 합성 데모로 답한다.
 USER_MODE = TEAM_INDEX_MODE if TEAM_SETTINGS_PATH else DEMO_MODE
 
 
-def ask(question, district, mode, sample_name=None) -> bool:
+def ask(question, district) -> bool:
     """질문을 처리해 결과를 session_state에 저장한다. 저장했으면 True."""
     # 새 요청이 실패하거나 비어도 이전 응답이 남아 보이지 않게 지운다.
     for key in ("view", "places", "asked_question", "asked_district", "asked_mode"):
@@ -221,35 +189,26 @@ def ask(question, district, mode, sample_name=None) -> bool:
     for key in [k for k in st.session_state if k.startswith("followup:")]:
         del st.session_state[key]
 
-    if mode == SAMPLE_MODE:
-        st.session_state["view"] = to_view_response(
-            samples[sample_name], kind="fixture"
-        )
-        st.session_state["asked_question"] = question
-        st.session_state["asked_district"] = district
-        st.session_state["asked_mode"] = mode
-        return True
     if not question.strip():
         st.warning("질문을 입력하세요.")
         return False
     with st.spinner("답변을 찾고 있어요..."):  # 실제 검색은 몇 초 걸린다
-        return ask_pipeline(mode, PipelineRequest(question=question, district=district))
+        return ask_pipeline(
+            USER_MODE, PipelineRequest(question=question, district=district)
+        )
 
 
-def send_followup(mode):
-    # 되묻기에 답한 요청을 같은 방식으로 실제 실행한다. 성공하면 새 응답으로 다시 그린다.
-    def send(fields: dict) -> None:
-        with st.spinner("답변을 찾고 있어요..."):
-            sent = ask_pipeline(mode, PipelineRequest(**fields))
-        if sent:
-            st.rerun()
-
-    return send
+def send_followup(fields: dict) -> None:
+    # 되묻기에 답한 요청을 같은 방식으로 실행한다. 성공하면 새 응답으로 다시 그린다.
+    with st.spinner("답변을 찾고 있어요..."):
+        sent = ask_pipeline(USER_MODE, PipelineRequest(**fields))
+    if sent:
+        st.rerun()
 
 
-def current_view(mode):
-    # 응답 방식을 바꾸면 다른 방식으로 만든 이전 응답은 숨긴다.
-    if st.session_state.get("asked_mode") != mode:
+def current_view():
+    # 응답 방식이 바뀐 뒤에는 다른 방식으로 만든 이전 응답을 숨긴다.
+    if st.session_state.get("asked_mode") != USER_MODE:
         return None
     return st.session_state.get("view")
 
@@ -266,7 +225,7 @@ def pick_district():
 
 def search_form(button_label):
     with st.form("search", border=False):
-        text_col, button_col = st.columns([5, 1])
+        text_col, button_col = st.columns([4, 1.5])
         question = text_col.text_input(
             "질문",
             key="question",
@@ -293,22 +252,12 @@ def search_bar(compact=False) -> None:
     if submitted:
         if not district:
             st.warning("지역을 선택하세요.")
-        elif ask(question, district, USER_MODE):
+        elif ask(question, district):
             st.rerun()  # 랜딩에서 결과 화면으로 바꿔 그린다
 
 
-def toggle_dev() -> None:
-    st.session_state["dev"] = not st.session_state["dev"]
-
-
 def render_header() -> None:
-    left, right = st.columns([6, 1], vertical_alignment="center")
-    left.html(brand_html())
-    right.button(
-        "개발자 모드 ON" if st.session_state["dev"] else "개발자 모드",
-        key="dev_btn",
-        on_click=toggle_dev,
-    )
+    st.html(brand_html())
 
 
 def render_landing() -> None:
@@ -326,23 +275,20 @@ def render_landing() -> None:
                     district = st.session_state.get("pick_district")
                     if not district:
                         st.warning("지역을 선택하세요.")
-                    elif ask(question, district, USER_MODE):
+                    elif ask(question, district):
                         st.rerun()
     image_col.image(str(HERO_IMAGE))
     st.html(SECTIONS_HTML)
 
 
 def render_result(view) -> None:
-    if view is None:
-        st.info("질문하면 결과가 여기에 나옵니다.")
-    else:
-        # 입력창이 아니라 제출 당시의 질문·지역으로 그린다.
-        render_response(
-            view,
-            question=st.session_state.get("asked_question", ""),
-            district=st.session_state.get("asked_district", ""),
-            on_followup=send_followup(USER_MODE),
-        )
+    # 입력창이 아니라 제출 당시의 질문·지역으로 그린다.
+    render_response(
+        view,
+        question=st.session_state.get("asked_question", ""),
+        district=st.session_state.get("asked_district", ""),
+        on_followup=send_followup,
+    )
     # 장소는 답변 아래에 이어서 보인다.
     st.subheader("장소")
     if "places" in st.session_state:
@@ -372,56 +318,14 @@ def render_comparison() -> None:
         column.metric(f"방식 {summary.variant}", format_summary(summary))
 
 
-def render_dev() -> None:
-    st.html(
-        '<div class="devbar"><b>개발자 모드</b> 예시 응답, 검증 패널, 비교 패널은 여기서만 보입니다.</div>'
-    )
-    preview_tab, inspection_tab, comparison_tab = st.tabs(
-        ["사용자 화면 미리보기", "검증 패널", "비교 패널"]
-    )
-
-    # 아래 미리보기 탭은 예전 사용자 화면을 그대로 옮긴 것이다.
-    with preview_tab:
-        mode = st.radio("응답 방식", MODES, horizontal=True)
-        district = st.selectbox("지역", DISTRICTS)
-        question = st.text_input("질문")
-
-        sample_name = None
-        if mode == SAMPLE_MODE:
-            sample_name = st.selectbox("예시 응답 고르기 (합성)", list(samples))
-            st.caption("지금은 입력한 구와 질문에 상관없이 선택한 예시가 표현됩니다.")
-        elif mode == TEAM_INDEX_MODE:
-            st.caption("설정한 팀 색인에서 검색해 답변합니다.")
-        else:
-            st.caption(
-                "합성 문서만 검색하는 데모 실행입니다. 실제 RAG 품질이 아닙니다."
-            )
-
-        if st.button("질문하기"):
-            ask(question, district, mode, sample_name)
-
-        view = current_view(mode)
-        if view is not None:
-            render_response(
-                view,
-                question=st.session_state.get("asked_question", ""),
-                district=st.session_state.get("asked_district", ""),
-                on_followup=None if mode == SAMPLE_MODE else send_followup(mode),
-            )
-
-        st.divider()
-        st.subheader("장소")
-        if mode == SAMPLE_MODE:
-            place_name = st.selectbox("예시 장소 고르기 (합성)", list(place_samples))
-            render_places(to_place_result(place_samples[place_name], kind="fixture"))
-        elif "places" in st.session_state:
-            render_places(st.session_state["places"])
-
-    with inspection_tab:
-        render_inspection(view, st.session_state.get("asked_district"))
-
-    with comparison_tab:
-        render_comparison()
+def render_dev_panel(view) -> None:
+    # 내부 데모 전용: 사용자 화면 옆에 항상 보이는 검증·비교 패널.
+    with st.container(key="devpanel"):
+        inspection_tab, comparison_tab = st.tabs(["검증 패널", "비교 패널"])
+        with inspection_tab:
+            render_inspection(view, st.session_state.get("asked_district"))
+        with comparison_tab:
+            render_comparison()
 
 
 st.set_page_config(
@@ -432,16 +336,16 @@ st.set_page_config(
 )
 inject_theme()
 
-if "dev" not in st.session_state:
-    st.session_state["dev"] = st.query_params.get("dev") == "1"
-
 render_header()
-if st.session_state["dev"]:
-    render_dev()
+view = current_view()
+if view is None:
+    render_landing()
 else:
-    view = current_view(USER_MODE)
+    search_bar(compact=True)
+    view = current_view()  # 검색바에서 새 질문이 실패하면 이전 응답이 지워져 있다
     if view is None:
-        render_landing()
+        st.info("질문하면 결과가 여기에 나옵니다.")
     else:
-        search_bar(compact=True)
         render_result(view)
+st.html(FOOTER_HTML)
+render_dev_panel(view)
