@@ -57,6 +57,10 @@ files = [
     "src/generation",
     "src/evaluation/answer_experiments",
     "src/evaluation/retrieval_metrics.py",
+    "src/evaluation/answer_metrics.py",
+    "src/observability/tracing.py",
+    "scripts/score_answers.py",
+    "scripts/upload_scores.py",
     "src/retrieval/regions.py",
     "src/retrieval/rerankers.py",
     "src/retrieval/search.py",
@@ -66,3 +70,12 @@ files = [
 follow_imports = "silent"
 warn_unused_ignores = true
 warn_redundant_casts = true
+
+[[tool.mypy.overrides]]
+module = [
+    "src.evaluation.answer_metrics",
+    "src.observability.tracing",
+    "scripts.score_answers",
+    "scripts.upload_scores",
+]
+check_untyped_defs = true
