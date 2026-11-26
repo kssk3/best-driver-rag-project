@@ -6,7 +6,7 @@ from pathlib import Path
 
 from streamlit.testing.v1 import AppTest
 
-from src.interface.adapter import to_place_result, to_view_response
+from src.interface.adapter import to_view_response
 
 ROOT = Path(__file__).parent.parent.parent.parent
 APP_PATH = ROOT / "app.py"
@@ -19,7 +19,6 @@ def _load(name: str) -> dict:
 
 
 SAMPLES = _load("sample_responses.json")
-PLACE_SAMPLES = _load("sample_places.json")
 
 
 def user_mode() -> str:
@@ -39,15 +38,10 @@ def fixture_app(
     sample_name: str,
     question: str = "",
     district: str = "서대문구",
-    place_name: str | None = None,
 ) -> AppTest:
     """예시 응답을 이미 받은 상태의 화면을 띄운다(질문 입력 없이 결과 화면부터)."""
     app = new_app()
     app.session_state["view"] = to_view_response(SAMPLES[sample_name], kind="fixture")
-    if place_name is not None:
-        app.session_state["places"] = to_place_result(
-            PLACE_SAMPLES[place_name], kind="fixture"
-        )
     app.session_state["asked_question"] = question
     app.session_state["asked_district"] = district
     app.session_state["asked_mode"] = user_mode()

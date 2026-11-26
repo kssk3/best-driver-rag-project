@@ -101,65 +101,6 @@ def to_view_response(raw: dict, kind: ViewKind) -> ViewResponse:
     )
 
 
-PLACE_STATUSES = ("found", "empty", "unavailable", "error")
-
-
-@dataclass(frozen=True)
-class Place:
-    place_id: str
-    name: str
-    address: str | None
-    latitude: float | None  # 숫자가 아니거나 범위 밖이면 None (좌표누락)
-    longitude: float | None
-    source_url: str | None
-    collection_types: list[str]  # 빈 목록은 확인된 종류 없음을 나타냄
-
-
-@dataclass(frozen=True)
-class PlaceResult:
-    status: str  # PLACE_STATUSES
-    kind: ViewKind
-    places: list[Place]
-    error: str | None
-
-
-def _to_coordinate(value: object, limit: float) -> float | None:
-
-    if isinstance(value, bool):
-        return None
-
-    try:
-        number = float(value)
-
-    except (TypeError, ValueError):
-        return None
-
-    # 좌표 값이 숫자이고 -limit~limit 범위 안이면 float, 아니면 None
-    # 위도는 -90 이상 90 이하, 경도는 -180 이상 180 이하일 때만 True
-    return number if -limit <= number <= limit else None
-
-
-def to_place_result(raw: dict, kind: ViewKind) -> PlaceResult:
-
-    status = raw.get("status")
-    if status not in PLACE_STATUSES:
-        raise ValueError(f"알 수 없는 장소 상태: {status!r}")
-
-    places = [
-        Place(
-            place_id=item["place_id"],
-            name=item["name"],
-            address=item.get("address"),
-            latitude=_to_coordinate(item.get("latitude"), 90),
-            longitude=_to_coordinate(item.get("longitude"), 180),
-            source_url=item.get("source_url"),
-            collection_types=list(item.get("collection_types") or []),
-        )
-        for item in raw.get("places", [])
-    ]
-    return PlaceResult(status=status, kind=kind, places=places, error=raw.get("error"))
-
-
 def _kind_of(record: RunRecord) -> ViewKind:
     if record.run_kind in ("demo", "fixed_evidence"):
         return record.run_kind
@@ -217,7 +158,3 @@ def run_record_to_view(record: RunRecord) -> ViewResponse:
             if s.status == "error"
         ],
     )
-
-
-def run_record_to_places(record: RunRecord) -> PlaceResult:
-    return to_place_result(record.response.places.model_dump(), _kind_of(record))

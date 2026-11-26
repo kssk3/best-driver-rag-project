@@ -45,14 +45,6 @@ def test_result_screen_shows_answer_and_panel_for_the_same_response() -> None:
     assert not any("먼저 질문" in item.value for item in app.info)
 
 
-def test_result_screen_places_follow_the_answer() -> None:
-    app = fixture_app("answered", place_name="found")
-
-    assert not app.exception
-    assert any("장소" in header.value for header in app.subheader)
-    assert any(b.label == "다시 묻기" for b in app.button)
-
-
 def test_response_from_another_mode_is_hidden() -> None:
     app = new_app()
     app.session_state["view"] = fixture_app("answered").session_state["view"]

@@ -17,7 +17,6 @@ from src.contracts import (
     PipelineRequest,
     PipelineResponse,
     PlaceLookupResult,
-    PlaceResult,
     ResolvedQuery,
     RunRecord,
     SearchCandidate,
@@ -28,7 +27,7 @@ from src.infrastructure.stores import save_index
 from src.ingestion.chunking import chunk_documents
 from src.ingestion.indexing import build_index
 from src.ingestion.loaders import load_source_documents
-from src.interface.adapter import run_record_to_places, run_record_to_view
+from src.interface.adapter import run_record_to_view
 
 ROOT = Path(__file__).parent.parent.parent.parent
 APP_PATH = ROOT / "app.py"
@@ -127,29 +126,6 @@ def test_clarification_with_ambiguous_dong_asks_for_dong() -> None:
     )
     view = run_record_to_view(make_record("needs_clarification", resolved))
     assert view.required_fields == ["dong"]
-
-
-def test_places_are_converted_with_missing_coordinates() -> None:
-    lookup = PlaceLookupResult(
-        status="found",
-        places=[
-            PlaceResult(
-                place_id="p1",
-                name="[가상] 수거함",
-                address="[가상] 주소",
-                source_url="https://example.invalid/p1",
-            )
-        ],
-    )
-    result = run_record_to_places(make_record(places=lookup))
-    assert result.status == "found"
-    assert result.kind == "demo"
-    assert result.places[0].latitude is None
-    assert result.places[0].collection_types == []
-
-
-def test_unavailable_places_stay_unavailable() -> None:
-    assert run_record_to_places(make_record()).status == "unavailable"
 
 
 @pytest.fixture
