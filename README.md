@@ -4,7 +4,7 @@
 
 팀의 최종 목표는 Streamlit 화면, A/B/C 검색, 동 이름 인식, 질문 다듬기와 getSpot 장소 지도다. 화면과 평가 실행기가 같은 Python RAG 함수를 호출하도록 연결한다.
 
-팀 `dev`에는 지역 제한 A 벡터 검색기, 고정 근거 답변 검증, 공용 채팅 모델 생성·호출 함수가 있다. B/C 검색과 검색부터 모델 답변·인용까지의 서비스 연결은 후속 작업이다. 팀에 병합된 기능과 답변 담당 브랜치에서 확인한 실험은 [현재 도달지점](ROADMAP.md#현재-도달지점)에서 확인한다.
+팀 `dev`에는 지역 제한 A 벡터 검색기, 고정 근거 답변 검증, 공용 채팅 모델 생성·호출 함수가 있다. 공용 평가 CLI에서는 같은 문항을 A/B/C로 실행하고 저장된 답변을 채점할 수 있다. 팀에 병합된 기능과 답변 담당 브랜치에서 확인한 실험은 [현재 도달지점](ROADMAP.md#현재-도달지점)에서 확인한다.
 
 | 구분 | 현재 상태 |
 | --- | --- |
@@ -27,7 +27,7 @@ uv run --locked python -m pytest --version
 
 로컬 uv가 요구 버전보다 낮으면 전역 설치를 바꾸지 않고 `uv tool run --from uv==0.13.9 uv sync --locked`로 같은 환경을 준비할 수 있다. 첫 설치는 Python 배포 서버와 PyPI 연결이 필요하다. 이 방식으로 설치했다면 실행도 `uv tool run --from uv==0.13.9 uv run --locked python --version`처럼 같은 uv 버전을 사용한다. 기존 Python 3.15 가상환경도 동기화하면 `.python-version`에 맞는 3.13.14 환경으로 다시 생성한다.
 
-루트 의존성 파일은 Streamlit을 포함한 공용 Python 환경을 관리한다. 공식 웹 안내는 [Selenium 선택 그룹으로 수집한다](docs/official-guide-collection.md). Langfuse 등 새 패키지는 해당 기능을 처음 연결하는 PR에서 의존성과 잠금 파일을 함께 갱신한다. 기존 FastAPI 의존성이 남아 있어도 별도 HTTP 서버 구현을 요구하지 않는다.
+루트 의존성 파일은 Streamlit을 포함한 공용 Python 환경을 관리한다. 공식 웹 안내는 [Selenium 선택 그룹으로 수집한다](docs/official-guide-collection.md). Langfuse SDK도 `uv sync --locked`로 설치된다. 팀 계정으로 기존 실험을 조회하거나 각자 실행한 A/B/C 기록을 팀 EC2에 보내려면 [팀 Langfuse 설정](docs/TEAM-SETUP.md#팀-langfuse-설정)을 따른다. 기존 FastAPI 의존성이 남아 있어도 별도 HTTP 서버 구현을 요구하지 않는다.
 
 Streamlit 화면은 데모 색인을 먼저 만든 뒤 실행한다. 데모 색인은 합성 문서만 쓰며 외부 호출이 없다.
 
