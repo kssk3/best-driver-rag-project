@@ -216,7 +216,7 @@ def test_resolve_request_uses_selected_district_when_user_confirms_it_over_named
 
 def test_resolve_request_drops_conflicting_question_dong_when_user_confirms_selected_district():
     # 질문 속 연희동(서대문구)과 고른 송파구가 충돌, 사용자가 송파구를 확정했다.
-    # 맞지 않는 동은 버리고 구만 쓴다. region_status의 no_dong은 "동으로 지역을 정하지 못했다"는 뜻이다.
+    # 맞지 않는 동은 채택하지 않고(dong=None) 구만 쓰므로 no_dong 분기와 같게 region_status는 no_dong이다.
     request = PipelineRequest(
         question="연희동 페트병 언제 버려요?",
         district="송파구",

@@ -183,7 +183,8 @@ def resolve_request(request: PipelineRequest) -> ResolvedQuery:
     검사 순서: ambiguous → unsupported → no_dong → 고른 구와 충돌 → ok.
     되묻기를 받은 사용자가 고른 구를 확정하면(request.district_confirmed) 같은 되묻기를 되풀이하지 않는다.
     - 질문 속 구·동이 고른 구와 충돌: 고른 구로 해석한다. 맞지 않는 동은 버리고 구만 쓴다.
-      이때 region_status는 no_dong이다("이 동으로는 지역을 정하지 못했다"는 뜻이며 동을 찾지 못했다는 뜻이 아니다).
+      동은 채택하지 않으므로 no_dong 분기와 같게 dong=None으로 구만 쓰고 region_status는 no_dong이다.
+      확정했다는 사실은 요청의 district_confirmed에 남는다.
     - 여러 구에 있는 동(ambiguous): 확정한 구가 후보 구에 있으면 그 구와 그 동으로 해석한다.
     - 지원하지 않는 구가 질문에 있으면(동과 함께 적혀도) 또는 동이 지원 밖이면 확정으로 덮지 않고 안내한다.
     - 후속 요청에서 구와 동을 함께 확정했고 그 동이 그 구에 있으면 원질문의 동보다 그 조합을 먼저 쓴다.
@@ -291,7 +292,8 @@ def resolve_request(request: PipelineRequest) -> ResolvedQuery:
     if selected is not None and selected != region["district"]:
         # 화면에서 받은 동(request.dong)은 버릴 수 없으므로(파이프라인이 되돌려 넣는다) 확정으로 덮지 않는다.
         if confirmed and request.dong is None:
-            # 사용자가 충돌을 알고 고른 구로 확정했다. 맞지 않는 동은 버리고 구만 쓴다.
+            # 사용자가 충돌을 알고 고른 구로 확정했다. 맞지 않는 동은 채택하지 않고(dong=None) 구만 쓴다.
+            # no_dong 분기와 같은 모양이다("동은 확인하지 못했으므로 채우지 않는다").
             return ResolvedQuery(
                 search_query=request.question,
                 region_status="no_dong",
