@@ -14,7 +14,7 @@
 
 - 별표 4와 5는 같은 첨부 `1481479_121237861`에 있다. 마천2동은 별표 4의 `table-2`에서 행 인덱스 2, 셀 `table-2-r2-c0`부터 `c2`까지 대조한다. 원문 검색어는 `마천2`다. 별표 5는 같은 파일의 `table-3`이다. [전처리 별표 JSON][annex-json] · [별표 4 원문 미리보기][annex-page] · [별표와 웹 비교][comparison]
 - 소책자 PDF 2쪽 목차 왼쪽의 발행정보 상자에서 2025년 9월 발행 표시를 확인했다. PDF 3쪽(인쇄 4–5쪽) 표에서 위례동은 일반주택 화·목·일 묶음과 아파트 열에 각각 표시된다. [소책자 발행정보][booklet-publication] · [소책자 3쪽 원문 미리보기][booklet-page]
-- 구청 재활용품 안내(3164)와 음식물 안내(3161)의 보관 사본은 공식 자료 검토본의 수집 해시와 일치했다. `checked_on`은 두 자료가 확인된 날짜인 2026-11-25다. 의회 안내(6723)는 웹 검색 도구에서 공식 페이지의 등록일과 소개 본문을 대조했다. 세 페이지의 HTML 원문은 이 묶음에 포함되지 않았다. [공식 자료 검토본][snapshot] · [의회 안내][launch]
+- 구청 재활용품 안내(3164)와 음식물 안내(3161)의 보관 사본은 공식 자료 검토본의 수집 해시와 일치했다. `checked_on`은 두 자료가 확인된 날짜인 2026-11-25다. 의회 안내(6723)는 웹 검색 도구에서 공식 페이지의 등록일과 소개 본문을 대조했다. 세 페이지의 HTML 원문은 이 묶음에 포함되지 않았다. [공식 자료 검토본 JSON][official-source-snapshot] · [의회 안내][launch]
 - 11월 24일 검수에는 `robots.txt` 확인 후 해당 검수에서 콘텐츠 요청을 추가하지 않았다고 기록되어 있다. 11월 25일 로컬 사본에 표시된 파일 수정 시각은 3164가 17:34:34, 3161이 17:35:56(KST)이다. 정확한 HTTP 요청 시각은 기록에서 확인되지 않아 이날의 `Crawl-delay: 3600` 준수 여부는 미확인으로 남긴다. 이번 재검수에서 구청 안내는 저장 사본으로 대조했다. [11월 24일 수집 접근 기록][robots]
 
 [guide]: https://www.songpa.go.kr/www/contents.do?key=3153
@@ -29,5 +29,5 @@
 [annex-page]: ../../data/handoff/jungeun/ordinance-handoff-2026-11-24/review/previews/1481479_121237861_p2_0.png
 [booklet-page]: ../../data/handoff/jungeun/ordinance-handoff-2026-11-24/review/schedule_evidence/page3.png
 [robots]: ../../data/handoff/jungeun/ordinance-handoff-2026-11-24/review/schedule_evidence/robots_review.json
-[snapshot]: ../../src/rewrite_dictionary/official_source_snapshot.json
+[official-source-snapshot]: ../../src/rewrite_dictionary/official_source_snapshot.json
 [booklet-publication]: ../../data/handoff/jungeun/ordinance-handoff-2026-11-24/review/schedule_evidence/official-20261014.pdf#page=2
