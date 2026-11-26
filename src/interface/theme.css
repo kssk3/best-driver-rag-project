@@ -64,11 +64,11 @@ footer {
 }
 
 /* 검색창: 폼 안의 한 줄을 흰 둥근 박스로 */
-[data-testid="stForm"] {
+[data-testid="stForm"]:has([class*="st-key-FormSubmitter-search"]) {
   border: 0;
   padding: 0;
 }
-[data-testid="stForm"] [data-testid="stHorizontalBlock"] {
+[data-testid="stForm"]:has([class*="st-key-FormSubmitter-search"]) [data-testid="stHorizontalBlock"] {
   align-items: center;
   gap: 8px;
   background: #fff;
@@ -77,11 +77,11 @@ footer {
   padding: 8px 8px 8px 14px;
   box-shadow: 0 6px 20px rgba(70, 110, 80, 0.12);
 }
-[data-testid="stForm"] [data-testid="stTextInputRootElement"] {
+[data-testid="stForm"]:has([class*="st-key-FormSubmitter-search"]) [data-testid="stTextInputRootElement"] {
   border: 0;
   background: transparent;
 }
-[data-testid="stForm"] input {
+[data-testid="stForm"]:has([class*="st-key-FormSubmitter-search"]) input {
   font-size: 16px;
 }
 [class*="st-key-FormSubmitter-search"],
@@ -292,4 +292,22 @@ footer {
   list-style: none;
   padding-left: 0;
   margin: 0;
+}
+
+/* 되묻기 입력칸: 말풍선 안에서도 눈에 띄게 흰 바탕과 테두리 */
+.st-key-answerbox [data-testid="stForm"] {
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+.st-key-answerbox [data-testid="stTextInputRootElement"] {
+  background: #fff;
+  border: 1.5px solid var(--sage);
+  border-radius: 10px;
+}
+.st-key-answerbox [data-testid="stFormSubmitButton"] button {
+  background: var(--green);
+  border: 0;
+  color: #fff;
+  font-weight: 800;
 }
