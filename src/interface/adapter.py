@@ -1,7 +1,6 @@
 """공통 응답(dict)을 화면용 ViewResponse로 바꾸는 어댑터.
 
-공용 규격(src/contracts.py)이 확정되기 전의 임시 가정이다.
-규격의 필드명이 바뀌면 이 파일만 고친다.
+공용 규격(src/contracts.py)의 필드명이 바뀌면 이 파일만 고친다.
 """
 
 from dataclasses import dataclass, field
