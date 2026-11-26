@@ -13,9 +13,11 @@
 """
 
 import html
+import json
 import math
 import re
 from collections.abc import Callable
+from typing import Any
 
 from rank_bm25 import BM25Plus  # type: ignore[import-untyped]  # 타입 정보(py.typed) 없음
 
@@ -141,6 +143,89 @@ def vector_search(
 _TAG = re.compile(r"<[^>]+>")  # HTML 태그 <section ...>, <p> 등
 _WORD = re.compile(r"[^\W_]+")  # 글자·숫자 덩어리 (문장부호·공백·밑줄에서 끊음)
 
+# JSON 청크에서 본문이 아닌 구조 정보 키(셀·표 ID, 단위 종류, 검수 상태 코드).
+# row·origin_row·colspan 같은 숫자와 true/false는 글자가 아니라서 따로 적지 않아도 빠진다.
+_JSON_STRUCTURE_KEYS = frozenset(
+    {"cell_id", "table_id", "unit_type", "applicability_status"}
+)
+
+
+def chunk_text(chunk: Chunk) -> str:
+    """검색·재정렬에 쓸 청크 본문. 표 구조 정보(셀 ID, 행·열 번호 등)는 뺀다.
+
+    - HTML 청크: 태그를 지우고 &amp; 같은 기호를 되돌린다.
+    - JSON 청크: 글자 값만 꺼낸다. 표 행이면 셀을 열 제목과 짝지어 맨 앞에 둔다
+      ("규격: 100cm 이상(쪽당) | 부과금액: 15,000"). 앞부분만 잘라 써도
+      (재정렬 1200자) 이 행의 품목·규격·금액이 남게 하려는 것이다.
+      그다음 표 제목, 문단·비고 같은 나머지 글자를 붙인다.
+
+    JSON 원문을 그대로 쓰면 cell_id·colspan 같은 구조 정보가 대부분이라
+    재정렬 입력에서 행 내용이 잘리고, "row": 10 같은 번호가 BM25 검색어로 잡힌다.
+    """
+    if chunk.content_format == "html":
+        return html.unescape(_TAG.sub(" ", chunk.content))
+    try:
+        data = json.loads(chunk.content)
+    except json.JSONDecodeError:
+        return chunk.content  # JSON이 아니면 원문 그대로 쓴다 (내용을 지어내지 않음)
+    if not isinstance(data, dict):
+        return "\n".join(_json_strings(data))
+
+    parts: list[str] = []
+    row = data.get("row")
+    if isinstance(row, dict):  # ① 이 청크가 담당하는 표 행 (열 제목과 짝지어)
+        parts.append(_row_line(row, data.get("header_rows")))
+    title = data.get("section_title")
+    if isinstance(title, str):  # ② 표 제목 (예: 〔별표 1〕)
+        parts.append(title)
+    # ③ 나머지 글자(문단·비고·그림 요약 등). 행·머리글·제목은 위에서 썼으니 뺀다
+    rest = {
+        key: value
+        for key, value in data.items()
+        if key not in ("row", "header_rows", "section_title")
+    }
+    parts.extend(_json_strings(rest))
+    # 같은 글이 두 번 나오면 한 번만 (표 제목이 문단 안에도 들어 있는 경우 등)
+    return "\n".join(dict.fromkeys(part.strip() for part in parts if part.strip()))
+
+
+def _row_line(row: dict[str, Any], header_rows: object) -> str:
+    """표 한 행을 '열 제목: 값 | 열 제목: 값' 한 줄로 만든다."""
+    # 열 번호 → 열 제목. 머리글이 2줄이거나 여러 열을 합친 칸(colspan)도 모든 열에 붙인다
+    labels: dict[int, list[str]] = {}
+    for header in header_rows if isinstance(header_rows, list) else []:
+        for cell in header.get("cells", []):
+            text = (cell.get("text") or "").strip()
+            start = cell.get("origin_col", 0)
+            for col in range(start, start + cell.get("colspan", 1)):
+                if text and text not in labels.setdefault(col, []):
+                    labels[col].append(text)
+
+    cells = []
+    for cell in row.get("cells", []):
+        text = (cell.get("text") or "").strip()
+        if not text:
+            continue
+        label = " ".join(labels.get(cell.get("origin_col", -1), []))
+        cells.append(f"{label}: {text}" if label else text)
+    return " | ".join(cells)
+
+
+def _json_strings(value: object) -> list[str]:
+    """JSON 안의 글자 값을 순서대로 모은다. 숫자·true/false·구조 정보 키는 뺀다."""
+    if isinstance(value, str):
+        return [value]
+    if isinstance(value, dict):
+        return [
+            text
+            for key, item in value.items()
+            if key not in _JSON_STRUCTURE_KEYS
+            for text in _json_strings(item)
+        ]
+    if isinstance(value, list):
+        return [text for item in value for text in _json_strings(item)]
+    return []
+
 
 def tokenize(text: str) -> list[str]:
     """BM25용으로 글을 2글자 조각(bigram)으로 쪼갠다.
@@ -205,7 +290,8 @@ def bm25_search(
     # 지역마다 대상 청크가 달라 질문마다 만든다. 청크 수가 수백 개라 충분히 빠르다.
     # ⑤ 문서들도 전부 조각으로 자름 (corpus = "문서 묶음"이라는 뜻)
     #    → [["서대","대문","페트","트병"], ["서대","대문","종이","이팩"], ["공통","페트","트병"]]
-    corpus = [tokenize(chunk.content) for chunk in chunks]
+    #    JSON 표의 행·열 번호가 검색어로 잡히지 않게 chunk_text로 글자만 꺼낸 뒤 자른다
+    corpus = [tokenize(chunk_text(chunk)) for chunk in chunks]
     # ⑥ BM25Plus에 문서 묶음을 넣어 계산기를 만들고, 질문 조각으로 문서마다 점수를 매김
     #    → [2.77, 5.44, 2.77]  (문서 순서 그대로)
     scores = BM25Plus(corpus).get_scores(query_tokens)

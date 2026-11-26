@@ -1,8 +1,11 @@
 """A(Vector) 검색 단위 테스트. 실제 임베딩 API 없이 손으로 정한 벡터를 쓴다."""
 
+import json
+
 import pytest
 
 from src.contracts import Chunk, ResolvedQuery, SearchCandidate
+from src.infrastructure.embeddings import DemoHashEmbeddings
 from src.ingestion.indexing import build_index
 from src.retrieval.search import (
     RerankerOutputError,
@@ -10,6 +13,7 @@ from src.retrieval.search import (
     RetrievalError,
     RetrievalVariantError,
     bm25_search,
+    chunk_text,
     cosine_similarity,
     is_in_region,
     make_vector_retriever,
@@ -218,6 +222,104 @@ def test_bm25_search_drops_chunks_without_shared_bigrams():
 
 def test_bm25_search_returns_empty_when_query_has_no_words():
     assert bm25_search(make_index(), "?!", "서대문구", top_k=5) == []
+
+
+def json_table_chunk(chunk_id: str, row_number: int, cells: list[str]) -> Chunk:
+    """청킹 결과와 같은 모양의 JSON 표 행 청크. 셀마다 cell_id·위치 같은 구조 정보가 붙는다."""
+
+    def cell(row: int, col: int, text: str) -> dict:
+        return {
+            "cell_id": f"table-1-r{row}-c{col}",
+            "colspan": 1,
+            "inherited_from_previous_row": False,
+            "origin_col": col,
+            "origin_row": row,
+            "rowspan": 1,
+            "text": text,
+        }
+
+    headers = ["품목", "규격", "금액"]
+    content = {
+        "header_rows": [
+            {"cells": [cell(0, c, t) for c, t in enumerate(headers)], "row": 0}
+        ],
+        "paragraphs": ["〔별표 1〕 수수료 기준\n", ""],
+        "row": {
+            "cells": [cell(row_number, c, t) for c, t in enumerate(cells)],
+            "row": row_number,
+        },
+        "section_title": "〔별표 1〕 수수료 기준",
+        "table_id": "table-1",
+    }
+    chunk = make_chunk(chunk_id, "district", ["서대문구"], "-")
+    return chunk.model_copy(
+        update={
+            "content_format": "json",
+            "content": json.dumps(content, ensure_ascii=False),
+        }
+    )
+
+
+def test_chunk_text_puts_row_cells_with_headers_first_and_drops_structure():
+    text = chunk_text(json_table_chunk("bag", 3, ["종량제 봉투", "10L", "250원"]))
+
+    assert text.splitlines()[0] == "품목: 종량제 봉투 | 규격: 10L | 금액: 250원"
+    assert "〔별표 1〕 수수료 기준" in text
+    assert text.count("〔별표 1〕 수수료 기준") == 1  # 제목·문단 중복은 한 번만
+    assert "cell_id" not in text and "table-1" not in text
+
+
+@pytest.mark.parametrize(
+    ("content", "expected"),
+    [
+        # JSON이 아니면 원문 그대로
+        ("JSON 아님", "JSON 아님"),
+        # 목록 JSON: 글자만 (숫자·true 제외)
+        ('["캔", 1, true]', "캔"),
+        # 표가 아닌 문단 청크: 구조 키(unit_type)와 숫자는 빼고 글자만
+        ('{"text": "제1장 총칙", "unit_type": "heading", "number": 1}', "제1장 총칙"),
+        # 여러 열을 합친 머리글(colspan)은 모든 열에 붙고, 빈 셀·빈 머리글은 건너뛴다
+        (
+            json.dumps(
+                {
+                    "header_rows": [
+                        {
+                            "cells": [
+                                {"origin_col": 0, "colspan": 2, "text": "품목"},
+                                {"origin_col": 2, "colspan": 1, "text": ""},
+                            ]
+                        }
+                    ],
+                    "row": {
+                        "cells": [
+                            {"origin_col": 0, "text": "장롱"},
+                            {"origin_col": 1, "text": ""},
+                            {"origin_col": 2, "text": "10,000"},
+                        ]
+                    },
+                },
+                ensure_ascii=False,
+            ),
+            "품목: 장롱 | 10,000",
+        ),
+    ],
+)
+def test_chunk_text_handles_other_json_shapes(content, expected):
+    chunk = make_chunk("x", "district", ["서대문구"], "-").model_copy(
+        update={"content_format": "json", "content": content}
+    )
+    assert chunk_text(chunk) == expected
+
+
+def test_bm25_does_not_match_json_row_numbers():
+    # 행 번호가 10인 종이 청크가 "10L" 질문에 걸리면 안 된다 (row: 10은 본문이 아님).
+    paper = json_table_chunk("paper-row-10", 10, ["종이", "신문지", "묶어서"])
+    bag = json_table_chunk("bag-10l", 3, ["종량제 봉투", "10L", "250원"])
+    index = build_index([paper, bag], DemoHashEmbeddings(4))
+
+    results = bm25_search(index, "10L", "서대문구", top_k=5)
+
+    assert [r.chunk.chunk_id for r in results] == ["bag-10l"]
 
 
 def test_bm25_search_rejects_non_positive_top_k():
