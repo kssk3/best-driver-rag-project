@@ -1,0 +1,31 @@
+run_id,case_id,variant,rewrite_enabled,status,answer_correct,citation_valid,absence_ok,answer_correct_reason,citation_valid_reason,absence_ok_reason,judge_model
+85edc15a2ea943babfbd12ef58d49e9f,p04-colors-trick,A,false,answered,1,1,,답변은 공동주택 일반용기에서 캔은 회색이고 유리병은 주황색이라고 모두 정확히 말했습니다.,"근거에 서대문구 공동주택 일반용기의 캔은 회색, 유리병은 주황색이라고 명시되어 있습니다.",,gpt-6-luna
+3886da8c26b244f9b95e0445bf456831,p04-colors-trick,B,false,answered,1,1,,답변은 공동주택 일반용기에서 캔은 회색이고 유리병은 주황색이라고 밝혀 두 필수 사실을 모두 담았습니다.,"근거에 서대문구 공동주택 일반용기의 캔은 회색, 유리병은 주황색이라고 명시되어 있습니다.",,gpt-6-luna
+b1411e30a81d4752aa588b7f770bd2da,p04-colors-trick,C,false,answered,1,1,,유리병용 용기는 주황색이고 캔용 용기는 회색이라고 두 필수 사실을 모두 제시했습니다.,"근거에 공동주택 일반용기 기준으로 유리병은 주황색, 캔류는 회색이라고 명시되어 있습니다.",,gpt-6-luna
+f747c9c328d245ee8b08ad7fa971b0ab,p04-songpa-bulky-waste,A,false,answered,1,1,,배출일 전에 송파구청장에게 신고하고 구청장이 지정하는 장소에 내놓는다고 했습니다.,근거는 대형폐기물을 배출일 전에 주소·성명·물품명·크기·수량 등을 구청장에게 신고하고 지정 장소에 내놓도록 규정합니다.,,gpt-6-luna
+68ffbba17fa948dc9f990f0ea7d53942,p04-songpa-bulky-waste,B,false,answered,1,1,,배출일 전에 송파구청장에게 신고하고 구청장이 지정하는 장소에 내놓는다고 답했습니다.,"근거는 대형폐기물을 배출일 전에 필요한 사항과 함께 신고해 지정 장소에 내놓고, 수수료는 신고 후 수거 전에 미리 납부하도록 규정합니다.",,gpt-6-luna
+1594d0822bac4654a2c4e17077994f3d,p04-songpa-bulky-waste,C,false,answered,1,1,,배출일 전에 구청장에게 신고하고 구청장이 지정하는 장소에 내놓는다고 답했습니다.,"대형폐기물의 사전 신고 내용과 지정 장소 배출, 수거 전 수수료 납부 및 납부 방법이 모두 인용 근거에 명시되어 있습니다.",,gpt-6-luna
+2f229ff2a741413e909333f71066c247,dev-sd-bag-10l-price,A,false,insufficient_evidence,0,0,,답변하지 못함(상태 insufficient_evidence),답변하지 못함(상태 insufficient_evidence),,gpt-6-luna
+5948e043539a4fcb93044c45ae316a64,dev-sd-bag-10l-price,B,false,insufficient_evidence,0,0,,답변하지 못함(상태 insufficient_evidence),답변하지 못함(상태 insufficient_evidence),,gpt-6-luna
+6a4b818f1b0d4636b37035af4be9c826,dev-sd-bag-10l-price,C,false,insufficient_evidence,0,0,,답변하지 못함(상태 insufficient_evidence),답변하지 못함(상태 insufficient_evidence),,gpt-6-luna
+09b8705267ea479f91b9cde882144b87,dev-sp-trunk-road-time,A,false,insufficient_evidence,0,0,,답변하지 못함(상태 insufficient_evidence),답변하지 못함(상태 insufficient_evidence),,gpt-6-luna
+9280e4bc865748a5955fa5bfd001f635,dev-sp-trunk-road-time,B,false,insufficient_evidence,0,0,,답변하지 못함(상태 insufficient_evidence),답변하지 못함(상태 insufficient_evidence),,gpt-6-luna
+73d06aa3dd124c49ade00d8c7063ae1c,dev-sp-trunk-road-time,C,false,answered,1,1,,오후 10시부터 다음 날 새벽 1시까지 배출할 수 있다고 밝혔습니다.,"근거는 가로변 배출 폐기물의 배출 시간을 오후 10시부터 다음 날 새벽 1시까지로 정하고 있어, 큰 대로변에 해당 시간에 내놓을 수 있다는 답변을 뒷받침합니다.",,gpt-6-luna
+3812f95cb16645b0acf0663bd0e6724c,dev-sd-newspaper,A,false,insufficient_evidence,0,0,,답변하지 못함(상태 insufficient_evidence),답변하지 못함(상태 insufficient_evidence),,gpt-6-luna
+0b658f066b7746a1a3d0ce57f79efc63,dev-sd-newspaper,B,false,insufficient_evidence,0,0,,답변하지 못함(상태 insufficient_evidence),답변하지 못함(상태 insufficient_evidence),,gpt-6-luna
+e667f11346494904aa1aef526b4f7dc1,dev-sd-newspaper,C,false,answered,1,1,,"신문지를 젖지 않게 펴서 쌓아 묶고, 비닐 코팅 광고지·비닐류·오물이 섞이지 않도록 하라고 했습니다.",근거는 신문지를 젖지 않게 펴서 쌓아 묶어 배출하고 비닐 코팅 광고지·비닐류·오물이 섞이지 않게 하라고 명시합니다.,,gpt-6-luna
+f3a3d79c503b47109f8db5cd6ccbe9ec,dev-sd-aircon-66,A,false,insufficient_evidence,0,0,,답변하지 못함(상태 insufficient_evidence),답변하지 못함(상태 insufficient_evidence),,gpt-6-luna
+76e96bafac744693baf4754b8cef9a12,dev-sd-aircon-66,B,false,answered,1,1,,"66㎡형 이상 에어컨의 수수료가 5,000원이라고 답했습니다.","근거 표에서 에어컨 66㎡형 이상 규격의 부과금액이 5,000원으로 제시되어 있습니다.",,gpt-6-luna
+e4658241598a4b1da1508717ae31015a,dev-sd-aircon-66,C,false,answered,1,1,,"서대문구 66㎡형 에어컨의 대형폐기물 수수료가 5,000원이라고 답해 필수 사실과 일치합니다.","근거에 에어컨의 규격이 66㎡형 이상일 때 부과금액이 5,000원으로 명시되어 있습니다.",,gpt-6-luna
+97458f7db1514881891b3ccaf2517496,dev-sd-fee-reduction,A,false,insufficient_evidence,0,0,,답변하지 못함(상태 insufficient_evidence),답변하지 못함(상태 insufficient_evidence),,gpt-6-luna
+2782394a414941549f89636ea5305503,dev-sd-fee-reduction,B,false,answered,1,1,,생계·의료급여 수급자 등을 감면 대상으로 언급하고 가구당 월 120ℓ 범위에서 무료 지급된다고 밝혔습니다.,"근거는 감면 대상과 구청장의 재량, 무료 봉투 지급량을 모두 뒷받침합니다.",,gpt-6-luna
+59a0e8dd946441b6ba737137e2520217,dev-sd-fee-reduction,C,false,answered,1,1,,생계·의료급여 수급자 등이 감면 대상이라고 했고 가구당 월 120ℓ 이내 무료 지급을 명시했습니다.,"답변은 감면 대상과 무료 봉투 지급량을 근거에 맞게 요약했으며, 감면이 구청장의 재량임을 ‘자동 지급되는 것은 아니다’라고 표현했습니다.",,gpt-6-luna
+af3d4082c1764ce793a1b70c80c9dd38,dev-sp-special-bag-20l,A,false,answered,1,1,,"특수규격봉투 20리터가 2,040원이라고 답했습니다.","근거 표에 송파구 특수규격봉투 20ℓ의 판매가격이 2,040원으로 기재되어 있습니다.",,gpt-6-luna
+ebbf1ed2fff84236a2c0e992e4b1a5e1,dev-sp-special-bag-20l,B,false,answered,1,1,,"특수규격봉투 20리터의 가격이 2,040원이라고 답했습니다.","근거에 송파구 특수규격봉투 20ℓ의 판매가격이 2,040원으로 명시되어 있습니다.",,gpt-6-luna
+bbf253cc18d14bfaac7bec871e4e89c7,dev-sp-special-bag-20l,C,false,answered,1,1,,"특수규격봉투 20리터의 가격이 2,040원이라고 답해 필수 사실을 충족합니다.","근거에 송파구 특수규격봉투 20ℓ의 판매가격이 2,040원으로 기재되어 있습니다.",,gpt-6-luna
+3b416246d68c4d0b8bc0897811945fe3,dev-sd-bulky-sticker,A,false,insufficient_evidence,,,1,,,정보 부족 안내(상태 insufficient_evidence),gpt-6-luna
+ffa8fb2ae67d4b1cabfe520a86778b35,dev-sd-bulky-sticker,B,false,insufficient_evidence,,,1,,,정보 부족 안내(상태 insufficient_evidence),gpt-6-luna
+28f61532166a427d9db06a47f275654a,dev-sd-bulky-sticker,C,false,answered,,,1,,,"스티커 구입처는 근거에 안내되어 있지 않다고 밝혔고, 신고·수수료 납부 정보는 대체 정보로 제시했습니다.",gpt-6-luna
+8c6b2947968a42af929405c979bc2080,dev-sd-waste-weekday,A,false,insufficient_evidence,,,1,,,정보 부족 안내(상태 insufficient_evidence),gpt-6-luna
+ffb79abf91854b39988a6f5a54044ad1,dev-sd-waste-weekday,B,false,insufficient_evidence,,,1,,,정보 부족 안내(상태 insufficient_evidence),gpt-6-luna
+f0bf4830a5d74324a89b1525a9203104,dev-sd-waste-weekday,C,false,insufficient_evidence,,,1,,,정보 부족 안내(상태 insufficient_evidence),gpt-6-luna
