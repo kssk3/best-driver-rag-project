@@ -344,3 +344,19 @@ def test_primary_failure_keeps_message_even_when_error_codes_collide() -> None:
 
     app = AppTest.from_function(page, default_timeout=10).run()
     assert any("답변 모델에 연결하지 못했습니다" in e.value for e in app.error)
+
+
+def test_answered_bubble_adds_raccoon_lines_around_an_unchanged_answer() -> None:
+    app = ask("answered", question="가상 질문")
+
+    captions = [c.value for c in app.caption]
+    assert "찾아봤구리!" in captions
+    assert "더 궁금하면 물어보구리~" in captions
+    # 답변 본문에는 말투가 섞이지 않는다.
+    assert all("구리" not in s.value for s in app.success)
+
+
+def test_other_statuses_do_not_get_the_raccoon_lines() -> None:
+    for sample in ("needs_clarification", "insufficient_evidence", "error"):
+        captions = [c.value for c in ask(sample).caption]
+        assert "찾아봤구리!" not in captions
