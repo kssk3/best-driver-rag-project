@@ -1,3 +1,5 @@
+import pytest
+
 from src.contracts import PipelineRequest
 from src.retrieval import regions
 from src.retrieval.regions import DONG_TO_DISTRICTS, resolve_region, resolve_request
@@ -375,3 +377,40 @@ def test_resolve_request_still_asks_when_the_confirmed_pair_does_not_match():
     )
 
     assert result.status == "needs_clarification"
+
+
+# 되묻기에서 지원 밖 후보 구를 고르면 같은 되묻기를 되풀이하지 않고 지원 밖으로 안내한다
+@pytest.mark.parametrize(
+    "question, picked",
+    [
+        ("삼성동에서 대형폐기물은 어떻게 버려요?", "강남구"),
+        ("삼성동에서 대형폐기물은 어떻게 버려요?", "관악구"),
+        ("강남구 삼성동에서 대형폐기물은 어떻게 버려요?", "강남구"),
+        ("강남구 삼성동에서 대형폐기물은 어떻게 버려요?", "관악구"),
+    ],
+)
+def test_resolve_request_says_unsupported_when_user_picks_an_unsupported_candidate(
+    question, picked
+):
+    asked = resolve_request(PipelineRequest(question=question, district="서대문구"))
+    picked_result = resolve_request(
+        PipelineRequest(question=question, district=picked, district_confirmed=True)
+    )
+
+    assert asked.region_status == "ambiguous"  # 첫 요청은 기존대로 되묻는다.
+    assert picked_result.status == "needs_clarification"
+    assert picked_result.region_status == "unsupported"
+    assert picked_result.district == picked
+    assert f"{picked}는 아직 지원하지 않아요" in (
+        picked_result.clarification_question or ""
+    )
+
+
+def test_resolve_request_keeps_asking_when_the_picked_district_is_not_a_candidate():
+    result = resolve_request(
+        PipelineRequest(
+            question="삼성동 쓰레기 언제?", district="송파구", district_confirmed=True
+        )
+    )
+
+    assert result.region_status == "ambiguous"

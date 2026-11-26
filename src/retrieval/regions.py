@@ -186,6 +186,7 @@ def resolve_request(request: PipelineRequest) -> ResolvedQuery:
       동은 채택하지 않으므로 no_dong 분기와 같게 dong=None으로 구만 쓰고 region_status는 no_dong이다.
       확정했다는 사실은 요청의 district_confirmed에 남는다.
     - 여러 구에 있는 동(ambiguous): 확정한 구가 후보 구에 있으면 그 구와 그 동으로 해석한다.
+      되묻기에서 지원 밖 후보 구를 고르면 같은 되묻기를 되풀이하지 않고 지원 밖(unsupported)으로 안내한다.
     - 지원하지 않는 구가 질문에 있으면(동과 함께 적혀도) 또는 동이 지원 밖이면 확정으로 덮지 않고 안내한다.
     - 후속 요청에서 구와 동을 함께 확정했고 그 동이 그 구에 있으면 원질문의 동보다 그 조합을 먼저 쓴다.
     - 화면에서 받은 동(request.dong)이 있으면 확정으로 버릴 수 없다. 파이프라인이 생성 요청을 만들 때
@@ -219,6 +220,16 @@ def resolve_request(request: PipelineRequest) -> ResolvedQuery:
 
     # 신사동처럼 여러 구에 있는 동: 하나로 고르지 않고 후보 구를 보여 주며 되묻는다.
     if region["status"] == "ambiguous":
+        # 되묻기에서 지원 밖 후보 구를 골랐다. 지원 밖 구는 확정으로 인정하지 않으므로 이 안내가
+        # 없으면 같은 되묻기가 끝없이 반복된다. 다른 구 자료로 답하지 않고 지원 밖으로 안내한다.
+        picked = request.district
+        if (
+            request.district_confirmed
+            and picked is not None
+            and picked in region["candidate_districts"]
+            and picked not in SUPPORTED_DISTRICTS
+        ):
+            return _ask_unsupported(request, picked, region["dong"])
         # 사용자가 되묻기에 후보 구 하나를 골라 확정했다. 그 구에 있는 그 동으로 해석한다.
         if confirmed and selected in region["candidate_districts"]:
             return ResolvedQuery(
