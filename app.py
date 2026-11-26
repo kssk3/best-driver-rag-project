@@ -1,5 +1,6 @@
 """Streamlit 진입점."""
 
+import traceback
 from html import escape
 from os import getenv
 from pathlib import Path
@@ -124,6 +125,7 @@ def ask_pipeline(request: PipelineRequest) -> bool:
                 "C 검색의 실행 설정에서 pipeline.versions.reranker_model에 재정렬 모델 ID를 지정하세요."
             )
         else:
+            traceback.print_exc()  # 안내문은 뭉뚱그려 보이므로 실제 원인은 서버 로그에 남긴다
             st.error(
                 "팀 색인을 불러오지 못했습니다. 실행 설정의 index_path와 색인 파일을 확인하세요."
             )
@@ -175,9 +177,12 @@ def ask(question, district) -> bool:
 
 def run_pending() -> None:
     """접수한 질문을 실제로 실행한다. 성공하면 결과 화면으로 다시 그린다."""
-    pending = st.session_state.pop("pending")
+    pending = st.session_state["pending"]
     with st.spinner("답변을 찾고 있어요..."):  # 실제 검색은 몇 초 걸린다
         done = ask_pipeline(PipelineRequest(**pending))
+    # 검색 중에 같은 입력이 한 번 더 들어와(엔터가 두 번 전달되는 경우) 이 실행이 끊기면 여기까지 못 온다.
+    # 접수 기록을 먼저 지우면 다음 실행이 랜딩으로 돌아가므로, 끝난 뒤에 지운다.
+    st.session_state.pop("pending", None)
     if done:
         st.rerun()
 

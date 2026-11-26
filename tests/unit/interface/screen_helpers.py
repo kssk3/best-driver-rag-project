@@ -1,6 +1,7 @@
 """app.py 화면을 시험하는 공용 도우미. 외부 호출은 하지 않는다."""
 
 import json
+import re
 from pathlib import Path
 
 from streamlit.testing.v1 import AppTest
@@ -47,3 +48,15 @@ def press_submit(app: AppTest) -> AppTest:
     return (
         button(app, "다시 묻기" if "다시 묻기" in labels else "물어보기").click().run()
     )
+
+
+def rank_table(app: AppTest) -> dict[str, list[str]]:
+    """후보 순위 표(HTML)를 열 이름별 값 목록으로 읽는다."""
+    html = next(h.value for h in app.get("html") if "rank-table" in h.value)
+    names = re.findall(r"<th[^>]*>(.*?)</th>", html)
+    rows = [
+        re.findall(r"<td[^>]*>(.*?)</td>", row)
+        for row in re.findall(r"<tr>(.*?)</tr>", html, flags=re.S)
+        if "<td" in row
+    ]
+    return {name: [row[i] for row in rows] for i, name in enumerate(names)}

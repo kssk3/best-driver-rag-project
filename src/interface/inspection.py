@@ -112,17 +112,14 @@ def render_inspection(
                     for position, c in enumerate(view.candidates, 1)
                 ]
             )
-            st.dataframe(
-                table.style.map(_shift_color, subset=["순위 이동"]).format(
-                    {"점수": "{:g}"}
-                ),
-                hide_index=True,
-                column_config={
-                    column: st.column_config.Column(alignment="center")
-                    for column in table.columns
-                    if column != "chunk_id"
-                },
+            # 열 제목까지 가운데로 맞추려고 HTML 표로 그린다(CSS가 chunk_id만 왼쪽 정렬).
+            styled = (
+                table.style.hide(axis="index")
+                .map(_shift_color, subset=["순위 이동"])
+                .format({"점수": "{:g}"})
+                .set_table_attributes('class="rank-table"')
             )
+            st.html(styled.to_html())
 
             if not stages:
                 st.caption("검색 단계 점수가 없어 순위 이동을 계산할 수 없습니다.")
@@ -133,14 +130,3 @@ def render_inspection(
 
         else:
             st.info("검색 후보가 없습니다.")
-
-    with st.container(key="insp_inputs"):
-        st.subheader("모델 입력 근거")
-
-        if view.model_inputs is None:
-            st.info("기록이 없어 알 수 없습니다.")
-        elif not view.model_inputs:
-            st.info("모델에 전달된 근거가 없습니다.")
-        else:
-            for chunk_id in view.model_inputs:
-                st.markdown(f"- {chunk_id}")
