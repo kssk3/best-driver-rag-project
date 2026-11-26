@@ -227,13 +227,16 @@ def ask(question, district, mode, sample_name=None) -> bool:
     if not question.strip():
         st.warning("질문을 입력하세요.")
         return False
-    return ask_pipeline(mode, PipelineRequest(question=question, district=district))
+    with st.spinner("답변을 찾고 있어요..."):  # 실제 검색은 몇 초 걸린다
+        return ask_pipeline(mode, PipelineRequest(question=question, district=district))
 
 
 def send_followup(mode):
     # 되묻기에 답한 요청을 같은 방식으로 실제 실행한다. 성공하면 새 응답으로 다시 그린다.
     def send(fields: dict) -> None:
-        if ask_pipeline(mode, PipelineRequest(**fields)):
+        with st.spinner("답변을 찾고 있어요..."):
+            sent = ask_pipeline(mode, PipelineRequest(**fields))
+        if sent:
             st.rerun()
 
     return send
@@ -304,22 +307,20 @@ def render_landing() -> None:
 
 
 def render_result(view) -> None:
-    answer_col, place_col = st.columns([5, 3])
-    with answer_col:
-        if view is None:
-            st.info("질문하면 결과가 여기에 나옵니다.")
-        else:
-            # 입력창이 아니라 제출 당시의 질문·지역으로 그린다.
-            render_response(
-                view,
-                question=st.session_state.get("asked_question", ""),
-                district=st.session_state.get("asked_district", ""),
-                on_followup=send_followup(USER_MODE),
-            )
-    with place_col:
-        st.subheader("장소")
-        if "places" in st.session_state:
-            render_places(st.session_state["places"])
+    if view is None:
+        st.info("질문하면 결과가 여기에 나옵니다.")
+    else:
+        # 입력창이 아니라 제출 당시의 질문·지역으로 그린다.
+        render_response(
+            view,
+            question=st.session_state.get("asked_question", ""),
+            district=st.session_state.get("asked_district", ""),
+            on_followup=send_followup(USER_MODE),
+        )
+    # 장소는 답변 아래에 이어서 보인다.
+    st.subheader("장소")
+    if "places" in st.session_state:
+        render_places(st.session_state["places"])
 
 
 def render_comparison() -> None:
