@@ -1,11 +1,13 @@
 """별표 검수 후보가 원문 행·셀과 기존 검수 상태를 보존하는지 확인한다."""
 
 import json
+import re
 from pathlib import Path
 
 import pytest
 
 from scripts.review_annex_tables import review_annex_tables
+from src.ingestion import search_preparation
 
 _ANNEX_FOLDER = (
     Path(__file__).resolve().parents[3]
@@ -56,6 +58,16 @@ def test_review_reports_candidates_without_superseding_human_review():
         and f["block_index"] == 6
         for f in report["candidates"]
     )
+
+
+def test_review_detects_changed_rules_against_the_saved_handoff(monkeypatch):
+    # 용어 복원 규칙을 끈 뒤 Git에 저장된 인계본을 그대로 다시 검수한다.
+    monkeypatch.setattr(search_preparation, "_KNOWN_JOIN_PATTERN", re.compile(r"(?!)"))
+
+    with pytest.raises(
+        ValueError, match=r"2101297_160319453\.json table-2: 행 4의 search_text"
+    ):
+        review_annex_tables(_MANIFEST)
 
 
 def test_original_reward_rows_are_review_candidates_without_overlay(tmp_path):
