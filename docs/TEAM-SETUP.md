@@ -89,6 +89,7 @@ PR #24의 [공용 채팅 모듈](../src/infrastructure/chat_models.py)은 `creat
 | --- | --- |
 | `LANGFUSE_BASE_URL` | 팀 EC2의 Langfuse HTTPS 기본 주소 |
 | `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY` | 해당 EC2 프로젝트에서 발급한 업로드 키 쌍 |
+| `RAG_SCORE_LEDGER_DSN` | 추가 실험 점수를 쓸 때 모든 팀원이 공유하는 PostgreSQL 연결 문자열. [공용 전송 기록 설정](../results/README.md#기존-실행에-팀-실험-점수-연결) |
 | `RAG_LANGFUSE_TRACE` | 기본은 꺼짐. `1`을 설정하면 공용 채팅 어댑터의 모델 입력과 응답(프롬프트·근거 포함)이 실행 중 전송된다. |
 
 실행할 때는 `uv run --locked --env-file .env`로 이 파일을 읽는다. 채점 담당자는 `evaluation.json`, `runs.csv`, `cases.csv`가 같은 실행 묶음인지 확인하고, 새 출력 폴더에 채점 결과를 저장한다. `--judge`는 모델 호출이 발생하며 `OPENAI_API_KEY`가 필요하다. 이미 채점된 결과를 공유할 때는 저장된 점수와 상세 파일로 업로드만 실행한다. [A/B/C 실행 예시](../eval/README.md) · [채점 상세 업로드와 조회](../results/README.md#진술별-faithfulness-판정-확인)

@@ -10,7 +10,12 @@ from urllib.parse import urlencode
 from pydantic import BaseModel, ConfigDict, Field, StrictFloat, field_validator
 
 from src.evaluation.answer_metrics import _archive_rows
-from src.observability.tracing import SCORES, _identifier, _utc, trace_id_for_run
+from src.observability.tracing import (
+    SEARCH_VARIANTS,
+    _identifier,
+    _utc,
+    trace_id_for_run,
+)
 
 PRECISION = "context_precision_id_at_5"
 RECALL = "context_recall_id_at_5"
@@ -163,6 +168,7 @@ def prepare_scores(preview: Path, archive: Path, expected_traces: int):
                 "environment": run["run_kind"],
                 "id": _identifier("extra-score", trace, score.name),
                 "run_id": run["run_id"],
+                "variant": run.get("variant"),
             }
             if score.name == RELEVANCY and run["status"] != "answered":
                 payload["comment"] = (
@@ -220,6 +226,14 @@ def missing_scores(client, payloads):
         metadata = roots[0].get("metadata") or {}
         if isinstance(metadata, str):
             metadata = json.loads(metadata)
+        server_variant = metadata.get("variant") if isinstance(metadata, dict) else None
+        local_variant = group[0]["variant"]
+        if (
+            local_variant in SEARCH_VARIANTS
+            and server_variant in SEARCH_VARIANTS
+            and local_variant != server_variant
+        ):
+            raise ValueError(f"{trace}: 원본과 서버의 검색 방식이 다릅니다.")
         run_id = group[0]["run_id"]
         server_run = metadata.get("run_id") if isinstance(metadata, dict) else None
         if (
@@ -254,12 +268,3 @@ def missing_scores(client, payloads):
             ):
                 raise ValueError(f"{trace} {score['name']}: 기존 점수와 충돌합니다.")
     return pending
-
-
-def send_missing(client, pending):
-    for score in pending:
-        payload = {k: v for k, v in score.items() if k != "run_id"}
-        if client.request("POST", SCORES, [payload]) is not True:
-            raise ValueError(
-                f"{score['traceId']} {score['name']}: 접수 미확인. --check로 먼저 조회하세요."
-            )

@@ -179,8 +179,8 @@ uv run --locked python -m scripts.upload_scores \
 
 보고서의 `trace_status`와 `score_status`에서 각 단계의 접수 상태를 확인한다. 실패하면 종료 코드 1을 반환한다. 재시도할 때 같은 입력 파일과 새 보고서명을 사용한다.
 
-- 업로드 CLI는 `scores.csv` 옆의 `langfuse-spans.sqlite3`에 프로젝트별 실행·판정 span ID와 접수 상태를 저장한다. 채점 결과 폴더를 옮길 때 이 파일도 보존한다. 접수된 span은 건너뛰므로 점수만 실패한 행은 원래 점수 ID·이름·`scored_at_utc`로 점수만 재전송한다. 업로드 시각은 `upload_attempted_at_utc`에서 확인한다.
-- 새 실행의 `langfuse_project`는 실시간 루트를 기록한 프로젝트의 해시다. 같은 프로젝트에서 루트가 아직 보이지 않거나 조회가 불완전하거나 루트가 여러 개면 해당 행은 `trace_unconfirmed`로 남고 전송을 보류한다. 이 열이 없는 예전 보관본을 실시간 추적했다면 대시보드에서 실행 루트가 보인 뒤 업로드한다. [Langfuse 논리 루트 규칙](https://langfuse.com/docs/api-and-data-platform/features/public-api#logical-root-observations)
+- 업로드 CLI는 `scores.csv` 옆의 `langfuse-spans.sqlite3`에 프로젝트별 실행·판정 span ID와 접수 상태를 저장한다. 채점 결과 폴더를 옮길 때 이 파일도 보존한다. 이전에 접수한 루트가 논리 루트 조회에 아직 보이지 않으면 점수를 보류한다. 서버에서 확인한 루트와 접수된 상세 span은 재사용하므로 점수만 실패한 행은 원래 점수 ID·이름·`scored_at_utc`로 점수만 재전송한다. 업로드 시각은 `upload_attempted_at_utc`에서 확인한다.
+- 새 실행의 `langfuse_project`는 인증된 서버가 반환한 `project:<ID>`다. 같은 프로젝트의 API 키를 교체해도 같은 ID를 사용한다. 이전 기록과 프로젝트 조회 실패 시의 기록에는 주소·공개 키 해시가 남는다. 현재 키나 같은 폴더의 접수 기록 DB로 확인할 수 없는 과거 해시는 귀속 미확인으로 처리한다. 이때 서버에 루트가 없으면 자동 생성과 강제 복구를 보류한다. 같은 프로젝트에서 루트가 아직 보이지 않거나 조회가 불완전하거나 루트가 여러 개면 해당 행은 `trace_unconfirmed`로 남고 전송을 보류한다. 이 열이 없는 예전 보관본을 실시간 추적했다면 대시보드에서 실행 루트가 보인 뒤 업로드한다. [Langfuse 논리 루트 규칙](https://langfuse.com/docs/api-and-data-platform/features/public-api#logical-root-observations)
 - 타임아웃 등으로 span 접수가 불명확하면 다음 시도에서 서버를 조회한다. 해당 span이 보이면 점수 전송으로 넘어간다. 조회 오류나 아직 보이지 않는 span은 `trace_unconfirmed`로 남긴다. 서버 수집 큐가 비었고 이전 업로드 프로세스가 끝났음을 확인한 뒤, 같은 명령에 `--retry-missing-spans`를 추가하면 다시 조회해 누락된 span만 보낸다.
 - 실서버에서는 보고서의 `trace_id`와 `score_id`로 표시된 값과 채점 날짜를 확인한다. [Langfuse 수집 및 점수 교체 규칙](https://langfuse.com/faq/all/tracing-data-updates)
 
@@ -219,5 +219,9 @@ uv run --locked python -m scripts.upload_extra_scores \
   --preview results/local/langfuse-extra-scores-preview.json \
   --archive results/local/실험원본 --expected-traces 4
 ```
+
+추가 점수를 쓰는 모든 팀원은 `.env`의 `RAG_SCORE_LEDGER_DSN`에 **같은 팀용 PostgreSQL 데이터베이스와 스키마**를 지정한다. 담당자가 발급한 직접 연결 또는 세션 풀링 주소를 사용한다. 프로젝트 잠금이 전송이 끝날 때까지 같은 DB 세션에 유지되어야 하므로 트랜잭션 풀링 주소는 사용할 수 없다. 전송 계정은 해당 스키마에서 최초 테이블 생성과 이후 조회·삽입·갱신이 가능해야 한다. 첫 실행이 `rag_extra_score_ledger`를 만든다. 연결 문자열에는 비밀번호가 포함될 수 있으므로 저장소에 올리지 않는다. 로컬 검증과 `--check`에는 이 설정이 필요 없다.
+
+같은 프로젝트의 업로드는 DB 잠금으로 직렬화한다. POST 직전에 점수 ID, 원래 값·설명·시각을 보존한다. 이미 접수한 점수가 조회에 아직 보이지 않으면 대기 건수로 표시한다. 응답 유실 후에는 동일 입력만 재시도할 수 있다. 서버에 미반영된 시도와 충돌하면 전체 배치의 새 전송을 중단한다. 팀에서 전송기를 교체할 때는 이전 버전이 보낸 점수의 수집을 먼저 확인한다. 이 공용 기록을 경유한 업로드끼리 충돌을 방지할 수 있다.
 
 기본 실행은 오프라인 검증이다. 같은 명령에서 `uv run --locked --env-file .env`를 사용하고 끝에 `--check`를 붙이면 팀 프로젝트를 읽기만 한다. 원본과 귀속을 확인한 뒤 `--upload`로 누락 점수만 전송한다. 충돌이나 누락된 실행이 있으면 전송 전에 중단한다. 접수 후 같은 입력으로 `--check`를 실행해 서버 일치 건수와 미등록 0개를 확인한다. 부분 접수 후에는 기존 파일의 시각과 내용을 유지해 재시도한다. 합성 실험 4건의 결과는 최종 평가 80건과 따로 집계한다.

@@ -9,6 +9,7 @@ from functools import lru_cache
 from typing import TYPE_CHECKING
 
 from src.observability.tracing import (
+    LangfuseUpload,
     langfuse_settings,
     project_fingerprint,
     trace_id_for_run,
@@ -36,10 +37,15 @@ def _configured_client():
         from langfuse import Langfuse
 
         url, public, secret = langfuse_settings()
+        try:
+            project = LangfuseUpload().project
+        except (ValueError, OSError):
+            # 프로젝트 조회만 일시 실패해도 실행 추적은 유지한다.
+            project = project_fingerprint(url, public)
         return (
             Langfuse(public_key=public, secret_key=secret, base_url=url.geturl()),
             public,
-            project_fingerprint(url, public),
+            project,
         )
     except Exception:
         logging.getLogger(__name__).warning(

@@ -46,6 +46,14 @@ def transport(monkeypatch):
     monkeypatch.setenv("LANGFUSE_BASE_URL", "https://langfuse.invalid")
     monkeypatch.setenv("LANGFUSE_PUBLIC_KEY", "dummy-public")
     monkeypatch.setenv("LANGFUSE_SECRET_KEY", "private-credential")
+    original = tracing.LangfuseUpload.request
+
+    def request(client, method, path, payload=None):
+        if method == "GET" and path == "/api/public/projects":
+            return {"data": [{"id": "team-project"}]}
+        return original(client, method, path, payload)
+
+    monkeypatch.setattr(tracing.LangfuseUpload, "request", request)
     connection = Mock()
     monkeypatch.setattr(tracing, "HTTPSConnection", connection)
     return connection
@@ -57,13 +65,14 @@ def response(status, body):
     return result
 
 
-def serve(connection, posts, lookups=None):
+def serve(connection, posts, lookups=None, roots=()):
     posts = iter(posts)
+    roots = iter(roots)
     lookups = iter(lookups) if lookups is not None else None
 
     def getresponse():
         if "isRootObservation=true" in connection.request.call_args.args[1]:
-            return response(200, {"data": [], "meta": {}})
+            return response(200, {"data": next(roots, []), "meta": {}})
         if connection.request.call_args.args[0] == "GET":
             return (
                 next(lookups)
@@ -109,6 +118,12 @@ def test_upload_cli_retry_across_midnight(tmp_path, monkeypatch, transport):
                 main(args)
             assert error.value.code == 1
         else:
+            root = {
+                "id": "a" * 16,
+                "traceId": tracing.trace_id_for_run(sample["run_id"]),
+                "isRootObservation": True,
+            }
+            serve(calls, [response(202, {"message": "Accepted"})], roots=[[root]])
             main(args)
         accepted, skipped = receipt(report)
         assert accepted["trace_status"] == "accepted" and skipped["status"] == "skipped"
@@ -407,6 +422,16 @@ def test_only_first_valid_row_for_score_id_is_published(
                 if first_status == "score_unconfirmed"
                 else response(202, {"message": "Accepted"}),
                 response(202, {"message": "Accepted"}),
+            ],
+            roots=[
+                [],
+                [
+                    {
+                        "id": "a" * 16,
+                        "traceId": tracing.trace_id_for_run(row["run_id"]),
+                        "isRootObservation": True,
+                    }
+                ],
             ],
         )
 
@@ -739,6 +764,14 @@ def test_cli_recovers_only_selected_run_and_retries_score(
     assert attr not in spans[-1]["attributes"]
     assert len(roots) == 1 and spans[-1]["parentSpanId"] == roots[0]["id"]
     assert all(s["traceId"] == trace_id for s in spans)
+    if not existing_root:
+        saved_roots = roots.copy()
+        roots.clear()
+        conn.request.reset_mock()
+        with pytest.raises(SystemExit):
+            main([*args, "--report", str(tmp_path / "still-hidden.csv")])
+        assert posts(conn) == []
+        roots.extend(saved_roots)
     conn.request.reset_mock()
     second = tmp_path / "second.csv"
     main([*args, "--report", str(second)])
@@ -805,3 +838,70 @@ def test_recovery_preview_is_offline_and_requires_root_lookup_to_send(
             scores, tmp_path / "other.csv", send, recover_missing_root="run1"
         )
     send.assert_not_called()
+
+
+@pytest.mark.parametrize("saved_as_legacy", [True, False])
+def test_rotated_key_same_project_recovers_but_unknown_legacy_hash_waits(
+    tmp_path, transport, monkeypatch, saved_as_legacy
+):
+    old = tracing.langfuse_post()
+    stable, legacy = old.project, old.legacy_project
+    monkeypatch.setenv("LANGFUSE_PUBLIC_KEY", "dummy-rotated")
+    current = tracing.langfuse_post()
+    assert stable == current.project and legacy != current.legacy_project
+    scores = tmp_path / "scores.csv"
+    row = write_scores(scores, langfuse_project=legacy)
+    args = ["--scores", str(scores), "--upload", "--report"]
+    conn = transport.return_value
+    serve(conn, [])
+    with pytest.raises(SystemExit):
+        main([*args, str(tmp_path / "legacy.csv")])
+    assert not posts(conn)
+    if saved_as_legacy:
+        # 키 A로 서버 프로젝트 연결을 확인한 기록이 있을 때만 B로 레거시 해시를 복구한다.
+        monkeypatch.setenv("LANGFUSE_PUBLIC_KEY", "dummy-public")
+        with pytest.raises(SystemExit):
+            main([*args, str(tmp_path / "key-a-checked.csv")])
+        monkeypatch.setenv("LANGFUSE_PUBLIC_KEY", "dummy-rotated")
+    else:
+        write_scores(scores, langfuse_project=stable)
+    serve(conn, [])
+    with pytest.raises(SystemExit):
+        main([*args, str(tmp_path / "ordinary.csv")])
+    assert not posts(conn)
+    root = {
+        "traceId": tracing.trace_id_for_run(row["run_id"]),
+        "id": "a" * 16,
+        "isRootObservation": True,
+    }
+    conn.getresponse.side_effect = [
+        response(200, {"data": [], "meta": {}}),
+        response(200, {"data": [], "meta": {}}),
+        response(200, {}),
+        response(200, {"data": [root], "meta": {}}),
+        response(202, {"message": "Accepted"}),
+    ]
+    main(["--recover-missing-root", "run1", *args, str(tmp_path / "recovered.csv")])
+    assert [r.args[1] for r in posts(conn)] == [tracing.TRACES, tracing.SCORES]
+
+
+def test_recovery_waits_for_visibility_after_new_root_ack(tmp_path, transport):
+    scores = tmp_path / "scores.csv"
+    write_scores(scores, langfuse_project=tracing.langfuse_post().project)
+    conn = transport.return_value
+    serve(conn, [response(200, {})])
+    report = tmp_path / "report.csv"
+    with pytest.raises(SystemExit):
+        main(
+            [
+                "--upload",
+                "--scores",
+                str(scores),
+                "--report",
+                str(report),
+                "--recover-missing-root",
+                "run1",
+            ]
+        )
+    assert [c.args[1] for c in posts(conn)] == [tracing.TRACES]
+    assert receipt(report)[0]["reason"] == "trace_unconfirmed"

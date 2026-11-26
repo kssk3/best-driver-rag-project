@@ -667,7 +667,7 @@ def test_live_run_then_archived_score_has_one_langfuse_root(tmp_path, monkeypatc
         span_exporter=exporter,
         tracer_provider=TracerProvider(),
     )
-    project = tracing.langfuse_post().project
+    project = "project:team-test"
     monkeypatch.setattr(
         live, "_configured_client", lambda: (sdk, "pk-root-test", project)
     )
@@ -717,6 +717,8 @@ def test_live_run_then_archived_score_has_one_langfuse_root(tmp_path, monkeypatc
     published = []
 
     def request(self, method, path, payload=None):
+        if path == "/api/public/projects":
+            return {"data": [{"id": "team-test"}]}
         if method == "GET":
             query = parse_qs(urlsplit(path).query)
             if "isRootObservation" in query:

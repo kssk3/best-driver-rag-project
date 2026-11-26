@@ -9,13 +9,13 @@ import re
 from collections.abc import Iterable
 from contextlib import nullcontext
 from datetime import UTC, datetime, timedelta
-from functools import partial
+from functools import cached_property, partial
 from http.client import HTTPResponse, HTTPSConnection
 from pathlib import Path
 from urllib.parse import SplitResult, urlencode, urlsplit
 
 from src.evaluation.judgment_details import JudgmentDetails
-from src.observability.upload_state import journaled_post
+from src.observability.upload_state import journaled_post, recorded_project_aliases
 
 TRACES = "/api/public/otel/v1/traces"
 SCORES = "/api/public/scores"
@@ -99,12 +99,22 @@ class LangfuseUpload:
         assert url.hostname is not None  # langfuse_settings에서 검증한 호스트
         self.hostname = url.hostname
         self.url = url
-        self.project = project_fingerprint(url, public)
+        self.legacy_project = project_fingerprint(url, public)
         token = base64.b64encode(f"{public}:{secret}".encode()).decode("ascii")
         self.headers = {
             "Authorization": "Basic " + token,
             "Content-Type": "application/json",
         }
+
+    @cached_property
+    def project(self) -> str:
+        response = self.request("GET", "/api/public/projects")
+        rows = response.get("data") if isinstance(response, dict) else None
+        if isinstance(rows, list) and len(rows) == 1 and isinstance(rows[0], dict):
+            project_id = rows[0].get("id")
+            if isinstance(project_id, str) and project_id.strip():
+                return "project:" + project_id
+        raise ValueError("Langfuse 인증 키가 가리키는 프로젝트를 확인할 수 없습니다.")
 
     def request(self, method, path, payload=None):
         headers = self.headers.copy()
@@ -153,7 +163,12 @@ class LangfuseUpload:
         ):
             raise ValueError("incomplete root lookup")
         rows = body.get("data")
-        if rows == [] and (recorded_project != self.project or recover_missing):
+        other_project = bool(
+            recorded_project
+            and recorded_project.startswith("project:")
+            and recorded_project != self.project
+        )
+        if rows == [] and (not recorded_project or other_project or recover_missing):
             return  # 정상 조회로 루트가 없음을 확인한 경우에만 보관본 루트를 쓴다.
         if (
             not isinstance(rows, list)
@@ -318,7 +333,9 @@ def _payloads(row, details=None):
     return trace, score
 
 
-def _publish(row, entry, post, seen_score_ids, details, attach_to_root):
+def _publish(
+    row, entry, post, seen_score_ids, details, attach_to_root, confirm_recovery
+):
     status = row["status"]
     if status not in {"scored", "skipped", "no_score", "input_error", "scorer_error"}:
         entry.update(status="failed", reason="unknown_score_status")
@@ -364,6 +381,10 @@ def _publish(row, entry, post, seen_score_ids, details, attach_to_root):
             if stage == "trace" and attach_to_root is not None:
                 attach_to_root(payload, row.get("langfuse_project"), row.get("variant"))
             accepted = post(path, payload)
+            if stage == "trace" and accepted is True and confirm_recovery:
+                spans = payload["resourceSpans"][0]["scopeSpans"][0]["spans"]
+                if spans and spans[0]["name"] == "archived-run":
+                    confirm_recovery(payload, variant=row.get("variant"))
         except RootVariantMismatch:
             entry.update(
                 status="failed",
@@ -422,7 +443,6 @@ def publish_scores(
     recover_missing_root: str | None = None,
 ) -> bool:
     """업로드 시도마다 새 영수증을 기록한다. post 미지정은 네트워크 없는 검증이다."""
-    project = post.project if isinstance(post, LangfuseUpload) else "injected"
     lookup = post.find_span if isinstance(post, LangfuseUpload) else None
     attach_to_root = (
         partial(post.attach_to_root, recover_missing=recover_missing_root is not None)
@@ -456,16 +476,34 @@ def publish_scores(
             records = [row for row in records if row["run_id"] == recover_missing_root]
             if not records:
                 raise ValueError("scores.csv에서 복구할 run_id를 찾을 수 없습니다.")
-            if isinstance(post, LangfuseUpload) and any(
-                row.get("langfuse_project") not in (None, "", post.project)
-                for row in records
-            ):
-                raise ValueError("복구 대상 실행과 Langfuse 프로젝트가 다릅니다.")
+            if isinstance(post, LangfuseUpload):
+                aliases = recorded_project_aliases(scores, post.project)
+                known = {None, "", post.project, post.legacy_project, *aliases}
+                if any(row.get("langfuse_project") not in known for row in records):
+                    raise ValueError(
+                        "복구 대상 실행이 현재 Langfuse 프로젝트에 속하는지 확인할 수 없습니다."
+                    )
+        project = post.project if isinstance(post, LangfuseUpload) else "injected"
+        confirm_recovery = (
+            partial(post.attach_to_root, recorded_project=project)
+            if recover_missing_root is not None and isinstance(post, LangfuseUpload)
+            else None
+        )
         seen_score_ids: set[str] = set()
         ok = True
         with (
             report.open("x", encoding="utf-8", newline="") as stream,
-            journaled_post(scores, project, lookup, post, TRACES, retry_missing)
+            journaled_post(
+                scores,
+                project,
+                lookup,
+                post,
+                TRACES,
+                retry_missing,
+                legacy_project=post.legacy_project
+                if isinstance(post, LangfuseUpload)
+                else None,
+            )
             if post is not None
             else nullcontext() as send,
         ):
@@ -489,7 +527,13 @@ def publish_scores(
                     row["metric"],
                 )
                 _publish(
-                    row, entry, send, seen_score_ids, details.get(key), attach_to_root
+                    row,
+                    entry,
+                    send,
+                    seen_score_ids,
+                    details.get(key),
+                    attach_to_root,
+                    confirm_recovery,
                 )
                 writer.writerow(entry)
                 stream.flush()

@@ -1,6 +1,8 @@
 import csv
 import json
+import os
 from urllib.parse import parse_qs, urlsplit
+from uuid import uuid4
 
 import pytest
 
@@ -67,6 +69,8 @@ def invoke(sample, *args):
 
 class Server:
     def __init__(self):
+        self.project = "test-" + uuid4().hex
+        self.variant = None
         self.sent = []
         self.rows = []
         self.missing_root = None
@@ -89,14 +93,21 @@ class Server:
             data = (
                 []
                 if trace == self.missing_root
-                else [dict(isRootObservation=True, traceId=trace, environment="rag")]
+                else [
+                    dict(
+                        isRootObservation=True,
+                        traceId=trace,
+                        environment="rag",
+                        metadata={"variant": self.variant},
+                    )
+                ]
             )
         else:
             data = [r for r in self.rows if r["subject"]["id"] == trace]
         return {"data": data, "meta": {"cursor": None}}
 
 
-def test_four_traces_and_retry(sample, monkeypatch):
+def test_four_traces_and_retry(sample, monkeypatch, shared_ledger):
     server = Server()
     protected = {
         "name": "faithfulness",
@@ -171,7 +182,9 @@ def test_invalid_batch_never_writes(sample, monkeypatch, problem):
 
 
 @pytest.mark.parametrize("problem", ["missing_root", "conflicting_score"])
-def test_preflight_checks_last_trace_before_first_post(sample, monkeypatch, problem):
+def test_preflight_checks_last_trace_before_first_post(
+    sample, monkeypatch, problem, shared_ledger
+):
     server = Server()
     last = sample[1][-1]
     if problem == "missing_root":
@@ -191,7 +204,7 @@ def test_preflight_checks_last_trace_before_first_post(sample, monkeypatch, prob
     assert not server.sent
 
 
-def test_undefined_id_metrics_keep_relevancy(sample, monkeypatch):
+def test_undefined_id_metrics_keep_relevancy(sample, monkeypatch, shared_ledger):
     path, rows = sample
     table(
         path,
@@ -206,7 +219,9 @@ def test_undefined_id_metrics_keep_relevancy(sample, monkeypatch):
     assert all(row["name"] == RELEVANCY and "run_id" not in row for row in server.sent)
 
 
-def test_explicit_trace_mapping_requires_same_server_run(sample, monkeypatch):
+def test_explicit_trace_mapping_requires_same_server_run(
+    sample, monkeypatch, shared_ledger
+):
     path, scores = sample
     with (path / "runs.csv").open() as f:
         runs = list(csv.DictReader(f))
@@ -216,6 +231,104 @@ def test_explicit_trace_mapping_requires_same_server_run(sample, monkeypatch):
     table(path, "runs.csv", runs)
     for score in scores[-3:]:
         score["traceId"] = "c" * 32
+    server = Server()
+    monkeypatch.setattr(cli, "langfuse_post", lambda: server)
+    with pytest.raises(SystemExit):
+        invoke(sample, "--upload")
+    assert not server.sent
+
+
+@pytest.fixture
+def shared_ledger(monkeypatch):
+    test_dsn = os.environ.get("TEST_SCORE_LEDGER_DSN")
+    if not test_dsn:
+        pytest.skip("임시 PostgreSQL의 TEST_SCORE_LEDGER_DSN이 필요합니다.")
+    monkeypatch.setenv("RAG_SCORE_LEDGER_DSN", test_dsn)
+
+
+def test_delayed_visibility_does_not_replace_accepted_input(
+    sample, monkeypatch, shared_ledger
+):
+    server = Server()
+    monkeypatch.setattr(cli, "langfuse_post", lambda: server)
+    invoke(sample, "--upload")
+    server.rows.clear()  # 접수 뒤에도 v3 읽기에는 아직 반영되지 않았다.
+    invoke(sample, "--upload")
+    assert len(server.sent) == 12
+    sample[1][0]["value"] = 0.8
+    with pytest.raises(SystemExit):
+        invoke(sample, "--upload")
+    assert len(server.sent) == 12
+
+
+def test_extra_variant_conflict_precedes_all_posts(sample, monkeypatch, shared_ledger):
+    path, _ = sample
+    with (path / "runs.csv").open() as f:
+        runs = list(csv.DictReader(f))
+    for run in runs:
+        run["variant"] = "B"
+    table(path, "runs.csv", runs)
+    server = Server()
+    server.variant = "A"
+    monkeypatch.setattr(cli, "langfuse_post", lambda: server)
+    with pytest.raises(SystemExit):
+        invoke(sample, "--upload")
+    assert not server.sent
+
+
+def test_concurrent_writers_use_one_reservation(sample, monkeypatch, shared_ledger):
+    from concurrent.futures import ThreadPoolExecutor
+    from threading import Event
+
+    from src.observability.extra_scores import prepare_scores
+    from src.observability.score_ledger import upload_scores
+
+    path, rows = sample
+    preview = path / "batch.json"
+    preview.write_text(json.dumps(rows))
+    scores = prepare_scores(preview, path, 4)
+    server = Server()
+    entered, release = Event(), Event()
+    request = server.request
+
+    def delayed(method, path, payload=None):
+        if method == "POST":
+            entered.set()
+            assert release.wait(5)
+            server.sent.append(payload[0])
+            return True  # 접수 후 읽기에서는 계속 보이지 않는다.
+        return request(method, path, payload)
+
+    monkeypatch.setattr(server, "request", delayed)
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        first = pool.submit(upload_scores, server, scores)
+        assert entered.wait(5)
+        second = pool.submit(
+            upload_scores, server, [*scores[:-1], dict(scores[-1], value=0.8)]
+        )
+        release.set()
+        assert first.result(timeout=10) == (12, 0)
+        with pytest.raises(ValueError, match="원래 입력"):
+            second.result(timeout=10)
+    assert len(server.sent) == 12
+
+
+def test_unconfirmed_post_keeps_original_payload(sample, monkeypatch, shared_ledger):
+    server = Server()
+    server.reject_at = 1
+    monkeypatch.setattr(cli, "langfuse_post", lambda: server)
+    with pytest.raises(SystemExit):
+        invoke(sample, "--upload")
+    # 첫 POST는 접수됐고, 두 번째 POST의 응답은 유실됐다.
+    server.reject_at = None
+    sample[1][1]["comment"] = "바뀐 설명"
+    with pytest.raises(SystemExit):
+        invoke(sample, "--upload")
+    assert len(server.sent) == 1
+
+
+def test_missing_shared_ledger_never_posts(sample, monkeypatch):
+    monkeypatch.delenv("RAG_SCORE_LEDGER_DSN", raising=False)
     server = Server()
     monkeypatch.setattr(cli, "langfuse_post", lambda: server)
     with pytest.raises(SystemExit):
