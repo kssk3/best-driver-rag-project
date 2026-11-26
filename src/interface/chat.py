@@ -117,6 +117,12 @@ def _render_clarification(
 
     st.warning(view.answer or "질문하신 내용은 추가 정보가 필요합니다.")
 
+    if not view.required_fields:
+        # 더 채울 값이 없다(지원 밖 안내 등). 같은 요청을 다시 보내면 같은 안내만 나오므로
+        # 폼 대신 처음 입력칸에서 지역이나 질문을 바꾸도록 안내한다.
+        st.caption("위의 지역이나 질문을 바꿔서 다시 질문해 주세요.")
+        return
+
     with st.form("followup"):
         extra_conditions = {
             field: st.text_input(

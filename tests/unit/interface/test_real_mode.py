@@ -14,6 +14,7 @@ from src.contracts import (
     PipelineOptions,
     PipelineRequest,
     PipelineResponse,
+    ResolvedQuery,
     RunRecord,
     SearchCandidate,
 )
@@ -191,3 +192,41 @@ def test_followup_failure_keeps_the_form_and_hides_the_raw_error(monkeypatch) ->
     assert any("RuntimeError" in text for text in texts)
     assert not any("sk-secret-key" in text for text in texts)
     assert any("어느 구 기준" in w.value for w in app.warning)  # 다시 시도할 수 있다
+
+
+class _Unsupported:
+    """지원 밖 구 안내를 돌려준다. 채울 값이 없는 되묻기다."""
+
+    def run(self, request):
+        record = _real_record()
+        response = PipelineResponse(
+            request_id="req-1",
+            run_id="run-1",
+            status="needs_clarification",
+            answer="강남구는 아직 지원하지 않아요. 서대문구·송파구의 동이나 구를 알려 주세요.",
+        )
+        resolved = ResolvedQuery(
+            search_query="질문",
+            status="needs_clarification",
+            region_status="unsupported",
+            district="강남구",
+        )
+        return record.model_copy(
+            update={"response": response, "resolved_query": resolved}
+        )
+
+
+def test_unsupported_guidance_has_no_resend_form_and_points_back_to_the_inputs(
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(
+        importlib.import_module(RUNTIMES), "create_a_runtime", lambda s: _Unsupported()
+    )
+    app = _ask_in_real_mode("강남구 삼성동에서 대형폐기물은 어떻게 버려요?")
+
+    assert not app.exception
+    assert any("아직 지원하지 않아요" in w.value for w in app.warning)
+    assert [b.label for b in app.button] == [
+        "질문하기"
+    ]  # 같은 요청을 다시 보내는 버튼이 없다
+    assert any("바꿔서 다시 질문" in c.value for c in app.caption)
