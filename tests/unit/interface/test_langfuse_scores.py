@@ -1,6 +1,7 @@
 """Langfuse 점수 집계와 비교 패널 테스트. 가짜 응답만 쓰고 외부 호출은 하지 않는다."""
 
 import pytest
+import streamlit as st
 from screen_helpers import button, new_app
 
 from src.interface import langfuse_scores
@@ -196,10 +197,15 @@ def test_error_never_contains_keys_or_address(monkeypatch) -> None:
 # --- 화면 ---
 
 
+@pytest.fixture(autouse=True)
+def _clear_cache():
+    st.cache_data.clear()
+    yield
+    st.cache_data.clear()
+
+
 def open_panel(monkeypatch, loader):
-    """loader가 만든 결과(또는 오류)를 스냅샷에 미리 넣고 화면을 띄운다."""
     monkeypatch.setattr(langfuse_scores, "load_langfuse_scores", loader)
-    langfuse_scores.refresh_now()
     return new_app().run()
 
 
@@ -263,6 +269,40 @@ def test_panel_shows_only_the_error_kind(monkeypatch, code) -> None:
     assert ("연결하지 못했습니다" in error.value) == (code == "unreachable")
 
 
+def test_refresh_button_reloads_scores(monkeypatch) -> None:
+    calls = []
+
+    def loader():
+        calls.append(1)
+        return LangfuseScores([], {m: 0 for m in METRIC_NAMES})
+
+    app = open_panel(monkeypatch, loader)
+    button(app, "새로고침").click().run()
+
+    assert len(calls) == 2
+
+
+def test_a_read_timeout_is_reported_as_slow_not_unreachable(monkeypatch) -> None:
+    monkeypatch.setenv("LANGFUSE_BASE_URL", "https://slow.invalid")
+    monkeypatch.setenv("LANGFUSE_PUBLIC_KEY", "pk")
+    monkeypatch.setenv("LANGFUSE_SECRET_KEY", "sk")
+
+    class Slow:
+        def request(self, *args, **kwargs):
+            raise TimeoutError("read timed out")
+
+        def close(self):
+            pass
+
+    monkeypatch.setattr(
+        langfuse_scores, "HTTPSConnection", lambda *args, **kwargs: Slow()
+    )
+
+    with pytest.raises(LangfuseReadError) as error:
+        langfuse_scores._get("/x", {})
+    assert error.value.code == "timeout"
+
+
 def test_panel_explains_a_slow_server_and_remembers_the_failure(monkeypatch) -> None:
     calls = []
 
@@ -277,55 +317,3 @@ def test_panel_explains_a_slow_server_and_remembers_the_failure(monkeypatch) -> 
     assert "응답하지 않습니다" in error.value
     assert len(calls) == 1
     assert any(b.label == "새로고침" for b in app.button)
-
-
-def test_panel_shows_loading_first_and_never_blocks_the_page(monkeypatch) -> None:
-    import threading
-
-    release = threading.Event()
-
-    def slow():
-        release.wait(timeout=10)
-        return LangfuseScores([], {m: 0 for m in METRIC_NAMES})
-
-    monkeypatch.setattr(langfuse_scores, "load_langfuse_scores", slow)
-    app = new_app().run()  # 점수를 아직 못 읽었어도 화면은 바로 그려진다.
-
-    assert not app.exception
-    assert "Langfuse 점수를 불러오는 중" in html_of(app)
-    assert any("먼저 질문" in i.value for i in app.info)  # 검증 패널은 그대로 보인다.
-
-    release.set()
-    langfuse_scores.wait()
-    app.run()
-    assert any("아직 없습니다" in i.value for i in app.info)
-
-
-def test_a_stale_result_is_shown_while_it_refreshes(monkeypatch) -> None:
-    monkeypatch.setattr(
-        langfuse_scores,
-        "load_langfuse_scores",
-        lambda: LangfuseScores([], {m: 0 for m in METRIC_NAMES}),
-    )
-    langfuse_scores.refresh_now()
-    monkeypatch.setattr(langfuse_scores, "TTL_SECONDS", -1)  # 이미 오래된 값
-
-    result, loading = langfuse_scores.snapshot()
-
-    assert result is not None and loading  # 이전 값을 주면서 뒤에서 새로 읽는다.
-    langfuse_scores.wait()
-    assert langfuse_scores.snapshot()[0] is not None
-
-
-def test_refresh_button_reloads_scores(monkeypatch) -> None:
-    calls = []
-
-    def loader():
-        calls.append(1)
-        return LangfuseScores([], {m: 0 for m in METRIC_NAMES})
-
-    app = open_panel(monkeypatch, loader)
-    button(app, "새로고침").click().run()
-    langfuse_scores.wait()
-
-    assert len(calls) == 2

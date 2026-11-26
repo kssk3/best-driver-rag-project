@@ -2,8 +2,6 @@
 
 import pytest
 
-from src.interface import langfuse_scores
-
 
 @pytest.fixture(autouse=True)
 def _isolate_app_env(monkeypatch) -> None:
@@ -16,13 +14,3 @@ def _isolate_app_env(monkeypatch) -> None:
         "LANGFUSE_SECRET_KEY",
     ):
         monkeypatch.delenv(name, raising=False)
-
-
-@pytest.fixture(autouse=True)
-def _fresh_langfuse_snapshot():
-    """비교 패널의 점수 스냅샷은 모듈 전역이라 테스트끼리 새지 않게 비운다."""
-    langfuse_scores.wait()
-    langfuse_scores.reset()
-    yield
-    langfuse_scores.wait()
-    langfuse_scores.reset()

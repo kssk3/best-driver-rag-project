@@ -8,8 +8,6 @@ dataset_id를 읽는다. variant가 A/B/C가 아니거나 루트를 못 찾은 �
 import base64
 import json
 import os
-import threading
-import time
 from dataclasses import dataclass
 from http.client import HTTPSConnection
 from math import isfinite
@@ -180,46 +178,3 @@ def load_langfuse_scores() -> LangfuseScores:
                 "start": item.get("startTime") or "",
             }
     return build_scores(scores, roots)
-
-
-# --- 화면을 막지 않고 뒤에서 불러오는 스냅샷 -------------------------------------------------------
-# 서버가 느려도 화면은 먼저 그리고, 점수는 다 불러온 뒤에 채운다. 결과(성공과 오류 코드)는
-# TTL 동안 재사용하고, 지나면 이전 값을 보여 주면서 뒤에서 새로 읽는다.
-TTL_SECONDS = 60
-_lock = threading.Lock()
-_state: dict = {"result": None, "at": 0.0, "thread": None}
-
-
-def refresh_now() -> None:
-    """지금 바로 읽어서 스냅샷에 저장한다(뒤 스레드와 테스트가 쓴다). 오류는 코드 문자열로 저장한다."""
-    try:
-        result: LangfuseScores | str = load_langfuse_scores()
-    except LangfuseReadError as error:
-        result = error.code
-    with _lock:
-        _state.update(result=result, at=time.monotonic(), thread=None)
-
-
-def snapshot() -> tuple[LangfuseScores | str | None, bool]:
-    """(마지막 결과 또는 오류 코드, 불러오는 중인지). 아직 아무것도 없으면 결과는 None이다."""
-    with _lock:
-        result, at, thread = _state["result"], _state["at"], _state["thread"]
-        fresh = result is not None and time.monotonic() - at < TTL_SECONDS
-        if not fresh and thread is None:
-            thread = threading.Thread(target=refresh_now, daemon=True)
-            _state["thread"] = thread
-            thread.start()
-        return result, _state["thread"] is not None
-
-
-def reset() -> None:
-    """저장된 결과를 버린다(새로고침 버튼과 테스트). 이미 읽는 중인 스레드는 기다리지 않는다."""
-    with _lock:
-        _state.update(result=None, at=0.0, thread=None)
-
-
-def wait() -> None:
-    """읽는 중인 스레드가 있으면 끝날 때까지 기다린다(테스트용)."""
-    thread = _state["thread"]
-    if thread is not None:
-        thread.join()

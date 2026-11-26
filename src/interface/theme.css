@@ -649,13 +649,6 @@ a.brand {
   padding: 6px 0;
 }
 
-/* 비교 패널 불러오는 중 안내 */
-.mx-loading {
-  color: var(--sub);
-  font-size: 13px;
-  padding: 18px 4px;
-}
-
 /* 후보 순위 표: 가운데 정렬(chunk_id만 왼쪽), 카드와 같은 연한 배경 */
 .st-key-insp_rank .rank-table {
   width: 100%;
