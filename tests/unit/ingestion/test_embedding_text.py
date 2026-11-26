@@ -15,7 +15,8 @@ from src.ingestion.embedding_text import (
         ("세   탁   기", "세탁기"),
         ("안 마  의 자", "안마의자"),
         ("가\n전\n제\n품\n류", "가전제품류"),
-        ("(입)간 판", "(입)간판"),
+        ("비 고", "비고"),  # 칸 전체가 두 글자
+        ("(입)간 판", "(입)간 판"),  # 두 글자는 칸 전체일 때만
         ("책 장 (책 꽂 이)", "책장 (책꽂이)"),
         ("세탁기", "세탁기"),  # 이미 합쳐진 글은 그대로
     ],
@@ -31,6 +32,9 @@ def test_collapse_leaves_normal_sentences_and_numbers_alone() -> None:
         "수거 및 이송",
         "10kg 이상",
         "오후 6시 부터 11시 까지",
+        "배출요령은 제1호",
+        "제2항 및 제3항",
+        "법 제6조에 따라 할 수 있다",
     ):
         assert collapse_spaced_hangul(text) == text
 

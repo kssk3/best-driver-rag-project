@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parent.parent
 
 def require_variant_index(settings_path: Path) -> None:
     """설정의 색인이 변환 색인(색인 ID에 변환 표식이 있는 것)이 아니면 중단한다."""
-    index_path = json.loads(settings_path.read_text(encoding="utf-8"))["index_path"]
+    index_path = json.loads(settings_path.read_text(encoding="utf-8-sig"))["index_path"]
     index_id = load_index(ROOT / index_path).metadata.index_id
     if VARIANT_ID_MARKER not in index_id:
         sys.exit(

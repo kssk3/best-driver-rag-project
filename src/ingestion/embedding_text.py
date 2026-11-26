@@ -11,8 +11,10 @@ import re
 from typing import Any
 
 # 한글 한 글자씩 공백·줄바꿈으로 떨어진 덩어리: "세   탁   기", "가\n전\n제\n품\n류"
-# 앞뒤가 한글이면 단어 일부이므로 합치지 않는다(예: "이 조례"는 "조례"가 두 글자라 그대로 둔다).
-_SPACED = re.compile(r"(?<![가-힣])(?:[가-힣]\s+)+[가-힣](?![가-힣])")
+# 앞뒤가 한글·숫자이면 일반 문장의 일부("제2항 및", "법 제6조")이므로 합치지 않는다.
+# 세 글자 이상이거나 공백이 둘 이상·줄바꿈인 덩어리만 합치고, 두 글자가 한 칸씩 떨어진 것은
+# 칸의 맨 앞이고 뒤에 글이 이어지지 않을 때("비 고", "용 량 (ℓ)")만 합친다. 일반 문장의 "할 수"·"항 및"을 지키기 위해서다.
+_SPACED = re.compile(r"(?<![가-힣0-9])(?:[가-힣]\s+)+[가-힣](?![가-힣0-9])")
 _WHITESPACE = re.compile(r"\s+")
 # 표 제목 줄의 개정 이력 잡음: "[별표 2] <개정 98․6․12, ...>", "〔별표 6〕<개정 ...>"
 _HISTORY = re.compile(
@@ -22,7 +24,20 @@ _HISTORY = re.compile(
 
 def collapse_spaced_hangul(text: str) -> str:
     """글자 사이가 벌어진 한글 덩어리의 공백을 합친다. 이미 합쳐진 글에는 변화가 없다."""
-    return _SPACED.sub(lambda m: _WHITESPACE.sub("", m.group(0)), text)
+
+    def join(match: re.Match[str]) -> str:
+        chunk = match.group(0)
+        strong = len(re.findall("[가-힣]", chunk)) >= 3 or re.search(
+            r"\s{2,}|\n", chunk
+        )
+        alone = text[: match.start()].strip() == "" and not re.match(
+            r"\s*[가-힣0-9]", text[match.end() :]
+        )
+        if strong or alone:
+            return _WHITESPACE.sub("", chunk)
+        return chunk
+
+    return _SPACED.sub(join, text)
 
 
 def _clean(text: object) -> str:
