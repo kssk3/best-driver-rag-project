@@ -1,0 +1,13 @@
+{
+    "index_path": "data/processed/ordinance-v2-openai-small/index-json.json",
+    "runs_path": "results/local/catalog-chat/runs",
+    "pipeline": {
+        "variant": "A",
+        "rewrite_enabled": true,
+        "top_k": 5,
+        "max_context_chars": 12000,
+        "versions": {
+            "model": "gpt-6-luna"
+        }
+    }
+}

@@ -8,9 +8,12 @@ from typing import Protocol
 from .catalog import CATALOG_PATH, load_query_catalog
 from .dialect_rewrite import make_language_rewriter
 from .matching import (
+    active_item_matches,
     compile_item_matcher,
     fold_item_text,
     mentioned_items,
+    project_selected_items,
+    selection_spelling_aliases,
 )
 
 
@@ -19,7 +22,13 @@ class SearchQuery(Protocol):
     def search_query(self) -> str: ...
 
 
-def make_question_rewriter(path: Path = CATALOG_PATH) -> Callable[[str], str]:
+class QuestionRewriter(Protocol):
+    def __call__(
+        self, question: str, *, district: str | None = None, dong: str | None = None
+    ) -> str: ...
+
+
+def make_question_rewriter(path: Path = CATALOG_PATH) -> QuestionRewriter:
     """JSON의 언어 규칙, 재질 약어와 기본 별칭으로 검색어를 보강한다."""
     catalog = load_query_catalog(path)
     language = catalog["rewrite_rules"]["language"]
@@ -27,6 +36,7 @@ def make_question_rewriter(path: Path = CATALOG_PATH) -> Callable[[str], str]:
     aliases = {
         fold_item_text(term): name for term, name in catalog["item_aliases"].items()
     }
+    spelling_aliases = selection_spelling_aliases(aliases)
     exact = {
         fold_item_text(term): name
         for term, name in catalog["exact_item_aliases"].items()
@@ -40,9 +50,20 @@ def make_question_rewriter(path: Path = CATALOG_PATH) -> Callable[[str], str]:
         language,
     )
 
-    def rewrite(question: str) -> str:
-        question = normalize(question)
-        matched = mentioned_items(item_pattern, question)
+    def rewrite(
+        question: str, *, district: str | None = None, dong: str | None = None
+    ) -> str:
+        question = project_selected_items(
+            item_pattern,
+            normalize(question),
+            spelling_aliases,
+            aliases,
+            district=district,
+            dong=dong,
+        )
+        matched = mentioned_items(
+            active_item_matches(item_pattern, question, spelling_aliases, aliases)
+        )
         present = {
             fold_item_text(match["item"])
             for match in canonical_pattern.finditer(question)
@@ -68,7 +89,13 @@ def make_catalog_rewriter(path: Path = CATALOG_PATH) -> Callable[[SearchQuery], 
     rewrite = make_question_rewriter(path)
 
     def rewrite_resolved(query: SearchQuery) -> str:
-        return rewrite(query.search_query)
+        district = getattr(query, "district", None)
+        dong = getattr(query, "dong", None)
+        return rewrite(
+            query.search_query,
+            district=district if isinstance(district, str) else None,
+            dong=dong if isinstance(dong, str) else None,
+        )
 
     return rewrite_resolved
 

@@ -1,7 +1,9 @@
 import json
+from collections.abc import Callable
 from hashlib import sha256
 from pathlib import Path
 
+from src.common.env import require_env
 from src.common.errors import ApplicationError, ErrorCategory
 from src.config import RuntimeSettings
 from src.contracts import ResolvedQuery, SearchCandidate
@@ -14,6 +16,8 @@ from src.ingestion.preprocessed_chunking import chunk_preprocessed_documents
 from src.pipeline import PipelineConfigurationError, RAGPipeline
 from src.retrieval.regions import resolve_request
 from src.retrieval.search import make_vector_retriever
+from src.rewrite_dictionary.catalog import CATALOG_PATH
+from src.rewrite_dictionary.runtime import make_catalog_rewriter
 from src.runtime import create_runtime
 
 
@@ -56,19 +60,24 @@ def _embedding_settings(raw_identity: str) -> tuple[str, int | None]:
     return model, dimensions
 
 
-def create_a_runtime(settings: RuntimeSettings) -> RAGPipeline:
-    """Run each development question through region resolution, A search and generation."""
+def _a_runtime_factory(
+    settings: RuntimeSettings, *, allow_rewrite: bool
+) -> Callable[[bool], RAGPipeline]:
+    """색인과 모델을 한 번 준비하고 실행별 리라이트 설정만 바꾼다."""
     config = settings.model_copy(deep=True)
     options = config.pipeline
     model = _configured_model(config)
-    if options.variant != "A" or options.rewrite_enabled:
+    if options.variant != "A" or (options.rewrite_enabled and not allow_rewrite):
         raise PipelineConfigurationError(
-            "A 검색과 리라이트 OFF로 설정하세요.",
+            "A 검색으로 설정하세요."
+            if allow_rewrite
+            else "A 검색과 리라이트 OFF로 설정하세요.",
             code="evaluation.unsupported_configuration",
         )
 
     index = load_index(config.index_path)
     embedding_model, dimensions = _embedding_settings(index.metadata.embedding_identity)
+    require_env("OPENAI_API_KEY")
     embedder = create_openai_embeddings(embedding_model, dimensions)
     retrieve = make_vector_retriever(index, embedder)
 
@@ -82,12 +91,48 @@ def create_a_runtime(settings: RuntimeSettings) -> RAGPipeline:
             "prompt": sha256(SYSTEM_PROMPT.encode()).hexdigest(),
         }
     )
-    return create_runtime(
-        config,
-        resolver=resolve_request,
-        retriever=retrieve,
-        generator=make_answer_generator(make_model_draft(model)),
+    generate = make_answer_generator(make_model_draft(model))
+
+    def build(rewrite_enabled: bool) -> RAGPipeline:
+        configured = config.model_copy(deep=True)
+        pipeline = configured.pipeline
+        pipeline.rewrite_enabled = rewrite_enabled
+        pipeline.versions.pop("rewrite", None)
+        pipeline.versions.pop("rewrite_catalog", None)
+        rewriter = None
+        if rewrite_enabled:
+            rewriter = make_catalog_rewriter()
+            pipeline.versions["rewrite"] = "catalog-rules-v1"
+            pipeline.versions["rewrite_catalog"] = sha256(
+                CATALOG_PATH.read_bytes()
+            ).hexdigest()
+        return create_runtime(
+            configured,
+            resolver=resolve_request,
+            retriever=retrieve,
+            generator=generate,
+            rewriter=rewriter,
+        )
+
+    return build
+
+
+def create_a_runtime(settings: RuntimeSettings) -> RAGPipeline:
+    """기존 팀 A 답변 평가에서 리라이트를 끈 구성을 유지한다."""
+    return _a_runtime_factory(settings, allow_rewrite=False)(False)
+
+
+def create_a_catalog_runtime(settings: RuntimeSettings) -> RAGPipeline:
+    """설정한 팀 A 색인과 확장 사전을 실제 챗봇 검색에 연결한다."""
+    return _a_runtime_factory(settings, allow_rewrite=True)(
+        settings.pipeline.rewrite_enabled
     )
+
+
+def create_a_rewrite_comparison(settings: RuntimeSettings) -> dict[str, RAGPipeline]:
+    """같은 팀 A 검색기와 답변 모델을 쓰는 리라이트 OFF/ON 두 실행을 반환한다."""
+    build = _a_runtime_factory(settings, allow_rewrite=True)
+    return {"rewrite-off": build(False), "rewrite-on": build(True)}
 
 
 def create_fixed_evidence_runtime(
