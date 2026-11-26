@@ -6,7 +6,11 @@ from pathlib import Path
 
 import pytest
 
-from src.ingestion.search_preparation import normalize_search_text, prepare_table_rows
+from src.ingestion.search_preparation import (
+    normalize_search_text,
+    prepare_table_rows,
+    validate_table_search_text,
+)
 
 
 def test_restores_explicit_chemical_term_and_keeps_source_text():
@@ -30,6 +34,49 @@ def test_does_not_glue_unlisted_paragraph_boundaries():
     assert term_changes == [
         {"kind": "join_known_term", "before": "공동\n주택", "after": "공동주택"}
     ]
+
+
+@pytest.mark.parametrize("gap", ["\n\n", "\r\n \r\n", "\f", "\u2028", "\u2029"])
+def test_known_term_does_not_cross_hard_boundaries(gap):
+    text = f"다만, 공동{gap}주택의 예외"
+    assert normalize_search_text(text) == {
+        "text": "다만, 공동 주택의 예외",
+        "changes": [
+            {
+                "kind": "normalize_whitespace",
+                "before": text,
+                "after": "다만, 공동 주택의 예외",
+            }
+        ],
+    }
+
+
+@pytest.mark.parametrize("gap", ["\n", "\r\n", "\r", "\t\u3000"])
+def test_known_term_wrap_and_repeated_changes_are_kept_in_order(gap):
+    text = f"합성{gap}수지류   공동{gap}주택, 공동{gap}주택"
+    assert normalize_search_text(text) == {
+        "text": "합성수지류 공동주택, 공동주택",
+        "changes": [
+            {
+                "kind": "join_known_term",
+                "before": f"합성{gap}수지류",
+                "after": "합성수지류",
+            },
+            *[
+                {
+                    "kind": "join_known_term",
+                    "before": f"공동{gap}주택",
+                    "after": "공동주택",
+                }
+                for _ in range(2)
+            ],
+            {
+                "kind": "normalize_whitespace",
+                "before": "합성수지류   공동주택, 공동주택",
+                "after": "합성수지류 공동주택, 공동주택",
+            },
+        ],
+    }
 
 
 @pytest.mark.parametrize("text", ["", "신문지", "종이 또는 종이팩"])
@@ -112,3 +159,55 @@ def test_bad_row_reference_fails_instead_of_silently_losing_context(replacement)
     table["row_cell_ids"][1][0] = replacement
     with pytest.raises(ValueError):
         prepare_table_rows(table)
+
+
+def test_saved_search_rows_validate_without_rewriting_sources():
+    table = merged_table()
+    expected = prepare_table_rows(table)
+    table["rows_for_search"] = [
+        {
+            **row,
+            "row_id": f"test_mst_test_attachment_{row['row_id']}",
+            "source_attachment_id": "test_attachment",
+            "source_parent_mst": "test_mst",
+        }
+        for row in deepcopy(expected)
+    ]
+    original = deepcopy(table)
+
+    assert validate_table_search_text(table) == expected
+    assert table == original
+
+
+@pytest.mark.parametrize(
+    ("cell_index", "field", "replacement"),
+    [
+        (None, "search_text", "변조된 행 검색문"),
+        (0, "search_text", "변조된 셀 검색문"),
+        (0, "normalization_changes", []),
+        (0, "normalization_changes", [{"kind": "unexpected"}]),
+        (0, "cell_id", "wide"),
+        (0, "text", "변조된 원문"),
+        (None, "context_required", False),
+    ],
+)
+def test_invalid_saved_search_rows_fail_validation(cell_index, field, replacement):
+    table = merged_table()
+    table["rows_for_search"] = prepare_table_rows(table)
+    row = table["rows_for_search"][0]
+    target = row if cell_index is None else row["cell_values"][cell_index]
+    target[field] = replacement
+
+    with pytest.raises(ValueError, match=field):
+        validate_table_search_text(table)
+    assert table["cells"][0]["text"] == "합성\n수지류"
+
+
+def test_saved_search_log_rejects_out_of_order_changes():
+    table = merged_table()
+    table["cells"][0]["text"] = "합성\n수지류   공동\n주택"
+    table["rows_for_search"] = prepare_table_rows(table)
+    table["rows_for_search"][0]["cell_values"][0]["normalization_changes"].reverse()
+
+    with pytest.raises(ValueError, match="normalization_changes"):
+        validate_table_search_text(table)
