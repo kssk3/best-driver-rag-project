@@ -60,3 +60,7 @@ def _logo_uri() -> str:
 
 def brand_html() -> str:
     return f'<div class="brand"><img src="{_logo_uri()}" alt=""><b>분리당</b></div>'
+
+
+def avatar_html() -> str:
+    return f'<img class="avatar" src="{_logo_uri()}" alt="">'

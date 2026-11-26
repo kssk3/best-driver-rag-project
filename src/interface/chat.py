@@ -1,8 +1,10 @@
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 
 import streamlit as st
 
 from src.interface.adapter import Citation, ViewResponse
+from src.interface.theme import avatar_html
 
 # 실패해도 응답 상태와 answer를 바꾸지 않고 문서 답변을 이어 가는 단계(docs/ERRORS.md)
 RECOVERABLE_STAGES = {"rewrite", "place_lookup"}
@@ -61,6 +63,16 @@ def format_citation(citation: Citation) -> str:
     return line
 
 
+@contextmanager
+def _bubble(label: str, tone: str) -> Iterator[None]:
+    """당번이 아바타 옆 말풍선. 안의 st.success/warning/info는 CSS가 말풍선 모양으로 바꾼다."""
+    avatar, body = st.columns([1, 14], vertical_alignment="top")
+    avatar.html(avatar_html())
+    with body, st.container(key="answerbox"):
+        st.html(f'<span class="badge {tone}">{label}</span>')
+        yield
+
+
 def render_response(
     view: ViewResponse,
     question: str = "",
@@ -97,15 +109,17 @@ def render_response(
 
 def _render_answered(view: ViewResponse) -> None:
 
-    st.success(view.answer or "(답변 내용 없음)")
-    st.markdown("근거")
+    with _bubble("근거 확인됨", "ok"):
+        st.success(view.answer or "(답변 내용 없음)")
+        st.markdown("근거")
 
-    if not view.citations:
-        st.warning("인용된 근거가 없습니다.")
-        return
+        if not view.citations:
+            st.warning("인용된 근거가 없습니다.")
+            return
 
-    for citation in view.citations:
-        st.markdown(format_citation(citation))
+        for citation in view.citations:
+            with st.container(border=True):
+                st.markdown(format_citation(citation))
 
 
 def _render_clarification(
@@ -115,46 +129,48 @@ def _render_clarification(
     on_followup: Callable[[dict], None] | None,
 ) -> None:
 
-    st.warning(view.answer or "질문하신 내용은 추가 정보가 필요합니다.")
+    with _bubble("조금만 더 알려주세요", "warn"):
+        st.warning(view.answer or "질문하신 내용은 추가 정보가 필요합니다.")
 
-    if not view.required_fields:
-        # 더 채울 값이 없다(지원 밖 안내 등). 같은 요청을 다시 보내면 같은 안내만 나오므로
-        # 폼 대신 처음 입력칸에서 지역이나 질문을 바꾸도록 안내한다.
-        st.caption("위의 지역이나 질문을 바꿔서 다시 질문해 주세요.")
-        return
+        if not view.required_fields:
+            # 더 채울 값이 없다(지원 밖 안내 등). 같은 요청을 다시 보내면 같은 안내만 나오므로
+            # 폼 대신 처음 입력칸에서 지역이나 질문을 바꾸도록 안내한다.
+            st.caption("위의 지역이나 질문을 바꿔서 다시 질문해 주세요.")
+            return
 
-    with st.form("followup"):
-        extra_conditions = {
-            field: st.text_input(
-                REQUIRED_FIELD_LABELS.get(field, field), key=f"followup:{field}"
-            )
-            for field in view.required_fields
-        }
+        with st.form("followup"):
+            extra_conditions = {
+                field: st.text_input(
+                    REQUIRED_FIELD_LABELS.get(field, field), key=f"followup:{field}"
+                )
+                for field in view.required_fields
+            }
 
-        submitted = st.form_submit_button("다시 질문하기")
+            submitted = st.form_submit_button("다시 질문하기")
 
-    if submitted:
-        request = build_followup_request(question, district, extra_conditions)
-        if on_followup is not None:
-            on_followup(request)
-        else:
-            st.caption("다시 보낼 요청입니다. 실제 전송이 아닌 예시입니다.")
-            st.json(request)
+        if submitted:
+            request = build_followup_request(question, district, extra_conditions)
+            if on_followup is not None:
+                on_followup(request)
+            else:
+                st.caption("다시 보낼 요청입니다. 실제 전송이 아닌 예시입니다.")
+                st.json(request)
 
 
 def _render_insufficient_evidence(view: ViewResponse) -> None:
 
-    st.info("질문하신 내용은 답변이 어렵습니다.")
+    with _bubble("근거가 부족해요", "warn"):
+        st.info("질문하신 내용은 답변이 어렵습니다.")
 
-    # 근거는 찾았지만 답을 하나로 정할 수 없는 경우(출처끼리 내용이 다름)에는
-    # 안내 문장과 출처를 함께 보여 준다. 근거가 없으면 위 안내 한 줄만 보인다.
-    for line in (view.answer or "").splitlines():
-        if line.strip():
-            st.write(line)
-    if view.citations:
-        st.markdown("확인한 출처")
-        for citation in view.citations:
-            st.markdown(format_citation(citation))
+        # 근거는 찾았지만 답을 하나로 정할 수 없는 경우(출처끼리 내용이 다름)에는
+        # 안내 문장과 출처를 함께 보여 준다. 근거가 없으면 위 안내 한 줄만 보인다.
+        for line in (view.answer or "").splitlines():
+            if line.strip():
+                st.write(line)
+        if view.citations:
+            st.markdown("확인한 출처")
+            for citation in view.citations:
+                st.markdown(format_citation(citation))
 
 
 def _render_error(view: ViewResponse) -> None:

@@ -250,3 +250,46 @@ footer {
 .st-key-examples {
   margin-bottom: 20px;
 }
+
+/* 답변 말풍선: 당번이 아바타 옆 연보라 상자 */
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: #fff;
+  object-fit: cover;
+}
+.badge {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--green-soft);
+  color: #1b7d48;
+}
+.badge.warn {
+  background: #fdf3dc;
+  color: #b7791f;
+}
+.st-key-answerbox {
+  background: #efe9f6;
+  border-radius: 6px 18px 18px 18px;
+  padding: 16px 20px;
+}
+.st-key-answerbox [data-testid="stAlert"],
+.st-key-answerbox [data-testid="stAlert"] * {
+  background: transparent !important;
+}
+.st-key-answerbox [data-testid="stAlert"] {
+  color: var(--ink, #24352b);
+  font-size: 18px;
+  font-weight: 600;
+  padding: 4px 0;
+}
+.st-key-answerbox [data-testid="stMarkdownContainer"] ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
