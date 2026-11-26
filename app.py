@@ -48,10 +48,32 @@ INDEX_COMMAND = (
 )
 
 
-# 합성 데모 파이프라인 생성 함수
+# 실제 검색용 색인을 만드는 명령(OpenAI 임베딩을 호출하므로 비용이 든다)
+REAL_INDEX_COMMAND = (
+    "uv run --locked --env-file .env python -m scripts.prepare_data "
+    "--bundle data/handoff/jungeun/ordinance-handoff-2026-11-24 --version v1 "
+    "--output-dir data/processed/ordinance-v2-openai-small "
+    "--openai-model text-embedding-3-small"
+)
+
+
+# 파이프라인 생성 함수
+# real=False는 합성 데모, True는 지역 해석 + A 검색 + 답변 모델이다.
 @st.cache_resource
-def load_pipeline():
+def load_pipeline(real: bool = False):
     root = Path(__file__).parent
+    if real:
+        # 실제 검색 모듈(langchain 등)은 실제 모드에서만 호출
+        from src.evaluation.answer_experiments.answer_evaluation_runtimes import (
+            create_a_runtime,
+        )
+
+        settings = load_settings(
+            root / "configs" / "team-a-answer-eval-settings.json", project_root=root
+        )
+        # 화면의 실행 기록은 평가 실행 기록과 섞이지 않게 분리
+        settings.runs_path = root / "results" / "local" / "screen-runs"
+        return create_a_runtime(settings)
     settings = load_settings(root / "configs" / "demo.json", project_root=root)
     return create_demo_pipeline(settings)
 
@@ -68,15 +90,26 @@ user_tab, inspection_tab, comparison_tab = st.tabs(
 
 
 with user_tab:
-    mode = st.radio("응답 방식", ["예시 응답", "실행(합성 데모)"], horizontal=True)
+    mode = st.radio(
+        "응답 방식",
+        ["예시 응답", "실행(합성 데모)", "실행(실제 검색)"],
+        horizontal=True,
+    )
     district = st.selectbox("지역", ["서대문구", "송파구"])
     question = st.text_input("질문")
 
     if mode == "예시 응답":
         sample_name = st.selectbox("예시 응답 고르기 (합성)", list(samples))
         st.caption("지금은 입력한 구와 질문에 상관없이 선택한 예시가 표현됩니다.")
-    else:
+
+    elif mode == "실행(합성 데모)":
         st.caption("합성 문서만 검색하는 데모 실행입니다. 실제 RAG 품질이 아닙니다.")
+
+    else:
+        st.caption(
+            "실제 검색입니다. 질문과 근거가 외부 모델로 전송되고 비용이 듭니다. "
+            "색인과 OPENAI_API_KEY가 필요하며, 사람 검수가 진행 중인 자료를 사용합니다."
+        )
 
     if st.button("질문하기"):
         # 새 요청이 실패하거나 비어도 이전 응답이 남아 보이지 않게 지운다.
@@ -95,14 +128,23 @@ with user_tab:
         elif not question.strip():
             st.warning("질문을 입력하세요.")
         else:
+            real = mode == "실행(실제 검색)"
             try:
-                record = load_pipeline().run(
+                record = load_pipeline(real).run(
                     PipelineRequest(question=question, district=district)
                 )
-            except (FileNotFoundError, ValueError):
-                st.error(
-                    f"데모 색인을 불러오지 못했습니다. 먼저 색인을 만드세요: {INDEX_COMMAND}"
-                )
+            except Exception as error:  # 색인·키·설정 문제로 화면이 멈추지 않게 한다.
+                if real:
+                    # 오류 원문에는 키 조각이나 파일 경로가 섞일 수 있어 종류 이름까지만 보인다.
+                    st.error(
+                        f"실제 검색을 준비하지 못했습니다({type(error).__name__}). "
+                        "색인이 있는지, .env의 OPENAI_API_KEY를 넘겨 실행했는지 확인하세요. "
+                        f"색인 만들기: {REAL_INDEX_COMMAND}"
+                    )
+                else:
+                    st.error(
+                        f"데모 색인을 불러오지 못했습니다. 먼저 색인을 만드세요: {INDEX_COMMAND}"
+                    )
             else:
                 st.session_state["view"] = run_record_to_view(record)
                 st.session_state["places"] = run_record_to_places(record)
