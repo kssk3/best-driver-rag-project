@@ -61,13 +61,13 @@ def main() -> None:
     output.mkdir(parents=True, exist_ok=False)
     try:
         results = evaluate_cases(cases, pipelines)
+        path = output / "evaluation.json"
+        path.write_text(
+            json.dumps(results, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+        )
+        write_evaluation_csv(output, cases, results)
     finally:
         flush_traces()
-    path = output / "evaluation.json"
-    path.write_text(
-        json.dumps(results, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
-    )
-    write_evaluation_csv(output, cases, results)
     print(f"{len(results)}회 실행 기록: {path}")
     if any(result["status"] == "error" for result in results):
         raise SystemExit(1)

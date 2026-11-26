@@ -157,7 +157,9 @@ uv run --locked --env-file .env python -m scripts.upload_scores \
 
 ### 질문 실행 중 LangChain 추적
 
-질문 실행의 자동 추적은 기본값이 꺼짐이다. 팀 프로젝트에 모델 입출력(프롬프트와 근거 포함)을 보낼 실행에서만 `RAG_LANGFUSE_TRACE=1`을 설정한다. 예를 들어 기존 `uv run --locked --env-file .env python -m scripts.evaluate …` 명령 앞에 이 변수를 붙인다. 공용 채팅 어댑터가 요청별 콜백을 사용하므로 답변 생성과 C 재정렬을 같은 trace에서 확인할 수 있다. CLI는 종료 전에 버퍼를 전송한다. 나중에 같은 `run_id`의 저장 답변을 채점해 올리면 실행과 판정을 같은 trace에서 조회할 수 있다.
+합성 질문도 UI에서 **실행(합성 데모)**를 고르면 `results/local/runs/<run_id>.json`에 질문·검색 후보·답변·인용이 저장된다. **예시 응답**은 미리 만든 샘플을 표시한다. 여러 문항을 `scripts.evaluate --cases`로 실행하면 지정한 출력 폴더에 `evaluation.json`, `cases.csv`, `runs.csv`, `candidates.csv`가 생긴다. 분석용 결과 파일로 다시 평가하려면 각 문항을 [평가 입력 형식](../eval/README.md)에 맞춰 준비한다.
+
+질문 실행의 자동 추적은 기본값이 꺼짐이다. 팀 프로젝트에 모델 입출력(프롬프트와 근거 포함)을 보낼 실행에서만 `RAG_LANGFUSE_TRACE=1`을 설정한다. 예를 들어 기존 `uv run --locked --env-file .env python -m scripts.evaluate …` 명령 앞에 이 변수를 붙인다. 공용 채팅 어댑터가 요청별 콜백을 사용하므로 답변 생성과 C 재정렬을 같은 trace에서 확인할 수 있다. CLI는 로컬 결과를 쓴 뒤 추적 버퍼를 전송한다. 주소나 키 설정이 잘못되면 초기화 경고를 한 번 남기고 로컬 평가를 계속한다. 설정을 고친 후 새 프로세스에서 실행한다. `--demo`는 채팅 모델을 호출하지 않으므로 실행 trace에는 모델 토큰·비용이 없다. 실행 추적을 켜도 저장된 Faithfulness 점수는 아래 업로드 명령으로 따로 보낸다. 나중에 같은 `run_id`의 저장 답변을 채점해 올리면 실행과 판정을 같은 trace에서 조회할 수 있다.
 
 모델 응답이 사용량을 제공하면 각 채팅 호출의 **Generation**에서 입력·출력 토큰을 확인할 수 있다. Langfuse는 기록된 모델 이름과 적용 시점에 맞는 단가로 비용을 계산한다. 저장 파일만 업로드한 과거 실행, 질의 임베딩, 별도 Ragas 채점 호출의 토큰은 이 콜백의 집계 범위 밖이다. [Langfuse 토큰·비용 안내](https://langfuse.com/docs/observability/features/token-and-cost-tracking)
 
@@ -173,6 +175,10 @@ uv run --locked python -m scripts.upload_scores \
   --report results/local/faithfulness-smoke/preview.csv
 ```
 
-실서버 스모크는 앞 절에서 승인받아 채점한 한 문항의 CSV로 진행한다. 대상 프로젝트의 HTTPS `LANGFUSE_BASE_URL`, `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`를 환경변수로 설정하고 위 명령에 `--upload`를 붙인다. 보고서 이름은 `upload-1.csv`로 바꾼다. 숫자 점수 1건당 시작 시각을 표시하는 OTLP span 하나와 숫자 점수 한 건을 각각 POST한다. span은 실행 시점을 표시하는 길이 0의 기록이다. 본문은 파생 ID·고정 이름·시각·실행 유형·점수로 구성한다. 인증은 HTTPS Basic 헤더를 사용한다. [Langfuse OTLP 규격](https://github.com/langfuse/langfuse/blob/main/fern/apis/server/definition/opentelemetry.yml) · [점수 API 스키마](https://github.com/langfuse/langfuse/blob/main/fern/apis/server/definition/scores.yml)
+실서버 스모크는 앞 절에서 승인받아 채점한 한 문항의 CSV로 진행한다. 대상 프로젝트의 HTTPS `LANGFUSE_BASE_URL`, `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`를 환경변수로 설정하고 위 명령에 `--upload`를 붙인다. 보고서 이름은 `upload-1.csv`로 바꾼다. 최초 업로드 때 대상 프로젝트에서 trace ID와 span ID로 기존 기록을 조회한다. 새 실행이면 실행 시작 시각을 담은 OTLP span과 숫자 점수를 각각 POST한다. 상세 업로드에서는 판정 span도 한 건 보낸다. span은 실행 시점을 표시하는 길이 0의 기록이다. 본문은 파생 ID·고정 이름·시각·실행 유형·점수로 구성한다. 인증은 HTTPS Basic 헤더를 사용한다. [Langfuse OTLP 규격](https://github.com/langfuse/langfuse/blob/main/fern/apis/server/definition/opentelemetry.yml) · [점수 API 스키마](https://github.com/langfuse/langfuse/blob/main/fern/apis/server/definition/scores.yml)
 
-보고서의 `accepted`는 두 요청을 서버가 접수했다는 뜻이다. 실제 스모크에서는 `trace_id`와 `score_id`로 서버에 표시된 값과 날짜를 확인한다. 타임아웃, HTTP 5xx 또는 예상하지 못한 성공 응답으로 접수 여부가 불확실하면 `*_unconfirmed`, 부분 거절 등은 `*_not_accepted`로 기록하고 종료 코드 1을 반환한다. 원인을 확인한 뒤 같은 `scores.csv`와 새 보고서 이름으로 재시도한다. 같은 실행은 같은 trace ID와 span 시작 시각을 사용한다. 같은 평가·실행·지표는 같은 점수 ID와 이름을 사용하며, 요청의 `timestamp`에 원래 `scored_at_utc`를 보낸다. 업로드 시도 시각은 보고서의 `upload_attempted_at_utc`에만 남긴다. 서버에서 점수를 교체하는 조건은 ID·이름·timestamp의 날짜가 모두 같은 경우다. [Langfuse 점수 교체 규칙](https://langfuse.com/faq/all/tracing-data-updates)
+보고서의 `trace_status`와 `score_status`에서 각 단계의 접수 상태를 확인한다. 실패하면 종료 코드 1을 반환한다. 재시도할 때 같은 입력 파일과 새 보고서명을 사용한다.
+
+- 업로드 CLI는 `scores.csv` 옆의 `langfuse-spans.sqlite3`에 프로젝트별 실행·판정 span ID와 접수 상태를 저장한다. 채점 결과 폴더를 옮길 때 이 파일도 보존한다. 접수된 span은 건너뛰므로 점수만 실패한 행은 원래 점수 ID·이름·`scored_at_utc`로 점수만 재전송한다. 업로드 시각은 `upload_attempted_at_utc`에서 확인한다.
+- 타임아웃 등으로 span 접수가 불명확하면 다음 시도에서 서버를 조회한다. 해당 span이 보이면 점수 전송으로 넘어간다. 조회 오류나 아직 보이지 않는 span은 `trace_unconfirmed`로 남긴다. 서버 수집 큐가 비었고 이전 업로드 프로세스가 끝났음을 확인한 뒤, 같은 명령에 `--retry-missing-spans`를 추가하면 다시 조회해 누락된 span만 보낸다.
+- 실서버에서는 보고서의 `trace_id`와 `score_id`로 표시된 값과 채점 날짜를 확인한다. [Langfuse 수집 및 점수 교체 규칙](https://langfuse.com/faq/all/tracing-data-updates)

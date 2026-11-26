@@ -57,17 +57,42 @@ def response(status, body):
     return result
 
 
+def serve(connection, posts, lookups=None):
+    posts = iter(posts)
+    lookups = iter(lookups) if lookups is not None else None
+
+    def getresponse():
+        if connection.request.call_args.args[0] == "GET":
+            return (
+                next(lookups)
+                if lookups is not None
+                else response(200, {"data": [], "meta": {}})
+            )
+        result = next(posts)
+        if isinstance(result, Exception):
+            raise result
+        return result
+
+    connection.getresponse.side_effect = getresponse
+
+
+def posts(connection):
+    return [c for c in connection.request.call_args_list if c.args[0] == "POST"]
+
+
 def test_upload_cli_retry_across_midnight(tmp_path, monkeypatch, transport):
     scores = tmp_path / "scores.csv"
     sample = write_scores(scores)
     original = scores.read_bytes()
     calls = transport.return_value
-    calls.getresponse.side_effect = [
-        response(200, {}),
-        response(202, {"message": "Accepted"}),
-        response(200, {}),
-        response(202, {"message": "Accepted"}),
-    ]
+    serve(
+        calls,
+        [
+            response(200, {}),
+            response(504, {}),
+            response(202, {"message": "Accepted"}),
+        ],
+    )
     clock = Mock(wraps=datetime)
     monkeypatch.setattr(tracing, "datetime", clock)
     clock.now.side_effect = [
@@ -76,12 +101,19 @@ def test_upload_cli_retry_across_midnight(tmp_path, monkeypatch, transport):
     payloads = []
     for day in (25, 26):
         report = tmp_path / f"report-{day}.csv"
-        main(["--scores", str(scores), "--report", str(report), "--upload"])
+        args = ["--scores", str(scores), "--report", str(report), "--upload"]
+        if day == 25:
+            with pytest.raises(SystemExit) as error:
+                main(args)
+            assert error.value.code == 1
+        else:
+            main(args)
         accepted, skipped = receipt(report)
-        assert accepted["status"] == "accepted" and skipped["status"] == "skipped"
+        assert accepted["trace_status"] == "accepted" and skipped["status"] == "skipped"
+        assert accepted["score_status"] == ("unconfirmed" if day == 25 else "accepted")
         assert accepted["upload_attempted_at_utc"].startswith(f"2026-11-{day}")
         assert accepted["scored_at_utc"] == sample["scored_at_utc"]
-        trace_request, score_request = calls.request.call_args_list[-2:]
+        trace_request, score_request = posts(calls)[0], posts(calls)[-1]
         assert trace_request.args[:2] == ("POST", tracing.TRACES)
         assert score_request.args[:2] == ("POST", tracing.SCORES)
         assert trace_request.args[3]["x-langfuse-ingestion-version"] == "4"
@@ -109,6 +141,11 @@ def test_upload_cli_retry_across_midnight(tmp_path, monkeypatch, transport):
         assert span["traceId"] == accepted["trace_id"]
         payloads.append((trace, scores_body))
     assert payloads[0] == payloads[1]
+    assert [c.args[1] for c in posts(calls)] == [
+        tracing.TRACES,
+        tracing.SCORES,
+        tracing.SCORES,
+    ]
     assert transport.call_count == 4
     assert scores.read_bytes() == original
     _, other = tracing._payloads(dict(sample, evaluation_id="evaluation2"))
@@ -163,7 +200,7 @@ def test_failure_preserves_files(tmp_path, transport, responses, reason):
     snapshot.write_text('[{"status":"answered"}]')
     before = scores.read_bytes(), snapshot.read_bytes()
     report = tmp_path / "failed.csv"
-    transport.return_value.getresponse.side_effect = responses
+    serve(transport.return_value, responses)
     with pytest.raises(SystemExit) as result:
         main(["--scores", str(scores), "--report", str(report), "--upload"])
     assert result.value.code == 1
@@ -299,14 +336,16 @@ def test_only_first_valid_row_for_score_id_is_published(
     connection = transport.return_value
     if first_status != "dry_run":
         args.append("--upload")
-        connection.getresponse.side_effect = [
-            response(200, {}),
-            response(504, {})
-            if first_status == "score_unconfirmed"
-            else response(202, {"message": "Accepted"}),
-            response(200, {}),
-            response(202, {"message": "Accepted"}),
-        ]
+        serve(
+            connection,
+            [
+                response(200, {}),
+                response(504, {})
+                if first_status == "score_unconfirmed"
+                else response(202, {"message": "Accepted"}),
+                response(202, {"message": "Accepted"}),
+            ],
+        )
 
     with pytest.raises(SystemExit) as error:
         main(args)
@@ -329,12 +368,13 @@ def test_only_first_valid_row_for_score_id_is_published(
         transport.assert_not_called()
     else:
         assert independent["status"] == "accepted"
-        requests = connection.request.call_args_list
+        requests = posts(connection)
         assert [call.args[1] for call in requests] == [
             tracing.TRACES,
             tracing.SCORES,
-        ] * 2
-        assert [json.loads(call.args[2])[0]["value"] for call in requests[1::2]] == [
+            tracing.SCORES,
+        ]
+        assert [json.loads(call.args[2])[0]["value"] for call in requests[1:]] == [
             0.2,
             1.0,
         ]
@@ -376,11 +416,20 @@ def test_explicit_judgments_share_parent_and_keep_score_identity(tmp_path):
         assert tracing.publish_scores(
             score_path, tmp_path / f"r{i}.csv", post, judgments=details
         )
-    assert calls[:3] == calls[3:]
-    assert [p for p, _ in calls[:3]] == [tracing.TRACES, tracing.SCORES, tracing.TRACES]
+    assert [p for p, _ in calls] == [
+        tracing.TRACES,
+        tracing.TRACES,
+        tracing.SCORES,
+        tracing.TRACES,
+        tracing.TRACES,
+        tracing.SCORES,
+    ]
     original, score = tracing._payloads(records[0])
-    assert calls[1][1] == [score]
-    parent, child = calls[0][1]["resourceSpans"][0]["scopeSpans"][0]["spans"]
+    assert calls[2][1] == calls[-1][1] == [score]
+    parent, child = (
+        payload["resourceSpans"][0]["scopeSpans"][0]["spans"][0]
+        for _, payload in calls[:2]
+    )
     assert parent == original["resourceSpans"][0]["scopeSpans"][0]["spans"][0]
     assert (
         child["traceId"] == score["traceId"]
@@ -394,3 +443,89 @@ def test_explicit_judgments_share_parent_and_keep_score_identity(tmp_path):
             score_path, tmp_path / "missing.csv", post, judgments=details
         )
     assert len(calls) == 6
+
+
+@pytest.mark.parametrize(
+    "recovery", ["found", "wait", "explicit", "lookup_error", "wrong_id"]
+)
+def test_uncertain_span_is_reconciled_before_retry(tmp_path, transport, recovery):
+    from urllib.parse import parse_qs, urlsplit
+
+    scores = tmp_path / "scores.csv"
+    row = write_scores(scores)
+    trace, _ = tracing._payloads(row)
+    span = trace["resourceSpans"][0]["scopeSpans"][0]["spans"][0]
+    matches = {"id": span["spanId"], "traceId": span["traceId"]}
+    conn = transport.return_value
+    report = tmp_path / "first.csv"
+    args = ["--scores", str(scores), "--upload", "--report"]
+    serve(conn, [TimeoutError()])
+    with pytest.raises(SystemExit):
+        main([*args, str(report)])
+    assert receipt(report)[0]["reason"] == "trace_unconfirmed"
+    conn.request.reset_mock()
+    found = [matches] if recovery == "found" else []
+    if recovery == "wrong_id":
+        found = [dict(matches, traceId="other")]
+    serve(
+        conn,
+        [response(200, {}), response(202, {"message": "Accepted"})]
+        if recovery == "explicit"
+        else [response(202, {"message": "Accepted"})],
+        [
+            response(
+                503 if recovery == "lookup_error" else 200, {"data": found, "meta": {}}
+            )
+        ],
+    )
+    second = tmp_path / "second.csv"
+    if recovery in {"wait", "lookup_error", "wrong_id"}:
+        with pytest.raises(SystemExit):
+            main([*args, str(second)])
+        assert posts(conn) == []
+        assert receipt(second)[0]["reason"] == "trace_unconfirmed"
+    else:
+        main(
+            [
+                *args,
+                str(second),
+                *(["--retry-missing-spans"] if recovery == "explicit" else []),
+            ]
+        )
+        expected = (
+            [tracing.SCORES]
+            if recovery == "found"
+            else [tracing.TRACES, tracing.SCORES]
+        )
+        assert [c.args[1] for c in posts(conn)] == expected
+        assert receipt(second)[0]["status"] == "accepted"
+    method, path, body, _ = conn.request.call_args_list[0].args
+    assert method == "GET" and body is None
+    query = parse_qs(urlsplit(path).query)
+    assert query["fields"] == ["core"]
+    assert {f["column"]: f["value"] for f in json.loads(query["filter"][0])} == matches
+
+
+@pytest.mark.parametrize(
+    ("body", "expected"),
+    [
+        (
+            {
+                "name": "otel-ingestion-job",
+                "data": {"name": "otel-ingestion-job", "id": "mock-job"},
+            },
+            True,
+        ),
+        (
+            {
+                "name": "otel-ingestion-job",
+                "data": {"name": "otel-ingestion-job", "id": ""},
+            },
+            None,
+        ),
+        ({"partialSuccess": {"rejectedSpans": "unknown"}}, None),
+        ({"partialSuccess": {"rejectedSpans": "0"}}, True),
+    ],
+)
+def test_otlp_receipt_requires_confirmed_result(body, expected):
+    assert tracing._accepted(tracing.TRACES, response(200, body)) is expected

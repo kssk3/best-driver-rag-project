@@ -594,3 +594,41 @@ def test_concurrent_langfuse_callbacks_follow_each_pipeline_run(monkeypatch):
         assert [counts[id] for id in ids] == [2, 2, 3]
     finally:
         client.shutdown()
+
+
+@pytest.mark.parametrize("failure", ["start", "close", "flush"])
+def test_tracing_sdk_failure_preserves_pipeline_exception(monkeypatch, caplog, failure):
+    from contextlib import contextmanager
+    from unittest.mock import Mock
+
+    import langfuse.langchain
+
+    from src.observability import live
+
+    client = Mock()
+
+    @contextmanager
+    def observation(**kwargs):
+        if failure == "start":
+            raise RuntimeError("private-start")
+        try:
+            yield
+        finally:
+            if failure == "close":
+                raise RuntimeError("private-close")
+
+    client.start_as_current_observation = observation
+    if failure == "flush":
+        client.flush.side_effect = RuntimeError("private-flush")
+    monkeypatch.setenv("RAG_LANGFUSE_TRACE", "1")
+    monkeypatch.setattr(live, "_configured_client", lambda: (client, "synthetic"))
+    monkeypatch.setattr(langfuse.langchain, "CallbackHandler", Mock())
+    calls = []
+    with pytest.raises(ValueError, match="pipeline error"):
+        with live.trace_pipeline("run1", "demo", "A"):
+            calls.append(live.current_handler() is not None)
+            raise ValueError("pipeline error")
+    live.flush_traces()
+    assert calls == [failure != "start"]
+    assert live.current_handler() is None
+    assert "Langfuse" in caplog.text and "private-" not in caplog.text

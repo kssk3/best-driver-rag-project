@@ -2,6 +2,7 @@
 
 import argparse
 from pathlib import Path
+from sqlite3 import Error as SQLiteError
 
 from src.observability.tracing import langfuse_post, publish_scores
 
@@ -14,15 +15,21 @@ def main(argv=None):
         "--judgments", type=Path, help="진술과 판정 사유를 함께 보낼 상세 JSONL"
     )
     parser.add_argument("--upload", action="store_true")
+    parser.add_argument(
+        "--retry-missing-spans",
+        action="store_true",
+        help="서버 수집 대기가 끝났는지 확인한 뒤 조회에서 누락된 미확인 span만 재전송",
+    )
     args = parser.parse_args(argv)
     try:
         ok = publish_scores(
             args.scores,
             args.report,
             langfuse_post() if args.upload else None,
+            retry_missing=args.retry_missing_spans,
             judgments=args.judgments,
         )
-    except (ValueError, OSError) as error:
+    except (ValueError, OSError, SQLiteError) as error:
         parser.exit(2, f"{error}\n")
     print(args.report)
     if not ok:

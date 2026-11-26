@@ -5,18 +5,20 @@ import csv
 import hashlib
 import json
 import os
+from contextlib import nullcontext
 from datetime import UTC, datetime, timedelta
 from http.client import HTTPResponse, HTTPSConnection
 from pathlib import Path
-from urllib.parse import SplitResult, urlsplit
+from urllib.parse import SplitResult, urlencode, urlsplit
 
 from src.evaluation.judgment_details import JudgmentDetails
+from src.observability.upload_state import journaled_post
 
 TRACES = "/api/public/otel/v1/traces"
 SCORES = "/api/public/scores"
 REPORT_FIELDS = (
     "evaluation_id attempt_index run_id metric trace_id score_id scored_at_utc "
-    "upload_attempted_at_utc status reason"
+    "upload_attempted_at_utc trace_status score_status status reason"
 ).split()
 
 
@@ -83,30 +85,67 @@ def langfuse_settings() -> tuple[SplitResult, str, str]:
     return url, public, secret
 
 
-def langfuse_post():
-    """인증 키는 HTTPS 인증 헤더에서만 사용한다."""
-    url, public, secret = langfuse_settings()
-    hostname, port = url.hostname, url.port
-    assert hostname is not None  # langfuse_settings에서 검증한 호스트
-    token = base64.b64encode(f"{public}:{secret}".encode()).decode("ascii")
-
-    def post(path, payload):
-        headers = {
+class LangfuseUpload:
+    def __init__(self):
+        url, public, secret = langfuse_settings()
+        assert url.hostname is not None  # langfuse_settings에서 검증한 호스트
+        self.hostname = url.hostname
+        self.url = url
+        self.project = _identifier(url.geturl().rstrip("/"), public)
+        token = base64.b64encode(f"{public}:{secret}".encode()).decode("ascii")
+        self.headers = {
             "Authorization": "Basic " + token,
             "Content-Type": "application/json",
         }
+
+    def request(self, method, path, payload=None):
+        headers = self.headers.copy()
         if path == TRACES:
             headers["x-langfuse-ingestion-version"] = "4"
-        connection = HTTPSConnection(hostname, port, timeout=15)
+        connection = HTTPSConnection(self.hostname, self.url.port, timeout=15)
         try:
             connection.request(
-                "POST", url.path.rstrip("/") + path, json.dumps(payload), headers
+                method,
+                self.url.path.rstrip("/") + path,
+                json.dumps(payload) if payload is not None else None,
+                headers,
             )
-            return _accepted(path, connection.getresponse())
+            response = connection.getresponse()
+            if method == "POST":
+                return _accepted(path, response)
+            if response.status == 200:
+                return json.load(response)
+            return None
         finally:
             connection.close()
 
-    return post
+    def __call__(self, path, payload):
+        return self.request("POST", path, payload)
+
+    def find_span(self, trace_id, span_id):
+        filters = [
+            {"column": column, "operator": "=", "type": "string", "value": value}
+            for column, value in (("traceId", trace_id), ("id", span_id))
+        ]
+        query = urlencode({"fields": "core", "limit": 1, "filter": json.dumps(filters)})
+        body = self.request("GET", "/api/public/v2/observations?" + query)
+        if not isinstance(body, dict) or not isinstance(body.get("meta"), dict):
+            return None
+        rows = body.get("data")
+        if rows == [] and not body["meta"].get("cursor"):
+            return False
+        if isinstance(rows, list) and any(
+            isinstance(r, dict)
+            and r.get("id") == span_id
+            and r.get("traceId") == trace_id
+            for r in rows
+        ):
+            return True
+        return None
+
+
+def langfuse_post() -> LangfuseUpload:
+    return LangfuseUpload()
 
 
 def _identifier(*parts):
@@ -203,7 +242,7 @@ def _payloads(row, details=None):
     return trace, score
 
 
-def _publish(row, entry, post, seen_score_ids: set[str], details=None):
+def _publish(row, entry, post, seen_score_ids, details):
     status = row["status"]
     if status not in {"scored", "skipped", "no_score", "input_error", "scorer_error"}:
         entry.update(status="failed", reason="unknown_score_status")
@@ -240,11 +279,20 @@ def _publish(row, entry, post, seen_score_ids: set[str], details=None):
         entry.update(status="dry_run")
         return
     entry["upload_attempted_at_utc"] = datetime.now(UTC).isoformat()
+    entry.update(
+        trace_status="pending",
+        score_status="pending" if status == "scored" else "skipped",
+    )
     for stage, path, payload in requests:
         try:
             accepted = post(path, payload)
         except Exception:
             accepted = None
+        entry[stage + "_status"] = {
+            True: "accepted",
+            False: "not_accepted",
+            None: "unconfirmed",
+        }[accepted]
         if accepted is None:
             entry.update(status="failed", reason=stage + "_unconfirmed")
             return
@@ -279,9 +327,16 @@ def _read_details(path: Path, rows: list[dict]):
 
 
 def publish_scores(
-    scores: Path, report: Path, post=None, *, judgments: Path | None = None
+    scores: Path,
+    report: Path,
+    post=None,
+    *,
+    judgments: Path | None = None,
+    retry_missing=False,
 ) -> bool:
     """업로드 시도마다 새 영수증을 기록한다. post 미지정은 네트워크 없는 검증이다."""
+    project = post.project if isinstance(post, LangfuseUpload) else "injected"
+    lookup = post.find_span if isinstance(post, LangfuseUpload) else None
     with scores.open(encoding="utf-8", newline="") as source:
         rows = csv.DictReader(source)
         required = {
@@ -304,7 +359,12 @@ def publish_scores(
             details = {}
         seen_score_ids: set[str] = set()
         ok = True
-        with report.open("x", encoding="utf-8", newline="") as stream:
+        with (
+            report.open("x", encoding="utf-8", newline="") as stream,
+            journaled_post(scores, project, lookup, post, TRACES, retry_missing)
+            if post is not None
+            else nullcontext() as send,
+        ):
             writer = csv.DictWriter(stream, fieldnames=REPORT_FIELDS)
             writer.writeheader()
             for row in records if judgments else rows:
@@ -324,7 +384,7 @@ def publish_scores(
                     row["run_id"],
                     row["metric"],
                 )
-                _publish(row, entry, post, seen_score_ids, details.get(key))
+                _publish(row, entry, send, seen_score_ids, details.get(key))
                 writer.writerow(entry)
                 stream.flush()
                 if entry["status"] == "failed":
