@@ -1,7 +1,6 @@
 """app.py 화면을 시험하는 공용 도우미. 외부 호출은 하지 않는다."""
 
 import json
-import os
 from pathlib import Path
 
 from streamlit.testing.v1 import AppTest
@@ -19,11 +18,6 @@ def _load(name: str) -> dict:
 
 
 SAMPLES = _load("sample_responses.json")
-
-
-def user_mode() -> str:
-    """화면이 쓰는 응답 방식: 실행 설정이 있으면 실행, 없으면 합성 데모."""
-    return "실행" if os.environ.get("RAG_CHAT_SETTINGS", "").strip() else "합성 데모"
 
 
 def new_app() -> AppTest:
@@ -44,7 +38,6 @@ def fixture_app(
     app.session_state["view"] = to_view_response(SAMPLES[sample_name], kind="fixture")
     app.session_state["asked_question"] = question
     app.session_state["asked_district"] = district
-    app.session_state["asked_mode"] = user_mode()
     return app.run()
 
 

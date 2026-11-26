@@ -4,11 +4,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
-import streamlit as st
-from screen_helpers import button, new_app
-from streamlit.testing.v1 import AppTest
 
-import src.demo
 from src.config import load_settings
 from src.contracts import (
     Chunk,
@@ -172,43 +168,6 @@ def test_demo_pipeline_results_become_views(demo_pipeline) -> None:
     )
     assert none.status == "insufficient_evidence"
     assert none.citations == []
-
-
-def run_app_in_demo_mode(question: str) -> AppTest:
-    st.cache_resource.clear()  # 이전 테스트에서 만든 파이프라인이 남지 않게 한다.
-    app = new_app().run()
-    app.text_input[0].set_value(question)
-    return button(app, "물어보기").click().run()
-
-
-def test_demo_mode_runs_the_pipeline_and_shows_notice(
-    demo_pipeline, monkeypatch
-) -> None:
-    monkeypatch.setattr(
-        src.demo, "create_demo_pipeline", lambda settings: demo_pipeline
-    )
-    app = run_app_in_demo_mode("품목알파")
-    assert not app.exception
-    assert any("합성 데모 실행입니다" in c.value for c in app.caption)
-
-
-def test_demo_mode_tells_how_to_build_the_index_when_missing(monkeypatch) -> None:
-    def missing(settings):
-        raise FileNotFoundError("index")
-
-    monkeypatch.setattr(src.demo, "create_demo_pipeline", missing)
-    app = run_app_in_demo_mode("품목알파")
-    assert not app.exception
-    assert any("scripts.index" in e.value for e in app.error)
-
-
-def test_demo_mode_asks_for_a_question_when_empty(demo_pipeline, monkeypatch) -> None:
-    monkeypatch.setattr(
-        src.demo, "create_demo_pipeline", lambda settings: demo_pipeline
-    )
-    app = run_app_in_demo_mode("   ")
-    assert not app.exception
-    assert any("질문을 입력하세요" in w.value for w in app.warning)
 
 
 def test_fixed_evidence_run_keeps_its_own_kind() -> None:

@@ -9,13 +9,14 @@ def _run():
     return app
 
 
-def test_landing_is_default_and_shows_dev_panel_beside_it() -> None:
+def test_landing_is_default_and_shows_dashboard_below_it() -> None:
     app = _run()
 
     assert [tab.label for tab in app.tabs] == ["검증 패널", "비교 패널"]
     assert any("먼저 질문" in item.value for item in app.info)
     assert "view" not in app.session_state
     assert not app.radio  # 응답 방식 선택은 없다
+    assert not app.error  # 설정이 있으면 안내 오류가 없다
 
 
 def test_footer_records_that_this_is_an_internal_demo() -> None:
@@ -23,6 +24,28 @@ def test_footer_records_that_this_is_an_internal_demo() -> None:
 
     html = " ".join(str(item.value) for item in app.get("html"))
     assert "내부 데모" in html
+    assert "합성 데모" not in html
+
+
+def test_without_settings_the_page_explains_how_to_run(monkeypatch) -> None:
+    monkeypatch.delenv("RAG_CHAT_SETTINGS")
+    app = _run()
+
+    [error] = app.error
+    assert "RAG_CHAT_SETTINGS" in error.value
+    assert "scripts.run_chat" in error.value
+    assert "OPENAI_API_KEY" in error.value
+
+
+def test_without_settings_a_question_is_not_answered(monkeypatch) -> None:
+    monkeypatch.delenv("RAG_CHAT_SETTINGS")
+    app = _run()
+
+    app.text_input[0].set_value("페트병은 어떻게 버려요?")
+    button(app, "물어보기").click().run()
+
+    assert not app.exception
+    assert "view" not in app.session_state  # 합성 응답으로 빠지지 않는다
 
 
 def test_empty_question_shows_warning_and_stays_on_landing() -> None:
@@ -35,7 +58,7 @@ def test_empty_question_shows_warning_and_stays_on_landing() -> None:
     assert "view" not in app.session_state
 
 
-def test_result_screen_shows_answer_and_panel_for_the_same_response() -> None:
+def test_result_screen_shows_answer_and_dashboard_for_the_same_response() -> None:
     app = fixture_app("answered", question="가상 질문")
 
     assert not app.exception
@@ -43,14 +66,3 @@ def test_result_screen_shows_answer_and_panel_for_the_same_response() -> None:
     assert [tab.label for tab in app.tabs] == ["검증 패널", "비교 패널"]
     assert app.dataframe  # 아래 대시보드: 같은 응답의 후보 순위
     assert not any("먼저 질문" in item.value for item in app.info)
-
-
-def test_response_from_another_mode_is_hidden() -> None:
-    app = new_app()
-    app.session_state["view"] = fixture_app("answered").session_state["view"]
-    app.session_state["asked_mode"] = "다른 방식"
-    app.run()
-
-    assert not app.exception
-    assert not app.success
-    assert any(b.label == "물어보기" for b in app.button)

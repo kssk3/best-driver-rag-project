@@ -1,6 +1,6 @@
 """W5(조건 불일치)와 순위 이동 계산 테스트. 합성 값만 사용한다."""
 
-from screen_helpers import new_app, user_mode
+from screen_helpers import new_app
 from streamlit.testing.v1 import AppTest
 
 from src.interface.adapter import Candidate, Citation, ViewResponse
@@ -132,7 +132,6 @@ def open_panel(view: ViewResponse) -> AppTest:
     app = new_app()
     app.session_state["view"] = view
     app.session_state["asked_district"] = "서대문구"
-    app.session_state["asked_mode"] = user_mode()  # 화면이 쓰는 응답 방식
     return app.run()
 
 

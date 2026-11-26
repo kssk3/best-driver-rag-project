@@ -13,7 +13,6 @@ import streamlit as st
 from src.common.env import MissingEnvironmentError
 from src.config import RuntimeSettings, load_settings
 from src.contracts import PipelineRequest
-from src.demo import create_demo_pipeline
 from src.evaluation.answer_experiments.answer_evaluation_runtimes import (
     MissingEvaluationModelError,
     create_a_catalog_runtime,
@@ -35,15 +34,7 @@ from src.interface.theme import (
 from src.pipeline import PipelineConfigurationError
 from src.rewrite_dictionary import catalog
 
-# 색인 안내 문구
-INDEX_COMMAND = (
-    "uv run --locked python -m scripts.index --documents tests/fixtures/handoff_documents.json "
-    "--output data/indexes/demo.json --demo --dimensions 128"
-)
-
-
 PROJECT_ROOT = Path(__file__).resolve().parent
-TEAM_INDEX_MODE = "실행"
 TEAM_SETTINGS_PATH = getenv("RAG_CHAT_SETTINGS", "").strip()
 
 
@@ -89,25 +80,15 @@ def read_team_settings(path: str) -> RuntimeSettings:
 @st.cache_resource(
     max_entries=2, hash_funcs={RuntimeSettings: RuntimeSettings.model_dump_json}
 )
-def _build_pipeline(
-    team_settings: RuntimeSettings | None = None,
-    file_versions: TeamFileVersions | None = None,
-):
-    if team_settings is not None:
-        pipeline = create_a_catalog_runtime(team_settings)
-        # 로드 중에 파일이 교체되면 이전 키로 새 결과를 캐시하지 않는다.
-        if _team_file_versions(team_settings) != file_versions:
-            raise TeamResourceChangedError
-        return pipeline
-    settings = load_settings(
-        PROJECT_ROOT / "configs" / "demo.json", project_root=PROJECT_ROOT
-    )
-    return create_demo_pipeline(settings)
+def _build_pipeline(team_settings: RuntimeSettings, file_versions: TeamFileVersions):
+    pipeline = create_a_catalog_runtime(team_settings)
+    # 로드 중에 파일이 교체되면 이전 키로 새 결과를 캐시하지 않는다.
+    if _team_file_versions(team_settings) != file_versions:
+        raise TeamResourceChangedError
+    return pipeline
 
 
-def load_pipeline(team_settings: RuntimeSettings | None = None):
-    if team_settings is None:
-        return _build_pipeline()
+def load_pipeline(team_settings: RuntimeSettings):
     file_versions = _team_file_versions(team_settings)
     pipeline = _build_pipeline(team_settings, file_versions)
     # 캐시를 재사용할 때도 조회 중 교체된 파일이 있는지 확인한다.
@@ -116,13 +97,10 @@ def load_pipeline(team_settings: RuntimeSettings | None = None):
     return pipeline
 
 
-# 실행 모드에서 파이프라인을 돌려 결과를 session_state에 둔다. 실패하면 안내를 보이고 False.
-def ask_pipeline(mode: str, request: PipelineRequest) -> bool:
+# 팀 색인으로 파이프라인을 돌려 결과를 session_state에 둔다. 실패하면 안내를 보이고 False.
+def ask_pipeline(request: PipelineRequest) -> bool:
     try:
-        team_settings = (
-            read_team_settings(TEAM_SETTINGS_PATH) if mode == TEAM_INDEX_MODE else None
-        )
-        record = load_pipeline(team_settings).run(request)
+        record = load_pipeline(read_team_settings(TEAM_SETTINGS_PATH)).run(request)
     except TeamSettingsFileError:
         st.error(
             "팀 실행 설정 파일을 불러오지 못했습니다. RAG_CHAT_SETTINGS 경로와 JSON 설정값을 확인하세요."
@@ -134,11 +112,7 @@ def ask_pipeline(mode: str, request: PipelineRequest) -> bool:
     except TeamResourceChangedError:
         st.error("팀 색인이나 품목 사전이 갱신되었습니다. 다시 질문하세요.")
     except (OSError, ValueError) as error:
-        if mode != TEAM_INDEX_MODE:
-            st.error(
-                f"데모 색인을 불러오지 못했습니다. 먼저 색인을 만드세요: {INDEX_COMMAND}"
-            )
-        elif (
+        if (
             isinstance(error, PipelineConfigurationError)
             and error.code == "evaluation.unsupported_configuration"
         ):
@@ -160,7 +134,6 @@ def ask_pipeline(mode: str, request: PipelineRequest) -> bool:
         st.session_state["view"] = run_record_to_view(record)
         st.session_state["asked_question"] = request.question
         st.session_state["asked_district"] = request.district or ""
-        st.session_state["asked_mode"] = mode
         return True
     return False
 
@@ -173,41 +146,42 @@ EXAMPLES = [
     ("🍕 피자박스", "기름 묻은 피자박스는 어디에 버려요?"),
     ("🔋 폐건전지", "폐건전지는 어디에 버려요?"),
 ]
-DEMO_MODE = "합성 데모"
-# 화면은 팀 실행 설정이 있으면 그 색인으로, 없으면 합성 데모로 답한다.
-USER_MODE = TEAM_INDEX_MODE if TEAM_SETTINGS_PATH else DEMO_MODE
+SETTINGS_GUIDE = (
+    "실행 설정이 지정되지 않아 질문에 답할 수 없습니다. `RAG_CHAT_SETTINGS`에 실행 설정 파일을 "
+    "지정해 화면을 띄우세요. 색인이 없으면 먼저 만들고 C 설정으로 띄우는 한 줄: "
+    "`uv run --locked --env-file .env python -m scripts.run_chat` "
+    "(또는 `RAG_CHAT_SETTINGS=configs/team-c-rewrite-chat.json uv run --locked --env-file .env streamlit run app.py`). "
+    "`.env`의 `OPENAI_API_KEY`가 필요합니다."
+)
 
 
 def ask(question, district) -> bool:
     """질문을 처리해 결과를 session_state에 저장한다. 저장했으면 True."""
     # 새 요청이 실패하거나 비어도 이전 응답이 남아 보이지 않게 지운다.
-    for key in ("view", "asked_question", "asked_district", "asked_mode"):
+    for key in ("view", "asked_question", "asked_district"):
         st.session_state.pop(key, None)
     # 이전 되묻기에서 입력한 값이 다음 되묻기에 미리 채워지지 않게 한다.
     for key in [k for k in st.session_state if k.startswith("followup:")]:
         del st.session_state[key]
 
+    if not TEAM_SETTINGS_PATH:
+        return False  # 설정 안내는 화면 위에 이미 보이고 있다.
     if not question.strip():
         st.warning("질문을 입력하세요.")
         return False
     with st.spinner("답변을 찾고 있어요..."):  # 실제 검색은 몇 초 걸린다
-        return ask_pipeline(
-            USER_MODE, PipelineRequest(question=question, district=district)
-        )
+        return ask_pipeline(PipelineRequest(question=question, district=district))
 
 
 def send_followup(fields: dict) -> None:
     # 되묻기에 답한 요청을 같은 방식으로 실행한다. 성공하면 새 응답으로 다시 그린다.
     with st.spinner("답변을 찾고 있어요..."):
-        sent = ask_pipeline(USER_MODE, PipelineRequest(**fields))
+        sent = ask_pipeline(PipelineRequest(**fields))
     if sent:
         st.rerun()
 
 
 def current_view():
-    # 응답 방식이 바뀐 뒤에는 다른 방식으로 만든 이전 응답을 숨긴다.
-    if st.session_state.get("asked_mode") != USER_MODE:
-        return None
     return st.session_state.get("view")
 
 
@@ -358,6 +332,8 @@ st.set_page_config(
 inject_theme()
 
 render_header()
+if not TEAM_SETTINGS_PATH:
+    st.error(SETTINGS_GUIDE)
 view = current_view()
 if view is None:
     render_landing()
