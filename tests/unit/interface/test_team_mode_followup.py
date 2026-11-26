@@ -183,6 +183,8 @@ def test_unsupported_guidance_has_no_resend_form_and_points_back_to_the_inputs(
 
     assert not app.exception
     assert any("아직 지원하지 않아요" in w.value for w in app.warning)
+    # 검증 패널이 정상 안내를 고장 난 되묻기(W6)로 오해하지 않는다.
+    assert not any("물어볼 항목이 없습니다" in w.value for w in app.warning)
     assert [b.label for b in app.button] == [
         "다시 묻기"
     ]  # 같은 요청을 다시 보내는 버튼이 없다

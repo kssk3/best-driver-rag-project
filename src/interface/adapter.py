@@ -65,6 +65,8 @@ class ViewResponse:
     error_code: str | None = (
         None  # 응답을 오류로 만든 최초 원인 코드(status가 error일 때만)
     )
+    # 지역 해석 상태. 지원 밖 안내처럼 채울 항목이 없는 정상 안내를 구분하는 데 쓴다.
+    region_status: str | None = None
 
 
 def to_view_response(raw: dict, kind: ViewKind) -> ViewResponse:
@@ -152,6 +154,7 @@ def run_record_to_view(record: RunRecord) -> ViewResponse:
         error=response.error,
         request_conditions=dict(record.request.conditions),
         error_code=response.error_code,
+        region_status=resolved.region_status if resolved else None,
         stage_errors=[
             StageError(s.name, s.error_code, s.error)
             for s in record.stages

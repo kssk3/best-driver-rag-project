@@ -75,6 +75,16 @@ def test_w6_clarification_without_fields() -> None:
     assert codes(view) == ["W6"]
 
 
+def test_w6_is_not_raised_for_unsupported_region_guidance() -> None:
+    view = make_view(
+        status="needs_clarification",
+        answer="강남구는 아직 지원하지 않아요.",
+        citations=[],
+        region_status="unsupported",
+    )
+    assert codes(view) == []
+
+
 def test_w6_clarification_with_fields_is_fine() -> None:
     view = make_view(
         status="needs_clarification",
