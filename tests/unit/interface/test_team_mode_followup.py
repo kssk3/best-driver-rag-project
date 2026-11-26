@@ -77,6 +77,7 @@ def _real_record() -> RunRecord:
 
 def _ask_in_team_mode(question: str) -> AppTest:
     app = new_app().run()
+    app.pills[0].set_value("서대문구")
     app.text_input[0].set_value(question)
     return button(app, "물어보기").click().run()
 

@@ -141,9 +141,9 @@ FAVICON_PATH = Path(__file__).parent / ".streamlit" / "favicon.png"
 DISTRICTS = ["서대문구", "송파구"]
 # (칩에 보이는 이름, 실제로 묻는 질문)
 EXAMPLES = [
-    ("🧴 페트병 라벨", "페트병 라벨은 어떻게 버려요?"),
-    ("🍕 피자박스", "기름 묻은 피자박스는 어디에 버려요?"),
-    ("🔋 폐건전지", "폐건전지는 어디에 버려요?"),
+    ("🧴페트병 라벨", "페트병 라벨은 어떻게 버려요?"),
+    ("🍕피자박스", "기름 묻은 피자박스는 어디에 버려요?"),
+    ("🔋폐건전지", "폐건전지는 어디에 버려요?"),
 ]
 SETTINGS_GUIDE = (
     "실행 설정이 지정되지 않아 질문에 답할 수 없습니다. `RAG_CHAT_SETTINGS`에 실행 설정 파일을 "
@@ -203,8 +203,7 @@ def pick_district():
     return st.pills(
         "지역",
         DISTRICTS,
-        default=DISTRICTS[0],
-        key="pick_district",
+        key="pick_district",  # 처음에는 아무것도 고르지 않는다(고르지 않고 묻으면 안내)
         label_visibility="collapsed",
     )
 

@@ -63,6 +63,12 @@ def format_citation(citation: Citation) -> str:
     return line
 
 
+def _followup_placeholder(field: str) -> str:
+    if field == "district":
+        return "답변의 기준이 될 지역(구)를 기재해 주세요."
+    return f"{REQUIRED_FIELD_LABELS.get(field, field)}을(를) 기재해 주세요."
+
+
 def _citation_card(citation: Citation) -> None:
     """말풍선 안의 근거 한 건. 제목은 링크로, 위치와 문서 버전은 작은 글씨로 따로 보인다."""
     label = (
@@ -78,7 +84,7 @@ def _citation_card(citation: Citation) -> None:
         )
         if text
     ]
-    with st.container(border=True):
+    with st.container():
         if is_safe_url(citation.source_url):
             st.markdown(f"[{label}]({citation.source_url})")
         else:
@@ -135,7 +141,7 @@ def _render_answered(view: ViewResponse) -> None:
 
     with _bubble("근거 확인됨", "ok"):
         st.success(view.answer or "(답변 내용 없음)")
-        st.html('<div class="ev-label">근거</div>')
+        st.html('<div class="ev-label">인용</div>')
 
         if not view.citations:
             st.warning("인용된 근거가 없습니다.")
@@ -162,14 +168,23 @@ def _render_clarification(
             return
 
         with st.form("followup"):
+            # 라벨은 숨기고 입력칸 안내 문구(placeholder)로 대신한다. 입력칸이 하나면 버튼을 옆에 둔다.
+            one_field = len(view.required_fields) == 1
+            input_col, button_col = (
+                st.columns([5, 1.4], vertical_alignment="center")
+                if one_field
+                else (st.container(), st.container())
+            )
             extra_conditions = {
-                field: st.text_input(
-                    REQUIRED_FIELD_LABELS.get(field, field), key=f"followup:{field}"
+                field: input_col.text_input(
+                    REQUIRED_FIELD_LABELS.get(field, field),
+                    key=f"followup:{field}",
+                    placeholder=_followup_placeholder(field),
+                    label_visibility="collapsed",
                 )
                 for field in view.required_fields
             }
-
-            submitted = st.form_submit_button("다시 질문하기")
+            submitted = button_col.form_submit_button("다시 질문하기")
 
         if submitted:
             request = build_followup_request(question, district, extra_conditions)

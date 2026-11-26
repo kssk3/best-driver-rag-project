@@ -1,6 +1,6 @@
 """app.py의 두 화면(랜딩, 결과)과 아래 검증·비교 대시보드가 오류 없이 전환되는지 확인한다."""
 
-from screen_helpers import button, fixture_app, new_app, rank_table
+from screen_helpers import button, fixture_app, new_app, press_submit, rank_table
 
 
 def _run():
@@ -51,11 +51,22 @@ def test_without_settings_a_question_is_not_answered(monkeypatch) -> None:
 def test_empty_question_shows_warning_and_stays_on_landing() -> None:
     app = _run()
 
-    button(app, "물어보기").click().run()
+    press_submit(app)
 
     assert not app.exception
     assert any("질문을 입력하세요" in warning.value for warning in app.warning)
     assert "view" not in app.session_state
+
+
+def test_district_chip_starts_unselected_and_asks_to_choose() -> None:
+    app = _run()
+    assert app.pills[0].value is None
+
+    app.text_input[0].set_value("가상 질문")
+    button(app, "물어보기").click().run()
+
+    assert any("지역을 선택하세요" in warning.value for warning in app.warning)
+    assert "pending" not in app.session_state
 
 
 def test_result_screen_shows_answer_and_dashboard_for_the_same_response() -> None:

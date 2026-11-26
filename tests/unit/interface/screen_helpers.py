@@ -45,6 +45,10 @@ def fixture_app(
 def press_submit(app: AppTest) -> AppTest:
     """검색창의 제출 버튼을 누른다. 결과 화면에서는 '다시 묻기', 랜딩에서는 '물어보기'."""
     labels = [item.label for item in app.button]
+    if "다시 묻기" not in labels and app.pills and app.pills[0].value is None:
+        app.pills[0].set_value(
+            "서대문구"
+        )  # 랜딩의 지역 칩은 처음에 아무것도 고르지 않는다
     return (
         button(app, "다시 묻기" if "다시 묻기" in labels else "물어보기").click().run()
     )

@@ -671,3 +671,57 @@ a.brand {
   text-align: left !important;
   word-break: break-all;
 }
+
+/* 예시 질문 칩: 지역 칩과 같은 바탕(배경색 없음)·같은 호버 */
+.st-key-examples button {
+  background: #f4f3ee;
+}
+.st-key-examples button:hover {
+  background: rgba(190, 177, 151, 0.15);
+}
+
+/* 입력칸 안내 문구(placeholder)는 연하고 기울게 */
+input::placeholder {
+  color: #aab0a8;
+  font-style: italic;
+  opacity: 1;
+}
+
+/* 검증 패널: 구역 제목과 바로 아래 내용 사이를 넓힌다 */
+.st-key-devpanel h3 {
+  margin-bottom: 16px;
+}
+
+/* 후보 순위 표: chunk_id는 길면 말줄임표 */
+.st-key-insp_rank .rank-table td:nth-child(2) {
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  word-break: normal;
+}
+
+/* 말풍선: 답변 본문에 좌우 여백 */
+.st-key-answerbox [data-testid="stAlert"],
+.st-key-answerbox [data-testid="stAlertContainer"] {
+  padding: 0 14px !important;
+}
+
+/* 인용: 흰 박스 대신 답변과 실선으로 구분 */
+.ev-label {
+  margin-top: 10px;
+  padding-top: 12px;
+  border-top: 1px solid #d8cde8;
+}
+.st-key-answerbox [data-testid="stLayoutWrapper"] > [data-testid="stVerticalBlock"] {
+  background: transparent;
+  border: 0;
+}
+
+/* 되묻기: 입력칸 한 줄 + 옆 버튼 */
+.st-key-answerbox [data-testid="stForm"] [data-testid="stHorizontalBlock"] {
+  gap: 8px;
+}
+.st-key-answerbox [data-testid="stFormSubmitButton"] button {
+  white-space: nowrap;
+}
