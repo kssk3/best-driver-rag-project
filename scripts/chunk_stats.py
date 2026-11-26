@@ -8,13 +8,14 @@ python -m scripts.chunk_stats --help 참조.
 
 import argparse
 import csv
-import hashlib
 import html
 import json
 import re
 import statistics
 from collections import Counter
 from pathlib import Path
+
+from src.ingestion.chunk_fingerprint import chunks_fingerprint
 
 # 이 길이(태그를 뺀 글자 수)보다 짧으면 맥락이 부족한 청크로 센다. 기준은 정해진 값이 아니라 점검용 임시 기준이다.
 SHORT_PLAIN_CHARS = 100
@@ -158,15 +159,7 @@ def summarize(chunks: list[dict]) -> dict:
         "plain_median": int(statistics.median(plain)),
         "plain_p90": _percentile(plain, 0.9),
         "plain_max": max(plain),
-        # chunk_id는 제목·범위·구 목록·조건을 섞지 않으므로 ID가 아니라 청크의 모든 필드를 해시한다.
-        "chunks_sha256": hashlib.sha256(
-            json.dumps(
-                sorted(chunks, key=lambda c: c["chunk_id"]),
-                ensure_ascii=False,
-                sort_keys=True,
-                separators=(",", ":"),
-            ).encode("utf-8")
-        ).hexdigest(),
+        "chunks_sha256": chunks_fingerprint(chunks),
     }
 
 
