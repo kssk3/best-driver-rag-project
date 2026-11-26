@@ -205,3 +205,19 @@ uv run --locked --env-file .env python -m scripts.upload_scores \
 이 명령은 지정한 실행의 행만 처리한다. 서버에 루트가 하나면 기존 루트에 연결하고, 정상 조회 결과가 0개면 저장된 실행 시각으로 `archived-run`을 만든다. 조회 오류·불완전한 조회·복수 루트는 `trace_unconfirmed`로 남는다. 점수만 복구할 때는 `--judgments`를 생략한다. 복구한 보관본에는 저장된 점수와 선택한 판정 상세가 표시된다. 유실된 실시간 모델 호출의 토큰·비용은 복원할 수 없다.
 
 재시도할 때는 같은 입력 파일·실행 ID·상태 DB를 사용하고 `--report`에 새 파일명을 지정한다. 점수만 실패했다면 기존 루트와 판정 상세는 재전송하지 않는다. 복구 중 보낸 **span 자체의 접수**도 불명확하면 위의 `--retry-missing-spans` 절차를 따른다.
+
+### 기존 실행에 팀 실험 점수 연결
+
+이미 계산한 답변 관련성과 ID 기반 검색 지표는 `scripts.upload_extra_scores`로 연결한다. 모델 호출이나 Evaluators 템플릿 설정은 필요 없다. 조회할 실행마다 같은 실험에서 내보낸 `cases.csv`, `runs.csv`, `candidates.csv`와 원래 점수 JSON을 준비한다. 팀 공통 실행은 `run_id`로 trace ID를 계산하며, 다른 도구에서 발급한 ID는 실행 원본의 `trace_id` 열로 연결한다.
+
+입력 JSON은 행 배열이다. 각 행은 `traceId`, `name`, `value`(0~1 숫자), `timestamp`(원래 채점 시각, UTC)를 담는다. `answer_relevancy` 행의 `comment`에는 사용한 채점 방법과 척도를 적는다. 보류 안내를 평가한 경우 원본 응답 상태도 전송 설명에 추가된다. `dataType`은 생략하거나 `NUMERIC`으로 지정한다. `environment`를 지정하면 실행 원본과 일치해야 한다. 전달받은 파일의 구조가 다르면 원본을 보존하고 복사본에서 필드를 매핑한다. 원래 평가 결과나 시각이 없으면 임의로 채우지 않는다.
+
+각 실행에서 `context_precision_id_at_5`와 `context_recall_id_at_5`는 원본의 상위 5개와 허용 ID로 계산해 대조한다. 허용 근거가 없으면 두 행을 생략한다. 정상 검색에서 후보가 0개이고 허용 근거가 있으면 재현율은 0이고 정밀도 행은 생략한다. 답변 관련성은 이미 산출한 값을 사용하므로 채점 방법과 보류 답변을 평균에 포함할지는 실험별로 확인한다.
+
+```bash
+uv run --locked python -m scripts.upload_extra_scores \
+  --preview results/local/langfuse-extra-scores-preview.json \
+  --archive results/local/실험원본 --expected-traces 4
+```
+
+기본 실행은 오프라인 검증이다. 같은 명령에서 `uv run --locked --env-file .env`를 사용하고 끝에 `--check`를 붙이면 팀 프로젝트를 읽기만 한다. 원본과 귀속을 확인한 뒤 `--upload`로 누락 점수만 전송한다. 충돌이나 누락된 실행이 있으면 전송 전에 중단한다. 접수 후 같은 입력으로 `--check`를 실행해 서버 일치 건수와 미등록 0개를 확인한다. 부분 접수 후에는 기존 파일의 시각과 내용을 유지해 재시도한다. 합성 실험 4건의 결과는 최종 평가 80건과 따로 집계한다.

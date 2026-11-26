@@ -60,6 +60,8 @@ files = [
     "src/evaluation/retrieval_metrics.py",
     "src/evaluation/answer_metrics.py",
     "src/observability/tracing.py",
+    "src/observability/extra_scores.py",
+    "scripts/upload_extra_scores.py",
     "src/observability/live.py",
     "src/evaluation/judgment_details.py",
     "scripts/score_answers.py",
@@ -80,5 +82,7 @@ module = [
     "src.observability.tracing",
     "scripts.score_answers",
     "scripts.upload_scores",
+    "scripts.upload_extra_scores",
+    "src.observability.extra_scores",
 ]
 check_untyped_defs = true
