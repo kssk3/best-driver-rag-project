@@ -30,10 +30,6 @@ from src.interface.comparison import (
     format_summary,
     summarize_scores,
 )
-from src.interface.comparison import (
-    format_summary,
-    summarize_scores,
-)
 from src.interface.inspection import render_inspection
 from src.interface.map import render_places
 from src.interface.theme import (
@@ -158,6 +154,7 @@ def show_error(message: str) -> None:
     st.error(message if st.session_state.get("dev") else GENERIC_ERROR)
 
 
+# 실행 모드에서 파이프라인을 돌려 결과를 session_state에 둔다. 실패하면 안내를 보이고 False.
 def ask_pipeline(mode: str, request: PipelineRequest) -> bool:
     try:
         team_settings = (
@@ -194,6 +191,12 @@ def ask_pipeline(mode: str, request: PipelineRequest) -> bool:
         st.session_state["view"] = run_record_to_view(record)
         st.session_state["places"] = run_record_to_places(record)
         st.session_state["asked_question"] = request.question
+        st.session_state["asked_district"] = request.district or ""
+        st.session_state["asked_mode"] = mode
+        return True
+    return False
+
+
 FAVICON_PATH = Path(__file__).parent / ".streamlit" / "favicon.png"
 DISTRICTS = ["서대문구", "송파구"]
 EXAMPLES = ["페트병 라벨은?", "기름 묻은 피자박스", "폐건전지 어디에?"]

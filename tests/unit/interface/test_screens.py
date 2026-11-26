@@ -10,7 +10,7 @@ from src.interface.adapter import to_view_response
 ROOT = Path(__file__).parent.parent.parent.parent
 APP_PATH = ROOT / "app.py"
 SAMPLE_PATH = ROOT / "tests" / "fixtures" / "interface" / "sample_responses.json"
-DEMO_MODE = "실행(합성 데모)"  # 일반 화면이 쓰는 응답 방식
+DEMO_MODE = "합성 데모"  # 일반 화면이 쓰는 응답 방식
 
 
 def _run() -> AppTest:

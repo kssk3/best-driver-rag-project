@@ -28,6 +28,8 @@ def dev_app() -> AppTest:
     app = AppTest.from_file(str(APP_PATH), default_timeout=10)
     app.session_state["dev"] = True
     return app
+
+
 RUNTIMES = "src.evaluation.answer_experiments.answer_evaluation_runtimes"
 TEAM_MODE = "실행"
 
@@ -193,6 +195,32 @@ def test_unsupported_guidance_has_no_resend_form_and_points_back_to_the_inputs(
     assert not app.exception
     assert any("아직 지원하지 않아요" in w.value for w in app.warning)
     assert [b.label for b in app.button] == [
-        "질문하기"
+        "개발자 모드 ON",
+        "질문하기",
     ]  # 같은 요청을 다시 보내는 버튼이 없다
     assert any("바꿔서 다시 질문" in c.value for c in app.caption)
+
+
+def test_general_screen_uses_the_team_index_and_sends_the_followup(monkeypatch) -> None:
+    pipeline = _AskThenAnswer()
+    monkeypatch.setattr(
+        importlib.import_module(RUNTIMES),
+        "create_a_catalog_runtime",
+        lambda s: pipeline,
+    )
+    app = AppTest.from_file(str(APP_PATH), default_timeout=10).run()
+    app.text_input[0].set_value("송파구에서 대형폐기물은 어떻게 버려요?")
+    next(b for b in app.button if b.label == "물어보기").click().run()
+
+    # 일반 화면은 설정이 있으면 팀 색인(실행)으로 답한다.
+    assert not app.exception
+    assert app.session_state["asked_mode"] == TEAM_MODE
+    assert any("어느 구 기준" in w.value for w in app.warning)
+    assert not app.json  # 예시 미리보기가 아니라 실제로 보낸다
+
+    app.text_input[1].set_value("송파구")
+    next(b for b in app.button if b.label == "다시 질문하기").click().run()
+
+    assert not app.exception
+    assert pipeline.requests[1].district_confirmed
+    assert any("[가상] 실제 검색 답변" in s.value for s in app.success)
