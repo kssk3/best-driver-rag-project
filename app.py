@@ -83,17 +83,19 @@ def ask_pipeline(mode: str, request: PipelineRequest) -> bool:
     real = mode == "실행(실제 검색)"
     try:
         record = load_pipeline(real).run(request)
-    except Exception as error:  # 색인·키·설정 문제로 화면이 멈추지 않게 한다.
-        if real:
+    except Exception as error:  # 준비 실패로 화면이 멈추지 않게 한다.
+        if isinstance(error, FileNotFoundError) or (
+            not real and isinstance(error, ValueError)
+        ):
+            # 색인 파일이 없거나(데모는 형식이 틀려도) 만들면 해결되는 경우다.
+            command = REAL_INDEX_COMMAND if real else INDEX_COMMAND
+            st.error(f"색인을 불러오지 못했습니다. 먼저 색인을 만드세요: {command}")
+        else:
             # 오류 원문에는 키 조각이나 파일 경로가 섞일 수 있어 종류 이름까지만 보인다.
             st.error(
-                f"실제 검색을 준비하지 못했습니다({type(error).__name__}). "
-                "색인이 있는지, .env의 OPENAI_API_KEY를 넘겨 실행했는지 확인하세요. "
-                f"색인 만들기: {REAL_INDEX_COMMAND}"
-            )
-        else:
-            st.error(
-                f"데모 색인을 불러오지 못했습니다. 먼저 색인을 만드세요: {INDEX_COMMAND}"
+                f"실행하지 못했습니다({type(error).__name__}). "
+                ".env의 OPENAI_API_KEY와 설정을 확인하세요. "
+                "코드를 고친 직후라면 화면 서버를 껐다가 다시 실행해 보세요."
             )
         return False
     st.session_state["view"] = run_record_to_view(record)

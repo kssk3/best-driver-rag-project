@@ -123,9 +123,26 @@ def test_real_mode_failure_shows_the_error_type_but_never_the_raw_error(
 
     texts = [error.value for error in app.error]
     assert not app.exception
-    assert any("RuntimeError" in text and "prepare_data" in text for text in texts)
+    assert any("RuntimeError" in text and "OPENAI_API_KEY" in text for text in texts)
+    assert not any(
+        "prepare_data" in text for text in texts
+    )  # 색인 문제가 아니면 색인을 권하지 않는다
     assert not any("sk-secret-key" in text for text in texts)
     assert "view" not in app.session_state
+
+
+def test_real_mode_missing_index_points_to_the_index_command(monkeypatch) -> None:
+    def missing(settings):
+        raise FileNotFoundError("data/processed/x/index-json.json")
+
+    monkeypatch.setattr(importlib.import_module(RUNTIMES), "create_a_runtime", missing)
+    app = _ask_in_real_mode("질문")
+
+    texts = [error.value for error in app.error]
+    assert any("prepare_data" in text for text in texts)
+    assert not any(
+        "index-json.json" in text for text in texts
+    )  # 파일 경로 원문은 숨긴다
 
 
 class _AskThenAnswer:
