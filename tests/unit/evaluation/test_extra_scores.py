@@ -88,6 +88,12 @@ class Server:
             )
             return True
         q = parse_qs(urlsplit(path).query)
+        if "id" in q:
+            assert urlsplit(path).path == "/api/public/v3/scores"
+            return {
+                "data": [r for r in self.rows if r.get("id") == q["id"][0]],
+                "meta": {},
+            }
         trace = q["traceId"][0]
         if "observations" in path:
             data = (
@@ -334,3 +340,224 @@ def test_missing_shared_ledger_never_posts(sample, monkeypatch):
     with pytest.raises(SystemExit):
         invoke(sample, "--upload")
     assert not server.sent
+
+
+@pytest.fixture
+def missing_accepted(sample, shared_ledger, monkeypatch):
+    server = Server()
+    monkeypatch.setattr(cli, "langfuse_post", lambda: server)
+    invoke(sample, "--upload")
+    original = server.sent[0].copy()
+    server.rows.pop(0)
+    return server, original
+
+
+def confirmation(sample, original, capsys):
+    invoke(sample, "--recover-score-id", original["id"])
+    return capsys.readouterr().out.split("--queue-drained ")[-1].strip()
+
+
+def test_recover_accepted_via_cli(sample, missing_accepted, capsys):
+    server, original = missing_accepted
+    invoke(sample, "--check")
+    output = capsys.readouterr().out
+    assert "서버 일치 11개, 미등록 1개" in output
+    assert all(original[k] in output for k in ("id", "traceId", "name"))
+    invoke(sample, "--upload")
+    assert len(server.sent) == 12
+    token = confirmation(sample, original, capsys)
+    args = ("--recover-score-id", original["id"], "--queue-drained", token)
+    invoke(sample, *args)
+    assert "복구 접수" in capsys.readouterr().out
+    assert len(server.sent) == 13 and server.sent[-1] == original
+    assert original["value"] == 0.0
+    assert original["timestamp"] == "2026-11-25T23:59:59.123456+00:00"
+    invoke(sample, *args)
+    assert "반영 확인" in capsys.readouterr().out
+    invoke(sample, "--check")
+    assert "서버 일치 12개, 미등록 0개" in capsys.readouterr().out
+    assert len(server.sent) == 13
+
+
+@pytest.mark.parametrize(
+    "problem",
+    [
+        "unknown_id",
+        "other_project",
+        "missing_root",
+        "other_variant",
+        "changed_input",
+        "same_name_other_id",
+        "same_id_other_trace",
+        "id_read_failed",
+        "inconsistent_read",
+        "id_conflicting_value",
+        "wrong_server_run",
+        "unreadable_subject",
+        "incomplete_pages",
+        "unaccepted",
+    ],
+)
+def test_recovery_preflight_never_posts(
+    sample, missing_accepted, capsys, monkeypatch, problem
+):
+    server, original = missing_accepted
+    token = confirmation(sample, original, capsys)
+    score_id = original["id"]
+    row = {**original, "subject": {"kind": "trace", "id": original["traceId"]}}
+    if problem == "unknown_id":
+        score_id = "unknown"
+    elif problem == "other_project":
+        server.project += "-other"
+    elif problem == "missing_root":
+        server.missing_root = original["traceId"]
+    elif problem == "other_variant":
+        server.variant = "C"
+    elif problem == "changed_input":
+        sample[1][0]["comment"] += " 수정"
+    elif problem == "same_name_other_id":
+        server.rows.append({**row, "id": "other"})
+    elif problem == "same_id_other_trace":
+        server.rows.append({**row, "subject": {"kind": "trace", "id": "other"}})
+    elif problem == "unreadable_subject":
+        server.rows.append({**row, "subject": {"id": original["traceId"]}})
+    elif problem == "unaccepted":
+        import psycopg
+
+        with psycopg.connect(os.environ["TEST_SCORE_LEDGER_DSN"]) as db:
+            db.execute(
+                "UPDATE rag_extra_score_ledger SET accepted=FALSE WHERE project=%s AND score_id=%s",
+                (server.project, score_id),
+            )
+    else:
+        request = server.request
+        if problem == "id_conflicting_value":
+            server.rows.append(row)
+
+        def inconsistent(method, path, payload=None):
+            if problem == "wrong_server_run" and "observations" in path:
+                page = request(method, path, payload)
+                page["data"][0]["metadata"]["run_id"] = "other"
+                return page
+            if "id" in parse_qs(urlsplit(path).query):
+                if problem == "incomplete_pages":
+                    return {"data": [], "meta": {"cursor": "same-page"}}
+                if problem == "id_read_failed":
+                    return None
+                return {"data": [{**row, "value": 0.7}], "meta": {}}
+            return request(method, path, payload)
+
+        monkeypatch.setattr(server, "request", inconsistent)
+    with pytest.raises(SystemExit):
+        invoke(sample, "--recover-score-id", score_id, "--queue-drained", token)
+    assert len(server.sent) == 12
+
+
+def test_uncertain_recovery_requires_new_queue_confirmation(
+    sample, missing_accepted, capsys, monkeypatch
+):
+    server, original = missing_accepted
+    token = confirmation(sample, original, capsys)
+    args = ("--recover-score-id", original["id"], "--queue-drained")
+    request = server.request
+
+    def lost(method, path, payload=None):
+        if method == "POST":
+            server.sent.append(payload[0])
+            raise TimeoutError
+        return request(method, path, payload)
+
+    monkeypatch.setattr(server, "request", lost)
+    with pytest.raises(SystemExit) as error:
+        invoke(sample, *args, token)
+    assert error.value.code == 2 and "접수 미확인" in capsys.readouterr().err
+    with pytest.raises(SystemExit) as error:
+        invoke(sample, *args, token)
+    assert error.value.code == 2 and "확인 번호" in capsys.readouterr().err
+    invoke(sample, "--upload")
+    assert len(server.sent) == 13
+    fresh = confirmation(sample, original, capsys)
+    assert fresh != token
+    monkeypatch.setattr(server, "request", request)
+    invoke(sample, *args, fresh)
+    assert server.sent[12:] == [original, original]
+
+
+def test_concurrent_recoveries_consume_confirmation_once(
+    sample, missing_accepted, capsys, monkeypatch
+):
+    from concurrent.futures import ThreadPoolExecutor
+    from threading import Event
+
+    server, original = missing_accepted
+    token = confirmation(sample, original, capsys)
+    args = [
+        "--archive",
+        str(sample[0]),
+        "--preview",
+        str(sample[0] / "preview.json"),
+        "--expected-traces",
+        "4",
+        "--recover-score-id",
+        original["id"],
+        "--queue-drained",
+        token,
+    ]
+    entered, release = Event(), Event()
+    request = server.request
+
+    def delayed(method, path, payload=None):
+        if method == "POST":
+            entered.set()
+            assert release.wait(5)
+            server.sent.append(payload[0])
+            return True
+        return request(method, path, payload)
+
+    monkeypatch.setattr(server, "request", delayed)
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        first = pool.submit(cli.main, args)
+        assert entered.wait(5)
+        second = pool.submit(cli.main, args)
+        release.set()
+        first.result(timeout=10)
+        with pytest.raises(SystemExit) as error:
+            second.result(timeout=10)
+        assert error.value.code == 2 and "확인 번호" in capsys.readouterr().err
+    assert server.sent[12:] == [original]
+
+
+def test_queue_confirmation_requires_recovery(sample, monkeypatch):
+    monkeypatch.setattr(
+        cli, "langfuse_post", lambda: pytest.fail("잘못된 옵션으로 서버 접근")
+    )
+    with pytest.raises(SystemExit):
+        invoke(sample, "--upload", "--queue-drained", "unused")
+
+
+def test_definitive_rejection_is_visible_in_recovery_status(
+    sample, missing_accepted, capsys, monkeypatch
+):
+    server, score = missing_accepted
+    token = confirmation(sample, score, capsys)
+    request = server.request
+
+    def reject(method, path, payload=None):
+        return False if method == "POST" else request(method, path, payload)
+
+    monkeypatch.setattr(server, "request", reject)
+    with pytest.raises(SystemExit):
+        invoke(sample, "--recover-score-id", score["id"], "--queue-drained", token)
+    assert "거절" in capsys.readouterr().err
+    invoke(sample, "--recover-score-id", score["id"])
+    assert "(거절)" in capsys.readouterr().out
+
+
+def test_empty_csv_variant_and_absent_server_variant(sample, missing_accepted, capsys):
+    path = sample[0] / "runs.csv"
+    with path.open() as file:
+        runs = list(csv.DictReader(file))
+    table(sample[0], path.name, [dict(run, variant="") for run in runs])
+    server, score = missing_accepted
+    assert confirmation(sample, score, capsys)
+    assert len(server.sent) == 12

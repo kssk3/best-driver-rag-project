@@ -189,17 +189,37 @@ def server_rows(client, path, **params):
             or not isinstance(page.get("meta"), dict)
         ):
             raise ValueError("Langfuse 조회 결과를 확인할 수 없습니다.")
+        if not all(isinstance(row, dict) for row in page["data"]):
+            raise ValueError("Langfuse 조회 행을 확인할 수 없습니다.")
         rows.extend(page["data"])
         cursor = page["meta"].get("cursor")
-        if not cursor:
+        if cursor is None:
             return rows
-        if cursor in seen:
-            raise ValueError("Langfuse 조회 커서가 반복됩니다.")
+        if not isinstance(cursor, str) or not cursor or cursor in seen:
+            raise ValueError("Langfuse 조회 커서를 확인할 수 없습니다.")
         seen.add(cursor)
         params["cursor"] = cursor
 
 
-def missing_scores(client, payloads):
+def same_score(row, score):
+    subject = row.get("subject")
+    return (
+        isinstance(subject, dict)
+        and subject.get("kind") == "trace"
+        and subject.get("id") == score["traceId"]
+        and row.get("id") == score["id"]
+        and row.get("name") == score["name"]
+        and row.get("dataType") == "NUMERIC"
+        and type(row.get("value")) in (float, int)
+        and row["value"] == score["value"]
+        and (row.get("comment") or "") == score["comment"]
+        and row.get("environment") == score["environment"]
+        and _utc(row["timestamp"]).isoformat(timespec="milliseconds")
+        == _utc(score["timestamp"]).isoformat(timespec="milliseconds")
+    )
+
+
+def missing_scores(client, payloads, *, recovery=False):
     """전체 실행에서 충돌과 누락을 먼저 조회한다."""
     pending = []
     by_trace = defaultdict(list)
@@ -228,6 +248,8 @@ def missing_scores(client, payloads):
             metadata = json.loads(metadata)
         server_variant = metadata.get("variant") if isinstance(metadata, dict) else None
         local_variant = group[0]["variant"]
+        if recovery and (local_variant or None) != (server_variant or None):
+            raise ValueError(f"{trace}: 복구할 실행의 검색 방식을 확인할 수 없습니다.")
         if (
             local_variant in SEARCH_VARIANTS
             and server_variant in SEARCH_VARIANTS
@@ -245,6 +267,14 @@ def missing_scores(client, payloads):
         rows = server_rows(
             client, "/api/public/v3/scores", traceId=trace, fields="subject,details"
         )
+        if any(
+            not isinstance(r.get("subject"), dict)
+            or not r["subject"].get("id")
+            or not r["subject"].get("kind")
+            or not r.get("name")
+            for r in rows
+        ):
+            raise ValueError("Langfuse 점수의 귀속을 확인할 수 없습니다.")
         for score in group:
             matches = [
                 r
@@ -256,15 +286,6 @@ def missing_scores(client, payloads):
             if not matches:
                 pending.append(score)
                 continue
-            existing = matches[0]
-            if (
-                len(matches) != 1
-                or existing.get("dataType") != "NUMERIC"
-                or existing.get("value") != score["value"]
-                or (existing.get("comment") or "") != score["comment"]
-                or existing.get("environment") != score["environment"]
-                or _utc(existing["timestamp"]).isoformat(timespec="milliseconds")
-                != _utc(score["timestamp"]).isoformat(timespec="milliseconds")
-            ):
+            if len(matches) != 1 or not same_score(matches[0], score):
                 raise ValueError(f"{trace} {score['name']}: 기존 점수와 충돌합니다.")
     return pending
