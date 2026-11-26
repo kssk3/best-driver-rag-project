@@ -101,6 +101,8 @@ uv run --locked python -m scripts.score_answers \
 
 ### 실검색 A/B/C 점수 비교
 
+공식 비교는 팀 Langfuse에 올라간 점수를 기준으로 한다(아래 '비교 패널에서 검색 방식 확인'). 이 절의 열 설명과 집계 규칙은 `scores.csv`에서 같은 비교 기준을 직접 확인하거나 점검할 때 쓴다.
+
 같은 문항에 A/B/C가 각각 답하면 세 답변을 같은 Faithfulness 채점기로 평가한다. 각 점수는 그 답변의 `run_id`에 연결된다. 예를 들어 구성 이름이 `configured`이고 실제 검색 방식이 B이면, 그 점수는 B에 속한다. 점수표에서 다음 열을 확인한다.
 
 | 열 | 의미 |
@@ -110,7 +112,7 @@ uv run --locked python -m scripts.score_answers \
 | `variant`, `rewrite_enabled` | 실행 시 명시한 검색 방식과 질문 다듬기 사용 여부. 실행 표에도 값이 있으면 대조한다. |
 | `comparison_eligible`, `comparison_exclusion_reason` | 기본 A/B/C 평균에 넣을 수 있는지와 제외 사유. |
 
-**기본 A/B/C 평균에는 `comparison_eligible=true`인 행만 넣는다.** 구성 이름을 대조할 수 있고, 검색 방식이 명시됐으며, 질문 다듬기를 끈 실제 검색 실행(`rag`)에서 `retrieve` 단계가 성공하고 숫자 점수를 얻어야 한다. 유효한 `0.0`은 건수와 평균에 포함한다.
+**`scores.csv`를 직접 집계할 때 기본 A/B/C 평균에는 `comparison_eligible=true`인 행만 넣는다.** 구성 이름을 대조할 수 있고, 검색 방식이 명시됐으며, 질문 다듬기를 끈 실제 검색 실행(`rag`)에서 `retrieve` 단계가 성공하고 숫자 점수를 얻어야 한다. 유효한 `0.0`은 건수와 평균에 포함한다.
 
 - C에서 질문 다듬기를 켠 실행은 로드맵의 별도 실험이다. 개별 점수와 `rewrite_enabled=true`를 보존하며 기본 C 평균에서는 제외한다. 고정 근거·데모 실행, 검색 단계를 건너뛴 실행도 진단용 점수를 보존한다.
 - 두 기록의 구성 이름, 검색 방식, 질문 다듬기 설정 또는 실행 유형이 충돌하면 해당 행은 채점 전 `input_error`가 된다. 검색 단계가 중복되거나 기록된 단계 상태가 실행 표와 다를 때도 마찬가지다. 답변을 채점하려는데 실행 표에는 실패로 기록돼 있으면 `run_status_mismatch`가 남는다. 다음 정상 행은 계속 처리한다.
@@ -190,7 +192,7 @@ uv run --locked python -m scripts.upload_scores \
 
 검색 방식은 루트의 `metadata.variant`에서 읽는다. 실시간 실행은 `rag-pipeline`, 보관본 업로드는 새 `archived-run`에 기록한다. 보관본에는 공통 채점기가 만든 `scores.csv`의 명시적 A/B/C만 복사한다. 열이 없거나 값이 비었거나 다른 값이면 미확인으로 둔다. 이미 접수된 루트는 재사용하므로 같은 점수를 다시 올려도 과거의 빈 값이 채워지지 않는다. 서버 루트와 채점 CSV 양쪽에 A/B/C 값이 있고 서로 다르면 해당 행은 `root_variant_mismatch`로 기록한다. 점수와 상세는 전송하지 않으므로 원본 실행의 `run_id`와 `options.variant`를 대조한 뒤 재시도한다.
 
-공식 비교는 `scores.csv`에서 동일 데이터셋·문항과 `comparison_eligible=true`를 확인한 실행을 기준으로 한다. 루트가 여러 개이거나 검색 방식을 확인할 수 없는 점수는 따로 표시한다. 원본 `run_id`로 귀속을 확인하기 전에는 그룹별 평균에서 제외한다.
+공식 비교는 팀 Langfuse의 점수를 기준으로 하며 같은 데이터셋·문항의 실행끼리 방식별로 비교한다. `scores.csv`의 `comparison_eligible=true`는 업로드 전에 비교할 수 있는 행인지 점검하는 용도다. 루트가 여러 개이거나 검색 방식을 확인할 수 없는 점수는 따로 표시한다. 원본 `run_id`로 귀속을 확인하기 전에는 그룹별 평균에서 제외한다.
 
 #### 실시간 전송이 끝내 실패한 실행 한 건 복구
 
