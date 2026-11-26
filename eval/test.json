@@ -8,7 +8,8 @@
       "expected_status": "answered",
       "reference_answer": "내용물을 비우고 물로 헹구는 등 이물질을 제거해 말린 뒤, 빨대·비닐 등 다른 재질을 제거하고 종이팩 전용수거함에 배출합니다. 전용수거함이 없으면 종이류와 구분되게 끈 등으로 묶어 종이류 수거함으로 배출합니다.",
       "allowed_chunk_ids": [
-        "chunk-21d8cb922fd1d3b5b1cf65f45dffdd2d4e57ab8a16d50667d5c6b9d1d499d88d"
+        "chunk-21d8cb922fd1d3b5b1cf65f45dffdd2d4e57ab8a16d50667d5c6b9d1d499d88d",
+        "chunk-ab910bef5f225a17d9cecae448afe91588548060c5b17b3ad7b83b43d9f3add3"
       ]
     },
     {
