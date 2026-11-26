@@ -617,3 +617,47 @@ footer {
 .avatar {
   width: 54px;
 }
+
+/* ===== 2차 조정 ===== */
+/* 헤더의 분리당·너구리는 누르면 첫 화면으로 가는 링크 */
+a.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+a.brand:hover b {
+  color: var(--green);
+}
+
+/* 지역 드롭다운 글씨는 상자 한가운데(오른쪽 화살표 폭만큼 왼쪽을 비워 균형) */
+.st-key-district_compact input {
+  text-align: center;
+  padding-left: 32px;
+}
+
+/* 말풍선 안 근거: 라벨은 작게, 카드는 제목 + 작은 메타 */
+.ev-label {
+  color: var(--deep);
+  font-size: 0.8rem;
+  font-weight: 800;
+  margin-top: 4px;
+}
+.st-key-answerbox [data-testid="stLayoutWrapper"] > [data-testid="stVerticalBlock"] {
+  gap: 2px;
+  padding: 8px 14px;
+}
+.st-key-answerbox [data-testid="stLayoutWrapper"] > [data-testid="stVerticalBlock"] [data-testid="stMarkdownContainer"] {
+  padding: 0;
+}
+.st-key-answerbox [data-testid="stLayoutWrapper"] > [data-testid="stVerticalBlock"] [data-testid="stMarkdownContainer"] p {
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.st-key-answerbox [data-testid="stLayoutWrapper"] > [data-testid="stVerticalBlock"] [data-testid="stCaptionContainer"] {
+  font-size: 0.75rem;
+  color: var(--sub);
+}

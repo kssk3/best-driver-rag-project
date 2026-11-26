@@ -63,6 +63,30 @@ def format_citation(citation: Citation) -> str:
     return line
 
 
+def _citation_card(citation: Citation) -> None:
+    """말풍선 안의 근거 한 건. 제목은 링크로, 위치와 문서 버전은 작은 글씨로 따로 보인다."""
+    label = (
+        (citation.title or citation.chunk_id).replace("[", "\\[").replace("]", "\\]")
+    )
+    meta = [
+        text
+        for text in (
+            f"위치: {citation.source_location}" if citation.source_location else "",
+            f"문서 버전: {citation.document_version}"
+            if citation.document_version
+            else "",
+        )
+        if text
+    ]
+    with st.container(border=True):
+        if is_safe_url(citation.source_url):
+            st.markdown(f"[{label}]({citation.source_url})")
+        else:
+            st.markdown(f"{label} (원문 링크 없음)")
+        if meta:
+            st.caption(" · ".join(meta))
+
+
 @contextmanager
 def _bubble(label: str, tone: str) -> Iterator[None]:
     """당번이 아바타 옆 말풍선. 안의 st.success/warning/info는 CSS가 말풍선 모양으로 바꾼다."""
@@ -111,15 +135,14 @@ def _render_answered(view: ViewResponse) -> None:
 
     with _bubble("근거 확인됨", "ok"):
         st.success(view.answer or "(답변 내용 없음)")
-        st.markdown("근거")
+        st.html('<div class="ev-label">근거</div>')
 
         if not view.citations:
             st.warning("인용된 근거가 없습니다.")
             return
 
         for citation in view.citations:
-            with st.container(border=True):
-                st.markdown(format_citation(citation))
+            _citation_card(citation)
 
 
 def _render_clarification(

@@ -39,7 +39,11 @@ def _data_uri(path: Path) -> str:
 
 
 def brand_html() -> str:
-    return f'<div class="brand"><img src="{_data_uri(LOGO_IMAGE)}" alt=""><b>분리당</b></div>'
+    # 누르면 주소를 다시 열어 첫 화면(랜딩)으로 돌아간다.
+    return (
+        f'<a class="brand" href="./" target="_self">'
+        f'<img src="{_data_uri(LOGO_IMAGE)}" alt=""><b>분리당</b></a>'
+    )
 
 
 def avatar_html() -> str:

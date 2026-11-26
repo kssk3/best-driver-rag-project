@@ -78,3 +78,16 @@ def test_landing_picks_the_district_with_chips_and_the_chat_screen_with_a_dropdo
     assert not chat.pills or all(p.label != "지역" for p in chat.pills)
     [select] = [s for s in chat.selectbox if s.label == "지역"]  # 대화 화면: 드롭다운
     assert select.value == "송파구"
+
+
+def test_header_brand_links_back_to_the_landing() -> None:
+    html = " ".join(str(item.value) for item in _run().get("html"))
+
+    assert 'class="brand" href="./"' in html
+
+
+def test_dashboard_title_has_no_internal_demo_chip() -> None:
+    html = " ".join(str(item.value) for item in _run().get("html"))
+
+    assert "검증·비교 대시보드" in html
+    assert "<span>내부 데모</span>" not in html

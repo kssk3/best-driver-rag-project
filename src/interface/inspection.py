@@ -5,10 +5,10 @@
 사용자 화면과 달리 오류 원문도 여기서는 보여 준다.
 """
 
+import pandas as pd
 import streamlit as st
 
 from src.interface.adapter import Candidate, ViewResponse
-from src.interface.chat import format_citation
 from src.validation import check_response, rank_shifts, stage_names, unchecked_rules
 
 
@@ -29,6 +29,15 @@ def _shift_text(shift: int | None) -> str:
     if shift is None:
         return "-"
     return f"+{shift}" if shift > 0 else str(shift)
+
+
+def _shift_color(text: str) -> str:
+    # +는 최종에서 올라간 것(파랑), -는 내려간 것(빨강)이다.
+    if text.startswith("+"):
+        return "color: #1d6fd6; font-weight: 700"
+    if text.startswith("-") and text != "-":
+        return "color: #d63a3a; font-weight: 700"
+    return ""
 
 
 def render_inspection(
@@ -76,7 +85,12 @@ def render_inspection(
                 # 비교할 단계는 드롭다운 대신 칩으로 고른다(다시 눌러 해제하면 첫 단계).
                 stage = (
                     st.pills(
-                        "순위 이동 비교", stages, default=stages[0], key="shift_stage"
+                        "순위 이동 비교",
+                        stages,
+                        default=stages[0],
+                        key="shift_stage",
+                        format_func=str.upper,
+                        label_visibility="collapsed",
                     )
                     or stages[0]
                 )
@@ -84,7 +98,7 @@ def render_inspection(
             elif len(stages) == 1:
                 shifts = rank_shifts(view.candidates, stages[0])
 
-            st.dataframe(
+            table = pd.DataFrame(
                 [
                     {
                         "순위": c.rank if c.rank is not None else position,
@@ -98,36 +112,35 @@ def render_inspection(
                     for position, c in enumerate(view.candidates, 1)
                 ]
             )
+            st.dataframe(
+                table.style.map(_shift_color, subset=["순위 이동"]).format(
+                    {"점수": "{:g}"}
+                ),
+                hide_index=True,
+                column_config={
+                    column: st.column_config.Column(alignment="center")
+                    for column in table.columns
+                    if column != "chunk_id"
+                },
+            )
 
             if not stages:
                 st.caption("검색 단계 점수가 없어 순위 이동을 계산할 수 없습니다.")
-            else:
-                st.caption("순위 이동은 +가 최종에서 올라간 것, -가 내려간 것입니다.")
-                if len(stages) == 1:
-                    st.caption(
-                        f"단계 점수가 하나라 그 단계({stages[0]})와 최종 순위를 비교했습니다."
-                    )
+            elif len(stages) == 1:
+                st.caption(
+                    f"단계 점수가 하나라 그 단계({stages[0]})와 최종 순위를 비교했습니다."
+                )
 
         else:
             st.info("검색 후보가 없습니다.")
 
-    left, right = st.columns(2)
-    with left:
-        with st.container(key="insp_inputs"):
-            st.subheader("모델 입력 근거")
+    with st.container(key="insp_inputs"):
+        st.subheader("모델 입력 근거")
 
-            if view.model_inputs is None:
-                st.info("기록이 없어 알 수 없습니다.")
-            elif not view.model_inputs:
-                st.info("모델에 전달된 근거가 없습니다.")
-            else:
-                for chunk_id in view.model_inputs:
-                    st.markdown(f"- {chunk_id}")
-    with right:
-        with st.container(key="insp_cites"):
-            st.subheader("인용")
-            if view.citations:
-                for citation in view.citations:
-                    st.markdown(format_citation(citation))
-            else:
-                st.info("인용이 없습니다.")
+        if view.model_inputs is None:
+            st.info("기록이 없어 알 수 없습니다.")
+        elif not view.model_inputs:
+            st.info("모델에 전달된 근거가 없습니다.")
+        else:
+            for chunk_id in view.model_inputs:
+                st.markdown(f"- {chunk_id}")

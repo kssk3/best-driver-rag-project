@@ -368,9 +368,7 @@ def render_comparison() -> None:
 def render_dev_panel(view) -> None:
     # 내부 데모 전용: 사용자 화면 아래에 항상 보이는 검증·비교 대시보드.
     with st.container(key="devpanel"):
-        st.html(
-            '<div class="dash-title">검증·비교 대시보드 <span>내부 데모</span></div>'
-        )
+        st.html('<div class="dash-title">검증·비교 대시보드</div>')
         inspection_tab, comparison_tab = st.tabs(["검증 패널", "비교 패널"])
         with inspection_tab:
             render_inspection(view, st.session_state.get("asked_district"))
