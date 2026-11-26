@@ -11,6 +11,7 @@ Hit@k: 검색 상위 k개 안에 정답 근거(allowed_chunk_ids)가 하나라�
 """
 
 from collections.abc import Collection, Sequence
+from dataclasses import dataclass
 
 from src.common.errors import ApplicationError, ErrorCategory
 from src.contracts import EvaluationCase, SearchCandidate
@@ -41,10 +42,7 @@ def hit_at_k(
             k가 정수가 아닐 때,
             정답 근거가 문자열일 때
     """
-    if type(k) is not int:
-        raise RetrievalMetricError("k는 정수여야 합니다.")
-    if k < 1:
-        raise RetrievalMetricError("k는 1 이상이어야 합니다.")
+    _check_k(k)
     if isinstance(allowed_chunk_ids, str):
         raise RetrievalMetricError("정답 근거는 chunk_id 목록(list, set)이어야 합니다.")
     if not allowed_chunk_ids:
@@ -81,49 +79,126 @@ def mean_hit_rate(hits: list[int]) -> float:
     return sum(hits) / len(hits)
 
 
+@dataclass(frozen=True)
+class ConfigurationHitRate:
+    """한 구성의 Hit@k 결과. 평균만 보면 몇 문항으로 낸 점수인지 알 수 없어 개수도 함께 둔다.
+
+    hits: 적중한 문항 수, cases: 채점한 문항 수, rate: hits / cases.
+    채점할 문항이 0개면 rate는 None (0점과 "채점할 게 없음"을 구분한다).
+    """
+
+    hits: int
+    cases: int
+    rate: float | None
+
+
 def hit_rate_by_configuration(
     results: list[dict],
     cases: Sequence[EvaluationCase],
+    configurations: Sequence[str],
     k: int = 5,
-) -> dict[str, float]:
-    """evaluate_cases 결과를 구성(A/B/C 등)별 Hit@k 평균으로 묶는다.
+) -> dict[str, ConfigurationHitRate]:
+    """evaluate_cases 결과를 구성(A/B/C 등)별 Hit@k로 묶는다. 실검색(run_kind=rag) 비교용.
 
-    예: {"A": 0.71, "B": 0.82, "C": 0.88}
+    예: {"A": ConfigurationHitRate(hits=12, cases=17, rate=0.71), ...}
 
-    - 정답 근거가 없는 문항("근거 없음" 문항)은 Hit@k 대상이 아니라서 뺀다.
-    - 실행 오류로 record가 없으면 0점으로 센다.
-      빼면 분모가 줄어 점수가 실제보다 좋게 나온다 (17문항 중 3개 실패 → 14문항 평균이 됨).
+    채점 대상은 정답 근거가 있는 문항 × configurations다. 그 조합이 결과에 정확히 한 번씩
+    있어야 한다. 빠지거나 겹치면 분모가 달라져 점수가 틀리므로 0점이 아니라 오류로 알린다.
+
+    문항 하나의 점수:
+    - 실행 오류로 record가 없음 → 0점 (실행했지만 실패)
+    - retrieve 단계가 ok가 아님(실패·건너뜀) → 0점
+    - retrieve 성공 → 기록된 검색 순위로 hit_at_k. 그 뒤 답변 생성이 실패해도 검색 점수는 센다.
 
     Raises:
-        RetrievalMetricError: 결과의 case_id가 cases에 없을 때 (다른 문항 세트를 섞은 실수)
+        RetrievalMetricError:
+            k가 1 이상 정수가 아닐 때, configurations가 비었거나 겹칠 때,
+            문항 목록에 같은 case_id가 두 번 있을 때,
+            결과에 모르는 case_id·configuration이 있을 때,
+            (configuration, case_id)가 빠지거나 두 번 있을 때,
+            실검색이 아닌 기록(demo, fixed_evidence)이 섞였을 때,
+            파이프라인 top_k가 k보다 작아 Hit@k를 잴 수 없을 때
     """
-    known_case_ids = {case.case_id for case in cases}
-    # ① case_id → 정답 근거 목록. 근거 없는 문항은 넣지 않는다
+    _check_k(k)
+    if not configurations or len(set(configurations)) != len(configurations):
+        raise RetrievalMetricError("비교할 구성 목록이 비었거나 같은 이름이 있습니다.")
+    case_ids = [case.case_id for case in cases]
+    if len(set(case_ids)) != len(case_ids):
+        raise RetrievalMetricError("문항 목록에 같은 case_id가 두 번 있습니다.")
+
+    # ① case_id → 정답 근거 목록. 근거 없는 문항은 Hit@k 대상이 아니라서 넣지 않는다
     allowed_by_case = {
         case.case_id: case.allowed_chunk_ids for case in cases if case.allowed_chunk_ids
     }
 
-    # ② 구성별로 문항마다 Hit(0 또는 1)를 모은다. 예: {"A": [1, 0, 1], "B": [1, 1, 1]}
-    hits_by_config: dict[str, list[int]] = {}
+    # ② (구성, 문항)마다 점수 한 개. 한 번씩만 있어야 한다
+    hit_by_run: dict[tuple[str, str], int] = {}
+    seen: set[tuple[str, str]] = set()
     for result in results:
         case_id = result["case_id"]
-        if case_id not in known_case_ids:
+        configuration = result["configuration"]
+        if case_id not in case_ids:
             raise RetrievalMetricError(f"문항 목록에 없는 case_id입니다: {case_id!r}")
+        if configuration not in configurations:
+            raise RetrievalMetricError(
+                f"비교 대상이 아닌 구성입니다: {configuration!r}"
+            )
+        key = (configuration, case_id)
+        if key in seen:
+            raise RetrievalMetricError(f"같은 구성·문항 결과가 두 번 있습니다: {key!r}")
+        seen.add(key)
+
         allowed = allowed_by_case.get(case_id)
         if allowed is None:  # 근거 없는 문항 → 채점 대상 아님
             continue
+        hit_by_run[key] = _score_run(result["record"], allowed, k)
 
-        record = result["record"]
-        if record is None:
-            hit = 0
-        else:
-            # record는 JSON dict라서 후보를 다시 SearchCandidate로 바꾼다
-            candidates = [
-                SearchCandidate.model_validate(c) for c in record["candidates"]
-            ]
-            hit = hit_at_k(candidates=candidates, allowed_chunk_ids=allowed, k=k)
+    # ③ 빠진 조합 찾기. 없는 줄을 조용히 넘기면 그 구성만 문제 수가 줄어든다
+    missing = [
+        (configuration, case_id)
+        for configuration in configurations
+        for case_id in allowed_by_case
+        if (configuration, case_id) not in hit_by_run
+    ]
+    if missing:
+        raise RetrievalMetricError(f"결과에 없는 구성·문항이 있습니다: {missing!r}")
 
-        hits_by_config.setdefault(result["configuration"], []).append(hit)
+    # ④ 구성별로 적중 수·문항 수·평균. 채점할 문항이 0개인 구성도 빠뜨리지 않는다
+    summary: dict[str, ConfigurationHitRate] = {}
+    for configuration in configurations:
+        hits = [hit_by_run[(configuration, case_id)] for case_id in allowed_by_case]
+        summary[configuration] = ConfigurationHitRate(
+            hits=sum(hits),
+            cases=len(hits),
+            rate=mean_hit_rate(hits) if hits else None,
+        )
+    return summary
 
-    # ③ 구성별 평균
-    return {config: mean_hit_rate(hits) for config, hits in hits_by_config.items()}
+
+def _check_k(k: int) -> None:
+    if type(k) is not int:
+        raise RetrievalMetricError("k는 정수여야 합니다.")
+    if k < 1:
+        raise RetrievalMetricError("k는 1 이상이어야 합니다.")
+
+
+def _score_run(record: dict | None, allowed: list[str], k: int) -> int:
+    """실행 기록 하나의 Hit@k. 실패는 0점, 실검색이 아닌 기록은 오류."""
+    if record is None:  # 실행 자체가 실패해 기록이 없음
+        return 0
+    if record["run_kind"] != "rag":
+        # demo·fixed_evidence는 검색을 하지 않았거나 정해 준 근거라 검색 점수가 아니다
+        raise RetrievalMetricError(
+            f"실검색(rag)이 아닌 기록은 비교할 수 없습니다: {record['run_kind']!r}"
+        )
+    if record["options"]["top_k"] < k:
+        # 후보를 3개만 받았는데 Hit@5라고 하면 실제보다 낮게 나온다
+        raise RetrievalMetricError(
+            f"파이프라인 top_k({record['options']['top_k']})가 k({k})보다 작습니다."
+        )
+    retrieve = [stage for stage in record["stages"] if stage["name"] == "retrieve"]
+    if not retrieve or retrieve[0]["status"] != "ok":
+        return 0  # 검색 실패·건너뜀(지역 되묻기 등) → 정답을 못 찾은 것
+    # 검색은 성공했다. 뒤의 답변 생성이 실패해도 검색 순위는 기록에 남아 있다
+    candidates = [SearchCandidate.model_validate(c) for c in record["candidates"]]
+    return hit_at_k(candidates=candidates, allowed_chunk_ids=allowed, k=k)

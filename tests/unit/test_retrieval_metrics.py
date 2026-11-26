@@ -12,6 +12,7 @@ from src.contracts import (
     SearchCandidate,
 )
 from src.evaluation.retrieval_metrics import (
+    ConfigurationHitRate,
     RetrievalMetricError,
     hit_at_k,
     hit_rate_by_configuration,
@@ -161,7 +162,16 @@ def case(case_id: str, allowed: list[str]) -> EvaluationCase:
     )
 
 
-def result(case_id: str, configuration: str, top_ids: list[str] | None) -> dict:
+def result(
+    case_id: str,
+    configuration: str,
+    top_ids: list[str] | None,
+    *,
+    run_kind: str = "rag",
+    retrieve: str = "ok",
+    generate: str = "ok",
+    top_k: int = 5,
+) -> dict:
     """evaluate_cases 결과 한 줄. top_ids=None이면 실행 오류(record 없음)."""
     if top_ids is None:
         return {"case_id": case_id, "configuration": configuration, "record": None}
@@ -172,21 +182,32 @@ def result(case_id: str, configuration: str, top_ids: list[str] | None) -> dict:
     return {
         "case_id": case_id,
         "configuration": configuration,
-        "record": {"candidates": candidates},
+        "record": {
+            "run_kind": run_kind,
+            "options": {"top_k": top_k},
+            "stages": [
+                {"name": "retrieve", "status": retrieve},
+                {"name": "generate", "status": generate},
+            ],
+            "candidates": candidates,
+        },
     }
 
 
 CASES = [case("q1", ["row-1"]), case("q2", ["row-9"])]
 
 
-def test_rate_is_grouped_by_configuration():
+def test_rate_is_grouped_by_configuration_with_counts():
     results = [
         result("q1", "A", ["row-1", "row-2"]),  # 정답 1위 → 1
         result("q2", "A", ["row-1", "row-2"]),  # 정답 없음 → 0
         result("q1", "B", ["row-2", "row-1"]),  # 정답 2위 → 1
         result("q2", "B", ["row-9"]),  # 정답 1위 → 1
     ]
-    assert hit_rate_by_configuration(results, CASES) == {"A": 0.5, "B": 1.0}
+    assert hit_rate_by_configuration(results, CASES, ["A", "B"]) == {
+        "A": ConfigurationHitRate(hits=1, cases=2, rate=0.5),
+        "B": ConfigurationHitRate(hits=2, cases=2, rate=1.0),
+    }
 
 
 def test_failed_run_counts_as_miss_and_keeps_denominator():
@@ -194,26 +215,123 @@ def test_failed_run_counts_as_miss_and_keeps_denominator():
         result("q1", "C", ["row-1"]),  # 1
         result("q2", "C", None),  # 실행 오류 → 0 (빼지 않음)
     ]
-    assert hit_rate_by_configuration(results, CASES) == {"C": 0.5}
+    assert hit_rate_by_configuration(results, CASES, ["C"])["C"] == (
+        ConfigurationHitRate(hits=1, cases=2, rate=0.5)
+    )
+
+
+def test_failed_retrieve_counts_as_miss():
+    # 검색 단계가 실패·건너뜀이면 후보가 남아 있어도 0점
+    results = [
+        result("q1", "A", ["row-1"], retrieve="error"),
+        result("q2", "A", ["row-9"], retrieve="skipped"),
+    ]
+    assert hit_rate_by_configuration(results, CASES, ["A"])["A"].hits == 0
+
+
+def test_generation_failure_after_retrieve_still_uses_search_ranks():
+    # 검색은 성공하고 답변 생성만 실패 → 기록된 검색 순위로 채점
+    results = [
+        result("q1", "A", ["row-1"], generate="error"),
+        result("q2", "A", ["row-9"], generate="error"),
+    ]
+    assert hit_rate_by_configuration(results, CASES, ["A"])["A"].hits == 2
 
 
 def test_case_without_evidence_is_skipped():
     cases = [*CASES, case("no-evidence", [])]
     results = [
         result("q1", "A", ["row-1"]),
+        result("q2", "A", ["row-9"]),
         result("no-evidence", "A", ["row-1"]),  # 근거 없는 문항 → 계산에서 뺌
     ]
-    assert hit_rate_by_configuration(results, cases) == {"A": 1.0}
+    assert hit_rate_by_configuration(results, cases, ["A"])["A"].cases == 2
+
+
+def test_configuration_without_scorable_cases_is_kept_with_no_rate():
+    # 모든 문항이 근거 없음 → 구성이 사라지지 않고 "채점할 문항 0개"로 남는다
+    cases = [case("no-evidence", [])]
+    results = [result("no-evidence", "A", ["row-1"])]
+    assert hit_rate_by_configuration(results, cases, ["A"]) == {
+        "A": ConfigurationHitRate(hits=0, cases=0, rate=None)
+    }
 
 
 def test_answer_outside_k_is_miss():
-    results = [result("q1", "A", ["x-1", "x-2", "row-1"])]  # 정답 3위
-    assert hit_rate_by_configuration(results, CASES, k=2) == {"A": 0.0}
+    results = [
+        result("q1", "A", ["x-1", "x-2", "row-1"]),  # 정답 3위
+        result("q2", "A", ["row-9"]),
+    ]
+    assert hit_rate_by_configuration(results, CASES, ["A"], k=2)["A"].hits == 1
 
 
-def test_unknown_case_id_is_rejected():
+@pytest.mark.parametrize(
+    ("results", "configurations"),
+    [
+        # 누락: B의 q2 결과가 없음 → 0점이 아니라 오류 (분모가 줄어 B가 좋아 보이는 것 방지)
+        (
+            [
+                result("q1", "A", ["row-1"]),
+                result("q2", "A", ["x"]),
+                result("q1", "B", ["row-1"]),
+            ],
+            ["A", "B"],
+        ),
+        # 기대한 구성 C의 결과가 아예 없음
+        ([result("q1", "A", ["row-1"]), result("q2", "A", ["x"])], ["A", "C"]),
+        # 중복: 같은 문항 재시도 줄이 두 번
+        (
+            [
+                result("q1", "A", ["row-1"]),
+                result("q1", "A", ["row-1"]),
+                result("q2", "A", ["x"]),
+            ],
+            ["A"],
+        ),
+        # 비교 대상이 아닌 구성
+        ([result("q1", "Z", ["row-1"])], ["A"]),
+        # 문항 목록에 없는 case_id
+        ([result("other", "A", ["row-1"])], ["A"]),
+        # 고정 근거·데모 기록 혼입
+        (
+            [
+                result("q1", "A", ["row-1"], run_kind="fixed_evidence"),
+                result("q2", "A", ["x"]),
+            ],
+            ["A"],
+        ),
+        ([result("q1", "A", ["row-1"], run_kind="demo")], ["A"]),
+        # 파이프라인 top_k(3)가 k(5)보다 작음
+        ([result("q1", "A", ["row-1"], top_k=3)], ["A"]),
+        # 구성 목록이 비었거나 겹침
+        ([], []),
+        ([], ["A", "A"]),
+    ],
+)
+def test_invalid_comparison_input_is_rejected(results, configurations):
     with pytest.raises(RetrievalMetricError):
-        hit_rate_by_configuration([result("other", "A", ["row-1"])], CASES)
+        hit_rate_by_configuration(results, CASES, configurations)
+
+
+def test_duplicate_case_ids_in_case_list_are_rejected():
+    with pytest.raises(RetrievalMetricError):
+        hit_rate_by_configuration([], [case("q1", ["a"]), case("q1", ["b"])], ["A"])
+
+
+@pytest.mark.parametrize("k", [0, -1, 5.0, True])
+@pytest.mark.parametrize(
+    ("results", "cases"),
+    [
+        # 채점 대상 문항의 실행이 전부 실패(record 없음) → 후보 채점 분기에 안 들어가도 k를 검사
+        ([result("q1", "A", None), result("q2", "A", None)], CASES),
+        # 채점 대상 문항이 하나도 없음(근거 없는 문항뿐)
+        ([result("no-evidence", "A", ["row-1"])], [case("no-evidence", [])]),
+    ],
+)
+def test_invalid_k_is_rejected_regardless_of_results(results, cases, k):
+    # 같은 잘못된 k가 입력 상태에 따라 오류가 되기도, 정상 점수가 되기도 하면 안 된다
+    with pytest.raises(RetrievalMetricError):
+        hit_rate_by_configuration(results, cases, ["A"], k=k)
 
 
 def test_rate_from_real_evaluate_cases_output():
@@ -228,18 +346,23 @@ def test_rate_from_real_evaluate_cases_output():
         ids = ranked_ids[variant][:top_k]
         return [candidate(chunk_id, rank) for rank, chunk_id in enumerate(ids, 1)]
 
+    def generate(request, evidence):
+        if request.question == "생성 실패 질문":
+            raise RuntimeError("합성 생성 실패")
+        return GenerationResult(
+            status="answered",
+            answer="합성 답변",
+            cited_chunk_ids=[evidence[0].chunk_id],
+        )
+
     def make_pipeline(variant):
         return RAGPipeline(
             resolver=lambda request: ResolvedQuery(
                 search_query=request.question, district=request.district
             ),
             retriever=retrieve,
-            generator=lambda request, evidence: GenerationResult(
-                status="answered",
-                answer="합성 답변",
-                cited_chunk_ids=[evidence[0].chunk_id],
-            ),
-            options=PipelineOptions(variant=variant, top_k=5, run_kind="demo"),
+            generator=generate,
+            options=PipelineOptions(variant=variant, top_k=5, run_kind="rag"),
         )
 
     class BrokenPipeline:
@@ -252,15 +375,24 @@ def test_rate_from_real_evaluate_cases_output():
             question="합성 질문",
             district="송파구",
             allowed_chunk_ids=["row-1"],
-        )
+        ),
+        # 검색은 성공하고 답변 생성만 실패하는 문항
+        EvaluationCase(
+            case_id="q2",
+            question="생성 실패 질문",
+            district="송파구",
+            allowed_chunk_ids=["row-1"],
+        ),
     ]
     results = evaluate_cases(
         cases,
         {"A": make_pipeline("A"), "B": make_pipeline("B"), "broken": BrokenPipeline()},
     )
 
-    assert hit_rate_by_configuration(results, cases, k=5) == {
-        "A": 0.0,  # top_k=5라 6위 정답은 검색 결과에 없다
-        "B": 1.0,
-        "broken": 0.0,  # 실행 오류는 0점
+    assert hit_rate_by_configuration(results, cases, ["A", "B", "broken"], k=5) == {
+        "A": ConfigurationHitRate(hits=0, cases=2, rate=0.0),  # 정답 6위 → 5위 밖
+        "B": ConfigurationHitRate(
+            hits=2, cases=2, rate=1.0
+        ),  # q2는 생성 실패여도 검색 1위
+        "broken": ConfigurationHitRate(hits=0, cases=2, rate=0.0),  # 실행 오류 0점
     }
