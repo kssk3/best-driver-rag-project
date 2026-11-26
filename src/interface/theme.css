@@ -188,22 +188,30 @@ footer {
   margin: 0;
 }
 
-/* 내부 데모: 오른쪽에 항상 붙는 검증·비교 패널 */
-[data-testid="stMainBlockContainer"] {
-  max-width: none;
-  padding-right: calc(38vw + 24px);
-}
+/* 내부 데모: 사용자 화면 아래에 항상 붙는 검증·비교 대시보드 */
 .st-key-devpanel {
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: 38vw;
-  height: 100vh;
-  overflow-y: auto;
   background: #fff;
-  border-left: 1px solid var(--lav-line);
-  padding: 16px 20px 40px;
-  z-index: 10;
+  border: 1px solid var(--lav-line);
+  border-radius: 16px;
+  padding: 18px 24px 28px;
+  margin-top: 36px;
+}
+.dash-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--lav-ink);
+  font-size: 18px;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+.dash-title span {
+  background: var(--lav-soft);
+  border: 1px solid var(--lav-line);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 10px;
 }
 [data-testid="stTab"][aria-selected="true"] {
   color: var(--lav-ink);
@@ -216,11 +224,6 @@ footer {
   }
   [data-testid="stMainBlockContainer"] {
     padding: 1rem 20px 3rem;
-  }
-  .st-key-devpanel {
-    position: static;
-    width: auto;
-    height: auto;
   }
 }
 
@@ -287,14 +290,4 @@ footer {
   border: 0;
   color: #fff;
   font-weight: 800;
-}
-
-/* 비교 패널 지표: 좁은 열에서 값이 …로 잘리지 않게 작게 줄바꿈 */
-.st-key-devpanel [data-testid="stMetricValue"] {
-  font-size: 1.05rem;
-}
-.st-key-devpanel [data-testid="stMetricValue"] > div {
-  white-space: normal;
-  overflow: visible;
-  text-overflow: clip;
 }

@@ -1,4 +1,4 @@
-"""app.py의 두 화면(랜딩, 결과)과 오른쪽 검증·비교 패널이 오류 없이 전환되는지 확인한다."""
+"""app.py의 두 화면(랜딩, 결과)과 아래 검증·비교 대시보드가 오류 없이 전환되는지 확인한다."""
 
 from screen_helpers import button, fixture_app, new_app
 
@@ -39,9 +39,9 @@ def test_result_screen_shows_answer_and_panel_for_the_same_response() -> None:
     app = fixture_app("answered", question="가상 질문")
 
     assert not app.exception
-    assert app.success  # 왼쪽: 답변
+    assert app.success  # 위: 답변
     assert [tab.label for tab in app.tabs] == ["검증 패널", "비교 패널"]
-    assert app.dataframe  # 오른쪽: 같은 응답의 후보 순위
+    assert app.dataframe  # 아래 대시보드: 같은 응답의 후보 순위
     assert not any("먼저 질문" in item.value for item in app.info)
 
 
