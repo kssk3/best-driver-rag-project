@@ -344,3 +344,31 @@ def test_primary_failure_keeps_message_even_when_error_codes_collide() -> None:
 
     app = AppTest.from_function(page, default_timeout=10).run()
     assert any("답변 모델에 연결하지 못했습니다" in e.value for e in app.error)
+
+
+def test_standard_refusal_line_is_not_repeated_under_the_fixed_notice() -> None:
+    def page() -> None:
+        from src.interface.adapter import ViewResponse
+        from src.interface.chat import render_response
+
+        render_response(
+            ViewResponse(
+                "r",
+                "fixture",
+                "insufficient_evidence",
+                "현재 확인한 자료로는 답변하기 어렵습니다.\n서울시 안내는 월요일입니다.",
+                [],
+                [],
+                None,
+                [],
+                None,
+            )
+        )
+
+    app = AppTest.from_function(page, default_timeout=10).run()
+    shown = " ".join(m.value for m in app.markdown)
+    assert (
+        "답변하기 어렵습니다" not in shown
+    )  # 고정 안내와 같은 뜻이라 되풀이하지 않는다.
+    assert "월요일" in shown  # 정보가 더해지는 줄은 그대로 보인다.
+    assert len(app.info) == 1

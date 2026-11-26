@@ -66,7 +66,7 @@ def format_citation(citation: Citation) -> str:
 @contextmanager
 def _bubble(label: str, tone: str) -> Iterator[None]:
     """당번이 아바타 옆 말풍선. 안의 st.success/warning/info는 CSS가 말풍선 모양으로 바꾼다."""
-    avatar, body = st.columns([1, 14], vertical_alignment="top")
+    body, avatar = st.columns([14, 1], vertical_alignment="top")
     avatar.html(avatar_html())
     with body, st.container(key="answerbox"):
         st.html(f'<span class="badge {tone}">{label}</span>')
@@ -165,7 +165,8 @@ def _render_insufficient_evidence(view: ViewResponse) -> None:
         # 근거는 찾았지만 답을 하나로 정할 수 없는 경우(출처끼리 내용이 다름)에는
         # 안내 문장과 출처를 함께 보여 준다. 근거가 없으면 위 안내 한 줄만 보인다.
         for line in (view.answer or "").splitlines():
-            if line.strip():
+            # 위의 고정 안내와 같은 뜻의 거절 문장은 되풀이하지 않는다.
+            if line.strip() and "답변하기 어렵" not in line:
                 st.write(line)
         if view.citations:
             st.markdown("확인한 출처")

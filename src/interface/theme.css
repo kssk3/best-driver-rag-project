@@ -573,3 +573,46 @@ footer {
   margin-bottom: 0 !important;
   padding: 6px 0;
 }
+
+/* ===== 말풍선 방향: 너구리는 오른쪽, 꼬리도 오른쪽. 연한 테두리 ===== */
+.avatar {
+  transform: scaleX(-1); /* 이미지는 왼쪽 배치용으로 반전돼 있어 다시 뒤집는다 */
+}
+.st-key-answerbox {
+  margin-left: 0;
+  margin-right: 8px;
+  border: 1px solid #ddd0ee;
+}
+.st-key-answerbox::before {
+  left: auto;
+  right: -10px;
+  top: 17px;
+  border-right: 0;
+  border-left: 10px solid #ddd0ee; /* 테두리색 꼬리 */
+}
+.st-key-answerbox::after {
+  content: "";
+  position: absolute;
+  right: -8px;
+  top: 18px;
+  width: 0;
+  height: 0;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  border-left: 9px solid #efe9f6; /* 채움색 꼬리 */
+}
+
+/* 대화 화면 지역 드롭다운: 검색창과 같은 높이·테두리·모서리·그림자 */
+.st-key-district_compact [role="group"] {
+  height: 58px;
+  min-height: 58px;
+  background: #fff;
+  border: 1.5px solid var(--sage);
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(70, 110, 80, 0.12);
+}
+.st-key-district_compact input,
+.st-key-district_compact [role="group"] button {
+  height: 100%;
+  font-size: 15px;
+}
