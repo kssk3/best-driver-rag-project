@@ -1,4 +1,4 @@
-"""P09 프롬프트 전달과 검색 질의 복귀를 합성 모델로 확인."""
+"""질문 다듬기 프롬프트 전달과 검색 질의 복귀를 합성 모델로 확인."""
 
 import json
 from unittest.mock import Mock
@@ -23,6 +23,12 @@ T03_QUESTION = (
     "단독주택이니까 우유팩이랑 소주팩은 종이류랑 같이 묶어서 내놓으면 되는 거죠? "
     "따로 모을 필요는 없잖아요."
 )
+
+MULTI_ITEM_QUESTION = (
+    "서대문구 단독주택에서 씻지 않은 우유팩이랑 헹군 두유팩, "
+    "유리병은 각각 어떻게 내놔요? 깨진 유리는 빼고요."
+)
+CANONICAL_PRESENT_QUESTION = "두유팩(종이팩)이랑 우유팩은 같이 모아도 돼요?"
 
 
 @pytest.fixture
@@ -66,6 +72,20 @@ def make_runtime(tmp_path):
             "서대문구",
             f"{T03_QUESTION} (종이팩)",
             id="T03",
+        ),
+        pytest.param(
+            MULTI_ITEM_QUESTION,
+            "서대문구",
+            None,
+            f"{MULTI_ITEM_QUESTION} (종이팩)",
+            id="multiple-items-with-separate-conditions",
+        ),
+        pytest.param(
+            CANONICAL_PRESENT_QUESTION,
+            "서대문구",
+            "서대문구",
+            CANONICAL_PRESENT_QUESTION,
+            id="already-has-canonical-name",
         ),
     ],
 )
@@ -181,9 +201,22 @@ def test_prompt_rewrite_can_flatten_line_breaks(make_runtime):
             f"{T03_QUESTION} (종이팩) (종이팩)",
             id="duplicate-alias",
         ),
+        pytest.param(
+            MULTI_ITEM_QUESTION,
+            "서대문구",
+            MULTI_ITEM_QUESTION.replace("헹군 두유팩, 유리병", "헹군 두유팩")
+            + " (종이팩)",
+            id="dropped-item",
+        ),
+        pytest.param(
+            MULTI_ITEM_QUESTION,
+            "서대문구",
+            f"{MULTI_ITEM_QUESTION} (종이팩) 유리병은 따로 배출하세요.",
+            id="added-disposal-instruction",
+        ),
     ],
 )
-def test_prompt_rewrite_rejects_changes_outside_v1_rules(
+def test_prompt_rewrite_rejects_changes_outside_allowed_rules(
     make_runtime,
     question,
     district,

@@ -12,7 +12,7 @@ from src.query.errors import (
     RewriteOutputTypeError,
 )
 
-QUERY_REWRITE_PROMPT_VERSION = "p09-v1"
+QUERY_REWRITE_PROMPT_VERSION = "query-rewrite-v2"
 _QUERY_REWRITE_PROMPT = Path(__file__).resolve().parents[2] / "prompts/query/rewrite.md"
 
 

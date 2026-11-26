@@ -6,13 +6,19 @@
 """
 
 import json
+from os import getenv
 from pathlib import Path
 
 import streamlit as st
 
-from src.config import load_settings
+from src.common.env import MissingEnvironmentError
+from src.config import RuntimeSettings, load_settings
 from src.contracts import PipelineRequest
 from src.demo import create_demo_pipeline
+from src.evaluation.answer_experiments.answer_evaluation_runtimes import (
+    MissingEvaluationModelError,
+    create_a_catalog_runtime,
+)
 from src.interface.adapter import (
     run_record_to_places,
     run_record_to_view,
@@ -22,6 +28,8 @@ from src.interface.adapter import (
 from src.interface.chat import render_response
 from src.interface.inspection import render_inspection
 from src.interface.map import render_places
+from src.pipeline import PipelineConfigurationError
+from src.rewrite_dictionary import catalog
 
 # [임시] 예시(합성) 응답을 읽는다.
 SAMPLE_PATH = (
@@ -48,12 +56,78 @@ INDEX_COMMAND = (
 )
 
 
-# 합성 데모 파이프라인 생성 함수
-@st.cache_resource
-def load_pipeline():
-    root = Path(__file__).parent
-    settings = load_settings(root / "configs" / "demo.json", project_root=root)
+PROJECT_ROOT = Path(__file__).resolve().parent
+TEAM_INDEX_MODE = "실행(팀 색인)"
+TEAM_SETTINGS_PATH = getenv("RAG_CHAT_SETTINGS", "").strip()
+
+
+class TeamSettingsFileError(ValueError):
+    """팀 실행 설정 파일을 읽거나 해석할 수 없는 경우."""
+
+
+class TeamResourceChangedError(RuntimeError):
+    """런타임을 가져오는 도중 팀 색인이나 품목 사전이 갱신된 경우."""
+
+
+type FileVersion = tuple[int, int, int, int, int]
+type TeamFileVersions = tuple[FileVersion | None, FileVersion | None]
+
+
+def _file_version(path: Path) -> FileVersion | None:
+    try:
+        info = path.stat()
+    except OSError:
+        # 실제 로더가 파일과 실행 설정 오류를 구분해서 보고한다.
+        return None
+    return info.st_dev, info.st_ino, info.st_size, info.st_mtime_ns, info.st_ctime_ns
+
+
+def _team_file_versions(settings: RuntimeSettings) -> TeamFileVersions:
+    return (
+        _file_version(settings.index_path),
+        _file_version(catalog.CATALOG_PATH)
+        if settings.pipeline.rewrite_enabled
+        else None,
+    )
+
+
+def read_team_settings(path: str) -> RuntimeSettings:
+    try:
+        return load_settings(PROJECT_ROOT / path, project_root=PROJECT_ROOT)
+    except (OSError, ValueError) as error:
+        raise TeamSettingsFileError(
+            "팀 실행 설정 파일을 불러오지 못했습니다."
+        ) from error
+
+
+@st.cache_resource(
+    max_entries=2, hash_funcs={RuntimeSettings: RuntimeSettings.model_dump_json}
+)
+def _build_pipeline(
+    team_settings: RuntimeSettings | None = None,
+    file_versions: TeamFileVersions | None = None,
+):
+    if team_settings is not None:
+        pipeline = create_a_catalog_runtime(team_settings)
+        # 로드 중에 파일이 교체되면 이전 키로 새 결과를 캐시하지 않는다.
+        if _team_file_versions(team_settings) != file_versions:
+            raise TeamResourceChangedError
+        return pipeline
+    settings = load_settings(
+        PROJECT_ROOT / "configs" / "demo.json", project_root=PROJECT_ROOT
+    )
     return create_demo_pipeline(settings)
+
+
+def load_pipeline(team_settings: RuntimeSettings | None = None):
+    if team_settings is None:
+        return _build_pipeline()
+    file_versions = _team_file_versions(team_settings)
+    pipeline = _build_pipeline(team_settings, file_versions)
+    # 캐시를 재사용할 때도 조회 중 교체된 파일이 있는지 확인한다.
+    if _team_file_versions(team_settings) != file_versions:
+        raise TeamResourceChangedError
+    return pipeline
 
 
 FAVICON_PATH = Path(__file__).parent / ".streamlit" / "favicon.png"
@@ -68,13 +142,18 @@ user_tab, inspection_tab, comparison_tab = st.tabs(
 
 
 with user_tab:
-    mode = st.radio("응답 방식", ["예시 응답", "실행(합성 데모)"], horizontal=True)
+    modes = ["예시 응답", "실행(합성 데모)"]
+    if TEAM_SETTINGS_PATH:
+        modes.append(TEAM_INDEX_MODE)
+    mode = st.radio("응답 방식", modes, horizontal=True)
     district = st.selectbox("지역", ["서대문구", "송파구"])
     question = st.text_input("질문")
 
     if mode == "예시 응답":
         sample_name = st.selectbox("예시 응답 고르기 (합성)", list(samples))
         st.caption("지금은 입력한 구와 질문에 상관없이 선택한 예시가 표현됩니다.")
+    elif mode == TEAM_INDEX_MODE:
+        st.caption("설정한 팀 색인에서 검색해 답변합니다.")
     else:
         st.caption("합성 문서만 검색하는 데모 실행입니다. 실제 RAG 품질이 아닙니다.")
 
@@ -96,13 +175,42 @@ with user_tab:
             st.warning("질문을 입력하세요.")
         else:
             try:
-                record = load_pipeline().run(
+                team_settings = (
+                    read_team_settings(TEAM_SETTINGS_PATH)
+                    if mode == TEAM_INDEX_MODE
+                    else None
+                )
+                record = load_pipeline(team_settings).run(
                     PipelineRequest(question=question, district=district)
                 )
-            except (FileNotFoundError, ValueError):
+            except TeamSettingsFileError:
                 st.error(
-                    f"데모 색인을 불러오지 못했습니다. 먼저 색인을 만드세요: {INDEX_COMMAND}"
+                    "팀 실행 설정 파일을 불러오지 못했습니다. RAG_CHAT_SETTINGS 경로와 JSON 설정값을 확인하세요."
                 )
+            except MissingEvaluationModelError:
+                st.error(
+                    "실행 설정의 pipeline.versions.model에 답변 모델 ID를 지정하세요."
+                )
+            except MissingEnvironmentError:
+                st.error("팀 색인 실행에 필요한 OPENAI_API_KEY 환경변수를 설정하세요.")
+            except TeamResourceChangedError:
+                st.error("팀 색인이나 품목 사전이 갱신되었습니다. 다시 질문하세요.")
+            except (OSError, ValueError) as error:
+                if mode != TEAM_INDEX_MODE:
+                    st.error(
+                        f"데모 색인을 불러오지 못했습니다. 먼저 색인을 만드세요: {INDEX_COMMAND}"
+                    )
+                elif (
+                    isinstance(error, PipelineConfigurationError)
+                    and error.code == "evaluation.unsupported_configuration"
+                ):
+                    st.error(
+                        '팀 색인 모드의 실행 설정에서 pipeline.variant를 "A"로 지정하세요.'
+                    )
+                else:
+                    st.error(
+                        "팀 색인을 불러오지 못했습니다. 실행 설정의 index_path와 색인 파일을 확인하세요."
+                    )
             else:
                 st.session_state["view"] = run_record_to_view(record)
                 st.session_state["places"] = run_record_to_places(record)

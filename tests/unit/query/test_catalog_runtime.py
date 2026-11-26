@@ -5,10 +5,13 @@ import sys
 import unicodedata
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from types import SimpleNamespace
 from unittest import TestCase
 from unittest.mock import patch
 
+from src.contracts import PipelineRequest
 from src.query.aliases import ITEM_ALIASES
+from src.retrieval.regions import resolve_request
 from src.rewrite_dictionary.build_item_catalog import main as build_item_catalog
 from src.rewrite_dictionary.catalog import CATALOG_PATH
 from src.rewrite_dictionary.official_review import (
@@ -20,7 +23,7 @@ from src.rewrite_dictionary.prompt_context import (
     make_prompt_context_builder,
     serialize_prompt_context,
 )
-from src.rewrite_dictionary.runtime import make_question_rewriter
+from src.rewrite_dictionary.runtime import make_catalog_rewriter, make_question_rewriter
 
 
 class CatalogRuntimeTests(TestCase):
@@ -85,7 +88,7 @@ class CatalogRuntimeTests(TestCase):
             "투명 패트병이랑 폐건전지는 우야노?": (
                 "투명 패트병이랑 폐건전지는 어떻게 해야 하나요? (전지류) (페트병)"
             ),
-            "안 깨진 유리벵과 LED전구는?": "안 깨진 유리벵과 LED전구는? (LED 전구)",
+            "안 깨진 유리벵과 LED전구는?": "안 깨진 유리벵과 LED전구는? (LED 전구) (유리병)",
             "스치로폼이랑 족발뼈는 우야노?": (
                 "스치로폼이랑 족발뼈는 어떻게 해야 하나요? (돼지뼈) (스티로폼)"
             ),
@@ -97,6 +100,255 @@ class CatalogRuntimeTests(TestCase):
             with self.subTest(question=question):
                 self.assertEqual(rewrite(question), expected)
                 self.assertEqual(rewrite(expected), expected)
+
+    def test_compound_selection_keeps_only_requested_item_aliases(self):
+        rewrite = make_question_rewriter()
+        build = make_prompt_context_builder()
+        cases = (
+            (
+                "송파구에서 스치로폼이랑 족발뼈 중 스치로폼만 어디 버려?",
+                {"스치로폼": "스티로폼"},
+                "송파구에서 스치로폼만 어디 버려? (스티로폼)",
+            ),
+            (
+                "스치로폼, 족발뼈 중에서 족발뼈만 어디 버려?",
+                {"족발뼈": "돼지뼈"},
+                "족발뼈만 어디 버려? (돼지뼈)",
+            ),
+            (
+                "스치로폼이랑 족발뼈랑 LED전구 중 스치로폼이랑 LED전구만 버려요.",
+                {"스치로폼": "스티로폼", "LED전구": "LED 전구"},
+                "스치로폼이랑 LED전구만 버려요. (LED 전구) (스티로폼)",
+            ),
+            (
+                "스치로폼이랑 족발뼈 중 내일만 버릴 수 있어?",
+                {"스치로폼": "스티로폼", "족발뼈": "돼지뼈"},
+                "스치로폼이랑 족발뼈 중 내일만 버릴 수 있어? (돼지뼈) (스티로폼)",
+            ),
+            (
+                "송파구 잠실2동에서 스치로폼이랑 족발뼈 중 스치로폼만, LED전구도 버려요.",
+                {"스치로폼": "스티로폼", "족발뼈": "돼지뼈", "LED전구": "LED 전구"},
+                "송파구 잠실2동에서 스치로폼이랑 족발뼈 중 스치로폼만, LED전구도 버려요."
+                " (돼지뼈) (LED 전구) (스티로폼)",
+            ),
+            (
+                "안 씻은 우유팩이랑 유리벵 중 우유팩만 어디 버려?",
+                {"우유팩": "종이팩"},
+                "안 씻은 우유팩이랑 유리벵 중 우유팩만 어디 버려? (종이팩)",
+            ),
+            (
+                "내일 송파구에서 스치로폼이랑 족발뼈 중 스치로폼만 어디 버려?",
+                {"스치로폼": "스티로폼"},
+                "내일 송파구에서 스치로폼이랑 족발뼈 중 스치로폼만 어디 버려? (스티로폼)",
+            ),
+        )
+        for question, aliases, rewritten in cases:
+            with self.subTest(question=question):
+                payload = build(question)
+                self.assertEqual(payload["question"], question)
+                self.assertEqual(payload["item_aliases"], aliases)
+                self.assertEqual(
+                    [item["item"] for item in payload["item_context"]],
+                    list(aliases.values()),
+                )
+                self.assertEqual(rewrite(question), rewritten)
+                self.assertEqual(rewrite(rewritten), rewritten)
+
+    def test_selection_with_additional_intent_preserves_both_items(self):
+        rewrite = make_question_rewriter()
+        build = make_prompt_context_builder()
+        prefix = "스치로폼이랑 족발뼈 중 스치로폼만"
+        cases = (
+            " 먼저 버리고 나머지는 어디에 내놓나요?",
+            " 있는 게 아니라 둘 다 있는데 둘을 어떻게 나눠 버려요?",
+            " 버리면 다른 건 어떻게 해요?",
+            " 버려요? (나머지도 같은 곳?)",
+            " 버려도 되나요? 다른 건 다음 주에 버려요?",
+            "?",
+        )
+        for tail in cases:
+            question = prefix + tail
+            with self.subTest(question=question):
+                result = rewrite(question)
+                self.assertEqual(result, question + " (돼지뼈) (스티로폼)")
+                self.assertEqual(rewrite(result), result)
+                self.assertEqual(
+                    build(question)["item_aliases"],
+                    {"스치로폼": "스티로폼", "족발뼈": "돼지뼈"},
+                )
+
+    def test_additional_item_keeps_the_state_from_the_option_list(self):
+        rewrite = make_question_rewriter()
+        build = make_prompt_context_builder()
+        question = "스치로폼이랑 깨진 형광등 중 스치로폼만, 형광등도 버려요."
+        result = rewrite(question)
+        self.assertTrue(result.startswith(question))
+        self.assertEqual(rewrite(result), result)
+        self.assertIn(
+            {"expression": "깨진 형광등", "item": "깨진 형광등", "condition": "깨진"},
+            build(question)["item_mentions"],
+        )
+
+    def test_rewrite_only_projects_a_matching_resolved_location_prefix(self):
+        rewrite = make_catalog_rewriter()
+        options = "스치로폼이랑 족발뼈 중 스치로폼만 어디 버려?"
+        chosen = "스치로폼만 어디 버려? (스티로폼)"
+        for prefix in ("잠실동에서 ", "연희동 ", "위례동은 ", "송파구는 "):
+            with self.subTest(prefix=prefix):
+                resolved = resolve_request(PipelineRequest(question=prefix + options))
+                self.assertEqual(resolved.status, "resolved")
+                self.assertEqual(rewrite(resolved), prefix + chosen)
+                replay = resolved.model_copy(update={"search_query": prefix + chosen})
+                self.assertEqual(rewrite(replay), prefix + chosen)
+
+        question = "오늘 잠실동에서 " + options
+        resolved = resolve_request(PipelineRequest(question=question))
+        self.assertEqual(rewrite(resolved), question + " (스티로폼)")
+        mismatched = resolved.model_copy(update={"search_query": "연희동 " + options})
+        self.assertEqual(rewrite(mismatched), "연희동 " + options + " (스티로폼)")
+        self.assertEqual(rewrite(SimpleNamespace(search_query=options)), chosen)
+
+    def test_selection_recognizes_spelling_variants_without_merging_items(self):
+        rewrite = make_question_rewriter()
+        build = make_prompt_context_builder()
+        question = "스치로폼이랑 족발뼈 중 스티로폼만 어디 버려?"
+        chosen = "스티로폼만 어디 버려?"
+        self.assertEqual(rewrite(question), chosen)
+        self.assertEqual(rewrite(chosen), chosen)
+        self.assertEqual(build(question)["item_aliases"], {"스치로폼": "스티로폼"})
+
+        same_category = "우유팩이랑 두유팩 중 두유팩만 어디 버려?"
+        self.assertEqual(rewrite(same_category), "두유팩만 어디 버려? (종이팩)")
+        self.assertEqual(build(same_category)["item_aliases"], {"두유팩": "종이팩"})
+        not_listed = "우유펙이랑 유리병 중 주스팩만 어디 버려?"
+        self.assertEqual(rewrite(not_listed), not_listed + " (종이팩)")
+        self.assertIn("우유펙", build(not_listed)["item_aliases"])
+
+    def test_selection_recognizes_reviewed_item_spellings(self):
+        rewrite = make_question_rewriter()
+        build = make_prompt_context_builder()
+        cases = (
+            (
+                "족발뼈랑 페트병 중 패트병만 어디 버려?",
+                "패트병만 어디 버려? (페트병)",
+                {"패트병": "페트병"},
+            ),
+            (
+                "유리벵이랑 족발뼈 중 유리병만 어디 버려?",
+                "유리병만 어디 버려?",
+                {"유리벵": "유리병"},
+            ),
+            (
+                "스치로폼이랑 족빨뼈 중 족발뼈만 어디 버려?",
+                "족발뼈만 어디 버려? (돼지뼈)",
+                {"족빨뼈": "돼지뼈", "족발뼈": "돼지뼈"},
+            ),
+        )
+        for original, rewritten, aliases in cases:
+            with self.subTest(original=original):
+                question = "송파구에서 " + original
+                expected = "송파구에서 " + rewritten
+                self.assertEqual(rewrite(question, district="송파구"), expected)
+                self.assertEqual(rewrite(expected, district="송파구"), expected)
+                self.assertEqual(build(question)["item_aliases"], aliases)
+
+    def test_selection_keeps_distinct_item_states_and_scopes(self):
+        rewrite = make_question_rewriter()
+        cases = (
+            "투명 페트병이랑 족발뼈 중 패트병만 어디 버려?",
+            "불투명 페트병이랑 족발뼈 중 패트병만 어디 버려?",
+            "깨진 유리벵과 족발뼈 중 유리병만 어디 버려?",
+            "족빨뼈랑 유리벵 중 돼지뼈만 어디 버려?",
+        )
+        for question in cases:
+            with self.subTest(question=question):
+                self.assertTrue(rewrite(question).startswith(question))
+
+    def test_selection_uses_only_spellings_confirmed_by_the_configured_catalog(self):
+        catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
+        catalog["item_aliases"]["족발뼈"] = "닭뼈"
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / "catalog.json"
+            path.write_text(json.dumps(catalog, ensure_ascii=False), encoding="utf-8")
+            rewrite = make_question_rewriter(path)
+            question = "스치로폼이랑 족빨뼈 중 족발뼈만 어디 버려?"
+            self.assertTrue(rewrite(question).startswith(question))
+
+    def test_item_conditions_keep_the_negation(self):
+        build = make_prompt_context_builder()
+        cases = {
+            "안 빈 페트병": ("페트병", "안 빈"),
+            "덜 빈 페트병": ("페트병", "덜 빈"),
+            "빈 깡통이랑 안 빈 페트병": ("페트병", "안 빈"),
+            "안 비운 페트병": ("페트병", "안 비운"),
+            "안 오염된 페트병": ("페트병", "안 오염된"),
+            "덜 파손된 유리병": ("유리병", "덜 파손된"),
+            "전혀 안 빈 페트병": ("페트병", "전혀 안 빈"),
+            "아직 안 빈 페트병": ("페트병", "안 빈"),
+        }
+        for question, (item, condition) in cases.items():
+            with self.subTest(question=question):
+                self.assertEqual(
+                    build(question)["item_mentions"],
+                    [{"expression": item, "item": item, "condition": condition}],
+                )
+
+    def test_prompt_preserves_states_for_each_item_mention(self):
+        build = make_prompt_context_builder()
+        question = "서대문구에서 안 씻은 우유팩, 씻은 두유팩은 워떻게 버려?"
+        result = build(question, district="서대문구")
+        self.assertEqual(result["question"], question)
+        self.assertEqual(
+            result["item_mentions"],
+            [
+                {"expression": "우유팩", "item": "종이팩", "condition": "안 씻은"},
+                {"expression": "두유팩", "item": "종이팩", "condition": "씻은"},
+            ],
+        )
+        repeated = build("안 씻은 우유팩이랑 씻은 우유팩은 어케 버려요?")
+        self.assertEqual(
+            [item["condition"] for item in repeated["item_mentions"]],
+            ["안 씻은", "씻은"],
+        )
+        selected = build("씻은 두유팩 말고 안 씻은 우유팩만 버려요.")
+        self.assertEqual(
+            selected["item_mentions"],
+            [{"expression": "우유팩", "item": "종이팩", "condition": "안 씻은"}],
+        )
+        negated = "안 깨진 유리벵과 깨진 형광등은 어케 버려?"
+        self.assertEqual(
+            make_question_rewriter()(negated),
+            "안 깨진 유리벵과 깨진 형광등은 어떻게 버려? (유리병)",
+        )
+        self.assertEqual(
+            build(negated)["item_mentions"],
+            [
+                {"expression": "유리벵", "item": "유리병", "condition": "안 깨진"},
+                {
+                    "expression": "깨진 형광등",
+                    "item": "깨진 형광등",
+                    "condition": "깨진",
+                },
+            ],
+        )
+
+    def test_confirmed_typos_and_ambiguous_appliance_names(self):
+        rewrite = make_question_rewriter()
+        build = make_prompt_context_builder()
+        question = "스티로품이랑 족빨뼈 우야지?"
+        self.assertEqual(
+            rewrite(question),
+            "스티로품이랑 족빨뼈 어떻게 해야 하나요? (돼지뼈) (스티로폼)",
+        )
+        self.assertEqual(
+            build(question)["item_aliases"],
+            {"스티로품": "스티로폼", "족빨뼈": "돼지뼈"},
+        )
+        self.assertEqual(rewrite("스타일러"), "스타일러 (의류관리기)")
+        self.assertEqual(
+            rewrite("헤어 스타일러랑 노트북은?"), "헤어 스타일러랑 노트북은?"
+        )
+        self.assertEqual(build("헤어 스타일러랑 노트북은?")["item_aliases"], {})
 
     def test_prompt_context_includes_only_the_requested_items_and_place(self):
         build = make_prompt_context_builder()
@@ -145,10 +397,14 @@ class CatalogRuntimeTests(TestCase):
         self.assertEqual(result["question"], question)
         self.assertIsNone(result["district"])
         self.assertIsNone(result["dong"])
-        self.assertEqual(result["item_aliases"], {})
+        self.assertEqual(result["item_aliases"], {"폐 형광등": "폐형광등"})
         self.assertEqual(
             [item["item"] for item in result["item_context"]],
-            ["헤어 스타일러"],
+            ["헤어 스타일러", "폐형광등"],
+        )
+        self.assertEqual(
+            result["item_mentions"],
+            [{"expression": "폐 형광등", "item": "폐형광등", "condition": "안 깨진"}],
         )
         self.assertEqual(
             result["ambiguous_expressions"],
