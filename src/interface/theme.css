@@ -575,9 +575,6 @@ footer {
 }
 
 /* ===== 말풍선 방향: 너구리는 오른쪽, 꼬리도 오른쪽. 연한 테두리 ===== */
-.avatar {
-  transform: scaleX(-1); /* 이미지는 왼쪽 배치용으로 반전돼 있어 다시 뒤집는다 */
-}
 .st-key-answerbox {
   margin-left: 0;
   margin-right: 8px;
@@ -615,4 +612,8 @@ footer {
 .st-key-district_compact [role="group"] button {
   height: 100%;
   font-size: 15px;
+}
+
+.avatar {
+  width: 54px;
 }
