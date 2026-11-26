@@ -24,6 +24,13 @@ FIXTURE_PATH = (
 APP_PATH = Path(__file__).parent.parent.parent.parent / "app.py"
 
 
+def dev_app() -> AppTest:
+    """예전 사용자 화면의 위젯은 개발자 모드 미리보기 탭으로 옮겨졌다."""
+    app = AppTest.from_file(str(APP_PATH), default_timeout=10)
+    app.session_state["dev"] = True
+    return app
+
+
 def load_places() -> dict:
     data = json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
     return {key: value for key, value in data.items() if not key.startswith("_")}
@@ -33,7 +40,7 @@ PLACES = load_places()
 
 
 def pick_places(name: str) -> AppTest:
-    app = AppTest.from_file(str(APP_PATH), default_timeout=10).run()
+    app = dev_app().run()
     app.selectbox[2].select(name)
     return app.run()
 

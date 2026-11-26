@@ -12,11 +12,18 @@ from src.interface.chat import build_followup_request, format_citation, is_safe_
 APP_PATH = Path(__file__).parent.parent.parent.parent / "app.py"
 
 
+def dev_app() -> AppTest:
+    """예전 사용자 화면의 위젯은 개발자 모드 미리보기 탭으로 옮겨졌다."""
+    app = AppTest.from_file(str(APP_PATH), default_timeout=10)
+    app.session_state["dev"] = True
+    return app
+
+
 def ask(sample_name: str, question: str = "") -> AppTest:
-    app = AppTest.from_file(str(APP_PATH), default_timeout=10).run()
+    app = dev_app().run()
     app.text_input[0].set_value(question)
     app.selectbox[1].select(sample_name)
-    return app.button[0].click().run()
+    return app.button[1].click().run()
 
 
 def test_followup_request_keeps_question_and_district() -> None:
@@ -74,7 +81,7 @@ def test_error_is_not_shown_as_normal_refusal() -> None:
 def test_followup_form_keeps_original_question_and_district() -> None:
     app = ask("needs_clarification", question="가상 질문")
     app.text_input[1].set_value("아파트")
-    app.button[1].click().run()
+    app.button[2].click().run()
     assert not app.exception
     assert json.loads(app.json[0].value) == {
         "question": "가상 질문",
@@ -122,7 +129,7 @@ def test_followup_uses_submitted_request_not_current_inputs() -> None:
     app.text_input[0].set_value("바뀐 질문")
     app.selectbox[0].select("송파구")
     app.text_input[1].set_value("아파트")
-    app.button[1].click().run()
+    app.button[2].click().run()
     assert json.loads(app.json[0].value)["question"] == "가상 질문"
     assert json.loads(app.json[0].value)["district"] == "서대문구"
 
@@ -132,7 +139,7 @@ def test_blank_question_clears_previous_response() -> None:
     assert app.success
     app.radio[0].set_value("실행(합성 데모)").run()
     app.text_input[0].set_value("")
-    app.button[0].click().run()
+    app.button[1].click().run()
     assert not app.success
 
 
@@ -206,8 +213,8 @@ def test_switching_mode_hides_response_from_other_mode() -> None:
 def test_followup_inputs_are_cleared_for_a_new_request() -> None:
     app = ask("needs_clarification", question="가상 질문")
     app.text_input[1].set_value("아파트")
+    app.button[2].click().run()
     app.button[1].click().run()
-    app.button[0].click().run()
     assert app.text_input[1].value == ""
 
 

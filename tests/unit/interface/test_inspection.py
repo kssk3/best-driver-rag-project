@@ -7,15 +7,22 @@ from streamlit.testing.v1 import AppTest
 APP_PATH = Path(__file__).parent.parent.parent.parent / "app.py"
 
 
+def dev_app() -> AppTest:
+    """예전 사용자 화면의 위젯은 개발자 모드 미리보기 탭으로 옮겨졌다."""
+    app = AppTest.from_file(str(APP_PATH), default_timeout=10)
+    app.session_state["dev"] = True
+    return app
+
+
 def ask(sample_name: str, district: str = "서대문구") -> AppTest:
-    app = AppTest.from_file(str(APP_PATH), default_timeout=10).run()
+    app = dev_app().run()
     app.selectbox[0].select(district)
     app.selectbox[1].select(sample_name)
-    return app.button[0].click().run()
+    return app.button[1].click().run()
 
 
 def test_panel_asks_for_question_first() -> None:
-    app = AppTest.from_file(str(APP_PATH), default_timeout=10).run()
+    app = dev_app().run()
     assert not app.exception
     assert any("먼저 질문" in item.value for item in app.info)
 
