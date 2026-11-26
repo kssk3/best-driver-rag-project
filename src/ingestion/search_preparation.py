@@ -63,9 +63,12 @@ KNOWN_JOIN_TERMS = (
     "기타류",
     "음식점",
 )
+# 한 글자 사이에 가로 공백과 줄바꿈 한 번까지 허용한다. 빈 줄과 페이지 구분은 제외한다.
+_HORIZONTAL_SPACE = r"[ \t\u00a0\u1680\u2000-\u200a\u202f\u205f\u3000]*"
+_WORD_GAP = rf"{_HORIZONTAL_SPACE}(?:(?:\r\n|[\r\n]){_HORIZONTAL_SPACE})?"
 _KNOWN_JOIN_PATTERN = re.compile(
     "|".join(
-        r"\s*".join(re.escape(char) for char in term)
+        _WORD_GAP.join(re.escape(char) for char in term)
         for term in sorted(KNOWN_JOIN_TERMS, key=len, reverse=True)
     )
 )
@@ -205,6 +208,46 @@ def prepare_table_rows(table: dict) -> list[PreparedRow]:
     if used_ids != set(by_id):
         raise ValueError("행 참조에서 누락된 원본 셀")
     return rows
+
+
+def validate_table_search_text(table: dict) -> list[PreparedRow]:
+    """원본에서 검색용 행을 다시 만들어 저장 값과 변경 이력을 대조한다."""
+    expected_rows = prepare_table_rows(table)
+    stored_rows = table.get("rows_for_search")
+    if not isinstance(stored_rows, list) or len(stored_rows) != len(expected_rows):
+        raise ValueError("rows_for_search 행 수가 원본 표와 다릅니다.")
+
+    for expected, stored in zip(expected_rows, stored_rows, strict=True):
+        row_number = expected["row"]
+        if not isinstance(stored, dict):
+            raise ValueError(f"행 {row_number}의 검색용 행 객체가 필요합니다.")
+        for field in (
+            "table_id",
+            "row",
+            "missing_columns",
+            "search_text",
+            "context_ref",
+            "context_required",
+        ):
+            value = stored.get(field)
+            if type(value) is not type(expected[field]) or value != expected[field]:
+                raise ValueError(f"행 {row_number}의 {field} 값이 원본과 다릅니다.")
+
+        expected_cells = expected["cell_values"]
+        cells = stored.get("cell_values")
+        if not isinstance(cells, list) or len(cells) != len(expected_cells):
+            raise ValueError(f"행 {row_number}의 검색용 셀 수가 원본과 다릅니다.")
+        for expected_cell, cell in zip(expected_cells, cells, strict=True):
+            cell_id = expected_cell["cell_id"]
+            if not isinstance(cell, dict):
+                raise ValueError(f"행 {row_number}, 셀 {cell_id}의 객체가 필요합니다.")
+            for field, expected_value in expected_cell.items():
+                value = cell.get(field)
+                if type(value) is not type(expected_value) or value != expected_value:
+                    raise ValueError(
+                        f"행 {row_number}, 셀 {cell_id}의 {field} 값이 원본과 다릅니다."
+                    )
+    return expected_rows
 
 
 def validate_table_row_continuations(tables: list[dict], continuations: dict) -> None:
