@@ -1,6 +1,11 @@
 import json
 
-from scripts.score_quality import check_inputs, cited_texts_by_run, run_config
+from scripts.score_quality import (
+    check_inputs,
+    cited_texts_by_run,
+    fill_failed_rows,
+    run_config,
+)
 from src.evaluation.answer_quality import (
     SAFE_REFUSAL,
     parse_verdict,
@@ -268,3 +273,22 @@ def test_recordless_failures_are_told_apart_by_configuration() -> None:
     assert not any("중복" in p for p in problems)
     assert run_config(failures[0]) == "A"
     assert run_config({"variant": "B", "configuration": "x"}) == "B"
+
+
+def test_a_recordless_failure_joins_its_configuration_in_a_mixed_bundle() -> None:
+    runs, candidates, questions, grading = inputs()
+    failure = {
+        "run_id": "f2",
+        "dataset_id": "d",
+        "case_id": "c2",
+        "variant": "",
+        "configuration": "A",
+        "rewrite_enabled": "",
+        "status": "error",
+        "candidate_count": "0",
+    }
+    runs = [runs[0], failure]
+    runs[0]["configuration"] = "A"
+    runs = fill_failed_rows(runs)
+    assert (runs[1]["variant"], runs[1]["rewrite_enabled"]) == ("A", "False")
+    assert check_inputs(runs, candidates, questions, grading) == []

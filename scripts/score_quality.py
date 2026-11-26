@@ -73,6 +73,23 @@ def run_config(run: dict[str, str]) -> str:
     return run.get("variant") or run.get("configuration") or ""
 
 
+def fill_failed_rows(runs: list[dict[str, str]]) -> list[dict[str, str]]:
+    """실행 기록 없이 실패한 행의 구성 이름과 리라이트 여부를 같은 구성의 다른 행에서 채운다."""
+    rewrite: dict[str, set[str]] = {}
+    for r in runs:
+        if r.get("rewrite_enabled"):
+            rewrite.setdefault(run_config(r), set()).add(r["rewrite_enabled"])
+    filled = []
+    for r in runs:
+        config = run_config(r)
+        known = rewrite.get(config, set())
+        value = r.get("rewrite_enabled") or (
+            next(iter(known)) if len(known) == 1 else ""
+        )
+        filled.append({**r, "variant": config, "rewrite_enabled": value})
+    return filled
+
+
 def check_inputs(
     runs: list[dict[str, str]],
     candidates: list[dict[str, str]],
@@ -162,8 +179,7 @@ def main(argv: list[str] | None = None) -> None:
     grading = load_grading(args.grading)
     questions = {c.case_id: c.question for c in load_evaluation_cases(args.cases)}
     with args.runs.open(encoding="utf-8", newline="") as file:
-        # 실행 기록 없이 실패한 행도 구성(configuration)으로 구별되게 variant를 채운다.
-        runs = [{**r, "variant": run_config(r)} for r in csv.DictReader(file)]
+        runs = fill_failed_rows(list(csv.DictReader(file)))
     with args.candidates.open(encoding="utf-8", newline="") as file:
         candidates = list(csv.DictReader(file))
     problems = check_inputs(runs, candidates, questions, grading, args.allow_subset)
