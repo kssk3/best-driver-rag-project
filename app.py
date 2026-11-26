@@ -205,7 +205,14 @@ with user_tab:
                     and error.code == "evaluation.unsupported_configuration"
                 ):
                     st.error(
-                        '팀 색인 모드의 실행 설정에서 pipeline.variant를 "A"로 지정하세요.'
+                        '팀 색인 모드의 실행 설정에서 pipeline.variant를 "A" 또는 "C"로 지정하세요.'
+                    )
+                elif (
+                    isinstance(error, PipelineConfigurationError)
+                    and error.code == "evaluation.missing_reranker_model"
+                ):
+                    st.error(
+                        "C 검색의 실행 설정에서 pipeline.versions.reranker_model에 재정렬 모델 ID를 지정하세요."
                     )
                 else:
                     st.error(
