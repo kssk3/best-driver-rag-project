@@ -29,11 +29,10 @@ uv run --locked python -m pytest --version
 
 루트 의존성 파일은 Streamlit을 포함한 공용 Python 환경을 관리한다. 공식 웹 안내는 [Selenium 선택 그룹으로 수집한다](docs/official-guide-collection.md). Langfuse SDK도 `uv sync --locked`로 설치된다. 팀 계정으로 기존 실험을 조회하거나 각자 실행한 A/B/C 기록을 팀 EC2에 보내려면 [팀 Langfuse 설정](docs/TEAM-SETUP.md#팀-langfuse-설정)을 따른다. 기존 FastAPI 의존성이 남아 있어도 별도 HTTP 서버 구현을 요구하지 않는다.
 
-Streamlit 화면은 데모 색인을 먼저 만든 뒤 실행한다. 데모 색인은 합성 문서만 쓰며 외부 호출이 없다.
+Streamlit 화면은 실제 팀 색인과 OpenAI 키가 있어야 답한다. 합성 데모 응답은 화면에서 지원하지 않는다(키 없이 확인하는 오프라인 데모는 아래 "자동 데모와 검증"의 `scripts.demo`). `.env`에 `OPENAI_API_KEY`를 넣은 뒤 다음 한 줄로 실행한다. 색인이 없으면 먼저 만들고 C 설정으로 화면을 띄운다. 키가 없는 팀원은 화면을 볼 수 없다. `RAG_CHAT_SETTINGS`가 없으면 화면 위에 설정 안내 오류만 보이고 질문에는 답하지 않는다.
 
 ```bash
-uv run --locked python -m scripts.index --documents tests/fixtures/handoff_documents.json --output data/indexes/demo.json --demo --dimensions 128
-uv run --locked streamlit run app.py
+uv run --locked --env-file .env python -m scripts.run_chat
 ```
 
 ## 실제 자료 준비와 근거 조회
