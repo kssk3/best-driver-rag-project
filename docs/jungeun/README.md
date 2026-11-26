@@ -81,16 +81,39 @@ HWP에서 표 32개·셀 2,643개를 추출했고 행정서식 8건을 별도 �
 옮겼다. 예를 들어 XML은 `link_only`·본문 없음이어도 HWP는 `downloaded`이고
 `extracted_text_present=true`일 수 있다. 사람 검수나 이용 승인도 이 값에서 추론하지 않는다.
 
-`normalize_search_text()`는 명시한 원문 용어 16개의 내부 공백을 복원하고 검색용
-공백을 정리한다. 동의어 치환이나 임의 형태소 결합은 하지 않는다. 원문 `text`와
-셀 `paragraphs`를 보존하면서 `search_text`와 변경 전·후 로그를 별도로 만든다.
-예: `폴리\n에틸렌테레프\n탈레이트` → `폴리에틸렌테레프탈레이트`.
+`normalize_search_text()`는 확인한 원문 용어 16개의 내부 공백을 복원한다.
+글자 사이 가로 공백과 일반 줄바꿈 한 번을 허용한다. 추출 문자열의 빈 줄과
+명시적 문단·페이지 구분자는 검색문에서 공백으로 남긴다. `폴리\n에틸렌테레프\n탈레이트`는
+`폴리에틸렌테레프탈레이트`로 복원하고, `공동\n\n주택`은 `공동 주택`으로 풀어 쓴다.
+원문 `text`와 셀 `paragraphs`를 보존하며 `search_text`와 순서대로 기록한
+`normalization_changes`에 검색용 값과 변경 전후 값을 남긴다.
 
 `tables[].rows_for_search`는 병합된 부모 셀을 각 해당 행에 연결한다.
 셀 원점·병합 범위·상속 여부·원본 셀 ID와 부모 MST·첨부 ID를 보존한다.
 행의 `context_ref=attachment.blocks`, `context_required=true`를 통해 별표 제목·
 비고·각주도 함께 읽도록 한다. 행 텍스트만 떼어 조건을 확정하지 않는다.
-이 표현을 팀 청킹·검색기에 연결하는 작업은 남아 있다.
+현재 조문·표 청킹은 원문 `text`를 사용한다.
+
+문서 정규화는 [별표 검수 명령](#별표-검수-후보-찾기)으로 확인한다. 원본 셀에서
+`search_text`와 변경 이력을 다시 계산하고 저장된 셀·행의 값과 비교한다. 불일치하면
+첨부 파일·표·행 또는 셀의 위치를 보고한다. 최신 인계본의 첨부 19건, 표 32개,
+원본 셀 2,643개, 검색용 행 555개가 재생성 결과와 일치했다. 용어 복원은 원본 셀
+24개에서 25회, 공백 정리는 301회 기록됐다.
+
+CI의 `tests/unit/ingestion/test_annex_table_review.py`도 Git에 저장된 인계본에 이
+검수를 실행한다. 규칙을 바꿔 기존 셀이나 행의 검색용 값이 달라지면 검사가 실패한다.
+규칙 변경을 반영해 인계본을 갱신할 때는 별표를 새 출력 폴더에 다시 생성하고,
+그 폴더의 `annex_manifest.json`으로 검수 명령을 실행한다. 원문과 변경 이력을 대조한 뒤
+새 인계본의 검색용 값과 번들 매니페스트 해시를 함께 갱신한다.
+
+질문 리라이트는 `tests/unit/query`에서 따로 검증한다. 실제 검색을 비교할 때는 질문
+설정을 고정한 문서 `text`/`search_text` 비교와, 같은 색인에서 질문 리라이트를
+켰을 때의 비교를 각각 실행한다.
+
+- 승주님과 청킹에 사용할 검색 표현, 표 머리글·각주·예외의 원문 유지, 청크 ID와
+  평가 문항의 근거 연결을 확인한다.
+- 명지님과 동일 문서에서 색인·토큰화 설정과 재색인 범위, 품목별 근거 순위 비교를
+  확인한다.
 
 ## 재현과 경로 기준
 
@@ -123,6 +146,98 @@ python -m src.ingestion.annexes --manifest data/raw/documents/law_runs/e783d2319
 송파구 별표 5의 이어진 문장 8건은 HTML·JSON에서 첫 행의 청크 한 개로 전달하며
 원본 행·셀 ID와 포상금 열을 보존한다. 합친 청크의 ID는 내용 해시에 따라 바뀐다.
 
+## 별표 검수 후보 찾기
+
+전처리한 첨부 매니페스트를 읽어 검수용 JSON을 출력한다.
+
+```zsh
+uv run --locked python -m scripts.review_annex_tables \
+  data/handoff/jungeun/ordinance-handoff-2026-11-24/processed/annex/annex_manifest.json
+```
+
+`candidate_counts`에서 유형별 개수를, `candidates`에서 파일·표·행·셀 ID와
+0부터 시작하는 좌표 또는 인접 문단 번호를 확인한다. 셀 내부 줄바꿈, 첫 열이
+이어지는 행, 병합 머리글 단위, 표 근처 각주·단위를 원문과 대조한다.
+후보는 검수 제안이며 원본과 전처리 결과, 청크 ID를 보존한다.
+
+- `_HANGUL_BREAK`는 한글 사이 줄바꿈을 찾는다. 정상 줄바꿈도 잡힐 수 있고,
+  `PET`와 `병` 사이처럼 한쪽이 한글이 아닌 줄바꿈은 놓칠 수 있다.
+- `_NEW_ENTRY`는 `1.`·`가)` 같은 표시로 새 항목을 구분한다. `①`이나 표시 없는
+  새 항목은 이어지는 행으로 잡힐 수 있다.
+- `_UNIT_LABEL`은 `단위:`나 `(원)`처럼 정해 둔 표기를 찾는다. `(개)` 같은 다른
+  단위는 놓칠 수 있다. 후보가 있어도 병합 범위와 단위가 적용되는 열은 원문에서 확인한다.
+
+후보가 나온 행과 후보가 빠졌더라도 구조가 불명확한 행은 원문 표·비고를 대조해 판단한다.
+현재 묶음의 첨부 19건·표 32개에서 기존 검수 8건을 확인했다. 새 행 경계
+후보인 서대문구 별지의 `상호`·`주소`는 서식의 항목명으로 보고 합치지 않았다.
+
+### LLM으로 검수 후보 분류
+
+외부 모델 이용 범위를 확인한 첨부는 원본 HWP와 전처리 JSON을 각각 확인하고,
+확인한 파일의 SHA-256을 `shasum -a 256` 등으로 기록해 아래 두 옵션에 지정한다.
+여러 첨부를 검수할 때는 각 옵션을 반복한다. 명령은 실제로 읽고 파싱한 전처리 JSON
+바이트의 SHA-256을 확인하므로, 파일의 내용이나 공백이 바뀌면 다시 검토해야 한다.
+두 해시를 확인한 후보의 번호·유형·원문 조각만 모델에 보낸다. 기본 명령은 규칙 검수를 실행한다.
+
+```zsh
+uv run --locked python -m scripts.review_annex_tables /path/to/annex_manifest.json \
+  --llm-model gpt-6-luna \
+  --llm-approved-sha256 "$ANNEX_APPROVED_SHA256" \
+  --llm-approved-output-sha256 "$ANNEX_APPROVED_OUTPUT_SHA256"
+```
+
+결과의 `llm_review`에 모델·프롬프트 버전과 후속 원문 대조 제안
+(`review`, `keep`, `uncertain`)을 남긴다. `index`는 `candidates`의 0부터 시작하는 번호다.
+승인 해시가 빠지거나 일치하지 않는 후보는 규칙 보고서에 남기고, 모델에서 제외한
+후보 수는 `approval_exclusions`에 원본·전처리 JSON 해시 사유별로 기록한다.
+모델에 전달할 후보가 없으면 `skipped`를 기록한다. 모델 실패나 응답 형식 오류가
+발생하면 오류 코드를 기록하고 규칙 기반 후보를 볼 수 있다.
+실제 전처리 변경은 원문 대조 후 기존 검수 기록에 반영한다.
+
+## 청킹 입력과 Markdown 미리보기
+
+팀 청킹은 전처리 JSON과 XML에서 변환한 HTML을 각각 읽어 조문과 표 행으로 나눈다.
+2026-11-24 인계본을 `v1`으로 실행했을 때 두 형식 모두 문서 14건, 청크 543건이
+생성됐다. `report.json`에서 형식별 건수를 다시 확인할 수 있다.
+[청킹 실행 코드](../../scripts/prepare_data.py)
+
+사람이 표를 검수할 때는 [원문·추출 표 검수 화면][table-review]을 열거나 아래 예시로
+송파구 별표 두 건의 Markdown 미리보기를 만든다. 두 미리보기에는 병합 셀이 있어
+HTML 표를 Markdown에 그대로 넣는다. `rowspan`·`colspan`으로 표의 행·열 관계가 보존된다.
+
+```zsh
+review_dir=$(mktemp -d)
+uv run --locked python -m scripts.prepare_data \
+  --bundle data/handoff/jungeun/ordinance-handoff-2026-11-24 \
+  --version v1 --output-dir "$review_dir/prepared"
+uv run --locked python - "$review_dir" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+output = Path(sys.argv[1])
+documents = json.loads((output / "prepared/documents.json").read_text(encoding="utf-8"))
+attachments = {
+    "songpa-ordinance:attachment:154690991": "2053883_154690991",
+    "songpa-rules:attachment:121237861": "1481479_121237861",
+}
+for document in documents:
+    stem = attachments.get(document["document_id"])
+    if stem is None or document["content_format"] != "html":
+        continue
+    body = document["content"].split("<body>", 1)[1].removesuffix("</body></html>")
+    (output / f"{stem}.md").write_text(f"# 첨부 {stem} 검수용\n\n{body}\n", encoding="utf-8")
+print(output)
+PY
+```
+
+`prepared/report.json`은 청킹 실행 결과이고 `.md` 두 건은 임시 폴더의 검수 산출물이다.
+송파구 별표 5의 이어쓰기 검수 8건은 인계본 JSON의 `table_row_continuations`에서 대조한다.
+[송파구 시행규칙 별표 JSON][songpa-rules-annex]
+
+[table-review]: ../../data/handoff/jungeun/ordinance-handoff-2026-11-24/review/review.html
+[songpa-rules-annex]: ../../data/handoff/jungeun/ordinance-handoff-2026-11-24/processed/annex/1481479_121237861.json
+
 ## 사람 검수와 현재 제한
 
 이정은 확인 범위는 로컬 review_status.json에 항목별로 기록했다.
@@ -142,6 +257,7 @@ PDF 파일 메타데이터의 생성·수정일 **2026-10-14**와 구분한다.
 PDF는 이전 발행 자료로 보존하며, 웹·지도 중 최신 일정의 우선순위는 미확인이다.
 날짜 구분 반영 승인은 실제 수거요일을 확인한 기록과 별개다.
 [날짜 검증 기록](../../data/handoff/jungeun/ordinance-handoff-2026-11-24/review/schedule_evidence/date_check.json)에 근거와 남은 확인을 기록했다.
+[출처별 적용 범위 검수](schedule_scope_review.md)에 동·주택 유형별 대조와 추가 확인한 공식 안내를 정리했다.
 
 전체 2,643개 셀을 사람이 개별 승인한 상태로 표현하지 않는다.
 HOP 미리보기는 공식 배포 PDF가 아니며 대형 표 일부에 겹침 경고가 있었다.

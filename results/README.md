@@ -14,7 +14,7 @@
 
 답변 작업 브랜치의 색상표 실험에서는 검색 결과 JSON과 그 결과를 사용한 답변 실행 JSON이 따로 생긴다. 답변 기록의 `model_input_chunk_ids`를 검색 순위와 대조하고 `response.citations`에서 실제 인용을 확인한다. 저장된 후보를 다시 사용한 답변 실행의 유형은 `fixed_evidence`다. [실행 명령과 판정 기준](../eval/README.md#색상표-개발-문항-실행)
 
-최초 실패, 재시도와 변경 후 추가 실험은 별도로 남긴다. `RunRecord.duration_ms`는 기록 파일 저장 전까지의 파이프라인 시간이며 리라이트 시간을 포함한다. 현재 토큰 사용량, API 비용과 Ragas 사후 평가 시간은 자동 수집하지 않는다. 합성 데모는 `run_kind="demo"`로 기록하며 실제 검색/생성 결과와 구분한다.
+최초 실패, 재시도와 변경 후 추가 실험은 별도로 남긴다. `RunRecord.duration_ms`는 기록 파일 저장 전까지의 파이프라인 시간이며 리라이트 시간을 포함한다. 토큰 사용량과 API 비용은 자동 수집하지 않는다. Ragas 사후 평가 시간은 아래의 별도 채점 명령이 기록한다. 합성 데모는 `run_kind="demo"`로 기록하며 실제 검색/생성 결과와 구분한다.
 
 이 폴더 전체를 Git에서 제외하지 않는다. 제출용 기록은 비밀값과 공유 가능 여부를 검토해 포함하며, 큰 기록은 관리 위치, 버전과 접근 방법을 남긴다. 로컬 실험용 `local/`은 제외한다. [평가 기준](../docs/problem.md)을 기준으로 비교하며 결과를 검색 색인에 넣지 않는다.
 
@@ -80,3 +80,77 @@ write_evaluation_csv(output, cases, records)
 print(output)
 PY
 ```
+
+## 저장 답변의 Faithfulness 사후 평가
+
+아래 명령은 새 디렉터리의 `scores.csv`에 시도×지표별 한 행을 쓴다. 기본 실행은 입력만 검증하고 점수를 비운다. `evaluation.json` 옆에 원래 실행의 `runs.csv`를 함께 둔다. 이 파일의 데이터셋 ID를 `cases.csv`와 대조하고 실행 ID와 문항 ID의 연결을 확인한다. 질문과 조건이 같아도 다른 데이터셋의 모범 답안에 점수가 귀속되는 것을 막기 위해서다. 이어서 `cases.csv`에서 문항 ID로 행을 찾아 실행 기록의 원래 질문·구·동·조건과 대조한다. 조건은 JSON 객체로 비교한다. 값이 다르면 해당 시도에 `input_error`와 원인을 남기고 다음 문항을 처리한다. 채점 입력은 기록된 질문·답변과 `model_input_chunk_ids` 순서로 후보 본문을 역참조한 목록이다. 이 ID는 생성 어댑터 경계의 기록이다. 모델 서버 수신 여부는 별도 확인이 필요하다.
+
+```sh
+stamp=2026-11-25T064832Z
+uv run --locked python -m scripts.score_answers \
+  --evaluation "results/team-a/$stamp/evaluation.json" \
+  --cases-csv "eval/snapshots/$stamp/cases.csv" \
+  --output-dir results/local/faithfulness-check
+```
+
+시간대가 없는 실행 시작 시각은 해당 실행의 `runs.csv`에 명시적인 UTC 시각이 있을 때만 복원한다. 시각을 확인할 수 없으면 채점 전에 입력 오류를 기록한다.
+
+한 번의 채점에서 같은 `run_id`로 유효한 입력이 반복되면 첫 시도만 처리하고 뒤의 행에는 `duplicate_run_id`를 기록한다. 각 호출에 새 `evaluation_id`가 부여된다. `attempt_index`는 원본 배열의 1부터 시작하는 위치라서 반환된 실행 기록이 없는 행도 추적할 수 있다. `run_kind`로 고정 근거와 실제 검색 실행을 구분한다. 고정 근거 점수는 별도로 해석한다. `versions_json`은 생성 시점의 구성 버전이며 채점기 버전과 모델은 별도 열에 남는다. `scored_at_utc`는 평가 시도 종료 시각, `duration_ms`는 해당 시도 시간이다. `scored`의 0.0은 유효한 점수다. `no_score`(NaN·누락 등), `input_error`(근거 ID 등), `scorer_error`, `skipped`의 원인은 `reason`으로 확인한다.
+
+### 실검색 A/B/C 점수 비교
+
+같은 문항에 A/B/C가 각각 답하면 세 답변을 같은 Faithfulness 채점기로 평가한다. 각 점수는 그 답변의 `run_id`에 연결된다. 예를 들어 구성 이름이 `configured`이고 실제 검색 방식이 B이면, 그 점수는 B에 속한다. 점수표에서 다음 열을 확인한다.
+
+| 열 | 의미 |
+| --- | --- |
+| `reported_configuration` | 평가 시도에 적힌 구성 이름. 실행 기록을 저장하지 못했을 때도 시도를 추적하는 데 쓴다. |
+| `configuration` | 같은 실행의 `runs.csv`에 기록된 구성 이름. 평가 시도에 이름이 있으면 대조한다. |
+| `variant`, `rewrite_enabled` | 실행 시 명시한 검색 방식과 질문 다듬기 사용 여부. 실행 표에도 값이 있으면 대조한다. |
+| `comparison_eligible`, `comparison_exclusion_reason` | 기본 A/B/C 평균에 넣을 수 있는지와 제외 사유. |
+
+**기본 A/B/C 평균에는 `comparison_eligible=true`인 행만 넣는다.** 구성 이름을 대조할 수 있고, 검색 방식이 명시됐으며, 질문 다듬기를 끈 실제 검색 실행(`rag`)에서 `retrieve` 단계가 성공하고 숫자 점수를 얻어야 한다. 유효한 `0.0`은 건수와 평균에 포함한다.
+
+- C에서 질문 다듬기를 켠 실행은 로드맵의 별도 실험이다. 개별 점수와 `rewrite_enabled=true`를 보존하며 기본 C 평균에서는 제외한다. 고정 근거·데모 실행, 검색 단계를 건너뛴 실행도 진단용 점수를 보존한다.
+- 두 기록의 구성 이름, 검색 방식, 질문 다듬기 설정 또는 실행 유형이 충돌하면 해당 행은 채점 전 `input_error`가 된다. 검색 단계가 중복되거나 기록된 단계 상태가 실행 표와 다를 때도 마찬가지다. 답변을 채점하려는데 실행 표에는 실패로 기록돼 있으면 `run_status_mismatch`가 남는다. 다음 정상 행은 계속 처리한다.
+- 11월 25일 팀 A 보관본에는 `runs.csv`의 `configuration` 열이 없다. 두 답변은 채점할 수 있지만 숫자 점수를 얻어도 `missing_run_configuration`으로 비교에서 제외한다. 원본에서 생략한 검색 방식이나 질문 다듬기 설정도 기본값으로 채워 집계하지 않는다. 이전 형식의 점수표를 비교하려면 보관본에서 새 점수표를 만든다.
+- 저장된 실행 없음, 검증 전용 실행, 근거 ID 누락, 채점기 실패, NaN은 점수와 평균의 분모에서 빠진다. 해당 시도의 `reason`에서 원인을 확인한다.
+
+아래 예시는 한 번의 평가에서 나온 `scores.csv`를 읽는다. 숫자 점수가 하나도 없는 방식에는 평균 대신 ‘—’를 표시한다. 방식별 건수나 문항이 다르면 어떤 문항이 빠졌는지 확인한 뒤 같은 문항과 채점 조건으로 비교한다.
+
+```sh
+python - results/local/faithfulness-smoke/scores.csv <<'PYTHON'
+import csv
+import sys
+from statistics import mean
+
+scores = {variant: [] for variant in ("A", "B", "C")}
+with open(sys.argv[1], newline="", encoding="utf-8") as stream:
+    for row in csv.DictReader(stream):
+        if row["comparison_eligible"] == "true":
+            scores[row["variant"]].append(float(row["score"]))
+
+for variant, values in scores.items():
+    average = f"{mean(values):.3f}" if values else "—"
+    print(f"{variant}  {len(values)}건  평균 {average}")
+PYTHON
+```
+
+### 승인 후 실제 모델로 한 문항 채점
+
+승인 후 한 문항의 모델 스모크를 실행하려면 위 명령에서 새 출력 폴더를 지정하고 `--case-id p04-colors-trick --judge-model gpt-4o-mini`를 추가한다. 해당 모델에 접근할 수 있는 `OPENAI_API_KEY`가 필요하다. 저장된 질문·답변에서 진술을 추출하고, 진술이 있으면 생성 입력 근거로 지지 여부를 판정한다(문항당 논리 호출 1~2회). 검색·임베딩·답변 재생성은 호출하지 않는다. 필수 사실 충족은 스냅샷의 채점 메모와, 표시한 인용의 타당성은 인용한 원문과 각각 대조한다. [Ragas Faithfulness](https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/faithfulness/)
+
+### 승인 후 Langfuse 업로드
+
+팀 서버의 HTTPS 주소, 배포 구성과 점수 조회 방법은 [팀 서버 Docker 실행 안내](../deploy/langfuse/README.md)를 따른다.
+
+점수가 저장된 후 별도 명령으로 실행한다. 기본은 네트워크 없는 점검이다. `--report`에는 매 시도마다 새 파일을 지정한다. 정상 상태로 기록된 미채점 행은 건너뛴다. 알 수 없는 상태나 상태와 점수가 모순되는 행은 실패로 기록한다. 예전에 만든 CSV에 같은 평가·실행·지표로 유효한 점수가 여러 개 있으면 첫 행만 전송 대상으로 삼는다. 뒤의 행은 `duplicate_score_identity`로 기록한다. 같은 CSV 전체를 새 보고서로 다시 전송하는 동작은 지원한다.
+
+```sh
+uv run --locked python -m scripts.upload_scores \
+  --scores results/local/faithfulness-smoke/scores.csv \
+  --report results/local/faithfulness-smoke/preview.csv
+```
+
+실서버 스모크는 앞 절에서 승인받아 채점한 한 문항의 CSV로 진행한다. 대상 프로젝트의 HTTPS `LANGFUSE_BASE_URL`, `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`를 환경변수로 설정하고 위 명령에 `--upload`를 붙인다. 보고서 이름은 `upload-1.csv`로 바꾼다. 숫자 점수 1건당 시작 시각을 표시하는 OTLP span 하나와 숫자 점수 한 건을 각각 POST한다. span은 실행 시점을 표시하는 길이 0의 기록이다. 본문은 파생 ID·고정 이름·시각·실행 유형·점수로 구성한다. 인증은 HTTPS Basic 헤더를 사용한다. [Langfuse OTLP 규격](https://github.com/langfuse/langfuse/blob/main/fern/apis/server/definition/opentelemetry.yml) · [점수 API 스키마](https://github.com/langfuse/langfuse/blob/main/fern/apis/server/definition/scores.yml)
+
+보고서의 `accepted`는 두 요청을 서버가 접수했다는 뜻이다. 실제 스모크에서는 `trace_id`와 `score_id`로 서버에 표시된 값과 날짜를 확인한다. 타임아웃, HTTP 5xx 또는 예상하지 못한 성공 응답으로 접수 여부가 불확실하면 `*_unconfirmed`, 부분 거절 등은 `*_not_accepted`로 기록하고 종료 코드 1을 반환한다. 원인을 확인한 뒤 같은 `scores.csv`와 새 보고서 이름으로 재시도한다. 같은 실행은 같은 trace ID와 span 시작 시각을 사용한다. 같은 평가·실행·지표는 같은 점수 ID와 이름을 사용하며, 요청의 `timestamp`에 원래 `scored_at_utc`를 보낸다. 업로드 시도 시각은 보고서의 `upload_attempted_at_utc`에만 남긴다. 서버에서 점수를 교체하는 조건은 ID·이름·timestamp의 날짜가 모두 같은 경우다. [Langfuse 점수 교체 규칙](https://langfuse.com/faq/all/tracing-data-updates)

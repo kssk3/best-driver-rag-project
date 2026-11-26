@@ -142,6 +142,15 @@ def resolve_region(question: str) -> dict:
     return {"status": "ok", "district": district, "dong": dong}
 
 
+def _confirmed_selected_district(request: PipelineRequest) -> bool:
+    """사용자가 되묻기에 답해 고른 구(request.district)로 확정했는가.
+
+    파이프라인은 해석된 구가 요청의 구와 다르면 오류를 내므로 확정한 구는 요청의 구와 같다.
+    지원하지 않는 구는 확정으로 인정하지 않는다.
+    """
+    return request.district_confirmed and request.district in SUPPORTED_DISTRICTS
+
+
 def _ask_unsupported(
     request: PipelineRequest, district: str, dong: str | None
 ) -> ResolvedQuery:
@@ -172,18 +181,75 @@ def resolve_request(request: PipelineRequest) -> ResolvedQuery:
     해석 입력: 질문 속 동 → (없으면) 화면에서 받은 동(request.dong)
                → (그래도 없으면) 질문 속 구 이름 또는 화면에서 고른 구.
     검사 순서: ambiguous → unsupported → no_dong → 고른 구와 충돌 → ok.
+    되묻기를 받은 사용자가 고른 구를 확정하면(request.district_confirmed) 같은 되묻기를 되풀이하지 않는다.
+    - 질문 속 구·동이 고른 구와 충돌: 고른 구로 해석한다. 맞지 않는 동은 버리고 구만 쓴다.
+      동은 채택하지 않으므로 no_dong 분기와 같게 dong=None으로 구만 쓰고 region_status는 no_dong이다.
+      확정했다는 사실은 요청의 district_confirmed에 남는다.
+    - 여러 구에 있는 동(ambiguous): 질문에 후보 구 중 하나가 적혀 있으면 그 구로 모호함이 풀린 것으로 본다.
+      확정한 구가 후보 구에 있으면 그 구와 그 동으로 해석한다.
+      되묻기에서 지원 밖 후보 구를 고르면 같은 되묻기를 되풀이하지 않고 지원 밖(unsupported)으로 안내한다.
+    - 지원하지 않는 구가 질문에 있으면(동과 함께 적혀도) 또는 동이 지원 밖이면 확정으로 덮지 않고 안내한다.
+    - 후속 요청에서 구와 동을 함께 확정했고 그 동이 그 구에 있으면 원질문의 동보다 그 조합을 먼저 쓴다.
+    - 화면에서 받은 동(request.dong)이 있으면 확정으로 버릴 수 없다. 파이프라인이 생성 요청을 만들 때
+      resolved.dong이 없으면 request.dong을 되돌려 넣기 때문이다.
     질문 다듬기는 다른 단계 담당이므로 search_query는 항상 원질문을 쓴다.
     """
     region = resolve_region(request.question)
     selected = request.district  # 사용자가 화면에서 고른 구 (없으면 None)
+    confirmed = _confirmed_selected_district(request)
+
+    if confirmed:
+        # 지원하지 않는 구가 질문에 있으면 동이 함께 있어도 확정으로 덮지 않고 안내한다.
+        named_in_question = find_district(request.question)
+        if named_in_question and named_in_question not in SUPPORTED_DISTRICTS:
+            return _ask_unsupported(request, named_in_question, None)
+        # 사용자가 후속 요청에서 구와 동을 함께 확정했고 서로 맞으면 그 조합이 원질문의 동보다 먼저다.
+        if request.dong:
+            fixed = resolve_region(request.dong)
+            if fixed["status"] == "ok" and fixed["district"] == selected:
+                return ResolvedQuery(
+                    search_query=request.question,
+                    region_status="ok",
+                    district=selected,
+                    dong=fixed["dong"],
+                )
 
     # 질문에 동이 없으면 화면에서 따로 받은 동도 같은 규칙(매핑·지원 범위·충돌)으로
     # 해석한다. 검사 없이 복사하면 송파구/연희동처럼 맞지 않는 짝이 검색으로 넘어간다.
     if region["status"] == "no_dong" and request.dong:
         region = resolve_region(request.dong)
 
+    # 질문에 후보 구 중 하나가 적혀 있으면("강남구 삼성동") 모호함이 풀린 것이다. 되묻지 않고 그 구로
+    # 해석해 아래 ok·지원 밖 판정을 그대로 따른다. 후보에 없는 구는 모호함을 풀지 못한다.
+    if region["status"] == "ambiguous":
+        written = find_district(request.question)
+        if written in region["candidate_districts"]:
+            region = {
+                "status": "ok" if written in SUPPORTED_DISTRICTS else "unsupported",
+                "district": written,
+                "dong": region["dong"],
+            }
+
     # 신사동처럼 여러 구에 있는 동: 하나로 고르지 않고 후보 구를 보여 주며 되묻는다.
     if region["status"] == "ambiguous":
+        # 되묻기에서 지원 밖 후보 구를 골랐다. 지원 밖 구는 확정으로 인정하지 않으므로 이 안내가
+        # 없으면 같은 되묻기가 끝없이 반복된다. 다른 구 자료로 답하지 않고 지원 밖으로 안내한다.
+        picked = request.district
+        if (
+            request.district_confirmed
+            and picked is not None
+            and picked in region["candidate_districts"]
+            and picked not in SUPPORTED_DISTRICTS
+        ):
+            return _ask_unsupported(request, picked, region["dong"])
+        # 사용자가 되묻기에 후보 구 하나를 골라 확정했다. 그 구에 있는 그 동으로 해석한다.
+        if confirmed and selected in region["candidate_districts"]:
+            return ResolvedQuery(
+                search_query=request.question,
+                region_status="ok",
+                district=selected,
+                dong=region["dong"],
+            )
         return ResolvedQuery(
             search_query=request.question,
             status="needs_clarification",
@@ -208,7 +274,12 @@ def resolve_request(request: PipelineRequest) -> ResolvedQuery:
         named = find_district(request.question)
 
         # 질문 속 구와 고른 구가 다르면 어느 쪽으로도 덮어쓰지 않고 되묻는다.
-        if named is not None and selected is not None and named != selected:
+        if (
+            named is not None
+            and selected is not None
+            and named != selected
+            and not confirmed
+        ):
             return ResolvedQuery(
                 search_query=request.question,
                 status="needs_clarification",
@@ -219,7 +290,7 @@ def resolve_request(request: PipelineRequest) -> ResolvedQuery:
                 ),
             )
 
-        district = named or selected
+        district = selected if confirmed else named or selected
         if district is None:
             return ResolvedQuery(
                 search_query=request.question,
@@ -242,6 +313,15 @@ def resolve_request(request: PipelineRequest) -> ResolvedQuery:
     # 고른 구와 다르면 어느 쪽으로도 덮어쓰지 않고 되묻는다.
     # (파이프라인은 고른 구와 다른 구를 resolved로 받으면 오류를 낸다.)
     if selected is not None and selected != region["district"]:
+        # 화면에서 받은 동(request.dong)은 버릴 수 없으므로(파이프라인이 되돌려 넣는다) 확정으로 덮지 않는다.
+        if confirmed and request.dong is None:
+            # 사용자가 충돌을 알고 고른 구로 확정했다. 맞지 않는 동은 채택하지 않고(dong=None) 구만 쓴다.
+            # no_dong 분기와 같은 모양이다("동은 확인하지 못했으므로 채우지 않는다").
+            return ResolvedQuery(
+                search_query=request.question,
+                region_status="no_dong",
+                district=selected,
+            )
         return ResolvedQuery(
             search_query=request.question,
             status="needs_clarification",

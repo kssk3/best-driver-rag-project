@@ -194,7 +194,7 @@ def test_demo_pipeline_results_become_views(demo_pipeline) -> None:
 def run_app_in_demo_mode(question: str) -> AppTest:
     st.cache_resource.clear()  # 이전 테스트에서 만든 파이프라인이 남지 않게 한다.
     app = dev_app().run()
-    app.radio[0].set_value("실행(합성 데모)").run()
+    app.radio[0].set_value("합성 데모").run()
     app.text_input[0].set_value(question).run()
     return app.button[1].click().run()
 

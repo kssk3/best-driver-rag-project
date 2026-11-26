@@ -27,7 +27,7 @@ uv run --locked python -m pytest --version
 
 로컬 uv가 요구 버전보다 낮으면 전역 설치를 바꾸지 않고 `uv tool run --from uv==0.13.9 uv sync --locked`로 같은 환경을 준비할 수 있다. 첫 설치는 Python 배포 서버와 PyPI 연결이 필요하다. 이 방식으로 설치했다면 실행도 `uv tool run --from uv==0.13.9 uv run --locked python --version`처럼 같은 uv 버전을 사용한다. 기존 Python 3.15 가상환경도 동기화하면 `.python-version`에 맞는 3.13.14 환경으로 다시 생성한다.
 
-현재 의존성 파일은 루트의 공용 Python 환경을 관리한다. Streamlit이 포함되어 있다. Selenium과 Langfuse 등 나머지 패키지는 해당 기능을 처음 연결하는 PR에서 의존성과 잠금 파일을 함께 갱신한다. 기존 FastAPI 의존성이 남아 있어도 별도 HTTP 서버 구현을 요구하지 않는다.
+루트 의존성 파일은 Streamlit을 포함한 공용 Python 환경을 관리한다. 공식 웹 안내는 [Selenium 선택 그룹으로 수집한다](docs/official-guide-collection.md). Langfuse 등 새 패키지는 해당 기능을 처음 연결하는 PR에서 의존성과 잠금 파일을 함께 갱신한다. 기존 FastAPI 의존성이 남아 있어도 별도 HTTP 서버 구현을 요구하지 않는다.
 
 Streamlit 화면은 데모 색인을 먼저 만든 뒤 실행한다. 데모 색인은 합성 문서만 쓰며 외부 호출이 없다.
 
@@ -61,6 +61,28 @@ uv run --locked python -m scripts.search_index --index data/processed/ordinance-
 ```
 
 `--question "질문"`을 지정하면 한 번 조회하고, 생략하면 질문을 반복 입력한다. `/종료`로 끝낸다. 이 명령은 지역을 제한한 코사인 유사도 검색 결과를 출력한다. 관련성 하한이 없어 `안녕`에도 무관한 결과가 나올 수 있고, 실제 질문에서 관련 별표가 상위 결과에 빠진 사례도 있다. 팀 파이프라인용 [A 벡터 검색기](src/retrieval/search.py)는 별도 진입점이다. HTML·JSON 비교의 범위와 재실행 방법은 [전처리 자료 인계 기록](docs/handoff.md#실제-전처리-자료-연결)에 있다.
+
+## 팀 색인과 리라이트 비교
+
+팀 색인(JSON) 경로와 답변 모델을 [A 검색 실행 설정](configs/team-a-rewrite-chat.json)에 지정한다. 색인과 모델 키를 준비한 환경에서 다음 명령을 실행하면 Streamlit에 **실행** 모드가 표시된다. `RAG_CHAT_SETTINGS`의 상대 경로는 저장소 루트 기준이다. 설정 파일의 `pipeline.rewrite_enabled`를 바꿔 저장하면 다음 질문부터 바뀐 값으로 실행한다. 같은 경로의 팀 색인이나 활성 품목 사전을 교체해도 다음 질문에서 새 파일을 읽는다. 런타임을 가져오는 중에 파일이 바뀌었다는 메시지가 나오면 교체를 마친 뒤 다시 질문한다.
+
+```sh
+RAG_CHAT_SETTINGS=configs/team-a-rewrite-chat.json \
+  uv run --locked --env-file .env streamlit run app.py
+```
+
+A 검색의 OFF/ON을 같은 질문·색인·검색 옵션·답변 모델로 한 번에 실행한다. 출력 경로에는 새 이름을 사용한다.
+
+```sh
+uv run --locked --env-file .env python -m scripts.evaluate \
+  --cases eval/dev.json --settings configs/team-a-rewrite-chat.json \
+  --factory src.evaluation.answer_experiments.answer_evaluation_runtimes:create_a_rewrite_comparison \
+  --output-dir results/local/catalog-rewrite-comparison
+```
+
+기본 A/B/C 평가와 A 리라이트 비교는 별도의 출력 디렉터리에 기록한다. 기본 A 평균에는 기본 평가의 A 실행만 사용하고, 리라이트 효과는 별도의 A OFF/ON 결과로 비교한다.
+
+ON은 품목 사전 규칙으로 검색 질의를 보강한다. `evaluation.json`에는 원질문, 실제 검색 질의, 해석된 구·동, 리라이트 상태, 색인과 사전 버전이 들어간다. `runs.csv`와 `candidates.csv`에서 구성별 후보 청크와 허용 근거의 검색 순위를 비교한다.
 
 ## 자동 데모와 검증
 

@@ -1,3 +1,5 @@
+from collections.abc import Callable
+
 import streamlit as st
 
 from src.interface.adapter import Citation, ViewResponse
@@ -21,11 +23,15 @@ def build_followup_request(
     conditions = {
         key: value.strip() for key, value in extra_conditions.items() if value.strip()
     }
-    # 구·동은 요청의 최상위 필드이므로 조건이 아니라 그 자리에 넣는다.
+    # 구·동은 요청의 최상위 필드이므로 그 자리에 넣는다.
     request: dict = {"question": question, "district": district}
-    for key in ("district", "dong"):
-        if key in conditions:
-            request[key] = conditions.pop(key)
+    if "dong" in conditions:
+        request["dong"] = conditions.pop("dong")
+    if "district" in conditions:
+        # 되묻기에서 사용자가 구를 직접 입력했다. 해석기가 같은 되묻기를 되풀이하지 않도록
+        # 확정 표시를 전용 필드로 보낸다(조건에 섞으면 생성기 입력과 W5 검증에 샌다).
+        request["district"] = conditions.pop("district")
+        request["district_confirmed"] = True
     request["conditions"] = conditions
     return request
 
@@ -55,7 +61,13 @@ def format_citation(citation: Citation) -> str:
     return line
 
 
-def render_response(view: ViewResponse, question: str = "", district: str = "") -> None:
+def render_response(
+    view: ViewResponse,
+    question: str = "",
+    district: str = "",
+    on_followup: Callable[[dict], None] | None = None,
+) -> None:
+    # on_followup: 되묻기에 답하면 만든 요청을 실제로 보내는 함수. 없으면(예시 응답) 요청을 보여 주기만 한다.
 
     if view.kind == "fixture":
         st.caption("예시(합성) 응답입니다. 실제 RAG 실행이 아닙니다.")
@@ -71,7 +83,7 @@ def render_response(view: ViewResponse, question: str = "", district: str = "") 
         _render_answered(view)
 
     elif view.status == "needs_clarification":
-        _render_clarification(view, question, district)
+        _render_clarification(view, question, district, on_followup)
 
     elif view.status == "insufficient_evidence":
         _render_insufficient_evidence(view)
@@ -96,9 +108,20 @@ def _render_answered(view: ViewResponse) -> None:
         st.markdown(format_citation(citation))
 
 
-def _render_clarification(view: ViewResponse, question: str, district: str) -> None:
+def _render_clarification(
+    view: ViewResponse,
+    question: str,
+    district: str,
+    on_followup: Callable[[dict], None] | None,
+) -> None:
 
     st.warning(view.answer or "질문하신 내용은 추가 정보가 필요합니다.")
+
+    if not view.required_fields:
+        # 더 채울 값이 없다(지원 밖 안내 등). 같은 요청을 다시 보내면 같은 안내만 나오므로
+        # 폼 대신 처음 입력칸에서 지역이나 질문을 바꾸도록 안내한다.
+        st.caption("위의 지역이나 질문을 바꿔서 다시 질문해 주세요.")
+        return
 
     with st.form("followup"):
         extra_conditions = {
@@ -112,8 +135,11 @@ def _render_clarification(view: ViewResponse, question: str, district: str) -> N
 
     if submitted:
         request = build_followup_request(question, district, extra_conditions)
-        st.caption("다시 보낼 요청입니다. 실제 전송이 아닌 예시입니다.")
-        st.json(request)
+        if on_followup is not None:
+            on_followup(request)
+        else:
+            st.caption("다시 보낼 요청입니다. 실제 전송이 아닌 예시입니다.")
+            st.json(request)
 
 
 def _render_insufficient_evidence(view: ViewResponse) -> None:

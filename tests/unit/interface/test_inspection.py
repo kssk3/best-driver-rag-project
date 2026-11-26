@@ -83,5 +83,5 @@ def test_common_scope_candidate_is_labelled_common_not_unknown() -> None:
 def test_switching_mode_hides_stale_response_from_inspection_panel() -> None:
     app = ask("answered")
     assert not any("먼저 질문" in item.value for item in app.info)
-    app.radio[0].set_value("실행(합성 데모)").run()
+    app.radio[0].set_value("합성 데모").run()
     assert any("먼저 질문" in item.value for item in app.info)
