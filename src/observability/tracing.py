@@ -6,17 +6,20 @@ import hashlib
 import json
 import os
 import re
+from collections.abc import Iterable
 from contextlib import nullcontext
 from datetime import UTC, datetime, timedelta
+from functools import cached_property, partial
 from http.client import HTTPResponse, HTTPSConnection
 from pathlib import Path
 from urllib.parse import SplitResult, urlencode, urlsplit
 
 from src.evaluation.judgment_details import JudgmentDetails
-from src.observability.upload_state import journaled_post
+from src.observability.upload_state import journaled_post, recorded_project_aliases
 
 TRACES = "/api/public/otel/v1/traces"
 SCORES = "/api/public/scores"
+SEARCH_VARIANTS = ("A", "B", "C")
 REPORT_FIELDS = (
     "evaluation_id attempt_index run_id metric trace_id score_id scored_at_utc "
     "upload_attempted_at_utc trace_status score_status status reason"
@@ -86,18 +89,32 @@ def langfuse_settings() -> tuple[SplitResult, str, str]:
     return url, public, secret
 
 
+class RootVariantMismatch(ValueError):
+    """기존 루트와 채점 CSV가 같은 실행에 서로 다른 검색 방식을 기록했다."""
+
+
 class LangfuseUpload:
     def __init__(self):
         url, public, secret = langfuse_settings()
         assert url.hostname is not None  # langfuse_settings에서 검증한 호스트
         self.hostname = url.hostname
         self.url = url
-        self.project = project_fingerprint(url, public)
+        self.legacy_project = project_fingerprint(url, public)
         token = base64.b64encode(f"{public}:{secret}".encode()).decode("ascii")
         self.headers = {
             "Authorization": "Basic " + token,
             "Content-Type": "application/json",
         }
+
+    @cached_property
+    def project(self) -> str:
+        response = self.request("GET", "/api/public/projects")
+        rows = response.get("data") if isinstance(response, dict) else None
+        if isinstance(rows, list) and len(rows) == 1 and isinstance(rows[0], dict):
+            project_id = rows[0].get("id")
+            if isinstance(project_id, str) and project_id.strip():
+                return "project:" + project_id
+        raise ValueError("Langfuse 인증 키가 가리키는 프로젝트를 확인할 수 없습니다.")
 
     def request(self, method, path, payload=None):
         headers = self.headers.copy()
@@ -123,14 +140,18 @@ class LangfuseUpload:
     def __call__(self, path, payload):
         return self.request("POST", path, payload)
 
-    def attach_to_root(self, payload, recorded_project):
+    def attach_to_root(
+        self, payload, recorded_project, variant=None, *, recover_missing=False
+    ):
         spans = payload["resourceSpans"][0]["scopeSpans"][0]["spans"]
         trace_id = spans[0]["traceId"]
         query = urlencode(
             {
                 "traceId": trace_id,
                 "isRootObservation": "true",
-                "fields": "core,basic",
+                "fields": "core,basic,metadata"
+                if variant in SEARCH_VARIANTS
+                else "core,basic",
                 "limit": 2,
             }
         )
@@ -138,12 +159,17 @@ class LangfuseUpload:
         if (
             not isinstance(body, dict)
             or not isinstance(body.get("meta"), dict)
-            or body["meta"].get("cursor")
+            or body["meta"].get("cursor") is not None
         ):
             raise ValueError("incomplete root lookup")
         rows = body.get("data")
-        if rows == [] and recorded_project != self.project:
-            return  # 이 프로젝트에서 추적한 기록이 없으면 보관본 루트를 쓴다.
+        other_project = bool(
+            recorded_project
+            and recorded_project.startswith("project:")
+            and recorded_project != self.project
+        )
+        if rows == [] and (not recorded_project or other_project or recover_missing):
+            return  # 정상 조회로 루트가 없음을 확인한 경우에만 보관본 루트를 쓴다.
         if (
             not isinstance(rows, list)
             or len(rows) != 1
@@ -160,6 +186,15 @@ class LangfuseUpload:
             or root_id == "0" * 16
         ):
             raise ValueError("invalid root")
+        if variant in SEARCH_VARIANTS:
+            metadata = root.get("metadata")
+            if isinstance(metadata, str) and metadata.lstrip().startswith("{"):
+                metadata = json.loads(metadata)
+            recorded_variant = (
+                metadata.get("variant") if isinstance(metadata, dict) else None
+            )
+            if recorded_variant in SEARCH_VARIANTS and recorded_variant != variant:
+                raise RootVariantMismatch()
         spans.pop(0)
         for child in spans:
             child["parentSpanId"] = root_id
@@ -219,6 +254,19 @@ def _trace_payload(row, details: JudgmentDetails | None = None):
     trace_id = trace_id_for_run(row["run_id"])
     started = _utc(row["run_started_at_utc"]) - datetime(1970, 1, 1, tzinfo=UTC)
     nanos = str(started // timedelta(microseconds=1) * 1000)
+    run_attributes = [
+        {"key": "run.kind", "value": {"stringValue": row["run_kind"]}},
+        {"key": "langfuse.environment", "value": {"stringValue": row["run_kind"]}},
+    ]
+    root_attributes = run_attributes.copy()
+    variant = row.get("variant")
+    if variant in SEARCH_VARIANTS:
+        root_attributes.append(
+            {
+                "key": "langfuse.observation.metadata.variant",
+                "value": {"stringValue": variant},
+            }
+        )
     span = {
         "traceId": trace_id,
         "spanId": _identifier("span", row["run_id"])[:16],
@@ -226,10 +274,7 @@ def _trace_payload(row, details: JudgmentDetails | None = None):
         "kind": 1,
         "startTimeUnixNano": nanos,
         "endTimeUnixNano": nanos,
-        "attributes": [
-            {"key": "run.kind", "value": {"stringValue": row["run_kind"]}},
-            {"key": "langfuse.environment", "value": {"stringValue": row["run_kind"]}},
-        ],
+        "attributes": root_attributes,
     }
     spans = [span]
     if details is not None:
@@ -253,7 +298,7 @@ def _trace_payload(row, details: JudgmentDetails | None = None):
                 "endTimeUnixNano": at_nanos,
                 "name": "faithfulness",
                 "attributes": [
-                    *span["attributes"],
+                    *run_attributes,
                     {
                         "key": "langfuse.observation.output",
                         "value": {
@@ -288,7 +333,9 @@ def _payloads(row, details=None):
     return trace, score
 
 
-def _publish(row, entry, post, seen_score_ids, details, attach_to_root):
+def _publish(
+    row, entry, post, seen_score_ids, details, attach_to_root, confirm_recovery
+):
     status = row["status"]
     if status not in {"scored", "skipped", "no_score", "input_error", "scorer_error"}:
         entry.update(status="failed", reason="unknown_score_status")
@@ -332,8 +379,20 @@ def _publish(row, entry, post, seen_score_ids, details, attach_to_root):
     for stage, path, payload in requests:
         try:
             if stage == "trace" and attach_to_root is not None:
-                attach_to_root(payload, row.get("langfuse_project"))
+                attach_to_root(payload, row.get("langfuse_project"), row.get("variant"))
             accepted = post(path, payload)
+            if stage == "trace" and accepted is True and confirm_recovery:
+                spans = payload["resourceSpans"][0]["scopeSpans"][0]["spans"]
+                if spans and spans[0]["name"] == "archived-run":
+                    confirm_recovery(payload, variant=row.get("variant"))
+        except RootVariantMismatch:
+            entry.update(
+                status="failed",
+                reason="root_variant_mismatch",
+                trace_status="variant_mismatch",
+                score_status="not_attempted" if status == "scored" else "skipped",
+            )
+            return
         except Exception:
             accepted = None
         entry[stage + "_status"] = {
@@ -350,7 +409,7 @@ def _publish(row, entry, post, seen_score_ids, details, attach_to_root):
     entry.update(status="accepted")
 
 
-def _read_details(path: Path, rows: list[dict]):
+def _read_details(path: Path, rows: Iterable[dict]):
     expected = {
         (r["evaluation_id"], r["attempt_index"], r["run_id"], r["metric"])
         for r in rows
@@ -381,11 +440,15 @@ def publish_scores(
     *,
     judgments: Path | None = None,
     retry_missing=False,
+    recover_missing_root: str | None = None,
 ) -> bool:
     """업로드 시도마다 새 영수증을 기록한다. post 미지정은 네트워크 없는 검증이다."""
-    project = post.project if isinstance(post, LangfuseUpload) else "injected"
     lookup = post.find_span if isinstance(post, LangfuseUpload) else None
-    attach_to_root = post.attach_to_root if isinstance(post, LangfuseUpload) else None
+    attach_to_root = (
+        partial(post.attach_to_root, recover_missing=recover_missing_root is not None)
+        if isinstance(post, LangfuseUpload)
+        else None
+    )
     with scores.open(encoding="utf-8", newline="") as source:
         rows = csv.DictReader(source)
         required = {
@@ -401,22 +464,52 @@ def publish_scores(
         }
         if not required.issubset(rows.fieldnames or []):
             raise ValueError("missing scores.csv columns")
-        if judgments:
-            records = list(rows)
-            details = _read_details(judgments, records)
-        else:
-            details = {}
+        records = list(rows) if judgments or recover_missing_root is not None else rows
+        details = _read_details(judgments, records) if judgments else {}
+        if recover_missing_root is not None:
+            if post is not None and attach_to_root is None:
+                raise ValueError(
+                    "루트 복구에는 서버 루트를 조회할 수 있는 전송기가 필요합니다."
+                )
+            if not recover_missing_root.strip():
+                raise ValueError("복구할 run_id를 입력하세요.")
+            records = [row for row in records if row["run_id"] == recover_missing_root]
+            if not records:
+                raise ValueError("scores.csv에서 복구할 run_id를 찾을 수 없습니다.")
+            if isinstance(post, LangfuseUpload):
+                aliases = recorded_project_aliases(scores, post.project)
+                known = {None, "", post.project, post.legacy_project, *aliases}
+                if any(row.get("langfuse_project") not in known for row in records):
+                    raise ValueError(
+                        "복구 대상 실행이 현재 Langfuse 프로젝트에 속하는지 확인할 수 없습니다."
+                    )
+        project = post.project if isinstance(post, LangfuseUpload) else "injected"
+        confirm_recovery = (
+            partial(post.attach_to_root, recorded_project=project)
+            if recover_missing_root is not None and isinstance(post, LangfuseUpload)
+            else None
+        )
         seen_score_ids: set[str] = set()
         ok = True
         with (
             report.open("x", encoding="utf-8", newline="") as stream,
-            journaled_post(scores, project, lookup, post, TRACES, retry_missing)
+            journaled_post(
+                scores,
+                project,
+                lookup,
+                post,
+                TRACES,
+                retry_missing,
+                legacy_project=post.legacy_project
+                if isinstance(post, LangfuseUpload)
+                else None,
+            )
             if post is not None
             else nullcontext() as send,
         ):
             writer = csv.DictWriter(stream, fieldnames=REPORT_FIELDS)
             writer.writeheader()
-            for row in records if judgments else rows:
+            for row in records:
                 entry = {
                     key: row[key]
                     for key in (
@@ -434,7 +527,13 @@ def publish_scores(
                     row["metric"],
                 )
                 _publish(
-                    row, entry, send, seen_score_ids, details.get(key), attach_to_root
+                    row,
+                    entry,
+                    send,
+                    seen_score_ids,
+                    details.get(key),
+                    attach_to_root,
+                    confirm_recovery,
                 )
                 writer.writerow(entry)
                 stream.flush()
