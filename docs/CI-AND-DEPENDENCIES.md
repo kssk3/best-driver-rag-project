@@ -25,7 +25,7 @@ uv run --locked python -m compileall -q src scripts app.py
 uv run --locked python -m pytest tests --cov --cov-config=.coveragerc --cov-report=xml:coverage.xml
 ```
 
-[커버리지 설정](../.coveragerc)은 분기 커버리지와 상대 파일 경로를 사용한다. 보고서에는 `src/`와 `app.py`를 포함하고 `tests/`를 제외한다. `scripts/`는 문법 검사와 CLI 테스트 대상이지만 현재 커버리지 보고 대상에는 포함되지 않는다. 결과 파일은 루트 `coverage.xml`이다.
+[커버리지 설정](../.coveragerc)은 분기 커버리지와 상대 파일 경로를 사용한다. 보고서에는 `src/`, `app.py`, 저장 답변 평가와 업로드 진입점인 `scripts/score_answers.py`, `scripts/upload_scores.py`가 포함된다. 결과 파일은 루트 `coverage.xml`이다.
 
 검증용 표본은 `tests/fixtures/`, 단위 테스트는 `tests/unit/`, 연결 테스트는 `tests/integration/`에 있다. 위의 공통 pytest 명령으로 함께 실행한다. `.coveragerc`에는 커버리지 하한을 지정하지 않았다.
 
@@ -47,7 +47,7 @@ uv run --locked python -m pytest tests --cov --cov-config=.coveragerc --cov-repo
 
 - **Ruff 린트**: `src`, `scripts`, `tests`, `app.py`를 검사한다. 규칙은 `pyproject.toml`의 `[tool.ruff.lint] select`에 명시한 `E4`, `E7`, `E9`, `F`, `I`(문법·이름 오류, 명백한 문장 구조 문제, import 정렬)이다. Ruff 기본 규칙이 바뀌어도 이 목록은 유지되지만, 같은 접두어에 새 규칙이 추가되거나 포맷 스타일이 바뀔 수 있으므로 Dependabot의 Ruff 버전 갱신 PR에서 Lint 결과를 확인한다.
 - **Ruff 포맷 검사**: 같은 범위가 `ruff format` 결과와 같은지 확인한다. 줄 길이는 Ruff 기본값 88열이다. Ruff는 이 범위 안의 Markdown 파일에 들어 있는 Python 코드 블록도 포맷 대상으로 삼는다. 일괄 포맷 커밋은 [`.git-blame-ignore-revs`](../.git-blame-ignore-revs)에 등록되어 GitHub blame에서 건너뛴다.
-- **mypy 타입 검사**: `pyproject.toml`의 `[tool.mypy] files`에 적은 경로만 검사한다. 현재 범위는 `src/generation`, `src/evaluation/answer_experiments`이며, 다른 경로는 담당자가 타입 오류를 정리한 뒤 목록에 추가한다. 목록 밖 모듈(예: `src/contracts.py`)은 import를 따라가 타입 정보로만 쓰고 오류는 보고하지 않는다(`follow_imports = "silent"`).
+- **mypy 타입 검사**: `pyproject.toml`의 `[tool.mypy] files`에 적은 경로만 검사한다. 저장 답변 채점·업로드 모듈과 두 CLI에서는 타입 주석이 없는 함수 본문도 검사한다. 목록 밖 모듈(예: `src/contracts.py`)은 import를 따라가 타입 정보로만 쓰고 오류는 보고하지 않는다(`follow_imports = "silent"`).
 
 저장소 루트에서 CI와 같은 명령을 실행한다. 전역에 설치한 `ruff`는 잠금 파일과 버전이 다를 수 있으므로 항상 `uv run --locked`로 실행하고, 다른 파일이 바뀌지 않도록 경로를 지정한다.
 
@@ -71,7 +71,7 @@ git config blame.ignoreRevsFile .git-blame-ignore-revs
 
 PR 이벤트와 `main` 또는 `dev`에 푸시할 때 검사한다. 테스트가 있고 Dependabot 실행이 아닌 경우, 같은 저장소에서 만든 PR이나 푸시는 `CODECOV_TOKEN`으로 보고서를 업로드하도록 설정되어 있다. 포크 PR과 Dependabot PR은 테스트를 실행하되 업로드하지 않는다. 업로드 실패는 검사 실패로 처리한다.
 
-[Codecov 설정](../codecov.yml)은 `python` 플래그에 `src/`와 `app.py`를 연결한다. 워크플로는 지정한 `coverage.xml`만 업로드하며 자동 보고서 탐색은 끈다. 예전 프론트엔드의 경로 보정과 저장소 자체의 최소 커버리지 목표는 지정하지 않았다.
+[Codecov 설정](../codecov.yml)은 `python` 플래그에 위 커버리지 보고 대상 경로를 연결한다. 워크플로는 지정한 `coverage.xml`만 업로드하며 자동 보고서 탐색은 끈다. 예전 프론트엔드의 경로 보정과 저장소 자체의 최소 커버리지 목표는 지정하지 않았다.
 
 원격 실행을 확인할 때는 Actions 결과, `coverage.xml`의 파일 경로와 Codecov에 표시된 커밋을 대조한다. 로컬 테스트 결과만으로 토큰 설정, 실제 업로드와 서비스 연결 상태를 완료 처리하지 않는다.
 

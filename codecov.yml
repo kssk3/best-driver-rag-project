@@ -3,3 +3,5 @@ flags:
     paths:
       - src/
       - app.py
+      - scripts/score_answers.py
+      - scripts/upload_scores.py

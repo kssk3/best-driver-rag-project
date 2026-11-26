@@ -6,5 +6,7 @@ branch = True
 [report]
 include =
     src/*
+    scripts/score_answers.py
+    scripts/upload_scores.py
     app.py
 omit = tests/*
