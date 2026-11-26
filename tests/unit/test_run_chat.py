@@ -86,6 +86,7 @@ def test_missing_team_index_is_built_in_a_fresh_folder(
     tmp_path, team_index, calls, monkeypatch
 ) -> None:
     monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+    monkeypatch.setattr(run_chat, "baseline_mismatch", lambda path: None)
     run_chat.main(["--settings", settings_for(tmp_path, team_index)])
     assert "scripts.prepare_data" in calls[0][0]
     assert calls[0][0][calls[0][0].index("--output-dir") + 1] != str(team_index.parent)
@@ -96,12 +97,25 @@ def test_leftover_folder_from_a_failed_build_is_moved_aside(
     tmp_path, team_index, calls, monkeypatch
 ) -> None:
     monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+    monkeypatch.setattr(run_chat, "baseline_mismatch", lambda path: None)
     team_index.parent.mkdir()
     (team_index.parent / "report.json").write_text("{}", encoding="utf-8")
     run_chat.main(["--settings", settings_for(tmp_path, team_index)])
     assert team_index.exists()
     leftovers = list(tmp_path.glob("team.incomplete-*/report.json"))
     assert len(leftovers) == 1  # 지우지 않고 보존한다.
+
+
+def test_new_index_that_differs_from_baseline_is_not_published_or_started(
+    tmp_path, team_index, calls, monkeypatch
+) -> None:
+    monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+    monkeypatch.setattr(run_chat, "baseline_mismatch", lambda path: "기준선과 다름")
+    with pytest.raises(SystemExit):
+        run_chat.main(["--settings", settings_for(tmp_path, team_index)])
+    assert not team_index.exists()  # 기본 경로로 옮기지 않는다.
+    assert not any(started(call) for call in calls)  # 화면도 띄우지 않는다.
+    assert list(tmp_path.glob("team.building-*/index-json.json"))  # 확인용으로 남긴다.
 
 
 def test_missing_team_index_without_key_stops_before_any_call(
