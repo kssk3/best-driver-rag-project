@@ -1,0 +1,151 @@
+{
+  "is_synthetic": false,
+  "cases": [
+    {
+      "case_id": "exp-sp-trash-can",
+      "question": "송파구에서 가정용 쓰레기통을 대형폐기물로 버리면 수수료가 얼마예요?",
+      "district": "송파구",
+      "expected_status": "answered",
+      "reference_answer": "송파구 대형폐기물 수수료표에서 쓰레기통 가정용은 1,000원입니다.",
+      "allowed_chunk_ids": [
+        "chunk-105b0c572c2fde51eb1aec2e4faf5c2db3048bd3da9eaec2cb42228dfbb81d43",
+        "chunk-4e97864785643df575cc6d812fb78312523518a3ec863604deadca6a9449fccb"
+      ]
+    },
+    {
+      "case_id": "exp-sp-wood-table",
+      "question": "송파구에서 나무 식탁(4인용)을 버리려면 수수료가 얼마예요?",
+      "district": "송파구",
+      "expected_status": "answered",
+      "reference_answer": "송파구 대형폐기물 수수료표에서 식탁(나무, 의자 별도) 4인 이상은 4,000원입니다.",
+      "allowed_chunk_ids": [
+        "chunk-b97f7ec6dd0673a19fc4597d87c9031286b56adf46a5151ac1c316b85dbba268",
+        "chunk-2fa8f492a16e6bda10e29959642671cf16b6be5344c845bd8414c022919011cd"
+      ]
+    },
+    {
+      "case_id": "exp-sp-shoe-rack",
+      "question": "송파구에서 높이 1.6미터 신발장을 대형폐기물로 내놓으면 얼마예요?",
+      "district": "송파구",
+      "expected_status": "answered",
+      "reference_answer": "송파구 대형폐기물 수수료표에서 신발장은 높이 1.5m 이상이 4,000원입니다.",
+      "allowed_chunk_ids": [
+        "chunk-cb10591396af9c2c1c74d44e9a73c614e01b49a2c4f106bc342973903c167593",
+        "chunk-17142aedad0d6e80366526ede8d84e016d3907c09f00ab74e9c8e14a9b5256ff"
+      ]
+    },
+    {
+      "case_id": "exp-sp-icebox-40l",
+      "question": "송파구에서 40리터 아이스박스를 버리면 수수료가 얼마예요?",
+      "district": "송파구",
+      "expected_status": "answered",
+      "reference_answer": "송파구 대형폐기물 수수료표에서 아이스박스는 30L 이상이 2,000원입니다(50L 이상은 3,000원).",
+      "allowed_chunk_ids": [
+        "chunk-8fd7213cfc2156101056b44eabdfc1a54262015ee9b6f256c994edf0de927e1d",
+        "chunk-27f2608e05c306b5face9b64df244ec24b6907cdd8bb94ff8220ca71b71c72ea",
+        "chunk-af9638fcc40aa710aacfaff238e4e94acfaad43b4768333412cc6a2ec1617c1f"
+      ]
+    },
+    {
+      "case_id": "exp-sp-stroller-2",
+      "question": "송파구에서 2인용 유모차를 버리면 얼마를 내나요?",
+      "district": "송파구",
+      "expected_status": "answered",
+      "reference_answer": "송파구 대형폐기물 수수료표에서 유모차 2인용은 4,000원입니다.",
+      "allowed_chunk_ids": [
+        "chunk-eaea3413d24ddee093a2976b9ea950a298b72cd4b17cbd205e5f23d7b6421db2"
+      ]
+    },
+    {
+      "case_id": "exp-sp-safe-1m",
+      "question": "송파구에서 가정용 금고(가장 긴 면 1미터 미만)를 버릴 때 수수료는요?",
+      "district": "송파구",
+      "expected_status": "answered",
+      "reference_answer": "송파구 대형폐기물 수수료표에서 금고(가정용) 가장 긴 면 1m 미만은 15,000원입니다.",
+      "allowed_chunk_ids": [
+        "chunk-5a90a37d7d38c52eac6776c29857a1d7303525f8b69662aad9568efa76d3f2bd",
+        "chunk-59ad069d726364002c2ff7a07905ea5d731c64c3ca97e7f04f1eff0bf8e6c6c1"
+      ]
+    },
+    {
+      "case_id": "exp-sp-piano",
+      "question": "송파구에서 일반 피아노를 대형폐기물로 버리면 수수료가 얼마예요?",
+      "district": "송파구",
+      "expected_status": "answered",
+      "reference_answer": "송파구 대형폐기물 수수료표에서 피아노 일반은 16,000원입니다(디지털은 5,000원).",
+      "allowed_chunk_ids": [
+        "chunk-74546e712b0bf3278b0ebd38a54be7172e812ab856b65c4be94b8f5b7cb9b8f9"
+      ]
+    },
+    {
+      "case_id": "exp-sp-tent-4",
+      "question": "송파구에서 4인용 텐트를 버리려면 수수료가 얼마예요?",
+      "district": "송파구",
+      "expected_status": "answered",
+      "reference_answer": "송파구 대형폐기물 수수료표에서 텐트 4인용 이상은 4,000원입니다.",
+      "allowed_chunk_ids": [
+        "chunk-825415a805b64e37055aa12fa2a0129b5eb49b9c3ff4638b477b6b8031fb8e4b"
+      ]
+    },
+    {
+      "case_id": "exp-sp-western-toilet",
+      "question": "송파구에서 양변기를 대형폐기물로 내놓으면 수수료가 얼마예요?",
+      "district": "송파구",
+      "expected_status": "answered",
+      "reference_answer": "송파구 대형폐기물 수수료표에서 변기 양변기는 8,000원입니다(좌변기는 5,000원).",
+      "allowed_chunk_ids": [
+        "chunk-cfecc578193ba90c80195991951cd0c6b244bc4b8852946f48acd95eb40ba34d"
+      ]
+    },
+    {
+      "case_id": "exp-sp-treadmill",
+      "question": "송파구에서 런닝머신을 버리려면 수수료가 얼마예요?",
+      "district": "송파구",
+      "expected_status": "answered",
+      "reference_answer": "송파구 대형폐기물 수수료표에서 헬스기구 런닝머신은 15,000원입니다.",
+      "allowed_chunk_ids": [
+        "chunk-97317bd5b515dc9a42102e8d55d4c477683c0d488f0afd0e6738abccf8584d7d"
+      ]
+    },
+    {
+      "case_id": "exp-sp-bag-20l-use",
+      "question": "송파구에서 20리터 종량제 봉투는 어떤 용도로 쓸 수 있나요?",
+      "district": "송파구",
+      "expected_status": "answered",
+      "reference_answer": "송파구 시행규칙 별표에서 20ℓ는 생활폐기물용, 일반사업장용, 가락시장용, 공공용, 특수규격봉투로 쓰입니다.",
+      "allowed_chunk_ids": [
+        "chunk-1d1aaba67f049a5294f8bdf1f79ce247aa8b182823094146fa3fa0dd6f2181e0"
+      ]
+    },
+    {
+      "case_id": "exp-sp-bag-75l-use",
+      "question": "송파구에서 75리터 봉투는 어디에 쓰는 건가요?",
+      "district": "송파구",
+      "expected_status": "answered",
+      "reference_answer": "송파구 시행규칙 별표에서 75ℓ는 생활폐기물용, 일반사업장용, 가락시장용, 공공용입니다.",
+      "allowed_chunk_ids": [
+        "chunk-0e19a3af9978cc0a92ef5aa9c14357f6fbee0793df4078b5ab9eb3ce953176c9"
+      ]
+    },
+    {
+      "case_id": "exp-sp-bangi-weekday",
+      "question": "송파구 방이동에서는 쓰레기를 무슨 요일에 내놓나요?",
+      "district": "송파구",
+      "expected_status": "answered",
+      "reference_answer": "송파구 시행규칙 별표에서 방이동은 화·목·일 오후 6시부터 11시까지이며, 가정은 내 집 앞, 상가는 건물 내(외) 지정장소에 내놓습니다.",
+      "allowed_chunk_ids": [
+        "chunk-82e5884c7eafd459504e7e6dd5f72e0ad9d1e97de07df3926bca236d82220b4a"
+      ]
+    },
+    {
+      "case_id": "exp-sp-wirye-apt-time",
+      "question": "송파구 위례 아파트는 쓰레기를 몇 시에 내놓을 수 있나요?",
+      "district": "송파구",
+      "expected_status": "answered",
+      "reference_answer": "송파구 시행규칙 별표에서 아파트동(위례 등)은 매일 오후 6시부터 11시까지 지정장소에 배출하며, 보관용기가 설치된 공동주택은 격일 수거도 가능합니다.",
+      "allowed_chunk_ids": [
+        "chunk-7d431d383f1095404943ecfabe84c03213278282d0ea19e42e9290dbb575577b"
+      ]
+    }
+  ]
+}
