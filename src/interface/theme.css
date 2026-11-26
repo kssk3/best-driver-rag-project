@@ -668,3 +668,10 @@ a.brand {
   min-height: 56px;
   padding: 6px 0;
 }
+
+/* 비교 패널 불러오는 중 안내 */
+.mx-loading {
+  color: var(--sub);
+  font-size: 13px;
+  padding: 18px 4px;
+}

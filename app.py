@@ -278,16 +278,6 @@ def render_result(view) -> None:
     )
 
 
-@st.cache_data(ttl=60, show_spinner=False)
-def cached_scores():
-    # 질문할 때마다 다시 그려지므로 서버 조회는 잠시 재사용한다. 실패(오류 코드)도 같이 재사용해서
-    # 서버가 느릴 때 화면을 그릴 때마다 시간 초과를 기다리지 않게 한다.
-    try:
-        return langfuse_scores.load_langfuse_scores()
-    except langfuse_scores.LangfuseReadError as error:
-        return error.code
-
-
 LANGFUSE_MESSAGES = {
     "not_configured": "Langfuse 주소와 키(LANGFUSE_BASE_URL, LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY)를 설정하고 다시 실행하세요.",
     "unreachable": "Langfuse 서버에 연결하지 못했습니다. 주소와 네트워크를 확인하세요.",
@@ -315,7 +305,9 @@ def metrics_html(group) -> str:
     return f'<div class="mx-grid">{"".join(cards)}</div>'
 
 
+@st.fragment(run_every=3)
 def render_comparison() -> None:
+    # 조각이라 점수를 불러오는 동안에도 나머지 화면은 막히지 않고, 몇 초마다 스스로 다시 확인한다.
     st.html(
         '<div class="sec-title">RAGAS 4대 지표 <small>실행 방식(A/B/C)별 평균</small></div>'
     )
@@ -324,7 +316,11 @@ def render_comparison() -> None:
         "검색 적중률(Hit@k)은 다른 지표라 섞지 않습니다.  \n"
         "점수는 판정 모델의 편차가 있어, 같은 답변도 다시 채점하면 달라질 수 있습니다."
     )
-    result = cached_scores()
+    result, loading = langfuse_scores.snapshot()
+    if result is None:
+        # 처음 불러오는 중이다. 화면은 먼저 그려졌고, 이 조각이 몇 초마다 다시 확인해 채운다.
+        st.html('<div class="mx-loading">Langfuse 점수를 불러오는 중...</div>')
+        return
     if isinstance(result, str):
         # 주소·키·응답 내용은 보이지 않고 오류 종류만 알려 준다.
         if result == "not_configured":
@@ -336,8 +332,8 @@ def render_comparison() -> None:
                 )
             )
             if st.button("새로고침", key="refresh_scores_error"):
-                cached_scores.clear()
-                st.rerun()
+                langfuse_scores.reset()
+                langfuse_scores.snapshot()  # 바로 뒤에서 다시 읽기 시작한다
         return
     if not result.groups:
         st.info("방식별로 집계할 점수가 아직 없습니다.")
@@ -354,9 +350,11 @@ def render_comparison() -> None:
     ]
     if left_out:
         st.caption("방식을 알 수 없어 평균에서 뺀 점수: " + ", ".join(left_out))
+    if loading:
+        st.caption("새 점수를 불러오는 중...")
     if st.button("새로고침", key="refresh_scores"):
-        cached_scores.clear()
-        st.rerun()
+        langfuse_scores.reset()
+        langfuse_scores.snapshot()  # 바로 뒤에서 다시 읽기 시작한다
 
 
 def render_dev_panel(view) -> None:
