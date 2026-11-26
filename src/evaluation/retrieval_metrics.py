@@ -10,7 +10,7 @@ Hit@k: 검색 상위 k개 안에 정답 근거(allowed_chunk_ids)가 하나라�
 정답 근거 목록은 채점에만 쓰고 검색 입력에 넣지 않는다 (docs/problem.md).
 """
 
-from collections.abc import Collection, Sequence
+from collections.abc import Collection, Mapping, Sequence
 from dataclasses import dataclass
 
 from src.common.errors import ApplicationError, ErrorCategory
@@ -92,15 +92,32 @@ class ConfigurationHitRate:
     rate: float | None
 
 
+@dataclass(frozen=True)
+class ExpectedRun:
+    """구성 이름이 가리켜야 하는 실제 실행 설정. 이름표와 실제 파이프라인이 맞는지 대조한다.
+
+    예: "C-rewrite" → ExpectedRun(variant="C", rewrite_enabled=True)
+    이름 문자열을 variant와 바로 비교하지 않는 이유: "C-rewrite"처럼 이름과 variant가 다를 수 있다.
+    """
+
+    variant: str
+    rewrite_enabled: bool
+
+
 def hit_rate_by_configuration(
     results: list[dict],
     cases: Sequence[EvaluationCase],
-    configurations: Sequence[str],
+    configurations: Mapping[str, ExpectedRun],
     k: int = 5,
 ) -> dict[str, ConfigurationHitRate]:
     """evaluate_cases 결과를 구성(A/B/C 등)별 Hit@k로 묶는다. 실검색(run_kind=rag) 비교용.
 
     예: {"A": ConfigurationHitRate(hits=12, cases=17, rate=0.71), ...}
+
+    configurations는 구성 이름 → 기대 설정표다.
+    예: {"A": ExpectedRun("A", False), "B": ExpectedRun("B", False)}
+    실행 기록의 실제 variant·rewrite_enabled가 표와 다르면 오류다
+    (B 자리에 A 파이프라인을 연결하면 A 점수가 B 성능으로 집계되는 것을 막는다).
 
     채점 대상은 정답 근거가 있는 문항 × configurations다. 그 조합이 결과에 정확히 한 번씩
     있어야 한다. 빠지거나 겹치면 분모가 달라져 점수가 틀리므로 0점이 아니라 오류로 알린다.
@@ -112,16 +129,17 @@ def hit_rate_by_configuration(
 
     Raises:
         RetrievalMetricError:
-            k가 1 이상 정수가 아닐 때, configurations가 비었거나 겹칠 때,
+            k가 1 이상 정수가 아닐 때, configurations가 비었을 때,
             문항 목록에 같은 case_id가 두 번 있을 때,
             결과에 모르는 case_id·configuration이 있을 때,
             (configuration, case_id)가 빠지거나 두 번 있을 때,
             실검색이 아닌 기록(demo, fixed_evidence)이 섞였을 때,
+            실행 기록의 variant·rewrite_enabled가 기대 설정표와 다를 때,
             파이프라인 top_k가 k보다 작아 Hit@k를 잴 수 없을 때
     """
     _check_k(k)
-    if not configurations or len(set(configurations)) != len(configurations):
-        raise RetrievalMetricError("비교할 구성 목록이 비었거나 같은 이름이 있습니다.")
+    if not configurations:  # dict라서 같은 이름은 애초에 두 번 들어갈 수 없다
+        raise RetrievalMetricError("비교할 구성 목록이 비었습니다.")
     case_ids = [case.case_id for case in cases]
     if len(set(case_ids)) != len(case_ids):
         raise RetrievalMetricError("문항 목록에 같은 case_id가 두 번 있습니다.")
@@ -147,6 +165,8 @@ def hit_rate_by_configuration(
         if key in seen:
             raise RetrievalMetricError(f"같은 구성·문항 결과가 두 번 있습니다: {key!r}")
         seen.add(key)
+        # 이름표(configuration)와 실제 실행 설정이 맞는지. 채점 대상이 아닌 문항도 확인한다
+        _check_settings(result["record"], configuration, configurations[configuration])
 
         allowed = allowed_by_case.get(case_id)
         if allowed is None:  # 근거 없는 문항 → 채점 대상 아님
@@ -173,6 +193,25 @@ def hit_rate_by_configuration(
             rate=mean_hit_rate(hits) if hits else None,
         )
     return summary
+
+
+def _check_settings(
+    record: dict | None, configuration: str, expected: ExpectedRun
+) -> None:
+    """실행 기록의 실제 variant·rewrite_enabled가 이 구성의 기대 설정과 같은지 확인한다."""
+    if (
+        record is None
+    ):  # 실행 자체가 실패해 설정 기록이 없다 → 대조할 것이 없음 (0점 처리)
+        return
+    actual = ExpectedRun(
+        variant=record["options"]["variant"],
+        rewrite_enabled=record["options"]["rewrite_enabled"],
+    )
+    if actual != expected:
+        raise RetrievalMetricError(
+            f"구성 {configuration!r}의 실제 실행 설정이 기대와 다릅니다: "
+            f"기대 {expected}, 실제 {actual}"
+        )
 
 
 def _check_k(k: int) -> None:

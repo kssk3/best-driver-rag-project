@@ -13,6 +13,7 @@ from src.contracts import (
 )
 from src.evaluation.retrieval_metrics import (
     ConfigurationHitRate,
+    ExpectedRun,
     RetrievalMetricError,
     hit_at_k,
     hit_rate_by_configuration,
@@ -171,6 +172,8 @@ def result(
     retrieve: str = "ok",
     generate: str = "ok",
     top_k: int = 5,
+    variant: str | None = None,
+    rewrite_enabled: bool = False,
 ) -> dict:
     """evaluate_cases 결과 한 줄. top_ids=None이면 실행 오류(record 없음)."""
     if top_ids is None:
@@ -184,7 +187,12 @@ def result(
         "configuration": configuration,
         "record": {
             "run_kind": run_kind,
-            "options": {"top_k": top_k},
+            # 실제 실행 설정. 기본은 구성 이름과 같은 variant, 리라이트 OFF
+            "options": {
+                "top_k": top_k,
+                "variant": variant or configuration,
+                "rewrite_enabled": rewrite_enabled,
+            },
             "stages": [
                 {"name": "retrieve", "status": retrieve},
                 {"name": "generate", "status": generate},
@@ -197,6 +205,11 @@ def result(
 CASES = [case("q1", ["row-1"]), case("q2", ["row-9"])]
 
 
+def expect(*names: str) -> dict[str, ExpectedRun]:
+    """기대 설정표. 이름과 같은 variant, 리라이트 OFF (기본 A/B/C 비교)."""
+    return {name: ExpectedRun(variant=name, rewrite_enabled=False) for name in names}
+
+
 def test_rate_is_grouped_by_configuration_with_counts():
     results = [
         result("q1", "A", ["row-1", "row-2"]),  # 정답 1위 → 1
@@ -204,7 +217,7 @@ def test_rate_is_grouped_by_configuration_with_counts():
         result("q1", "B", ["row-2", "row-1"]),  # 정답 2위 → 1
         result("q2", "B", ["row-9"]),  # 정답 1위 → 1
     ]
-    assert hit_rate_by_configuration(results, CASES, ["A", "B"]) == {
+    assert hit_rate_by_configuration(results, CASES, expect("A", "B")) == {
         "A": ConfigurationHitRate(hits=1, cases=2, rate=0.5),
         "B": ConfigurationHitRate(hits=2, cases=2, rate=1.0),
     }
@@ -215,7 +228,7 @@ def test_failed_run_counts_as_miss_and_keeps_denominator():
         result("q1", "C", ["row-1"]),  # 1
         result("q2", "C", None),  # 실행 오류 → 0 (빼지 않음)
     ]
-    assert hit_rate_by_configuration(results, CASES, ["C"])["C"] == (
+    assert hit_rate_by_configuration(results, CASES, expect("C"))["C"] == (
         ConfigurationHitRate(hits=1, cases=2, rate=0.5)
     )
 
@@ -226,7 +239,7 @@ def test_failed_retrieve_counts_as_miss():
         result("q1", "A", ["row-1"], retrieve="error"),
         result("q2", "A", ["row-9"], retrieve="skipped"),
     ]
-    assert hit_rate_by_configuration(results, CASES, ["A"])["A"].hits == 0
+    assert hit_rate_by_configuration(results, CASES, expect("A"))["A"].hits == 0
 
 
 def test_generation_failure_after_retrieve_still_uses_search_ranks():
@@ -235,7 +248,7 @@ def test_generation_failure_after_retrieve_still_uses_search_ranks():
         result("q1", "A", ["row-1"], generate="error"),
         result("q2", "A", ["row-9"], generate="error"),
     ]
-    assert hit_rate_by_configuration(results, CASES, ["A"])["A"].hits == 2
+    assert hit_rate_by_configuration(results, CASES, expect("A"))["A"].hits == 2
 
 
 def test_case_without_evidence_is_skipped():
@@ -245,14 +258,14 @@ def test_case_without_evidence_is_skipped():
         result("q2", "A", ["row-9"]),
         result("no-evidence", "A", ["row-1"]),  # 근거 없는 문항 → 계산에서 뺌
     ]
-    assert hit_rate_by_configuration(results, cases, ["A"])["A"].cases == 2
+    assert hit_rate_by_configuration(results, cases, expect("A"))["A"].cases == 2
 
 
 def test_configuration_without_scorable_cases_is_kept_with_no_rate():
     # 모든 문항이 근거 없음 → 구성이 사라지지 않고 "채점할 문항 0개"로 남는다
     cases = [case("no-evidence", [])]
     results = [result("no-evidence", "A", ["row-1"])]
-    assert hit_rate_by_configuration(results, cases, ["A"]) == {
+    assert hit_rate_by_configuration(results, cases, expect("A")) == {
         "A": ConfigurationHitRate(hits=0, cases=0, rate=None)
     }
 
@@ -262,7 +275,19 @@ def test_answer_outside_k_is_miss():
         result("q1", "A", ["x-1", "x-2", "row-1"]),  # 정답 3위
         result("q2", "A", ["row-9"]),
     ]
-    assert hit_rate_by_configuration(results, CASES, ["A"], k=2)["A"].hits == 1
+    assert hit_rate_by_configuration(results, CASES, expect("A"), k=2)["A"].hits == 1
+
+
+def test_configuration_name_is_matched_by_settings_table_not_by_string():
+    # "C-rewrite"는 이름과 variant("C")가 달라도 설정표와 맞으면 통과한다
+    results = [
+        result("q1", "C-rewrite", ["row-1"], variant="C", rewrite_enabled=True),
+        result("q2", "C-rewrite", ["x"], variant="C", rewrite_enabled=True),
+    ]
+    expected = {"C-rewrite": ExpectedRun(variant="C", rewrite_enabled=True)}
+    assert hit_rate_by_configuration(results, CASES, expected) == {
+        "C-rewrite": ConfigurationHitRate(hits=1, cases=2, rate=0.5)
+    }
 
 
 @pytest.mark.parametrize(
@@ -275,10 +300,10 @@ def test_answer_outside_k_is_miss():
                 result("q2", "A", ["x"]),
                 result("q1", "B", ["row-1"]),
             ],
-            ["A", "B"],
+            expect("A", "B"),
         ),
         # 기대한 구성 C의 결과가 아예 없음
-        ([result("q1", "A", ["row-1"]), result("q2", "A", ["x"])], ["A", "C"]),
+        ([result("q1", "A", ["row-1"]), result("q2", "A", ["x"])], expect("A", "C")),
         # 중복: 같은 문항 재시도 줄이 두 번
         (
             [
@@ -286,26 +311,41 @@ def test_answer_outside_k_is_miss():
                 result("q1", "A", ["row-1"]),
                 result("q2", "A", ["x"]),
             ],
-            ["A"],
+            expect("A"),
         ),
         # 비교 대상이 아닌 구성
-        ([result("q1", "Z", ["row-1"])], ["A"]),
+        ([result("q1", "Z", ["row-1"])], expect("A")),
         # 문항 목록에 없는 case_id
-        ([result("other", "A", ["row-1"])], ["A"]),
+        ([result("other", "A", ["row-1"])], expect("A")),
         # 고정 근거·데모 기록 혼입
         (
             [
                 result("q1", "A", ["row-1"], run_kind="fixed_evidence"),
                 result("q2", "A", ["x"]),
             ],
-            ["A"],
+            expect("A"),
         ),
-        ([result("q1", "A", ["row-1"], run_kind="demo")], ["A"]),
+        ([result("q1", "A", ["row-1"], run_kind="demo")], expect("A")),
         # 파이프라인 top_k(3)가 k(5)보다 작음
-        ([result("q1", "A", ["row-1"], top_k=3)], ["A"]),
-        # 구성 목록이 비었거나 겹침
-        ([], []),
-        ([], ["A", "A"]),
+        ([result("q1", "A", ["row-1"], top_k=3)], expect("A")),
+        # 이름표와 실제 설정 불일치: B 자리에 A 파이프라인을 연결함
+        (
+            [
+                result("q1", "B", ["row-1"], variant="A"),
+                result("q2", "B", ["row-9"], variant="A"),
+            ],
+            expect("B"),
+        ),
+        # 리라이트 불일치: 기본 비교(OFF)인데 리라이트를 켠 기록
+        (
+            [
+                result("q1", "A", ["row-1"], rewrite_enabled=True),
+                result("q2", "A", ["row-9"]),
+            ],
+            expect("A"),
+        ),
+        # 구성 목록이 비었음
+        ([], {}),
     ],
 )
 def test_invalid_comparison_input_is_rejected(results, configurations):
@@ -313,9 +353,19 @@ def test_invalid_comparison_input_is_rejected(results, configurations):
         hit_rate_by_configuration(results, CASES, configurations)
 
 
+def test_settings_mismatch_is_rejected_even_for_case_without_evidence():
+    # 채점 대상이 아닌(근거 없는) 문항의 기록이라도 이름표와 실제 설정이 다르면 잘못 연결된 것이다
+    cases = [case("no-evidence", [])]
+    results = [result("no-evidence", "A", ["row-1"], variant="B")]
+    with pytest.raises(RetrievalMetricError):
+        hit_rate_by_configuration(results, cases, expect("A"))
+
+
 def test_duplicate_case_ids_in_case_list_are_rejected():
     with pytest.raises(RetrievalMetricError):
-        hit_rate_by_configuration([], [case("q1", ["a"]), case("q1", ["b"])], ["A"])
+        hit_rate_by_configuration(
+            [], [case("q1", ["a"]), case("q1", ["b"])], expect("A")
+        )
 
 
 @pytest.mark.parametrize("k", [0, -1, 5.0, True])
@@ -331,7 +381,7 @@ def test_duplicate_case_ids_in_case_list_are_rejected():
 def test_invalid_k_is_rejected_regardless_of_results(results, cases, k):
     # 같은 잘못된 k가 입력 상태에 따라 오류가 되기도, 정상 점수가 되기도 하면 안 된다
     with pytest.raises(RetrievalMetricError):
-        hit_rate_by_configuration(results, cases, ["A"], k=k)
+        hit_rate_by_configuration(results, cases, expect("A"), k=k)
 
 
 def test_rate_from_real_evaluate_cases_output():
@@ -389,7 +439,12 @@ def test_rate_from_real_evaluate_cases_output():
         {"A": make_pipeline("A"), "B": make_pipeline("B"), "broken": BrokenPipeline()},
     )
 
-    assert hit_rate_by_configuration(results, cases, ["A", "B", "broken"], k=5) == {
+    assert hit_rate_by_configuration(
+        results,
+        cases,
+        {**expect("A", "B"), "broken": ExpectedRun(variant="A", rewrite_enabled=False)},
+        k=5,
+    ) == {
         "A": ConfigurationHitRate(hits=0, cases=2, rate=0.0),  # 정답 6위 → 5위 밖
         "B": ConfigurationHitRate(
             hits=2, cases=2, rate=1.0
