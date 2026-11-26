@@ -17,7 +17,7 @@ import math
 import re
 from collections.abc import Callable
 
-from rank_bm25 import BM25Plus
+from rank_bm25 import BM25Plus  # type: ignore[import-untyped]  # 타입 정보(py.typed) 없음
 
 from src.common.errors import ApplicationError, ErrorCategory
 from src.contracts import Chunk, ResolvedQuery, SearchCandidate
