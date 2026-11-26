@@ -7,7 +7,6 @@ import pytest
 MODULES = [
     "src.validation",
     "src.interface.chat",
-    "src.interface.map",
     "src.interface.inspection",
     "src.evaluation.comparison",
 ]

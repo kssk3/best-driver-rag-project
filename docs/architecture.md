@@ -97,7 +97,6 @@ Streamlit 진입점인 루트 `app.py`와 `src/interface/`는 공통 `RAGPipelin
 | `src/ingestion/preprocessed_chunking.py`, `src/ingestion/chunking.py` | 인계된 청커의 후속 개선. 전처리 자료 표·비고·예외가 원문 위치와 함께 보존되는지 확인 |
 | `app.py` | Streamlit 진입점 |
 | `src/interface/chat.py` | 질문과 답변 화면 |
-| `src/interface/map.py` | 장소 목록과 지도 |
 | `src/interface/inspection.py` | 관찰 검증 패널 |
 | `src/validation.py` | UI 독립 공용 검증 |
 | `src/evaluation/comparison.py` | 구성 비교와 실패 분석 |

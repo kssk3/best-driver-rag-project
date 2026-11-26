@@ -18,17 +18,13 @@ from src.evaluation.answer_experiments.answer_evaluation_runtimes import (
     MissingEvaluationModelError,
     create_a_catalog_runtime,
 )
-from src.interface.adapter import (
-    run_record_to_places,
-    run_record_to_view,
-)
+from src.interface.adapter import run_record_to_view
 from src.interface.chat import render_response
 from src.interface.comparison import (
     format_summary,
     summarize_scores,
 )
 from src.interface.inspection import render_inspection
-from src.interface.map import render_places
 from src.pipeline import PipelineConfigurationError
 from src.rewrite_dictionary import catalog
 
@@ -157,7 +153,6 @@ def ask_pipeline(mode: str, request: PipelineRequest) -> bool:
             )
     else:
         st.session_state["view"] = run_record_to_view(record)
-        st.session_state["places"] = run_record_to_places(record)
         st.session_state["asked_question"] = request.question
         st.session_state["asked_district"] = request.district or ""
         st.session_state["asked_mode"] = mode
@@ -192,7 +187,7 @@ with user_tab:
 
     if st.button("질문하기"):
         # 새 요청이 실패하거나 비어도 이전 응답이 남아 보이지 않게 지운다.
-        for key in ("view", "places", "asked_question", "asked_district", "asked_mode"):
+        for key in ("view", "asked_question", "asked_district", "asked_mode"):
             st.session_state.pop(key, None)
         # 이전 되묻기에서 입력한 값이 다음 되묻기에 미리 채워지지 않게 한다.
         for key in [k for k in st.session_state if k.startswith("followup:")]:
@@ -219,13 +214,6 @@ with user_tab:
             district=st.session_state.get("asked_district", ""),
             on_followup=None if view.kind == "fixture" else send_followup,
         )
-
-    # 조회할 장소가 없거나 조회 서비스가 아직 연결되지 않았으면 장소 구역을 보여 주지 않는다.
-    places = st.session_state.get("places")
-    if places is not None and places.status != "unavailable":
-        st.divider()
-        st.subheader("장소")
-        render_places(places)
 
 
 with inspection_tab:
