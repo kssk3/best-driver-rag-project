@@ -194,9 +194,18 @@ def test_tokenize_shares_bigrams_when_particle_differs():
     assert {"페트", "트병"} <= set(tokenize("페트병을"))
 
 
-def test_tokenize_ignores_html_tags():
-    # HTML 청크의 태그 이름·속성은 본문이 아니므로 조각에 넣지 않는다.
-    assert tokenize('<p data-x="y">캔 &amp; 병</p>') == ["캔", "병"]
+def test_html_tags_are_removed_by_chunk_text_before_tokenize():
+    # HTML 청크의 태그 이름·속성은 본문이 아니므로 chunk_text가 먼저 지운다.
+    chunk = make_chunk(
+        "html", "district", ["서대문구"], '<p data-x="y">캔 &amp; 병</p>'
+    )
+    assert tokenize(chunk_text(chunk)) == ["캔", "병"]
+
+
+def test_tokenize_keeps_angle_bracket_text_from_plain_body():
+    # 정은님 리뷰: 본문의 "<개정 2011. 8. 10.>"이 태그로 오해받아 사라지면 안 된다.
+    # "2011"은 2글자 조각 "20", "01", "11"로 쪼개진다
+    assert {"개정", "20", "01", "11"} <= set(tokenize("제1장 총칙 <개정 2011. 8. 10.>"))
 
 
 # --- bm25_search ------------------------------------------------------------
@@ -302,6 +311,11 @@ def test_chunk_text_puts_row_cells_with_headers_first_and_drops_structure():
             ),
             "품목: 장롱 | 10,000",
         ),
+        # 행 없이 머리글만 있으면 머리글 글자도 본문으로 남긴다
+        (
+            '{"header_rows": [{"cells": [{"text": "품목"}]}], "paragraphs": ["문단"]}',
+            "품목\n문단",
+        ),
     ],
 )
 def test_chunk_text_handles_other_json_shapes(content, expected):
@@ -309,6 +323,43 @@ def test_chunk_text_handles_other_json_shapes(content, expected):
         update={"content_format": "json", "content": content}
     )
     assert chunk_text(chunk) == expected
+
+
+def test_bm25_finds_amendment_note_in_json_paragraph():
+    # JSON 문단의 "<개정 ...>"을 검색할 수 있어야 한다 (예전엔 tokenize가 태그로 지웠다).
+    chunk = make_chunk("article", "district", ["서대문구"], "-").model_copy(
+        update={
+            "content_format": "json",
+            "content": '{"text": "제1장 총칙 <개정 2011. 8. 10.>", "unit_type": "heading"}',
+        }
+    )
+    index = build_index([chunk], DemoHashEmbeddings(4))
+
+    results = bm25_search(index, "개정", "서대문구", top_k=5)
+
+    assert [r.chunk.chunk_id for r in results] == ["article"]
+
+
+def test_unexpected_table_shape_falls_back_to_plain_json_text():
+    # 정은님 리뷰: header_rows가 문자열 목록이면 셀 전용 추출에서 .get() 오류로 B·C가 멈췄다.
+    # 팀 표 모양이 아니면 글자 값만 모으는 일반 추출로 넘긴다.
+    chunk = make_chunk("odd", "district", ["서대문구"], "-").model_copy(
+        update={
+            "content_format": "json",
+            "content": json.dumps(
+                {
+                    "header_rows": ["품목", "규격"],
+                    "row": {"cells": [{"text": "장롱"}, {"text": "120cm 이하"}]},
+                },
+                ensure_ascii=False,
+            ),
+        }
+    )
+    assert chunk_text(chunk) == "품목\n규격\n장롱\n120cm 이하"
+
+    index = build_index([chunk], DemoHashEmbeddings(4))
+    results = bm25_search(index, "장롱", "서대문구", top_k=5)
+    assert [r.chunk.chunk_id for r in results] == ["odd"]
 
 
 def test_bm25_does_not_match_json_row_numbers():

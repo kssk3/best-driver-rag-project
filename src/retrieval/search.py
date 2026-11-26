@@ -169,31 +169,64 @@ def chunk_text(chunk: Chunk) -> str:
     except json.JSONDecodeError:
         return chunk.content  # JSON이 아니면 원문 그대로 쓴다 (내용을 지어내지 않음)
     if not isinstance(data, dict):
-        return "\n".join(_json_strings(data))
+        return _join_unique(_json_strings(data))
+
+    row = data.get("row")
+    header_rows = data.get("header_rows", [])
+    # 팀 청킹의 표 모양(셀 목록)이 아니면 전용 추출 대신 글자 값만 모은다.
+    # 예: header_rows가 문자열 목록이면 .get()에서 오류가 나 B·C 검색이 멈춘다.
+    if row is not None and not _is_table_shape(row, header_rows):
+        return _join_unique(_json_strings(data))
 
     parts: list[str] = []
-    row = data.get("row")
     if isinstance(row, dict):  # ① 이 청크가 담당하는 표 행 (열 제목과 짝지어)
-        parts.append(_row_line(row, data.get("header_rows")))
+        parts.append(_row_line(row, header_rows))
     title = data.get("section_title")
     if isinstance(title, str):  # ② 표 제목 (예: 〔별표 1〕)
         parts.append(title)
-    # ③ 나머지 글자(문단·비고·그림 요약 등). 행·머리글·제목은 위에서 썼으니 뺀다
-    rest = {
-        key: value
-        for key, value in data.items()
-        if key not in ("row", "header_rows", "section_title")
-    }
+    # ③ 나머지 글자(문단·비고·그림 요약 등). 위에서 쓴 행·제목은 뺀다.
+    #    머리글은 행과 짝지어 썼을 때만 뺀다 (행이 없으면 머리글 글자도 본문으로 남긴다)
+    used = {"row", "section_title"} | (
+        {"header_rows"} if isinstance(row, dict) else set()
+    )
+    rest = {key: value for key, value in data.items() if key not in used}
     parts.extend(_json_strings(rest))
-    # 같은 글이 두 번 나오면 한 번만 (표 제목이 문단 안에도 들어 있는 경우 등)
+    return _join_unique(parts)
+
+
+def _join_unique(parts: list[str]) -> str:
+    """빈 줄을 빼고 줄바꿈으로 잇는다. 같은 글이 두 번 나오면 한 번만 (제목이 문단에도 있는 경우 등)."""
     return "\n".join(dict.fromkeys(part.strip() for part in parts if part.strip()))
 
 
-def _row_line(row: dict[str, Any], header_rows: object) -> str:
-    """표 한 행을 '열 제목: 값 | 열 제목: 값' 한 줄로 만든다."""
+def _is_table_shape(row: object, header_rows: object) -> bool:
+    """팀 청킹의 표 행 모양인지: row와 header_rows의 각 줄이 {"cells": [셀 dict, ...]}이고
+    셀의 text는 글자, origin_col·colspan은 정수여야 한다."""
+
+    def is_cell(cell: object) -> bool:
+        return (
+            isinstance(cell, dict)
+            and isinstance(cell.get("text", ""), str)
+            and isinstance(cell.get("origin_col", 0), int)
+            and isinstance(cell.get("colspan", 1), int)
+        )
+
+    def is_line(line: object) -> bool:
+        cells = line.get("cells") if isinstance(line, dict) else None
+        return isinstance(cells, list) and all(is_cell(cell) for cell in cells)
+
+    return (
+        is_line(row)
+        and isinstance(header_rows, list)
+        and all(is_line(line) for line in header_rows)
+    )
+
+
+def _row_line(row: dict[str, Any], header_rows: list[dict[str, Any]]) -> str:
+    """표 한 행을 '열 제목: 값 | 열 제목: 값' 한 줄로 만든다. 모양은 _is_table_shape로 확인한 뒤 부른다."""
     # 열 번호 → 열 제목. 머리글이 2줄이거나 여러 열을 합친 칸(colspan)도 모든 열에 붙인다
     labels: dict[int, list[str]] = {}
-    for header in header_rows if isinstance(header_rows, list) else []:
+    for header in header_rows:
         for cell in header.get("cells", []):
             text = (cell.get("text") or "").strip()
             start = cell.get("origin_col", 0)
@@ -233,11 +266,11 @@ def tokenize(text: str) -> list[str]:
     한국어는 조사가 붙어("페트병은", "페트병을") 띄어쓰기 단위로 비교하면 같은 단어를
     다른 단어로 본다. 2글자 조각으로 쪼개면 "페트", "트병"을 공유해 조사가 달라도 맞는다.
     1글자 단어("캔")는 조각이 안 나오므로 그대로 넣는다.
-    HTML 청크의 태그는 본문이 아니므로 먼저 지운다.
+    평문을 받는다. HTML 태그 제거는 chunk_text가 먼저 한다. 여기서 또 지우면
+    본문의 "<개정 2011. 8. 10.>" 같은 글자가 태그로 오해받아 사라진다.
     """
 
-    # html 청크의 태그 지우기
-    plain = html.unescape(_TAG.sub(" ", text)).lower()
+    plain = text.lower()
     tokens: list[str] = []
     # 단어로 나누기
     for word in _WORD.findall(plain):
