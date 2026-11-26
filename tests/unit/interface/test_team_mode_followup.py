@@ -1,4 +1,4 @@
-"""실행(팀 색인) 모드의 되묻기 흐름을 가짜 파이프라인으로 확인한다. 외부 호출은 하지 않는다."""
+"""실행 모드의 되묻기 흐름을 가짜 파이프라인으로 확인한다. 외부 호출은 하지 않는다."""
 
 import importlib
 from datetime import datetime, timezone
@@ -22,7 +22,7 @@ from src.contracts import (
 
 APP_PATH = Path(__file__).parent.parent.parent.parent / "app.py"
 RUNTIMES = "src.evaluation.answer_experiments.answer_evaluation_runtimes"
-TEAM_MODE = "실행(팀 색인)"
+TEAM_MODE = "실행"
 
 
 @pytest.fixture(autouse=True)

@@ -130,7 +130,7 @@ def test_followup_uses_submitted_request_not_current_inputs() -> None:
 def test_blank_question_clears_previous_response() -> None:
     app = ask("answered", question="가상 질문")
     assert app.success
-    app.radio[0].set_value("실행(합성 데모)").run()
+    app.radio[0].set_value("합성 데모").run()
     app.text_input[0].set_value("")
     app.button[0].click().run()
     assert not app.success
@@ -201,7 +201,7 @@ def test_followup_request_sends_district_and_dong_at_top_level_and_confirms_dist
 def test_switching_mode_hides_response_from_other_mode() -> None:
     app = ask("answered", question="가상 질문")
     assert app.tabs[0].success
-    app.radio[0].set_value("실행(합성 데모)").run()
+    app.radio[0].set_value("합성 데모").run()
     assert not app.tabs[0].success
     app.radio[0].set_value("예시 응답").run()
     assert app.tabs[0].success

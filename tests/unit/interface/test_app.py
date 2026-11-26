@@ -26,7 +26,7 @@ def test_app_shows_fixture_notice_after_click(monkeypatch) -> None:
     monkeypatch.delenv("RAG_CHAT_SETTINGS", raising=False)
     app = AppTest.from_file(str(APP_PATH), default_timeout=10).run()
     assert not app.exception
-    assert app.radio[0].options == ["예시 응답", "실행(합성 데모)"]
+    assert app.radio[0].options == ["예시 응답", "합성 데모"]
 
     app.button[0].click().run()
     assert not app.exception
@@ -83,7 +83,7 @@ def test_app_uses_explicit_team_runtime_settings(
         answer_evaluation_runtimes, "create_a_catalog_runtime", make_runtime
     )
     app = AppTest.from_file(str(APP_PATH), default_timeout=10).run()
-    app.radio[0].set_value("실행(팀 색인)").run()
+    app.radio[0].set_value("실행").run()
     app.selectbox[0].set_value("송파구")
     question = "잠실동에서 안 씻은 우유펙은요?"
     app.text_input[0].set_value(question)
@@ -127,7 +127,7 @@ def test_app_distinguishes_team_settings_from_index_errors(
     monkeypatch.setenv("RAG_CHAT_SETTINGS", str(config))
 
     app = AppTest.from_file(str(APP_PATH), default_timeout=10).run()
-    app.radio[0].set_value("실행(팀 색인)").run()
+    app.radio[0].set_value("실행").run()
     app.text_input[0].set_value("우유팩은 어떻게 버려요?")
     app.button[0].click().run()
 
@@ -166,7 +166,7 @@ def test_app_reports_missing_key_before_creating_embedding_provider(
     )
 
     app = AppTest.from_file(str(APP_PATH), default_timeout=10).run()
-    app.radio[0].set_value("실행(팀 색인)").run()
+    app.radio[0].set_value("실행").run()
     app.text_input[0].set_value("우유팩은 어떻게 버려요?")
     app.button[0].click().run()
 
@@ -196,7 +196,7 @@ def test_app_reports_team_configuration_field_before_opening_index(
     monkeypatch.setattr(answer_evaluation_runtimes, "load_index", load_index)
 
     app = AppTest.from_file(str(APP_PATH), default_timeout=10).run()
-    app.radio[0].set_value("실행(팀 색인)").run()
+    app.radio[0].set_value("실행").run()
     app.text_input[0].set_value("우유팩은 어떻게 버려요?")
     app.button[0].click().run()
 
@@ -236,7 +236,7 @@ def test_app_reloads_team_runtime_when_same_settings_file_changes(
     factory = Mock(side_effect=make_runtime)
     monkeypatch.setattr(answer_evaluation_runtimes, "create_a_catalog_runtime", factory)
     app = AppTest.from_file(str(APP_PATH), default_timeout=10).run()
-    app.radio[0].set_value("실행(팀 색인)").run()
+    app.radio[0].set_value("실행").run()
     question = "우유팩은 어떻게 버려요?"
     app.text_input[0].set_value(question)
     app.button[0].click().run()
@@ -325,7 +325,7 @@ def test_app_refreshes_same_path_index_and_active_catalog(
     second = synthetic_index("최신 합성 근거")
     save_index(first, index_path)
     app = AppTest.from_file(str(APP_PATH), default_timeout=10).run()
-    app.radio[0].set_value("실행(팀 색인)").run()
+    app.radio[0].set_value("실행").run()
     question = "우유팩은 어떻게 버려요?"
     app.text_input[0].set_value(question)
 

@@ -64,7 +64,7 @@ uv run --locked python -m scripts.search_index --index data/processed/ordinance-
 
 ## 팀 색인과 리라이트 비교
 
-팀 색인(JSON) 경로와 답변 모델을 [A 검색 실행 설정](configs/team-a-rewrite-chat.json)에 지정한다. 색인과 모델 키를 준비한 환경에서 다음 명령을 실행하면 Streamlit에 **실행(팀 색인)** 모드가 표시된다. `RAG_CHAT_SETTINGS`의 상대 경로는 저장소 루트 기준이다. 설정 파일의 `pipeline.rewrite_enabled`를 바꿔 저장하면 다음 질문부터 바뀐 값으로 실행한다. 같은 경로의 팀 색인이나 활성 품목 사전을 교체해도 다음 질문에서 새 파일을 읽는다. 런타임을 가져오는 중에 파일이 바뀌었다는 메시지가 나오면 교체를 마친 뒤 다시 질문한다.
+팀 색인(JSON) 경로와 답변 모델을 [A 검색 실행 설정](configs/team-a-rewrite-chat.json)에 지정한다. 색인과 모델 키를 준비한 환경에서 다음 명령을 실행하면 Streamlit에 **실행** 모드가 표시된다. `RAG_CHAT_SETTINGS`의 상대 경로는 저장소 루트 기준이다. 설정 파일의 `pipeline.rewrite_enabled`를 바꿔 저장하면 다음 질문부터 바뀐 값으로 실행한다. 같은 경로의 팀 색인이나 활성 품목 사전을 교체해도 다음 질문에서 새 파일을 읽는다. 런타임을 가져오는 중에 파일이 바뀌었다는 메시지가 나오면 교체를 마친 뒤 다시 질문한다.
 
 ```sh
 RAG_CHAT_SETTINGS=configs/team-a-rewrite-chat.json \

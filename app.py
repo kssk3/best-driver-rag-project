@@ -57,7 +57,7 @@ INDEX_COMMAND = (
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
-TEAM_INDEX_MODE = "실행(팀 색인)"
+TEAM_INDEX_MODE = "실행"
 TEAM_SETTINGS_PATH = getenv("RAG_CHAT_SETTINGS", "").strip()
 
 
@@ -185,7 +185,7 @@ user_tab, inspection_tab, comparison_tab = st.tabs(
 
 
 with user_tab:
-    modes = ["예시 응답", "실행(합성 데모)"]
+    modes = ["예시 응답", "합성 데모"]
     if TEAM_SETTINGS_PATH:
         modes.append(TEAM_INDEX_MODE)
     mode = st.radio("응답 방식", modes, horizontal=True)
