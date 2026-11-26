@@ -18,6 +18,8 @@ Judge = Callable[[str], str]
 
 ANSWERED = "answered"
 INSUFFICIENT = "insufficient_evidence"
+# 파이프라인이 근거 부족일 때 내는 표준 안내문(src/generation/answer.py의 `_insufficient_evidence`와 같은 문장).
+SAFE_REFUSAL = "현재 확인한 자료로는 답변하기 어렵습니다."
 KEYS = ("answer_correct", "citation_valid", "absence_ok")
 
 _COMMON = (
@@ -99,10 +101,13 @@ def score_run(
         **{f"{key}_reason": "" for key in KEYS},
     }
     if "absence_reason" in grading:
-        if status == INSUFFICIENT:
+        if status == INSUFFICIENT and answer.strip() == SAFE_REFUSAL:
             row["absence_ok"] = 1
-            row["absence_ok_reason"] = "정보 부족 안내(상태 insufficient_evidence)"
-        elif status == ANSWERED:
+            row["absence_ok_reason"] = (
+                "표준 정보 부족 안내문(상태 insufficient_evidence)"
+            )
+        elif status in (INSUFFICIENT, ANSWERED):
+            # 거절 상태여도 표준 안내문이 아니면 본문에 없는 사실을 단정했을 수 있어 판정한다.
             row["absence_ok"], row["absence_ok_reason"] = _ask(
                 judge, absence_prompt(question, answer, grading["absence_reason"])
             )
@@ -136,11 +141,19 @@ def score_run(
 
 
 def summarize(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """variant별로 항목마다 `합계/채점된 수`와 점수 없음(판정 실패) 수를 센다."""
+    """(variant, 질문 다듬기 여부)별로 항목마다 `합계/채점된 수`와 점수 없음(판정 실패) 수를 센다.
+
+    질문 다듬기를 켠 실행과 끈 실행은 섞지 않는다(섞으면 영향을 비교할 수 없다).
+    """
     result = []
-    for variant in sorted({r["variant"] for r in rows}):
-        mine = [r for r in rows if r["variant"] == variant]
-        item: dict[str, Any] = {"variant": variant}
+    groups = sorted({(r["variant"], str(r.get("rewrite_enabled", ""))) for r in rows})
+    for variant, rewrite in groups:
+        mine = [
+            r
+            for r in rows
+            if r["variant"] == variant and str(r.get("rewrite_enabled", "")) == rewrite
+        ]
+        item: dict[str, Any] = {"variant": variant, "rewrite_enabled": rewrite}
         for key in KEYS:
             scored = [r[key] for r in mine if r[key] is not None]
             failed = [

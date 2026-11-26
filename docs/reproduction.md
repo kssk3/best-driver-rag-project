@@ -29,15 +29,24 @@ uv run --locked python -m scripts.summarize_runs results/local/<새 출력 폴�
 uv run --locked --env-file .env python -m scripts.score_quality --runs results/local/<새 출력 폴더>/runs.csv --candidates results/local/<새 출력 폴더>/candidates.csv --cases eval/test.json --grading eval/test-grading.json --output-dir results/local/<품질 채점 폴더>
 ```
 
-`score_quality`는 정답 충족, 근거 적합, 근거 없음 대응을 0/1로 채점해 `quality.csv`에 남긴다(판정 모델 호출, 실행당 최대 3회). 판정 응답을 읽지 못한 행은 0점이 아니라 점수 없음으로 남고 요약에서 따로 센다. 모델 판정이어서 사람의 검토가 필요하다.
+**질문 다듬기를 켠 C(공식 80건 중 20건)**는 위 A/B/C OFF와 설정·팩토리·출력 폴더가 다르다. 같은 색인과 최종 문항을 쓰고 출력은 반드시 별도 폴더에 둔다.
+
+```sh
+uv run --locked --env-file .env python -m scripts.evaluate --cases eval/test.json --settings configs/team-c-rewrite-chat.json --factory src.evaluation.answer_experiments.answer_evaluation_runtimes:create_a_catalog_runtime --output-dir results/local/<C 질문 다듬기 폴더>
+uv run --locked python -m scripts.summarize_runs results/local/<C 질문 다듬기 폴더>/runs.csv
+```
+
+`summarize_runs` 출력에서 `C` 한 줄이 `rewrite=true`, `20/20`이면 `variant=C`, `rewrite_enabled=true`인 고유 문항 20개가 맞다. A/B/C OFF 폴더의 같은 출력은 `A·B·C` 세 줄이 모두 `false`다. 두 폴더는 서로 다른 채점 출력 폴더로 따로 채점하고 요약에서 섞지 않는다(채점기는 `(variant, rewrite_enabled)`별로 나눠 집계한다).
+
+`score_quality`는 정답 충족, 근거 적합, 근거 없음 대응을 0/1로 채점해 `quality.csv`에 남긴다(판정 모델 호출, 실행당 최대 3회). 판정 응답을 읽지 못한 행은 0점이 아니라 점수 없음으로 남고 요약에서 따로 센다. 모델을 부르기 전에 실행·후보·문항·채점 자료의 문항 ID와 `dataset_id`를 대조해 맞지 않으면 중단한다(일부 문항만 채점하려면 `--allow-subset`). 모델 판정이어서 사람의 검토가 필요하다.
 
 출력 폴더는 기존 결과를 덮어쓰지 않도록 항상 새 이름을 쓴다. 호출 수와 비용은 [결과 안내](../results/README.md)를 본다.
 
-## 3. 재실행 기록은 Langfuse에 쌓인다
+## 3. 재실행 기록: 로컬 CSV가 기본, Langfuse는 켜고 올릴 때만
 
-실행(trace)과 점수는 팀 Langfuse 프로젝트에 올라가고, 실행 ID·구성·문서/색인/모델 버전·점수와 판정 사유가 함께 남는다([업로드와 조회](../results/README.md#진술별-faithfulness-판정-확인)). 누가 언제 어떤 구성으로 다시 돌렸는지는 Langfuse에서 실행 단위로 비교한다. 같은 문항을 다시 돌린 기록이 같은 `case_id`로 누적되므로, 별도 파일에 옮겨 적지 않아도 재현 기록이 된다.
-
-저장소 안에서 확인할 수 있는 기록은 `results/`의 실행별 `runs.csv`, `scores.csv`, `candidates.csv`다(Git에서 제외되는 `results/local/`은 제외).
+- **기본 증빙은 로컬 기록이다.** `scripts.evaluate`는 `runs.csv`, `candidates.csv`, `cases.csv`, `evaluation.json`을 남기고 채점기는 `quality.csv`(또는 `scores.csv`)를 남긴다. 공식 결과는 `results/final-*`에 있고, 실행별 기록은 실행 ID·구성·문서/색인/모델 버전을 담는다.
+- **Langfuse에는 자동으로 올라가지 않는다.** 실행 추적은 `RAG_LANGFUSE_TRACE=1`을 켠 실행에서만 전송되고(프롬프트·근거 본문 포함, [설정](TEAM-SETUP.md#팀-langfuse-설정)), 점수와 판정 사유는 채점 후 업로드 명령(`scripts.upload_scores`, [업로드와 조회](../results/README.md#진술별-faithfulness-판정-확인))을 따로 실행해야 올라간다. 올리면 누가 언제 어떤 구성으로 돌렸는지 Langfuse에서 실행 단위로 비교할 수 있다.
+- 저장소 안에서 확인할 수 있는 기록은 `results/`의 실행별 CSV다(Git에서 제외되는 `results/local/`은 제외).
 
 ## 독립 환경 재현 (AI 수행, 타인 재현이 아님)
 

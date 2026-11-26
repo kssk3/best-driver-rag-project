@@ -48,14 +48,74 @@ def make_judge(model: str) -> Judge:
     return lambda prompt: invoke_chat(chat, prompt)
 
 
+# 문서 ID의 앞부분으로 청크가 실제로 속한 자치구를 정한다. candidates.csv의 district 열은
+# 질문의 지역이라 다른 자치구 청크를 인용해도 같은 값이 들어간다.
+AUTHORITY = {"seodaemun": "서대문구", "songpa": "송파구"}
+
+
+def district_of_document(document_id: str) -> str:
+    return AUTHORITY.get(document_id.split("-")[0], "자치구 미상")
+
+
 def cited_texts_by_run(candidates: list[dict[str, str]]) -> dict[str, list[str]]:
     """실행별로 인용된 근거 본문. 자치구와 문서 위치는 청크 본문이 아니라 메타데이터에 있어 머리말로 붙인다."""
     cited: dict[str, list[str]] = {}
     for row in candidates:
         if row.get("citation_position"):
-            head = f"[{row.get('district', '')} | {row.get('title', '')} | {row.get('source_location', '')}]"
+            district = district_of_document(row.get("document_id", ""))
+            head = f"[{district} | {row.get('title', '')} | {row.get('source_location', '')}]"
             cited.setdefault(row["run_id"], []).append(f"{head}\n{row['text']}")
     return cited
+
+
+def check_inputs(
+    runs: list[dict[str, str]],
+    candidates: list[dict[str, str]],
+    questions: dict[str, str],
+    grading: dict[str, dict],
+    allow_subset: bool = False,
+) -> list[str]:
+    """모델을 부르기 전에 실행·후보·문항·채점 자료가 같은 묶음인지 대조한다. 문제 목록을 돌려준다."""
+    problems = []
+    run_ids = {r["run_id"] for r in runs}
+    for name, rows in (("runs", runs), ("candidates", candidates)):
+        datasets = {r.get("dataset_id", "") for r in rows}
+        if len(datasets) > 1:
+            problems.append(f"{name}에 dataset_id가 여러 개 섞여 있습니다.")
+    if (
+        runs
+        and candidates
+        and {r.get("dataset_id") for r in runs}
+        != {r.get("dataset_id") for r in candidates}
+    ):
+        problems.append("runs와 candidates의 dataset_id가 다릅니다(다른 평가 묶음).")
+    orphans = {r["run_id"] for r in candidates} - run_ids
+    if orphans:
+        problems.append(f"candidates에 runs에 없는 실행 {len(orphans)}개가 있습니다.")
+    case_ids = {r["case_id"] for r in runs}
+    for case_id in sorted(case_ids - set(questions)):
+        problems.append(f"{case_id}: 문항 파일(--cases)에 없습니다.")
+    for case_id in sorted(case_ids - set(grading)):
+        problems.append(
+            f"{case_id}: 채점 자료(--grading)에 없습니다. 점수 없이 건너뛰지 않습니다."
+        )
+    seen: dict[tuple[str, str, str], int] = {}
+    for r in runs:
+        key = (r["case_id"], r.get("variant", ""), str(r.get("rewrite_enabled", "")))
+        seen[key] = seen.get(key, 0) + 1
+    for key, count in seen.items():
+        if count > 1:
+            problems.append(f"{key}가 {count}번 있습니다(중복).")
+    if not allow_subset:
+        expected = set(grading) & set(questions)
+        for config in {(k[1], k[2]) for k in seen}:
+            have = {k[0] for k in seen if (k[1], k[2]) == config}
+            missing = expected - have
+            if missing:
+                problems.append(
+                    f"구성 {config}에 채점 자료의 문항 {len(missing)}개가 없습니다. 일부만 채점하려면 --allow-subset을 쓰세요."
+                )
+    return problems
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -66,6 +126,11 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--grading", type=Path, action="append", required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--model", default="gpt-6-luna")
+    parser.add_argument(
+        "--allow-subset",
+        action="store_true",
+        help="구성마다 채점 자료의 일부 문항만 실행한 경우(재현용 일부 문항)를 허용한다.",
+    )
     args = parser.parse_args(argv)
     if args.output_dir.exists():
         parser.error("기존 결과를 덮어쓸 수 없습니다. 새 --output-dir를 지정하세요.")
@@ -75,18 +140,21 @@ def main(argv: list[str] | None = None) -> None:
     with args.runs.open(encoding="utf-8", newline="") as file:
         runs = list(csv.DictReader(file))
     with args.candidates.open(encoding="utf-8", newline="") as file:
-        cited = cited_texts_by_run(list(csv.DictReader(file)))
+        candidates = list(csv.DictReader(file))
+    problems = check_inputs(runs, candidates, questions, grading, args.allow_subset)
+    if problems:
+        parser.error(
+            "입력이 맞지 않아 중단합니다(모델 호출 전):\n- " + "\n- ".join(problems)
+        )
+    cited = cited_texts_by_run(candidates)
 
     judge = make_judge(args.model)
     rows = []
     for run in runs:
-        item = grading.get(run["case_id"])
-        if item is None:
-            continue  # 채점 자료가 없는 문항은 건너뛴다.
         row = score_run(
             run,
-            item,
-            questions.get(run["case_id"], ""),
+            grading[run["case_id"]],
+            questions[run["case_id"]],
             cited.get(run["run_id"], []),
             judge,
         )

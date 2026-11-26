@@ -1,7 +1,8 @@
 import json
 
-from scripts.score_quality import cited_texts_by_run
+from scripts.score_quality import check_inputs, cited_texts_by_run
 from src.evaluation.answer_quality import (
+    SAFE_REFUSAL,
     parse_verdict,
     score_run,
     summarize,
@@ -51,9 +52,22 @@ def test_answer_without_a_retrieved_citation_has_invalid_citation() -> None:
     assert "없음" in row["citation_valid_reason"]
 
 
-def test_no_evidence_refusal_state_counts_without_the_judge() -> None:
-    row = score_run(run("insufficient_evidence"), NO_EVIDENCE, "질문", [], never_called)
+def test_standard_refusal_message_counts_without_the_judge() -> None:
+    row = score_run(
+        run("insufficient_evidence", SAFE_REFUSAL),
+        NO_EVIDENCE,
+        "질문",
+        [],
+        never_called,
+    )
     assert row["absence_ok"] == 1
+
+
+def test_a_refusal_status_with_other_text_is_still_judged() -> None:
+    hallucinated = run("insufficient_evidence", "수거 전화번호는 02-123-4567입니다.")
+    assert (
+        score_run(hallucinated, NO_EVIDENCE, "질문", [], verdict(0))["absence_ok"] == 0
+    )
 
 
 def test_no_evidence_answer_text_is_judged_and_an_error_is_never_a_correct_refusal() -> (
@@ -92,7 +106,8 @@ def test_cited_texts_carry_district_and_location_as_a_header() -> None:
         {
             "run_id": "r1",
             "citation_position": "1",
-            "district": "서대문구",
+            "district": "송파구",  # 질문의 지역. 인용 청크의 자치구가 아니다.
+            "document_id": "seodaemun-ordinance:attachment:1",
             "title": "조례 별표",
             "source_location": "table-1/row[2]",
             "text": "본문",
@@ -101,6 +116,7 @@ def test_cited_texts_carry_district_and_location_as_a_header() -> None:
             "run_id": "r1",
             "citation_position": "",
             "district": "송파구",
+            "document_id": "songpa-rules",
             "title": "x",
             "source_location": "y",
             "text": "인용 안 됨",
@@ -130,3 +146,67 @@ def test_summarize_reports_sum_over_scored_per_variant() -> None:
     a, c = summarize(rows)
     assert (a["variant"], a["answer_correct"]) == ("A", "1/2")
     assert (c["variant"], c["answer_correct"]) == ("C", "1/1")
+
+
+def test_summarize_keeps_rewrite_on_and_off_separate() -> None:
+    def row(rewrite, value):
+        item = run("answered", variant="C")
+        item["rewrite_enabled"] = rewrite
+        return score_run(item, ANSWERABLE, "q", ["e"], verdict(value))
+
+    off, on = summarize([row("False", 1), row("False", 1), row("True", 0)])
+    assert (off["rewrite_enabled"], off["answer_correct"]) == ("False", "2/2")
+    assert (on["rewrite_enabled"], on["answer_correct"]) == ("True", "0/1")
+
+
+def inputs():
+    runs = [
+        {
+            "run_id": "r1",
+            "dataset_id": "d",
+            "case_id": "c1",
+            "variant": "A",
+            "rewrite_enabled": "False",
+        },
+        {
+            "run_id": "r2",
+            "dataset_id": "d",
+            "case_id": "c2",
+            "variant": "A",
+            "rewrite_enabled": "False",
+        },
+    ]
+    candidates = [{"run_id": "r1", "dataset_id": "d"}]
+    return runs, candidates, {"c1": "q1", "c2": "q2"}, {"c1": {}, "c2": {}}
+
+
+def test_check_inputs_accepts_a_matching_bundle() -> None:
+    assert check_inputs(*inputs()) == []
+
+
+def test_check_inputs_stops_on_a_case_missing_from_the_grading() -> None:
+    runs, candidates, questions, grading = inputs()
+    del grading["c2"]
+    assert any(
+        "c2" in p and "채점 자료" in p
+        for p in check_inputs(runs, candidates, questions, grading)
+    )
+
+
+def test_check_inputs_stops_on_mismatched_bundles_and_duplicates() -> None:
+    runs, candidates, questions, grading = inputs()
+    candidates[0]["dataset_id"] = "other"
+    candidates.append({"run_id": "zzz", "dataset_id": "other"})
+    runs.append(dict(runs[0], run_id="r3"))
+    problems = " ".join(check_inputs(runs, candidates, questions, grading))
+    assert "dataset_id" in problems and "중복" in problems and "없는 실행" in problems
+
+
+def test_check_inputs_requires_every_graded_case_unless_subset_is_allowed() -> None:
+    runs, candidates, questions, grading = inputs()
+    grading["c3"], questions["c3"] = {}, "q3"
+    assert any(
+        "--allow-subset" in p
+        for p in check_inputs(runs, candidates, questions, grading)
+    )
+    assert check_inputs(runs, candidates, questions, grading, allow_subset=True) == []

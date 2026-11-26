@@ -12,6 +12,7 @@
 
 import argparse
 import csv
+import hashlib
 import json
 from pathlib import Path
 
@@ -46,6 +47,22 @@ def set_normalized_search_text(enabled: bool) -> None:
     rerankers_module.chunk_text = function
 
 
+TRANSFORM_VERSION = "table-text-v1"
+VARIANT_ID_MARKER = "-embed-input-"
+
+
+def variant_index_id(
+    base_id: str, embedding_identity: str, texts: list[str | None]
+) -> str:
+    """변환 입력의 내용·임베딩 정체·변환 버전으로 색인 ID를 만든다(같은 입력이면 같고 다르면 달라진다)."""
+    digest = hashlib.sha256(
+        json.dumps(
+            [TRANSFORM_VERSION, embedding_identity, texts], ensure_ascii=False
+        ).encode("utf-8")
+    ).hexdigest()[:16]
+    return f"{base_id}{VARIANT_ID_MARKER}{digest}"
+
+
 def build_variant_index(base, embedder):  # type: ignore[no-untyped-def]
     texts = {
         i: row_embedding_text(entry.chunk.content)
@@ -58,7 +75,13 @@ def build_variant_index(base, embedder):  # type: ignore[no-untyped-def]
     for i, vector in zip(order, vectors, strict=True):
         entries[i] = IndexEntry(chunk=entries[i].chunk, vector=list(vector))
     metadata = base.metadata.model_copy(
-        update={"index_id": base.metadata.index_id + "-embed-input-exp"}
+        update={
+            "index_id": variant_index_id(
+                base.metadata.index_id,
+                base.metadata.embedding_identity,
+                [texts[i] for i in order],
+            )
+        }
     )
     return base.model_copy(update={"metadata": metadata, "entries": entries}), len(
         order
