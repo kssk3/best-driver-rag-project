@@ -5,6 +5,7 @@ import streamlit as st
 
 from src.interface.adapter import Citation, ViewResponse
 from src.interface.theme import avatar_html
+from src.interface.tone import raccoon_tone
 
 # 실패해도 응답 상태와 answer를 바꾸지 않고 문서 답변을 이어 가는 단계(docs/ERRORS.md)
 RECOVERABLE_STAGES = {"rewrite", "place_lookup"}
@@ -110,7 +111,12 @@ def render_response(
 def _render_answered(view: ViewResponse) -> None:
 
     with _bubble("근거 확인됨", "ok"):
-        st.success(view.answer or "(답변 내용 없음)")
+        answer = view.answer or "(답변 내용 없음)"
+        toned = raccoon_tone(answer)
+        st.success(toned)
+        if toned != answer:
+            with st.expander("원문 보기"):
+                st.text(answer)
         st.markdown("근거")
 
         if not view.citations:
