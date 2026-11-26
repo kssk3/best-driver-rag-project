@@ -77,6 +77,8 @@ RAG_CHAT_SETTINGS=configs/team-a-rewrite-chat.json \
 uv run --locked --env-file .env python -m scripts.run_chat
 ```
 
+화면은 위에서부터 검색창, 질문 후 답변 말풍선, **검증·비교 대시보드**, 푸터 순서다. 대시보드(검증 패널과 비교 패널)는 팀 내부 데모용이라 항상 보인다. 외부에 공개하기 전에는 환경변수로 끄도록 바꿔야 한다. 검증 패널은 방금 질문한 응답의 자동 경고, 후보 순위, 모델 입력 근거, 인용을 보여 주고, 비교 패널은 Langfuse의 `faithfulness` 점수를 데이터셋과 실행 방식(A/B/C)별 건수·평균으로 보여 준다. 비교 패널을 쓰려면 `.env`에 `LANGFUSE_BASE_URL`, `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`가 필요하다([환경 값 설명](docs/TEAM-SETUP.md)). 값이 없으면 설정 안내만 보이고 화면은 그대로 동작한다. 점수는 판정 모델의 편차가 있어 같은 답변도 다시 채점하면 달라질 수 있다.
+
 A 검색의 OFF/ON을 같은 질문·색인·검색 옵션·답변 모델로 한 번에 실행한다. 출력 경로에는 새 이름을 사용한다.
 
 ```sh
