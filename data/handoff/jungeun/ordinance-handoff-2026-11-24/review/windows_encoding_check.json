@@ -1,0 +1,64 @@
+{
+  "schema_version": "jungeun-encoding-check-v1",
+  "checked_date": "2026-11-24",
+  "runtime": {
+    "platform": "darwin",
+    "python": "3.13.14"
+  },
+  "verification_kind": "CP949 default Path I/O simulation for ingestion test callers on macOS",
+  "native_windows_tested": false,
+  "plugin": "tests/fixtures/ingestion/cp949_path_plugin.py",
+  "activation": "explicit pytest -p cp949_path_plugin; not automatically loaded",
+  "scope": "Path.read_text/write_text calls without an explicit encoding made directly by ingestion tests; production callers are unchanged",
+  "changed_files": [
+    "tests/unit/ingestion/test_annex_review_overlay.py",
+    "tests/unit/ingestion/test_attachment_status.py",
+    "tests/unit/ingestion/test_clean.py"
+  ],
+  "explicit_encoding_calls_added": 10,
+  "implicit_read_write_calls_remaining": 0,
+  "before_fix": {
+    "tests": 46,
+    "passed": 41,
+    "failures": 5,
+    "errors": 0,
+    "failure_type": "UnicodeDecodeError",
+    "failed_tests": [
+      "test_reextraction_reapplies_reviews_without_changing_inputs",
+      "test_optional_overlay_keeps_original_pending_behavior",
+      "test_apply_returns_independent_copy",
+      "test_download_and_extraction_do_not_inherit_ambiguous_xml_flags",
+      "test_supplements_preserve_historical_transition_separately"
+    ]
+  },
+  "after_fix": {
+    "tests": 46,
+    "passed": 46,
+    "failures": 0,
+    "errors": 0,
+    "failure_type": null,
+    "failed_tests": []
+  },
+  "normal_after_fix": {
+    "tests": 46,
+    "passed": 46,
+    "failures": 0,
+    "errors": 0,
+    "failure_type": null,
+    "failed_tests": []
+  },
+  "reproduction_command": "PYTHONPATH=tests/fixtures/ingestion:. .venv/bin/python -m pytest -p cp949_path_plugin tests/unit/ingestion -q",
+  "before_reproduction": "Use the three test files from base commit 062c026 with the current extractor, new TCPS test and explicit plugin; point INGESTION_TEST_SCOPE at that test directory.",
+  "limitations": [
+    "Native Windows Python/hwp5proc execution was not performed.",
+    "Font rendering and HWP glyph interpretation are outside this encoding check."
+  ],
+  "latest_followup": {
+    "base_dev": "0328e8f",
+    "repository_tests_passed": 335,
+    "ingestion_tests_passed": 65,
+    "cp949_simulated_tests_passed": 65,
+    "native_windows_tested": false,
+    "historical_before_after_results_preserved": true
+  }
+}

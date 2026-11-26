@@ -1,0 +1,52 @@
+{
+  "is_synthetic": true,
+  "description": "실제 배출 안내가 아닌 최소 인계본의 연결 검사 자료다.",
+  "documents": [
+    {
+      "document_id": "demo-seodaemun",
+      "version": "v1",
+      "effective_date": null,
+      "title": "합성 품목알파 안내",
+      "content_format": "html",
+      "content": "<article><h2>합성 품목알파</h2><table><tr><th>품목</th><th>안내</th></tr><tr><td>품목알파</td><td>조건엑스에서 합성절차를 확인한다.</td></tr></table><p>비고: 실제 분리배출 규칙이 아닌 연결 검증용 자료다. 조건엑스 이외에는 적용하지 않는다.</p></article>",
+      "source_url": "https://example.org/synthetic/demo-seodaemun",
+      "raw_path": null,
+      "scope_type": "district",
+      "districts": [
+        "서대문구"
+      ],
+      "parent_document_id": null,
+      "parent_document_version": null
+    },
+    {
+      "document_id": "demo-songpa",
+      "version": "v1",
+      "effective_date": null,
+      "title": "합성 품목알파 안내",
+      "content_format": "html",
+      "content": "<article><h2>합성 품목알파</h2><table><tr><th>품목</th><th>안내</th></tr><tr><td>품목알파</td><td>조건와이에서 합성절차를 확인한다.</td></tr></table><p>비고: 실제 분리배출 규칙이 아닌 연결 검증용 자료다. 조건와이 이외에는 적용하지 않는다.</p></article>",
+      "source_url": "https://example.org/synthetic/demo-songpa",
+      "raw_path": null,
+      "scope_type": "district",
+      "districts": [
+        "송파구"
+      ],
+      "parent_document_id": null,
+      "parent_document_version": null
+    },
+    {
+      "document_id": "demo-common",
+      "version": "v1",
+      "effective_date": null,
+      "title": "합성 공통시험품목 안내",
+      "content_format": "html",
+      "content": "<article><h2>합성 공통시험품목</h2><table><tr><th>품목</th><th>안내</th></tr><tr><td>공통시험품목</td><td>조건제트에서 합성절차를 확인한다.</td></tr></table><p>비고: 실제 분리배출 규칙이 아닌 연결 검증용 자료다. 조건제트 이외에는 적용하지 않는다.</p></article>",
+      "source_url": "https://example.org/synthetic/demo-common",
+      "raw_path": null,
+      "scope_type": "common",
+      "districts": [],
+      "parent_document_id": null,
+      "parent_document_version": null
+    }
+  ]
+}

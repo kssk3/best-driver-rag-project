@@ -1,0 +1,112 @@
+{
+  "checked_at": "2026-11-24",
+  "sources": [
+    {
+      "url": "https://www.songpa.go.kr/www/contents.do?key=3153",
+      "type": "official_operating_guide_html",
+      "last_modified_display": "2026-11-19",
+      "verified": "HTML colspan 원문으로 마천2동 월수금권역 확인; 일반음식물 월수금, 기타재활용 월수, 비닐폐페트 금. 위례동도 월수금 칸 기재.",
+      "last_modified_verification": "2026-11-24 공식 페이지 재조회로 footer 최종수정2026-11-19 표시 확인. 개별 요일 정책 적용일은 미확인.",
+      "schedule_effective_date": null
+    },
+    {
+      "url": "https://www.songpa.go.kr/www/contents.do?key=3161",
+      "type": "official_food_waste_guide",
+      "last_modified_display": "2026-11-18",
+      "verified": "일반주택 지정요일18~22시, 집앞 지정장소. 공동주택은 관리사무소 안내 별도."
+    },
+    {
+      "url": "https://www.songpa.go.kr/www/resourceCirculationMap.do?key=6275",
+      "data_url": "https://www.songpa.go.kr/www/resourceCirculationMapData.do",
+      "type": "official_map_and_public_script",
+      "data_generated_at_display": "2026-11-23 15:32",
+      "verified": "마천2동과 위례동은 MWF; 화면표시코드 MWF=월수금. MWF재활용 기타월수/비닐투명PET금. TWS재활용 화면코드는 기타화목/PET비닐일로 다른공식안내와 충돌.",
+      "data_generated_verification": "기존 저장 응답 발췌 확인. 이번 적용 시 지도 재조회 없음.",
+      "generated_time_meaning": "데이터 생성시각. 지도 화면 코드 수정일·요일 정책 시행일과 다름.",
+      "schedule_effective_date": null
+    },
+    {
+      "url": "https://www.songpa.go.kr/common/downloadAttch2.jsp?downName=%EF%BC%88%EC%88%98%EC%A0%95%EF%BC%89%EC%98%AC%EB%B0%94%EB%A5%B8+%EC%9E%AC%ED%99%9C%EC%9A%A9%ED%92%88+%EB%B6%84%EB%A6%AC%EB%B0%B0%EC%B6%9C.pdf&saveFile=%2Fbbs%2F369%2F2026%2F10%2F14%2F1f533944-0f8b-413e-b3c2-4c7fde443dcf0AF838E2GB0F08EA.pdf",
+      "type": "official_pdf_linked_from_3153",
+      "path_date_not_publication_date": "2026-10-14",
+      "local_pdf": "official-20261014.pdf",
+      "local_image": "page3.png",
+      "printed_pages": "4-5 (PDF page3)",
+      "verified": "일반음식물재활용18~22시. 주요가로변22~01시. 위례동은 화목일 칸으로HTML및지도와충돌.",
+      "printed_publication_date": "2025-09",
+      "printed_publication_location": "PDF 2쪽 목차 왼쪽 녹색 발행정보 상자",
+      "pdf_creation_date": "2026-10-14T09:11:41+09:00",
+      "pdf_modification_date": "2026-10-14T09:11:41+09:00",
+      "schedule_effective_date": null,
+      "date_interpretation": "인쇄 발행일2025-09와 파일 생성·수정일2026-10-14 구분. 파일명·URL 날짜를 발행일로 쓰지 않음",
+      "pdf_metadata_meaning": "PDF 파일 속성의 생성·수정 표시일. 실제 파일화 이벤트나 정책 시행일을 확정하지 않음.",
+      "publication_evidence_page": 2
+    }
+  ],
+  "safe_user_comparison_example": {
+    "district": "송파구",
+    "dong": "마천2동",
+    "housing_type": "일반주택",
+    "current_general_and_food_days": [
+      "월",
+      "수",
+      "금"
+    ],
+    "current_other_recycling_days": [
+      "월",
+      "수"
+    ],
+    "current_plastic_film_clear_pet_days": [
+      "금"
+    ],
+    "current_hours": "18:00~22:00",
+    "place": "가정 내집앞, 상가 건물내외 지정장소",
+    "old_ordinance_snapshot": {
+      "mst": "1481479",
+      "attachment_id": "121237861",
+      "annex": "별표4",
+      "effective_date": "2020-03-19",
+      "days": [
+        "월",
+        "수",
+        "금"
+      ],
+      "hours": "18:00~23:00",
+      "effective_date_meaning": "시행규칙 문서 시행일",
+      "annex_last_amended_display": "2017-04-06",
+      "annex_date_source": "1481479_121237861.xml의 [별표 4] 제목 마지막 개정 표시"
+    },
+    "finding": "요일은 일치. 일반지역 배출시간은 법규스냅샷과 운영안내 차이. 재활용요일은 품목별로 별도보존."
+  },
+  "conflicts": [
+    {
+      "topic": "위례동 일반주택 요일",
+      "html3153_and_map": "월수금",
+      "linked_pdf": "화목일",
+      "resolution": "현재성 비교는 가능하나 둘중사실을 임의확정하지 않음. source_conflict로 기록해 숫자요일 직접답변에서 제외하고 공식확인경로연결."
+    },
+    {
+      "topic": "화목일권역 재활용",
+      "html3153_and_pdf": "기타화일/비닐투명PET목",
+      "map_ui_code": "기타화목/비닐투명PET일",
+      "resolution": "공식채널충돌. 검수완료와 사실확정 구분."
+    }
+  ],
+  "correction": "초기 중간보고의 마천2동2020요일화목일은 오류. 로컬원본재확인으로 월수금 정정.",
+  "date_review": {
+    "user_instruction": "적용해",
+    "scope": "날짜의 의미·출처 시점 구분만 승인, 요일 사실 확정 아님",
+    "status": "date_meanings_applied_effective_date_pending",
+    "date_check": "date_check.json",
+    "pdf_printed_publication_date": "2025-09",
+    "pdf_metadata_created_at": "2026-10-14T09:11:41+09:00",
+    "pdf_metadata_modified_at": "2026-10-14T09:11:41+09:00",
+    "html3153_last_modified_display": "2026-11-19",
+    "html3153_verification": "2026-11-24 공식 페이지 재조회로 표시 확인",
+    "map_data_generated_at_display": "2026-11-23 15:32",
+    "map_data_verification": "기존 저장 응답에서 확인. 이번 적용 시 지도 재조회 없음",
+    "map_date_meaning": "데이터 생성시각이며 화면 코드 수정일·정책 시행일이 아님",
+    "finding": "PDF는 2025-09 발행 자료. 웹·지도 우선순위와 실제 요일은 적용일 미확인으로 확정하지 않음",
+    "next_evidence_needed": "요일 변경 공지의 적용일·대체 관계 또는 담당부서 확인"
+  }
+}

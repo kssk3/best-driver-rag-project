@@ -1,0 +1,313 @@
+"""원문을 보존한 검색용 텍스트와 병합 셀을 반영한 행 표현.
+
+용어 복원은 명시된 표기 안의 공백만 제거한다. 일반 문단 경계를 임의로
+붙이지 않으며, 이 자료를 실제 검색·청킹에 연결하는 작업은 별도다.
+행 ID는 첨부 내부 범위이며 부모 MST·첨부 ID와 함께 사용한다.
+"""
+
+import re
+from typing import TypedDict
+
+
+class NormalizationChange(TypedDict):
+    kind: str
+    before: str
+    after: str
+
+
+class NormalizedSearchText(TypedDict):
+    text: str
+    changes: list[NormalizationChange]
+
+
+class PreparedCell(TypedDict):
+    cell_id: str
+    origin_row: int
+    origin_col: int
+    columns: list[int]
+    rowspan: int
+    colspan: int
+    inherited_from_previous_row: bool
+    text: str
+    search_text: str
+    normalization_changes: list[NormalizationChange]
+
+
+class PreparedRow(TypedDict):
+    row_id: str
+    table_id: str
+    row: int
+    cell_values: list[PreparedCell]
+    missing_columns: list[int]
+    search_text: str
+    context_ref: str
+    context_required: bool
+
+
+# 실제 원문에 있는 표기. 동의어 치환·임의 형태소 결합 제외
+KNOWN_JOIN_TERMS = (
+    "폴리에틸렌테레프탈레이트",
+    "음식물류전용용기납부필증",
+    "일반규격봉투",
+    "특수규격봉투",
+    "공공용봉투",
+    "생활폐기물용",
+    "사업장용봉투",
+    "생활용품류",
+    "가전제품류",
+    "합성수지류",
+    "생활용봉투",
+    "재사용봉투",
+    "공동주택",
+    "가구류",
+    "기타류",
+    "음식점",
+)
+# 한 글자 사이에 가로 공백과 줄바꿈 한 번까지 허용한다. 빈 줄과 페이지 구분은 제외한다.
+_HORIZONTAL_SPACE = r"[ \t\u00a0\u1680\u2000-\u200a\u202f\u205f\u3000]*"
+_WORD_GAP = rf"{_HORIZONTAL_SPACE}(?:(?:\r\n|[\r\n]){_HORIZONTAL_SPACE})?"
+_KNOWN_JOIN_PATTERN = re.compile(
+    "|".join(
+        _WORD_GAP.join(re.escape(char) for char in term)
+        for term in sorted(KNOWN_JOIN_TERMS, key=len, reverse=True)
+    )
+)
+
+
+def normalize_search_text(text: str) -> NormalizedSearchText:
+    """명시 용어 내부 공백 복원과 검색용 공백 정리. 원문 문자열은 불변."""
+    if not isinstance(text, str):
+        raise TypeError("검색용 정규화 입력은 문자열 필요")
+    changes: list[NormalizationChange] = []
+
+    def join_term(match: re.Match[str]) -> str:
+        before = match.group(0)
+        after = re.sub(r"\s+", "", before)
+        if before != after:
+            changes.append(
+                {"kind": "join_known_term", "before": before, "after": after}
+            )
+        return after
+
+    joined = _KNOWN_JOIN_PATTERN.sub(join_term, text)
+    normalized = " ".join(joined.split())
+    if joined != normalized:
+        changes.append(
+            {
+                "kind": "normalize_whitespace",
+                "before": joined,
+                "after": normalized,
+            }
+        )
+    return {"text": normalized, "changes": changes}
+
+
+def _positive_integer(value: object, field: str) -> int:
+    if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
+        raise ValueError(f"표의 {field}는 양의 정수 필요")
+    return value
+
+
+def prepare_table_rows(table: dict) -> list[PreparedRow]:
+    """row_cell_ids로 병합 값을 각 행에 연결. 각주·비고와 함께 읽는 초안 반환.
+
+    원본 표·셀·문단을 변경하지 않는다. 잘못된 좌표나 누락된 셀 참조는
+    빈 텍스트로 숨기지 않고 오류로 중단한다. 빈 좌표는 missing_columns로 구분한다.
+    """
+    table_id = table.get("table_id")
+    if not isinstance(table_id, str) or not table_id:
+        raise ValueError("table_id 문자열 필요")
+    row_count = _positive_integer(table.get("rows"), "rows")
+    col_count = _positive_integer(table.get("cols"), "cols")
+    cells = table.get("cells")
+    grid = table.get("row_cell_ids")
+    if not isinstance(cells, list) or not isinstance(grid, list):
+        raise ValueError("cells·row_cell_ids 목록 필요")
+    if len(grid) != row_count:
+        raise ValueError("행 개수와 row_cell_ids 불일치")
+
+    by_id = {}
+    normalized_cells = {}
+    for cell in cells:
+        if not isinstance(cell, dict):
+            raise ValueError("셀 객체 필요")
+        cell_id = cell.get("cell_id")
+        if not isinstance(cell_id, str) or not cell_id or cell_id in by_id:
+            raise ValueError("고유한 cell_id 필요")
+        text = cell.get("text")
+        if not isinstance(text, str):
+            raise ValueError("셀 text 문자열 필요")
+        origin_row, origin_col = cell.get("row"), cell.get("col")
+        for coordinate, limit in ((origin_row, row_count), (origin_col, col_count)):
+            if (
+                isinstance(coordinate, bool)
+                or not isinstance(coordinate, int)
+                or not 0 <= coordinate < limit
+            ):
+                raise ValueError("셀 원점 좌표 범위 확인 필요")
+        rowspan = _positive_integer(cell.get("rowspan"), "rowspan")
+        colspan = _positive_integer(cell.get("colspan"), "colspan")
+        if origin_row + rowspan > row_count or origin_col + colspan > col_count:
+            raise ValueError("셀 병합 범위가 표를 벗어남")
+        by_id[cell_id] = cell
+        normalized_cells[cell_id] = normalize_search_text(text)
+
+    rows: list[PreparedRow] = []
+    used_ids = set()
+    for row_index, ids in enumerate(grid):
+        if not isinstance(ids, list) or len(ids) != col_count:
+            raise ValueError("열 개수와 row_cell_ids 불일치")
+        row_cells: dict[str, PreparedCell] = {}
+        missing_columns = []
+        for column, cell_id in enumerate(ids):
+            if cell_id is None:
+                missing_columns.append(column)
+                continue
+            if not isinstance(cell_id, str) or cell_id not in by_id:
+                raise ValueError("존재하지 않는 셀 참조")
+            cell = by_id[cell_id]
+            if not (
+                cell["row"] <= row_index < cell["row"] + cell["rowspan"]
+                and cell["col"] <= column < cell["col"] + cell["colspan"]
+            ):
+                raise ValueError("셀 참조와 원본 병합 좌표 불일치")
+            used_ids.add(cell_id)
+            if cell_id in row_cells:
+                row_cells[cell_id]["columns"].append(column)
+                continue
+            normalized = normalized_cells[cell_id]
+            row_cells[cell_id] = {
+                "cell_id": cell_id,
+                "origin_row": cell["row"],
+                "origin_col": cell["col"],
+                "columns": [column],
+                "rowspan": cell["rowspan"],
+                "colspan": cell["colspan"],
+                "inherited_from_previous_row": cell["row"] < row_index,
+                "text": cell["text"],
+                "search_text": normalized["text"],
+                "normalization_changes": [
+                    dict(change) for change in normalized["changes"]
+                ],
+            }
+        values = list(row_cells.values())
+        rows.append(
+            {
+                "row_id": f"{table_id}-row-{row_index}",
+                "table_id": table_id,
+                "row": row_index,
+                "cell_values": values,
+                "missing_columns": missing_columns,
+                "search_text": " | ".join(
+                    value["search_text"] for value in values if value["search_text"]
+                ),
+                "context_ref": "attachment.blocks",
+                "context_required": True,
+            }
+        )
+    if used_ids != set(by_id):
+        raise ValueError("행 참조에서 누락된 원본 셀")
+    return rows
+
+
+def validate_table_search_text(table: dict) -> list[PreparedRow]:
+    """원본에서 검색용 행을 다시 만들어 저장 값과 변경 이력을 대조한다."""
+    expected_rows = prepare_table_rows(table)
+    stored_rows = table.get("rows_for_search")
+    if not isinstance(stored_rows, list) or len(stored_rows) != len(expected_rows):
+        raise ValueError("rows_for_search 행 수가 원본 표와 다릅니다.")
+
+    for expected, stored in zip(expected_rows, stored_rows, strict=True):
+        row_number = expected["row"]
+        if not isinstance(stored, dict):
+            raise ValueError(f"행 {row_number}의 검색용 행 객체가 필요합니다.")
+        for field in (
+            "table_id",
+            "row",
+            "missing_columns",
+            "search_text",
+            "context_ref",
+            "context_required",
+        ):
+            value = stored.get(field)
+            if type(value) is not type(expected[field]) or value != expected[field]:
+                raise ValueError(f"행 {row_number}의 {field} 값이 원본과 다릅니다.")
+
+        expected_cells = expected["cell_values"]
+        cells = stored.get("cell_values")
+        if not isinstance(cells, list) or len(cells) != len(expected_cells):
+            raise ValueError(f"행 {row_number}의 검색용 셀 수가 원본과 다릅니다.")
+        for expected_cell, cell in zip(expected_cells, cells, strict=True):
+            cell_id = expected_cell["cell_id"]
+            if not isinstance(cell, dict):
+                raise ValueError(f"행 {row_number}, 셀 {cell_id}의 객체가 필요합니다.")
+            for field, expected_value in expected_cell.items():
+                value = cell.get(field)
+                if type(value) is not type(expected_value) or value != expected_value:
+                    raise ValueError(
+                        f"행 {row_number}, 셀 {cell_id}의 {field} 값이 원본과 다릅니다."
+                    )
+    return expected_rows
+
+
+def validate_table_row_continuations(tables: list[dict], continuations: dict) -> None:
+    """원문 대조로 확정한 이어쓰기의 행·셀·내용을 검사한다."""
+    if not isinstance(continuations, dict) or not continuations:
+        raise ValueError("이어쓰기 표 목록 필요")
+    tables_by_id = {table["table_id"]: table for table in tables}
+    for table_id, groups in continuations.items():
+        table = tables_by_id.get(table_id)
+        if table is None or not isinstance(groups, list) or not groups:
+            raise ValueError("이어쓰기 대상 표와 행 범위 확인 필요")
+        rows = table["rows_for_search"]
+        header_count = max(cell["rowspan"] for cell in rows[0]["cell_values"])
+        previous_end = header_count - 1
+        for group in groups:
+            if not isinstance(group, dict) or set(group) != {
+                "source_rows",
+                "source_cell_ids",
+                "text",
+            }:
+                raise ValueError("이어쓰기의 행·셀·문장 필요")
+            numbers = group["source_rows"]
+            if (
+                not isinstance(numbers, list)
+                or len(numbers) < 2
+                or any(type(number) is not int for number in numbers)
+                or numbers[0] <= previous_end
+                or numbers[-1] >= len(rows)
+                or numbers != list(range(numbers[0], numbers[-1] + 1))
+            ):
+                raise ValueError("이어쓰기 행은 본문의 겹치지 않는 연속 범위 필요")
+            anchor = rows[numbers[0]]["cell_values"]
+            anchor_ids = {cell["cell_id"] for cell in anchor}
+            first_cells = []
+            for number in numbers:
+                cells = rows[number]["cell_values"]
+                first = next((cell for cell in cells if cell["origin_col"] == 0), None)
+                if (
+                    first is None
+                    or first["origin_row"] != number
+                    or first["rowspan"] != 1
+                    or first["colspan"] != 1
+                    or not first["text"].strip()
+                ):
+                    raise ValueError("이어쓰기는 원본 첫 열의 독립적인 텍스트 셀 필요")
+                if number != numbers[0] and any(
+                    cell["text"].strip() and cell["cell_id"] not in anchor_ids
+                    for cell in cells
+                    if cell is not first
+                ):
+                    raise ValueError(
+                        "이어쓰기에서 후속 행의 다른 열 값을 잃을 수 있습니다."
+                    )
+                first_cells.append(first)
+            text = group["text"]
+            if group["source_cell_ids"] != [cell["cell_id"] for cell in first_cells]:
+                raise ValueError("이어쓰기의 원본 셀 ID가 다릅니다.")
+            original = "".join(cell["text"] for cell in first_cells)
+            if not isinstance(text, str) or "".join(text.split()) != "".join(
+                original.split()
+            ):
+                raise ValueError("이어쓰기는 원문 글자를 변경할 수 없습니다.")
+            previous_end = numbers[-1]

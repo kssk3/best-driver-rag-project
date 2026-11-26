@@ -1,0 +1,81 @@
+{
+  "output_dir": "../../data/raw/documents/law_runs",
+  "timeout_seconds": 15,
+  "interval_seconds": 0.5,
+  "api_access": {
+    "collection_status": "approved",
+    "reviewer": "이정은(승인 상태 확인), Codex(공개 이용조건 확인)",
+    "checked_at": "2026-11-24",
+    "expires_at": "2027-01-01",
+    "evidence_url": "https://open.law.go.kr/LSO/information/guide.do",
+    "evidence": "사용자가 API 승인 상태를 확인하고 검토 기한을 2027-01-01로 지정함. OC의 정확한 만료일은 미확인. 공식 이용안내의 저작권 정책과 회원가입 페이지의 API 주의사항 확인. https://open.law.go.kr/LSO/usrJoin.do",
+    "scope": "승인된 OC를 통한 자치법규 목록·본문 XML API 수집. 개별 문서·첨부 및 색인·외부 모델 이용 승인은 별도 검토.",
+    "conditions": "출처 표시, 원문 위조·변조 금지, 제3자 권리 준수, 과도한 호출 금지, 이용조건 변경 확인. expires_at은 사용자가 지정한 내부 재검토 기한이며 OC의 정확한 만료일을 확인한 기록은 아님."
+  },
+  "targets": [
+    {
+      "document_id": "seodaemun-ordinance",
+      "district": "서대문구",
+      "title": "서울특별시 서대문구 폐기물 관리 조례",
+      "reviewed_mst": "2101297",
+      "review": {
+        "collection_status": "approved",
+        "reviewer": "이정은",
+        "checked_at": "2026-11-24",
+        "expires_at": "2027-01-01",
+        "evidence_url": "https://www.law.go.kr/lsLinkProc.do?joNo=000700&lsClsCd=L&lsNm=저작권법&mode=11",
+        "evidence": "저작권법 제7조제1호의 조례·규칙 해당. 국가법령정보 공동활용 이용조건 확인.",
+        "scope": "서울특별시 서대문구 폐기물 관리 조례 본문 XML 수집과 첨부 링크 기록",
+        "conditions": "출처·지역·시행일·MST 보존. 첨부 다운로드 및 색인·외부 모델 이용은 별도 검토."
+      }
+    },
+    {
+      "document_id": "seodaemun-rules",
+      "district": "서대문구",
+      "title": "서울특별시 서대문구 폐기물 관리 조례 시행규칙",
+      "reviewed_mst": "2101385",
+      "review": {
+        "collection_status": "approved",
+        "reviewer": "이정은",
+        "checked_at": "2026-11-24",
+        "expires_at": "2027-01-01",
+        "evidence_url": "https://open.law.go.kr/LSO/information/guide.do",
+        "evidence": "저작권법 제7조제1호의 조례·규칙 해당. 국가법령정보 공동활용 이용조건 확인.",
+        "scope": "서울특별시 서대문구 폐기물 관리 조례 시행규칙 본문 XML 수집과 첨부 링크 기록",
+        "conditions": "출처·지역·시행일·MST 보존. 첨부 다운로드 및 색인·외부 모델 이용은 별도 검토."
+      }
+    },
+    {
+      "document_id": "songpa-ordinance",
+      "district": "송파구",
+      "title": "서울특별시 송파구 폐기물 관리 조례",
+      "reviewed_mst": "2053883",
+      "review": {
+        "collection_status": "approved",
+        "reviewer": "이정은",
+        "checked_at": "2026-11-24",
+        "expires_at": "2027-01-01",
+        "evidence_url": "https://open.law.go.kr/LSO/information/guide.do",
+        "evidence": "저작권법 제7조제1호의 조례·규칙 해당. 국가법령정보 공동활용 이용조건 확인.",
+        "scope": "서울특별시 송파구 폐기물 관리 조례 본문 XML 수집과 첨부 링크 기록",
+        "conditions": "출처·지역·시행일·MST 보존. 첨부 다운로드 및 색인·외부 모델 이용은 별도 검토."
+      }
+    },
+    {
+      "document_id": "songpa-rules",
+      "district": "송파구",
+      "title": "서울특별시 송파구 폐기물 관리 조례 시행규칙",
+      "reviewed_mst": "1481479",
+      "review": {
+        "collection_status": "approved",
+        "reviewer": "이정은",
+        "checked_at": "2026-11-24",
+        "expires_at": "2027-01-01",
+        "evidence_url": "https://open.law.go.kr/LSO/information/guide.do",
+        "evidence": "저작권법 제7조제1호의 조례·규칙 해당. 국가법령정보 공동활용 이용조건 확인.",
+        "scope": "서울특별시 송파구 폐기물 관리 조례 시행규칙 본문 XML 수집과 첨부 링크 기록",
+        "conditions": "출처·지역·시행일·MST 보존. 첨부 다운로드 및 색인·외부 모델 이용은 별도 검토."
+      }
+    }
+  ]
+}

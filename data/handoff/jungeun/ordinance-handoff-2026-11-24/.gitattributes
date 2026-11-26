@@ -1,0 +1,7 @@
+# 원문 바이트와 배포 파일 해시 보존
+* -text
+# XML 본문에 포함된 원래 줄끝 공백 유지
+raw/**/*.xml -whitespace
+processed/annex/*.xml -whitespace
+review/review.html -whitespace
+review/schedule_evidence/robots.txt -whitespace

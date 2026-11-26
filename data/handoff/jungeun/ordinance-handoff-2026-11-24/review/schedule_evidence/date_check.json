@@ -1,0 +1,48 @@
+{
+  "checked_at": "2026-11-24T14:11:17+09:00",
+  "topic": "송파구 배출요일 충돌 자료의 날짜 비교",
+  "sources": [
+    {
+      "source_type": "official_booklet_pdf",
+      "source_file": "official-20261014.pdf",
+      "sha256": "8e0043431030c15a5bd1e0dac1e70dd3de4380bf4f0c6054cebb87e1d07ae7f0",
+      "printed_publication_date": "2025-09",
+      "printed_publication_location": "PDF 2쪽 목차 왼쪽 녹색 발행정보 상자",
+      "printed_publisher": "서울특별시 송파구 자원활용과",
+      "pdf_creation_date": "2026-10-14T09:11:41+09:00",
+      "pdf_modification_date": "2026-10-14T09:11:41+09:00",
+      "date_interpretation": "발행일 2025-09와 PDF 파일 메타데이터 2026-10-14 구분. 파일명·주소 날짜를 발행일로 사용하지 않음",
+      "schedule_effective_date": null,
+      "pdf_metadata_meaning": "PDF 파일 속성의 생성·수정 표시일. 실제 파일화 이벤트나 정책 시행일을 확정하지 않음.",
+      "publication_evidence_page": 2,
+      "source_url": "https://www.songpa.go.kr/common/downloadAttch2.jsp?downName=%EF%BC%88%EC%88%98%EC%A0%95%EF%BC%89%EC%98%AC%EB%B0%94%EB%A5%B8+%EC%9E%AC%ED%99%9C%EC%9A%A9%ED%92%88+%EB%B6%84%EB%A6%AC%EB%B0%B0%EC%B6%9C.pdf&saveFile=%2Fbbs%2F369%2F2026%2F10%2F14%2F1f533944-0f8b-413e-b3c2-4c7fde443dcf0AF838E2GB0F08EA.pdf"
+    },
+    {
+      "source_type": "official_operating_guide_html",
+      "source_url": "https://www.songpa.go.kr/www/contents.do?key=3153",
+      "page_last_modified_display": "2026-11-19",
+      "verification": "이번 턴 공식 페이지 재조회. 최종 수정일 표시 확인",
+      "schedule_effective_date": null
+    },
+    {
+      "source_type": "official_map_public_data",
+      "source_url": "https://www.songpa.go.kr/www/resourceCirculationMapData.do",
+      "data_generated_at_display": "2026-11-23 15:32",
+      "verification": "기존 저장 응답 발췌 확인. 이번 턴 지도 재요청 없음",
+      "date_interpretation": "데이터 생성시각은 화면표시 코드 수정일·요일정책 시행일과 별개",
+      "schedule_effective_date": null
+    }
+  ],
+  "finding": "PDF는 2025-09 발행본으로 웹페이지 2026-11-19 수정 표시보다 이전. 웹 본문과 지도 일정의 우선순위는 서로 다른 날짜 유형만으로 확정할 수 없음",
+  "next_evidence_needed": "요일 변경 공지의 적용일·대체 관계 또는 담당부서 확인",
+  "human_review_updated": false,
+  "repository_files_changed": false,
+  "external_post_or_contact": false,
+  "path_base": "review/schedule_evidence/",
+  "application": {
+    "user_instruction": "적용해",
+    "applied_at": "2026-11-24T05:17:35.647722+00:00",
+    "scope": "날짜의 의미·출처 시점 구분만 승인, 요일 사실 확정 아님",
+    "evidence_verification_record": "human_review_updated/repository_files_changed는 최초 날짜 대조 시점의 상태. 이번 적용은 application에 별도 기록."
+  }
+}

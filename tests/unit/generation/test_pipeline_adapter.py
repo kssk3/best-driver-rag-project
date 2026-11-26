@@ -1,0 +1,317 @@
+"""Verify the common generation callback boundary."""
+
+from unittest.mock import Mock
+
+import httpx
+import pytest
+from langchain_core.messages import AIMessage
+from langchain_openai import ChatOpenAI
+from openai import APITimeoutError, OpenAIError
+
+from src.common.errors import ApplicationError
+from src.config import RuntimeSettings
+from src.contracts import Chunk, PipelineRequest, ResolvedQuery, SearchCandidate
+from src.generation import pipeline_adapter
+from src.generation.model_draft import make_model_draft
+from src.generation.pipeline_adapter import AnswerGenerationError, make_answer_generator
+from src.runtime import create_runtime
+
+
+def _chunk() -> Chunk:
+    return Chunk(
+        chunk_id="supplied-id",
+        source_document_id="document",
+        source_document_version="revision",
+        title="원문 제목",
+        content_format="html",
+        content="<p>검증된 내용</p>",
+        source_url="https://example.org/evidence",
+        source_location="표 4",
+        scope_type="district",
+        districts=["송파구"],
+        conditions=["공동주택"],
+        chunking_version="test",
+    )
+
+
+@pytest.mark.parametrize(
+    ("reply", "expected_code"),
+    [
+        pytest.param(
+            APITimeoutError(request=httpx.Request("POST", "https://example.org")),
+            "infrastructure.llm_timeout",
+            id="sdk-timeout",
+        ),
+        pytest.param(
+            OpenAIError("private-model-diagnostic"),
+            "infrastructure.llm_call_failed",
+            id="provider-failure",
+        ),
+        pytest.param(
+            "private-model-diagnostic", "generation.invalid_draft", id="non-json"
+        ),
+        pytest.param(" ", "generation.invalid_draft", id="empty"),
+        pytest.param(
+            '{"status":"answered","message":"private-model-diagnostic","citation_indices":["0"]}',
+            "generation.invalid_draft",
+            id="strict-schema",
+        ),
+    ],
+)
+def test_model_draft_failure_is_classified_in_persisted_run(
+    reply, expected_code, tmp_path, monkeypatch
+):
+    monkeypatch.setenv("OPENAI_API_KEY", "offline-unit-test-key")
+    invoke = Mock()
+    if isinstance(reply, Exception):
+        invoke.side_effect = reply
+    else:
+        invoke.return_value = AIMessage(content=reply)
+    monkeypatch.setattr(ChatOpenAI, "invoke", invoke)
+    runtime = create_runtime(
+        RuntimeSettings(runs_path=tmp_path),
+        resolver=lambda request: ResolvedQuery(search_query=request.question),
+        retriever=lambda *args, **kwargs: [SearchCandidate(chunk=_chunk(), rank=1)],
+        generator=make_answer_generator(make_model_draft("test-model")),
+    )
+
+    record = runtime.run(PipelineRequest(question="근거는?", district="송파구"))
+
+    invoke.assert_called_once()
+    assert record.response.status == "error"
+    assert record.response.error_code == expected_code
+    assert [(s.name, s.error_code) for s in record.stages if s.status == "error"] == [
+        ("generate", expected_code)
+    ]
+    persisted = (tmp_path / f"{record.run_id}.json").read_text(encoding="utf-8")
+    assert "private-model-diagnostic" not in persisted
+    assert "offline-unit-test-key" not in persisted
+
+
+def test_adapter_preserves_user_input_and_offered_chunk():
+    chunk = _chunk()
+    draft = Mock(
+        return_value={
+            "status": "answered",
+            "message": "근거 안내",
+            "citation_indices": [0],
+        }
+    )
+    request = PipelineRequest(
+        question=" 원래 질문 ",
+        district="송파구",
+        dong="위례동",
+        conditions={"item": "[종이]", "district": "예전 구"},
+    )
+    result = make_answer_generator(draft)(request, [chunk])
+    assert result.cited_chunk_ids == [chunk.chunk_id]
+    payload = draft.call_args.args[0]
+    assert payload["original_question"] == request.question
+    assert payload["conditions"] == {
+        "district": "송파구",
+        "dong": "위례동",
+        "item": "[종이]",
+    }
+    [evidence] = payload["evidence"]
+    assert evidence["text"] == chunk.content
+    assert evidence["source"]["document_id"] == chunk.source_document_id
+    assert evidence["source"]["source_url"] == chunk.source_url
+    assert evidence["scope_type"] == "district"
+    assert evidence["districts"] == ["송파구"]
+    assert evidence["conditions"] == ["공동주택"]
+
+
+def test_empty_context_and_clarification_skip_drafting():
+    draft = Mock()
+    request = PipelineRequest(question="어떻게 배출해요?")
+    assert make_answer_generator(draft)(request, []).status == "insufficient_evidence"
+    required = make_answer_generator(draft, required_conditions={"district": "구"})
+    result = required(request, [_chunk()])
+    assert result.status == "needs_clarification"
+    assert result.cited_chunk_ids == []
+    draft.assert_not_called()
+
+
+def test_citation_outside_context_and_provider_failure_are_sanitized():
+    request = PipelineRequest(question="근거는?")
+    draft = Mock(
+        return_value={
+            "status": "answered",
+            "message": "근거 안내",
+            "citation_indices": [1],
+        }
+    )
+    with pytest.raises(AnswerGenerationError, match="invalid_citation"):
+        make_answer_generator(draft)(request, [_chunk()])
+    failing_draft = Mock(side_effect=ValueError("private provider diagnostic"))
+    with pytest.raises(AnswerGenerationError, match="generation_failed") as error:
+        make_answer_generator(failing_draft)(request, [_chunk()])
+    assert "private provider diagnostic" not in str(error.value)
+
+
+def test_blank_chunk_identifier_cannot_be_used():
+    draft = Mock()
+    chunk = _chunk().model_copy(update={"chunk_id": " "})
+    with pytest.raises(AnswerGenerationError, match="invalid_input"):
+        make_answer_generator(draft)(PipelineRequest(question="근거는?"), [chunk])
+    draft.assert_not_called()
+
+
+@pytest.mark.parametrize("second_version", ["revision", "next-revision"])
+def test_conflict_uses_document_versions_instead_of_rendering_or_row(second_version):
+    first = _chunk()
+    second = first.model_copy(
+        update={
+            "chunk_id": "second-id",
+            "source_document_version": second_version,
+            "content_format": "json",
+            "content": '{"guidance":"금요일에 배출"}',
+            "source_location": "표 5",
+        }
+    )
+    draft = Mock(
+        return_value={
+            "status": "source_conflict",
+            "conflict_sides": [
+                {"evidence_index": 0, "excerpt": "검증된 내용"},
+                {"evidence_index": 1, "excerpt": "금요일에 배출"},
+            ],
+        }
+    )
+    generator = make_answer_generator(draft)
+    request = PipelineRequest(question="두 안내가 일치하나요?")
+
+    if second_version == first.source_document_version:
+        with pytest.raises(AnswerGenerationError, match="invalid_draft"):
+            generator(request, [first, second])
+    else:
+        result = generator(request, [first, second])
+        assert result.status == "insufficient_evidence"
+        assert result.cited_chunk_ids == [first.chunk_id, second.chunk_id]
+        assert "확정하기 어렵습니다" in result.answer
+
+
+def _raise_decode(conditions):
+    raise KeyError("raw")
+
+
+@pytest.mark.parametrize(
+    ("draft", "chunk_id", "decode", "kind"),
+    [
+        (
+            Mock(
+                return_value={
+                    "status": "answered",
+                    "message": "m",
+                    "citation_indices": [1],
+                }
+            ),
+            "supplied-id",
+            None,
+            "invalid_citation",
+        ),
+        (
+            Mock(side_effect=ValueError("provider")),
+            "supplied-id",
+            None,
+            "generation_failed",
+        ),
+        (Mock(), " ", None, "invalid_input"),
+        (Mock(), "supplied-id", _raise_decode, "condition_decode_failed"),
+    ],
+)
+def test_generation_errors_carry_shared_codes_and_keep_message(
+    draft, chunk_id, decode, kind
+):
+    chunk = _chunk().model_copy(update={"chunk_id": chunk_id})
+    generator = make_answer_generator(draft, decode_conditions=decode)
+
+    with pytest.raises(AnswerGenerationError) as error:
+        generator(PipelineRequest(question="근거는?"), [chunk])
+
+    assert error.value.code == f"generation.{kind}"
+    assert str(error.value) == kind
+    assert isinstance(error.value, RuntimeError)
+    assert isinstance(error.value, ApplicationError)
+
+
+@pytest.mark.parametrize("kind", ["Bad-Kind", "has.dot", 42])
+def test_malformed_error_kind_is_recorded_as_invalid_error_kind(monkeypatch, kind):
+    # answer.py의 error_kind 형식이 바뀌어도 에러 처리 중에 새 오류가 나면 안 된다.
+    monkeypatch.setattr(
+        pipeline_adapter,
+        "generate_answer",
+        lambda payload, draft: {"status": "error", "error_kind": kind},
+    )
+
+    with pytest.raises(AnswerGenerationError) as error:
+        make_answer_generator(Mock())(PipelineRequest(question="q"), [_chunk()])
+
+    assert error.value.code == "generation.invalid_error_kind"
+    assert str(error.value) == (kind if isinstance(kind, str) else "generation_failed")
+
+
+def _answered(message, indices):
+    return {"status": "answered", "message": message, "citation_indices": indices}
+
+
+@pytest.mark.parametrize(
+    ("draft_output", "kind"),
+    [
+        # 인용 문제는 생성 오류와 구분해 평가의 '잘못된 인용'으로 분류한다.
+        (_answered("근거 안내", [1]), "invalid_citation"),
+        (_answered("근거 안내", [0, 5]), "invalid_citation"),
+        (_answered("근거 안내", ["0"]), "invalid_citation"),
+        (_answered("근거 안내", []), "missing_citation"),
+        (_answered("근거 안내", None), "missing_citation"),
+        (
+            {
+                "status": "source_conflict",
+                "conflict_sides": [
+                    {"evidence_index": 0, "excerpt": "검증된 내용"},
+                    {"evidence_index": 5, "excerpt": "다른 내용"},
+                ],
+            },
+            "invalid_citation",
+        ),
+        # 답변 형식이 먼저다. 형식이 틀리면 인용이 틀려도 invalid_draft로 남는다.
+        (_answered("https://example.org/unverified 참고", [1]), "invalid_draft"),
+        (_answered("", [1]), "invalid_draft"),
+        ({"status": "unknown"}, "invalid_draft"),
+    ],
+)
+def test_citation_problems_get_their_own_reason(draft_output, kind):
+    generator = make_answer_generator(Mock(return_value=draft_output))
+
+    with pytest.raises(AnswerGenerationError) as error:
+        generator(PipelineRequest(question="근거는?"), [_chunk()])
+
+    assert str(error.value) == kind
+    assert error.value.code == f"generation.{kind}"
+
+
+def test_region_left_only_in_conditions_does_not_reach_the_model_input():
+    # 해석기가 동을 버려 요청의 dong이 비었는데 일반 조건에 연희동이 남아 있으면
+    # 송파구와 연희동이 함께 모델 입력에 들어갈 수 있었다. 최상위 필드만 기준으로 삼는다.
+    draft = Mock(
+        return_value={
+            "status": "answered",
+            "message": "근거 안내",
+            "citation_indices": [0],
+        }
+    )
+    request = PipelineRequest(
+        question="질문",
+        district="송파구",
+        conditions={"item": "병", "dong": "연희동", "district": "서대문구"},
+    )
+    make_answer_generator(draft)(request, [_chunk()])
+    assert draft.call_args.args[0]["conditions"] == {"district": "송파구", "item": "병"}
+
+    # 요청에 구·동이 모두 없으면 조건에 남은 지역도 모델 입력에 넣지 않는다.
+    draft.reset_mock()
+    make_answer_generator(draft)(
+        PipelineRequest(question="질문", conditions={"dong": "연희동", "item": "병"}),
+        [_chunk()],
+    )
+    assert draft.call_args.args[0]["conditions"] == {"item": "병"}

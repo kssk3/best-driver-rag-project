@@ -1,0 +1,73 @@
+{
+  "schema_version": "jungeun-search-redaction-v1",
+  "processed_at": "2026-11-24T04:59:02.034810+00:00",
+  "purpose": "공유 검색응답에서 OC 인증값만 제거. 법규 내용·본문 원본은 수정하지 않음.",
+  "path_base": "handoff bundle root",
+  "total_redactions": 15,
+  "records": [
+    {
+      "file_path": "raw/seodaemun-ordinance/search_1.xml",
+      "original_sha256": "8ef4c2acc9c520351f74bec5e5422559a5ec608a575183b4fee4ebbb3622e7c8",
+      "shared_sha256": "93a09b743944b58e1697cad38c4b9a4c8af06d25707b5c946981e6c51f9ff8da",
+      "redaction_count": 6,
+      "fields": [
+        {
+          "element": "자치법규상세링크",
+          "field": "URL query parameter OC",
+          "count": 6,
+          "replacement": "REDACTED"
+        }
+      ],
+      "private_original_location": "data/raw/documents/law_runs/e783d23192ac49dc82ba05f5b31b0667/seodaemun-ordinance/search_1.xml",
+      "private_original_note": "Git 제외된 개인 로컬 원본에만 보관. 이 공유 묶음에는 포함하지 않음."
+    },
+    {
+      "file_path": "raw/seodaemun-rules/search_1.xml",
+      "original_sha256": "cfab3c3046485528ee195accd362f70a20024fcdfbfd6f8429775b1fada1434c",
+      "shared_sha256": "13117bae4c658588d561bdb4d9d1540fe0c6acaae35aff3b82e2834fbfe7c564",
+      "redaction_count": 2,
+      "fields": [
+        {
+          "element": "자치법규상세링크",
+          "field": "URL query parameter OC",
+          "count": 2,
+          "replacement": "REDACTED"
+        }
+      ],
+      "private_original_location": "data/raw/documents/law_runs/e783d23192ac49dc82ba05f5b31b0667/seodaemun-rules/search_1.xml",
+      "private_original_note": "Git 제외된 개인 로컬 원본에만 보관. 이 공유 묶음에는 포함하지 않음."
+    },
+    {
+      "file_path": "raw/songpa-ordinance/search_1.xml",
+      "original_sha256": "0cffc927615412a20444945c4863feef9f41962d42ffe22852517c710f87062b",
+      "shared_sha256": "c14d7f5ad562d89b9201a7677c88452832786e9d1e69ce0f066785fa13ec9c55",
+      "redaction_count": 5,
+      "fields": [
+        {
+          "element": "자치법규상세링크",
+          "field": "URL query parameter OC",
+          "count": 5,
+          "replacement": "REDACTED"
+        }
+      ],
+      "private_original_location": "data/raw/documents/law_runs/e783d23192ac49dc82ba05f5b31b0667/songpa-ordinance/search_1.xml",
+      "private_original_note": "Git 제외된 개인 로컬 원본에만 보관. 이 공유 묶음에는 포함하지 않음."
+    },
+    {
+      "file_path": "raw/songpa-rules/search_1.xml",
+      "original_sha256": "6572965f7a61dcad0823486553febfb7a76af712425b1034dd5af9894088c754",
+      "shared_sha256": "f76e0cf9b892d1bd1b0102d4856f4a242e51b90e74689367382f3adfb60a0c81",
+      "redaction_count": 2,
+      "fields": [
+        {
+          "element": "자치법규상세링크",
+          "field": "URL query parameter OC",
+          "count": 2,
+          "replacement": "REDACTED"
+        }
+      ],
+      "private_original_location": "data/raw/documents/law_runs/e783d23192ac49dc82ba05f5b31b0667/songpa-rules/search_1.xml",
+      "private_original_note": "Git 제외된 개인 로컬 원본에만 보관. 이 공유 묶음에는 포함하지 않음."
+    }
+  ]
+}

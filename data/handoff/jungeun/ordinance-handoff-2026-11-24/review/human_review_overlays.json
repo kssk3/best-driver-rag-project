@@ -1,0 +1,188 @@
+{
+  "records": [
+    {
+      "parent_mst": "2101297",
+      "attachment_id": "160319461",
+      "raw_sha256": "d08c312e4a9b67131117d477451475f41af268af0a2dd7be7cdfc60e844f0957",
+      "updates": {
+        "retrieval_decision": "exclude_from_item_disposal_search",
+        "content_role": "signage_specification",
+        "human_review": {
+          "item_id": "2101297_160319461_signage",
+          "parent_mst": "2101297",
+          "attachment_id": "160319461",
+          "reviewer": "이정은",
+          "checked_at": "2026-11-24T11:17:11.345896+09:00",
+          "source": "사용자에게 별표6 원문 미리보기를 제시하고 분류를 확인함",
+          "user_response": "응 그리고 이데이터를 석호님한테 넘겨야해",
+          "decision": "규격봉투판매소 표지판으로 원본 보관. 품목별 분리배출 방법 검색에서 제외.",
+          "scope": "이 첨부의 분류만 확인. 전체 표나 이용권한 승인으로 확장하지 않음"
+        },
+        "human_review_status": "classification_confirmed"
+      }
+    },
+    {
+      "parent_mst": "2101385",
+      "attachment_id": "160561037",
+      "raw_sha256": "8a82ad6c18d75506ba9bc4e232e7083f003717f6ab9f89270921e43fff58f3a6",
+      "updates": {
+        "content_role": "annex",
+        "human_review": {
+          "item_id": "2101385_160561037_bin_colors",
+          "parent_mst": "2101385",
+          "attachment_id": "160561037",
+          "reviewer": "이정은",
+          "checked_at": "2026-11-24T11:18:40.142004+09:00",
+          "source": "시행규칙 별표1 원문 미리보기 1쪽의 글·그림과 색상표 6개 대조",
+          "user_response": "어 맞아",
+          "decision": "공동주택 일반용기 설치의 품목별 색상 6개 일치 확인",
+          "scope": "이 그림의 품목·색상과 공동주택 적용 구획만 확인. 전체 부칙·일정·모든 셀 승인 아님"
+        },
+        "structured_image_summary": {
+          "source_location": "별표1 1. 공동주택의 경우 / 가. 일반용기 설치 / 품목별 색상(표기방법-영문병기)",
+          "applicability": "공동주택 일반용기 설치 기준",
+          "colors": [
+            {
+              "item": "캔",
+              "color": "회색"
+            },
+            {
+              "item": "유리병",
+              "color": "주황색"
+            },
+            {
+              "item": "종이팩",
+              "color": "녹색"
+            },
+            {
+              "item": "PET병",
+              "color": "노랑색"
+            },
+            {
+              "item": "플라스틱",
+              "color": "파랑색"
+            },
+            {
+              "item": "비닐",
+              "color": "보라색"
+            }
+          ],
+          "validation": "이정은이 원문 글·그림과 6개 색상표의 일치 확인",
+          "does_not_establish": "실제 설치된 수거함 현황이나 수거시설 위치를 확인한 데이터가 아님"
+        },
+        "human_review_status": "image_colors_confirmed"
+      }
+    },
+    {
+      "parent_mst": "1481479",
+      "attachment_id": "121237861",
+      "raw_sha256": "044ab4a1af64f9917f20d6c10e90e0ba166dad6b62357735bd549161c5ab680a",
+      "updates": {
+        "table_row_continuations": {
+          "table-3": [
+            {
+              "source_rows": [
+                3,
+                4,
+                5
+              ],
+              "source_cell_ids": [
+                "table-3-r3-c0",
+                "table-3-r4-c0",
+                "table-3-r5-c0"
+              ],
+              "text": "1. 폐기물의 수집장소․설비 또는 허가승인 받은 매립시설외의 곳에 폐기물을 버리거나 매립한 자(법 제8조제1항 또는 제2항)"
+            },
+            {
+              "source_rows": [
+                7,
+                8
+              ],
+              "source_cell_ids": [
+                "table-3-r7-c0",
+                "table-3-r8-c0"
+              ],
+              "text": "가. 별도기구 없이 휴대하고 있는 폐기물(담배꽁초, 껌, 휴지 등)을 버리는 행위〈개정 2010.8.12.〉"
+            },
+            {
+              "source_rows": [
+                10,
+                11
+              ],
+              "source_cell_ids": [
+                "table-3-r10-c0",
+                "table-3-r11-c0"
+              ],
+              "text": "나. 간이보관기구(비닐봉지, 보자기 등)를 이용하여 폐기물을 버리는 행위"
+            },
+            {
+              "source_rows": [
+                15,
+                16
+              ],
+              "source_cell_ids": [
+                "table-3-r15-c0",
+                "table-3-r16-c0"
+              ],
+              "text": "라. 휴식 또는 행락중 발생된 쓰레기를 수거하지 아니하는 행위"
+            },
+            {
+              "source_rows": [
+                18,
+                19
+              ],
+              "source_cell_ids": [
+                "table-3-r18-c0",
+                "table-3-r19-c0"
+              ],
+              "text": "마. 차량, 손수레 등 별도 운반장비를 이용하여 폐기물을 버리는 행위"
+            },
+            {
+              "source_rows": [
+                21,
+                22,
+                23,
+                24
+              ],
+              "source_cell_ids": [
+                "table-3-r21-c0",
+                "table-3-r22-c0",
+                "table-3-r23-c0",
+                "table-3-r24-c0"
+              ],
+              "text": "바. 사업활동 과정에서 발생되는 폐기물(건설행위(법 제2조제3호의 “사업장폐기물”배출자, 법 제25조 폐기물 처리업자 및 법 제46조 폐기물 재생신고자는 제외)"
+            },
+            {
+              "source_rows": [
+                26,
+                27,
+                28,
+                29,
+                30
+              ],
+              "source_cell_ids": [
+                "table-3-r26-c0",
+                "table-3-r27-c0",
+                "table-3-r28-c0",
+                "table-3-r29-c0",
+                "table-3-r30-c0"
+              ],
+              "text": "사. 소유자 또는 관리자가 애완동물의 배설물을 처리할 용기등을 소지하지 아니하고 공공장소에 출입하거나 애완동물의 배설물을 공원등 공공장소에 방치한 경우(1차 위반은 용기 미소지에 한함)"
+            },
+            {
+              "source_rows": [
+                31,
+                32
+              ],
+              "source_cell_ids": [
+                "table-3-r31-c0",
+                "table-3-r32-c0"
+              ],
+              "text": "2. 생활폐기물을 배출자가 스스로 소각 또는 매립한 자(법제 15조제1항)"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

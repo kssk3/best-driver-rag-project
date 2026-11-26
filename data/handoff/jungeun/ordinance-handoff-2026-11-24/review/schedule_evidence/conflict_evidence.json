@@ -1,0 +1,81 @@
+{
+  "checked_at": "2026-11-24",
+  "method": "Read-only official page/linked PDF/source-code comparison. Human review by user is separate.",
+  "sources": [
+    {
+      "url": "https://www.songpa.go.kr/www/contents.do?key=3153",
+      "source_type": "official_operating_guide_html",
+      "last_modified_display": "2026-11-19",
+      "last_modified_meaning": "page footer display; not proof every table cell was edited on this day",
+      "evidence_file": "3153-wirye-dom-excerpt.html",
+      "evidence_kind": "normalized DOM from prior tool output; not raw HTTP bytes",
+      "finding": "위례동 placed in colspan2 covering Mon/Wed/Fri general/food columns",
+      "last_modified_verification": "2026-11-24 공식 페이지 재조회로 footer 최종수정2026-11-19 표시 확인. 개별 요일 정책 적용일은 미확인.",
+      "schedule_effective_date": null
+    },
+    {
+      "url": "https://www.songpa.go.kr/common/downloadAttch2.jsp?downName=%EF%BC%88%EC%88%98%EC%A0%95%EF%BC%89%EC%98%AC%EB%B0%94%EB%A5%B8+%EC%9E%AC%ED%99%9C%EC%9A%A9%ED%92%88+%EB%B6%84%EB%A6%AC%EB%B0%B0%EC%B6%9C.pdf&saveFile=%2Fbbs%2F369%2F2026%2F10%2F14%2F1f533944-0f8b-413e-b3c2-4c7fde443dcf0AF838E2GB0F08EA.pdf",
+      "source_type": "official_linked_PDF",
+      "evidence_file": "official-20261014.pdf",
+      "page_image": "page3.png",
+      "physical_pdf_page": 3,
+      "printed_page_labels": [
+        4,
+        5
+      ],
+      "path_date": "2026-10-14",
+      "path_date_meaning": "date embedded in URL path; not verified upload/publication/effective date",
+      "pdf_sha256": "8e0043431030c15a5bd1e0dac1e70dd3de4380bf4f0c6054cebb87e1d07ae7f0",
+      "finding": "Printed p4 last row places 위례동 under Tue/Thu/Sun; all-waste hours on printed p5 18:00~22:00",
+      "printed_publication_date": "2025-09",
+      "printed_publication_location": "PDF 2쪽 목차 왼쪽 녹색 발행정보 상자",
+      "pdf_creation_date": "2026-10-14T09:11:41+09:00",
+      "pdf_modification_date": "2026-10-14T09:11:41+09:00",
+      "schedule_effective_date": null,
+      "date_interpretation": "인쇄 발행일2025-09와 파일 생성·수정일2026-10-14 구분. 파일명·URL 날짜를 발행일로 쓰지 않음",
+      "pdf_metadata_meaning": "PDF 파일 속성의 생성·수정 표시일. 실제 파일화 이벤트나 정책 시행일을 확정하지 않음.",
+      "publication_evidence_page": 2
+    },
+    {
+      "url": "https://www.songpa.go.kr/www/resourceCirculationMap.do?key=6275",
+      "source_type": "official_map_public_UI_code",
+      "evidence_file": "6275-map-recycling-code-excerpt.js",
+      "last_modified_display": null,
+      "finding": "TWS display rows use etc Tue/Thu and petv Sun; conflicts with HTML3153 and linked PDF which have etc Tue/Sun and petv Thu"
+    },
+    {
+      "url": "https://www.songpa.go.kr/www/resourceCirculationMapData.do",
+      "source_type": "official_map_public_data",
+      "evidence_file": "map-trash-data-excerpt.js",
+      "data_generated_at_display": "2026-11-23 15:32",
+      "generated_time_meaning": "데이터 생성시각. 지도 화면 코드 수정일·요일 정책 시행일과 다름.",
+      "finding": "위례동 MWF and 마천2동 MWF; same for general/food groups as HTML3153",
+      "data_generated_verification": "기존 저장 응답 발췌 확인. 이번 적용 시 지도 재조회 없음.",
+      "schedule_effective_date": null
+    }
+  ],
+  "classification": "conflict_detected",
+  "interpretation": "Observed differences are not a request for the user to choose the factual answer. Preserve each source separately, confirm that the difference is visible, then mark source_conflict. Do not overwrite legal snapshot or arbitrarily decide current days.",
+  "user_verification_prompts": [
+    "위례동이 HTML에서는 월수금 칸, 링크 PDF에서는 화목일 칸에 있는 차이가 보이는지",
+    "화목일권역 재활용이 HTML·PDF와 지도 코드에서 서로 다르게 표시되는 차이가 보이는지"
+  ],
+  "no_external_contact_or_publication": true,
+  "robots_review": "robots_review.json",
+  "date_review": {
+    "user_instruction": "적용해",
+    "scope": "날짜의 의미·출처 시점 구분만 승인, 요일 사실 확정 아님",
+    "status": "date_meanings_applied_effective_date_pending",
+    "date_check": "date_check.json",
+    "pdf_printed_publication_date": "2025-09",
+    "pdf_metadata_created_at": "2026-10-14T09:11:41+09:00",
+    "pdf_metadata_modified_at": "2026-10-14T09:11:41+09:00",
+    "html3153_last_modified_display": "2026-11-19",
+    "html3153_verification": "2026-11-24 공식 페이지 재조회로 표시 확인",
+    "map_data_generated_at_display": "2026-11-23 15:32",
+    "map_data_verification": "기존 저장 응답에서 확인. 이번 적용 시 지도 재조회 없음",
+    "map_date_meaning": "데이터 생성시각이며 화면 코드 수정일·정책 시행일이 아님",
+    "finding": "PDF는 2025-09 발행 자료. 웹·지도 우선순위와 실제 요일은 적용일 미확인으로 확정하지 않음",
+    "next_evidence_needed": "요일 변경 공지의 적용일·대체 관계 또는 담당부서 확인"
+  }
+}

@@ -1,0 +1,7 @@
+{
+    "pipeline": {
+        "versions": {
+            "model": "gpt-6-luna"
+        }
+    }
+}

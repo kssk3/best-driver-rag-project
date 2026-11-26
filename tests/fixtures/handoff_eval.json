@@ -1,0 +1,23 @@
+{
+  "is_synthetic": true,
+  "cases": [
+    {
+      "case_id": "demo-answer",
+      "question": "품목알파",
+      "district": "서대문구",
+      "expected_status": "answered",
+      "reference_answer": "합성 조건엑스 안내"
+    },
+    {
+      "case_id": "demo-clarification",
+      "question": "품목알파",
+      "expected_status": "needs_clarification"
+    },
+    {
+      "case_id": "demo-insufficient",
+      "question": "없는품목오메가",
+      "district": "송파구",
+      "expected_status": "insufficient_evidence"
+    }
+  ]
+}
