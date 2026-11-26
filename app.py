@@ -199,7 +199,12 @@ def ask_pipeline(mode: str, request: PipelineRequest) -> bool:
 
 FAVICON_PATH = Path(__file__).parent / ".streamlit" / "favicon.png"
 DISTRICTS = ["서대문구", "송파구"]
-EXAMPLES = ["페트병 라벨은?", "기름 묻은 피자박스", "폐건전지 어디에?"]
+# (칩에 보이는 이름, 실제로 묻는 질문)
+EXAMPLES = [
+    ("🧴 페트병 라벨", "페트병 라벨은 어떻게 버려요?"),
+    ("🍕 피자박스", "기름 묻은 피자박스는 어디에 버려요?"),
+    ("🔋 폐건전지", "폐건전지는 어디에 버려요?"),
+]
 SAMPLE_MODE = "예시 응답"
 DEMO_MODE = "합성 데모"
 MODES = [SAMPLE_MODE, DEMO_MODE] + ([TEAM_INDEX_MODE] if TEAM_SETTINGS_PATH else [])
@@ -249,7 +254,17 @@ def current_view(mode):
     return st.session_state.get("view")
 
 
-def search_bar() -> None:
+def pick_district():
+    return st.pills(
+        "지역",
+        DISTRICTS,
+        default=DISTRICTS[0],
+        key="pick_district",
+        label_visibility="collapsed",
+    )
+
+
+def search_form(button_label):
     with st.form("search", border=False):
         text_col, button_col = st.columns([5, 1])
         question = text_col.text_input(
@@ -258,14 +273,23 @@ def search_bar() -> None:
             placeholder="예) 기름 묻은 피자박스는 어디에 버려요?",
             label_visibility="collapsed",
         )
-        submitted = button_col.form_submit_button("물어보기")
-    district = st.pills(
-        "지역",
-        DISTRICTS,
-        default=DISTRICTS[0],
-        key="pick_district",
-        label_visibility="collapsed",
-    )
+        return question, button_col.form_submit_button(button_label)
+
+
+def search_bar(compact=False) -> None:
+    if compact:
+        # 결과 화면: 지역 pill이 검색창 왼쪽에 한 줄로 붙는다.
+        pill_col, form_col = st.columns([1.6, 6], vertical_alignment="center")
+        with pill_col:
+            district = pick_district()
+        with form_col:
+            question, submitted = search_form("다시 묻기")
+    else:
+        question, submitted = search_form("물어보기")
+        label_col, pill_col = st.columns([2.2, 4.5], vertical_alignment="center")
+        label_col.html('<span class="lbl">어느 지역에 계세요?</span>')
+        with pill_col:
+            district = pick_district()
     if submitted:
         if not district:
             st.warning("지역을 선택하세요.")
@@ -293,14 +317,16 @@ def render_landing() -> None:
         st.html(HERO_HTML)
         search_bar()
         with st.container(key="examples"):
-            for index, (col, text) in enumerate(
-                zip(st.columns(len(EXAMPLES)), EXAMPLES)
-            ):
-                if col.button(text, key=f"example_{index}"):
+            cols = st.columns(
+                [2.2] + [1.5] * len(EXAMPLES), vertical_alignment="center"
+            )
+            cols[0].html('<span class="lbl">이런 질문이 많아요!</span>')
+            for index, (col, (label, question)) in enumerate(zip(cols[1:], EXAMPLES)):
+                if col.button(label, key=f"example_{index}"):
                     district = st.session_state.get("pick_district")
                     if not district:
                         st.warning("지역을 선택하세요.")
-                    elif ask(text, district, USER_MODE):
+                    elif ask(question, district, USER_MODE):
                         st.rerun()
     image_col.image(str(HERO_IMAGE))
     st.html(SECTIONS_HTML)
@@ -417,5 +443,5 @@ else:
     if view is None:
         render_landing()
     else:
-        search_bar()
+        search_bar(compact=True)
         render_result(view)

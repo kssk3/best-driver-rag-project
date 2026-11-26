@@ -124,6 +124,10 @@ footer {
 }
 
 /* 지역·예시 질문 칩 */
+.lbl {
+  color: var(--sub);
+  font-size: 12px;
+}
 .st-key-district button {
   border-radius: 999px;
 }
