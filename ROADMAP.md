@@ -12,13 +12,13 @@
 
 팀 기능이 병합되면 아래 표의 해당 항목과 기준 커밋을 갱신한다. 문항과 실행 명령은 [평가셋 안내](eval/README.md), 당시 검증 수치와 결과 해석은 [실행 기록 안내](results/README.md)에서 관리한다.
 
-2026년 11월 25일 팀 `dev` 확인 기준은 `c04cb70`이다. PR #23에서 조례·별표 인계 자료와 검증 모듈의 이름을 정리했고, PR #24에서 환경변수 확인, 로그의 비밀값 가리기, 공용 채팅 모델 생성·호출 함수를 추가했다. [기준 커밋](https://github.com/kssk3/best-driver-rag-project/commit/c04cb7071316d6e30274cf1f18601ecffc9e67e3)
+Implementation snapshot for November 26, 2026, at local `dev` commit [`a2b3db93`](https://github.com/kssk3/best-driver-rag-project/commit/a2b3db93c0b6621c18fef6353615137de52436a5).
 
-| 영역 | 현재 구현과 검증 | 연결에 남은 일 |
+| Area | Available on this revision | Remaining work |
 | --- | --- | --- |
-| 자료와 검색 | 검토한 원문을 HTML·JSON으로 전처리하고 조문·표 행 단위로 색인한다. A 벡터 검색기는 적용 지역을 확인하고 질문과 가까운 청크를 순위순으로 반환한다. | B 하이브리드·C 재정렬 검색, 청킹 개선과 bge-m3 비교, DB·서비스 연결 |
-| 질문·답변·장소 | 런타임은 해석한 지역을 검색과 생성에 전달하고, 선택한 질문 다듬기 콜백과 인용 검사를 거쳐 결과를 기록한다. 장소 파서는 주어진 `getSpot` 응답에서 해당 구의 장소를 추린다. | 팀 A 검색과 모델 답변을 같은 서비스 요청으로 실행하고 UI·실시간 장소 조회에 연결. 같은 색인에서 질문 다듬기 전후 비교 |
-| 평가 | 일반·함정 질문 6개로 검색 순위와 고정 근거 답변을 검증한 실험이 있다. A/B/C 실행 기록으로 Ragas Faithfulness를 채점하고, 팀 Langfuse에서 실행별 진술·판정·사유를 확인할 수 있다. 위례동 일정 충돌은 별도 관찰 사례다. 개발 10문항과 최종 20문항(AI 초안, 팀 확인)이 있고 A/B/C 60건과 C+질문 다듬기 20건을 한 번씩 실행해 Hit@5, 정답 충족, 근거 적합, 근거 없음 대응, 시간을 집계했다([보고서](report.md)). | 송파구 시행규칙 별표 표 행 검색 개선, 문항별 원문 대조 기록, 제출 태그 |
+| Index and retrieval | The JSON team index supports district-filtered vector retrieval (A), vector and BM25 rank fusion (B), and reranking of the fused candidates (C). The [launcher](scripts/run_chat.py) checks the default index against the [chunk baseline](results/chunking/chunk_stats.csv). | Compare retrieval quality on reviewed cases. OpenSearch and the bge-m3 comparison remain project goals. |
+| Chat and location | Streamlit runs A or C with a model answer and optional catalog rewriting. The resolver uses the Seoul dong table and handles district conflicts through clarification. The place parser accepts supplied getSpot responses. | Live place lookup and a user-facing map remain delivery goals. |
+| Evaluation | The [development set](eval/dev.json) has 10 cases and the [final set](eval/test.json) has 20 (AI drafts, confirmed by the team before the run). A/B/C with rewriting off (60 runs) and C with rewriting (20 runs) were each run once; the [report](report.md) gives Hit@5, answer correctness, citation validity, timing and a failure analysis. Saved runs also support Faithfulness scoring and [Langfuse score uploads](results/README.md). | Per-case source-evidence review record, an optional table-row search improvement (kept as an experiment, see the report), and the submission tag. |
 
 **답변 담당 작업 브랜치**에서 두 개발 문항을 팀 A 검색기와 답변 모델로 각각 실행했다. 서대문구 색상표의 허용 근거는 검색 1위였고 모델은 1위를 인용했다. 송파구 대형폐기물 문항의 허용 근거는 3위였고 모델은 3위와 1위를 인용했다. 송파구 정답표의 다음 작업은 공식 원문 대조다. 당시 `git_base`는 `49db656`이었고 실행에는 로컬 변경이 포함됐다. [커밋 `e0a31d2`](https://github.com/kssk3/best-driver-rag-project/commit/e0a31d2a6a4ddeef36f493b5eed853838a4c6bb2)의 개발 문항 파일과 팀 A 런타임 생성 코드의 SHA-256은 실행 기록에 저장된 값과 각각 일치한다. [개발셋과 재현 방법](eval/README.md) · [두 문항의 실행 기록](results/team-a/2026-11-25T064832Z/runs.csv)
 
@@ -81,7 +81,7 @@ flowchart TB
     V -->|전체 연결 확인| F --> E --> H
 ```
 
-[평가 실행기](src/evaluation/runner.py)는 `RAGPipeline.run`을 호출한다. Streamlit 화면도 같은 진입점을 사용하도록 연결한다. 담당자 간 연결에는 각 모듈의 공용 입출력을 사용한다.
+The [evaluation runner](src/evaluation/runner.py) and the [Streamlit app](app.py) both call the configured pipeline’s `run` method. The runtime factory determines which retriever and generator handle the request.
 
 ## 제출 결과
 

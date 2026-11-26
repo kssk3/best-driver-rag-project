@@ -1,6 +1,6 @@
 # 폴더 구조와 책임
 
-공통 규격, 로더/청킹/로컬 색인, 파이프라인과 평가 실행기를 최소 인계 단위로 구현했다. 현재 실행 방법과 팀 함수 연결 경계는 [양석호 최소 구현 인계](handoff.md)에 있다. 아래 구조와 담당표는 팀 전체의 목표이며, 검색/생성/화면 등 각 담당자의 기능 완료를 뜻하지 않는다. 내부 파일 개수나 구현 순서는 제한하지 않는다.
+The [roadmap](../ROADMAP.md#현재-도달지점) tracks the merged team implementation. The [November 24 handoff](handoff.md) records the original contracts, local index and pipeline. The ownership table below identifies the contacts for changes to these interfaces.
 
 ## 폴더 배치
 
@@ -16,7 +16,7 @@
 │  ├─ retrieval/             A/B/C 검색, 지역 해석, 장소 저장과 조회
 │  ├─ generation/            근거 기반 생성과 응답 정책
 │  ├─ infrastructure/        저장소, 임베딩과 외부 자원 연결
-│  ├─ interface/             Streamlit 화면, 지도와 관찰 패널
+│  ├─ interface/             Chat, run inspection and score comparison
 │  ├─ evaluation/            공통 실행기, 담당별 지표와 비교 분석
 │  └─ observability/         실행 원본 기록과 Langfuse 연결
 ├─ scripts/                  합성 자동 데모, 자료 준비/근거 조회, 색인과 평가 명령, 수집 진입점
@@ -34,7 +34,7 @@
 └─ docs/                     팀 공통 기준과 재현 문서
 ```
 
-Streamlit 진입점인 루트 `app.py`와 `src/interface/`는 공통 `RAGPipeline.run` 결과(`RunRecord`)를 어댑터로 화면용 응답으로 바꿔 보여 준다. 화면은 `RAG_CHAT_SETTINGS`로 지정한 팀 색인 실행(C 재정렬과 질문 다듬기)에 연결하고, 색인이 없으면 `scripts.run_chat`이 먼저 만든다([README](../README.md)). 합성 데모(`create_demo_pipeline`)는 키 없이 연결을 확인하는 오프라인 경로로 `scripts.demo`에 남아 있다. 터미널에서는 `scripts/search_index.py`로 실제 근거를 조회할 수 있다. Python 패키지에는 `__init__.py`를 두었다.
+The [Streamlit app](../app.py) calls `pipeline.run(request)` and converts its `RunRecord` with `run_record_to_view`. The team branch in `_build_pipeline` calls `create_a_catalog_runtime` for A or C. The synthetic branch calls `create_demo_pipeline` with the fixture index. See the [launch instructions](../README.md#팀-색인과-리라이트-비교).
 
 ## 담당 경로
 
@@ -75,10 +75,10 @@ Streamlit 진입점인 루트 `app.py`와 `src/interface/`는 공통 `RAGPipelin
 
 | 파일 | 역할 |
 | --- | --- |
-| `src/retrieval/regions.py` | PR #11에서 구현했다. `resolve_request`는 사용자가 선택한 구, 질문에 적힌 구, 동 4곳의 연습용 매핑표를 사용한다. 지역이 모호하거나 선택한 구와 충돌하면 다시 묻는다. |
-| `src/retrieval/search.py` | A 벡터 검색 구현. 지역 조건에 맞는 후보를 코사인 유사도순으로 반환한다. B·C 검색은 후속 구현이다. |
+| `src/retrieval/regions.py` | Resolves district and dong from the request using the [Seoul mapping table](../data/reference/README.md). Ambiguous and conflicting inputs can trigger clarification. |
+| `src/retrieval/search.py` | Applies district filtering. A ranks by vector similarity, B fuses vector and BM25 ranks, and C passes the fused candidates to the configured [reranker](../src/retrieval/rerankers.py). |
 | `src/retrieval/spots.py` | 제공된 `getSpot` 응답을 파싱하고 지정한 구의 장소를 `PlaceResult` 목록으로 변환한다. |
-| `src/evaluation/retrieval_metrics.py` | 개발·최종셋의 공용 검색 지표를 연결할 위치다. |
+| `src/evaluation/retrieval_metrics.py` | Computes Hit@k against allowed chunk IDs and aggregates eligible cases by configuration. |
 
 ### 답변 생성과 품질 추적 (강성수)
 
@@ -86,9 +86,9 @@ Streamlit 진입점인 루트 `app.py`와 `src/interface/`는 공통 `RAGPipelin
 | --- | --- |
 | `src/generation/answer.py` | 답변 가능·재질문·근거 부족·오류를 구분하고, 인용할 때 원문 출처와 문서 버전을 확인한다. |
 | `src/generation/pipeline_adapter.py` | 공통 요청과 선택된 청크를 생성 입력으로 변환하고, 검증한 인용 청크 ID를 반환한다. |
-| `src/evaluation/answer_experiments/` | 공통 실험은 벡터와 BM25+벡터 앙상블의 순위 비교, 고정 근거 답변 검증 및 CSV 저장을 담당한다. 답변 작업 브랜치의 색상표 실험은 [평가셋 안내](../eval/README.md)를 따른다. |
-| `src/evaluation/answer_metrics.py` | 답변 품질 자동 평가를 연결할 위치다. |
-| `src/observability/tracing.py` | Langfuse 추적을 연결할 위치다. |
+| `src/evaluation/answer_experiments/` | Provides the A/B/C evaluation factory, catalog-enabled chat runtime and fixed-evidence experiments. See the [evaluation commands](../eval/README.md). |
+| `src/evaluation/answer_metrics.py` | Scores saved answers for Faithfulness using the chunks recorded as model input. |
+| `src/observability/tracing.py` | Uploads stored Faithfulness results to Langfuse. The [results guide](../results/README.md) covers score uploads and recovery. |
 
 ### 청킹 개선과 화면·관찰 검증 (이승주)
 
@@ -99,7 +99,7 @@ Streamlit 진입점인 루트 `app.py`와 `src/interface/`는 공통 `RAGPipelin
 | `src/interface/chat.py` | 질문과 답변 화면 |
 | `src/interface/inspection.py` | 관찰 검증 패널 |
 | `src/validation.py` | UI 독립 공용 검증 |
-| `src/evaluation/comparison.py` | 구성 비교와 실패 분석 |
+| `src/interface/comparison.py` | Aggregates eligible A/B/C Faithfulness scores for the comparison panel. |
 
 ### 공통 기반의 최초 구현과 인계 (양석호)
 
@@ -132,20 +132,20 @@ PR #8과 #10의 전처리 자료를 사용한다. 공용 런타임에 주입할 
 
 ```mermaid
 flowchart TD
-    UI["Streamlit 입력<br/>연결 예정"] --> P["공통 RAG 함수"]
-    E["공통 평가 실행기"] --> P
-    P --> R["지역과 조건 해석 콜백"]
-    R --> Q["질문 다듬기 콜백 또는 원질문"]
-    Q --> S["A/B/C 검색 콜백"]
-    S --> G["원질문 기준 답변 생성 콜백"]
-    R --> L["장소 조회 콜백"]
-    G --> O["응답, 실제 인용과 실행 기록"]
-    L --> O
+    UI["Team chat (A or C)"] --> P["RAGPipeline.run"]
+    E["A/B/C evaluation"] --> P
+    P --> R["Resolve region"]
+    R --> Q["Use original or rewritten search query"]
+    Q --> S["Retrieve and rank candidates"]
+    S --> G["Select context, generate answer and validate citations"]
+    G --> O["Record response and stages"]
+    G -.-> L["Optional place lookup for a resolved request"]
+    L -.-> O
     O --> UI
     O --> E
 ```
 
-이 도식은 팀 전체의 연결 목표다. 공통 함수와 평가 실행기는 구현됐고, 지역/검색/생성/장소 알고리즘은 담당자가 콜백으로 연결한다. 합성 CLI는 별도의 데모 콜백을 사용한다. 필요한 조건을 되묻거나 오류를 처리하는 분기는 [공통 연결 기준](TEAM-SETUP.md)을 따른다. 장소 조회와 문서 검색의 결과 형식은 분리한다.
+The solid retrieval path is used by team chat and the evaluation runner. The dotted branch marks the optional place lookup callback. The shipped team chat factory leaves it unset, and the app has no map view. The synthetic CLI uses its own callbacks. See the [shared contracts](TEAM-SETUP.md) for clarification and error handling.
 
 통합 코드는 검색과 생성 모듈의 공용 호출 지점을 사용한다. 내부 파일 분리와 알고리즘 선택은 각 담당자가 정하며, 공용 입출력, 의존성, DB 구조와 실행 기록 변경은 사용하는 담당자와 맞춘다.
 
