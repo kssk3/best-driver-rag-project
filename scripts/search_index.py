@@ -11,6 +11,7 @@ from src.infrastructure.embeddings import (
     create_openai_embeddings,
 )
 from src.infrastructure.stores import load_index, validate_vector
+from src.retrieval.search import is_searchable
 
 
 def rank_entries(index, query_vector, district: str, top_k: int):
@@ -25,9 +26,8 @@ def rank_entries(index, query_vector, district: str, top_k: int):
     results = []
     for entry in index.entries:
         chunk = entry.chunk
-        if chunk.scope_type == "unknown" or (
-            chunk.scope_type == "district" and district not in chunk.districts
-        ):
+        # A·B·C 검색과 같은 기준(지역 필터 + 제외 목록)을 쓴다. 규칙을 한 곳에만 둔다.
+        if not is_searchable(chunk, district):
             continue
         other = math.sqrt(sum(v * v for v in entry.vector))
         if other == 0:
