@@ -19,7 +19,7 @@
 
 2026-11-24 기준으로 공용 규격, 파일 로더, 제공된 XML/JSON의 문서 쌍 연결과 조문/표 행 청킹, 실제 임베딩 색인과 근거 조회를 구현했다. 공통 파이프라인의 상태별 응답과 실행 기록은 합성 자동 데모로 확인했다. 실제 질문 점검에서 관련 품목별 근거가 상위 결과에 빠진 사례가 있어 검색 품질 검증은 완료되지 않았다. 실행 방법과 검증 범위는 [공통 기반 최소 인계본](handoff.md)에 기록한다.
 
-팀 A/B/C 검색, 답변 생성 모델, 실제 DB, 장소 조회와 UI는 아직 공통 흐름에 연결하지 않았다. 아래 표는 팀 서비스의 확정 목표이며, 데모에 같은 호출 경계가 있다는 이유로 구현 완료로 세지 않는다.
+The [implementation snapshot](../ROADMAP.md#현재-도달지점) covers the current team index, model-backed chat (A or C), and the A/B/C evaluation runner. The table below defines the delivery goals, including live place lookup and a map. The [November 24 handoff](handoff.md) records the earlier synthetic and index checks.
 
 | 구분 | 확정된 범위 |
 | --- | --- |

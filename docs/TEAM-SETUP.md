@@ -10,7 +10,7 @@
 | --- | --- |
 | 공용 요청·응답·콜백 | [자료형](../src/contracts.py), [콜백 인자](../src/runtime.py), [호출 순서](../src/pipeline.py)를 확인한다. `create_runtime`에는 지역 해석기·검색기·생성기를 전달하고 필요하면 질문 다듬기·장소 조회 콜백을 추가한다. `run(request)`가 반환한 `RunRecord`의 `record.response`에서 최종 응답을 읽는다. [연결 테스트](../tests/integration/test_handoff_runtime.py) |
 | 자료 준비·청킹·색인 | [준비 명령](../README.md#실제-자료-준비와-근거-조회)과 [준비 코드](../scripts/prepare_data.py)에서 전처리 묶음이 형식별 청크·색인이 되는 경로를 확인한다. [검색 명령](../scripts/search_index.py)은 지정한 구의 근거를 순위순으로 출력한다. 표 행을 수정할 때는 [청킹 테스트](../tests/unit/test_preprocessed_chunking.py)에서 원문 위치와 표의 맥락이 보존되는지 확인한다. |
-| 서비스 검색·화면 | [팀 검색기](../src/retrieval/search.py)의 `make_vector_retriever(index, embedder)`는 A 방식의 지역 제한 상위 후보를 반환한다. B/C와 [화면 진입점](../app.py)의 서비스 연결은 남아 있다. [검색 비교 실험](../src/evaluation/answer_experiments/evidence_retrieval_benchmark.py)은 별도 실험 자료에서 벡터와 앙상블을 비교한다. [A 검색 테스트](../tests/unit/test_search.py) |
+| Chat and retrieval | The [chat factory](../src/evaluation/answer_experiments/answer_evaluation_runtimes.py) accepts A or C. The [evaluation factory](../src/evaluation/answer_experiments/abc_runtimes.py) builds A, B and C for the same cases with rewriting off. Both use the [team retriever](../src/retrieval/search.py). |
 | 지역·질문 다듬기·장소 | [지역 해석기](../src/retrieval/regions.py), [질문 다듬기](../src/query/rewrite.py), [질문 다듬기와 검색 연결 테스트](../tests/unit/query/test_search_rewrite.py)에서 성공·실패 시 실제 검색 질의를 확인한다. 장소 파싱은 [`parse_places`](../src/retrieval/spots.py)와 [getSpot 테스트](../tests/unit/test_spots.py)를 대조한다. [공용 오류 코드](ERRORS.md) |
 | 답변·인용 | [생성 모듈 안내](../src/generation/AGENTS.md), [어댑터](../src/generation/pipeline_adapter.py), [답변 정책](../src/generation/answer.py)과 [고정 근거 테스트](../tests/unit/answer_experiments/test_evidence_pipeline_answers.py)를 확인한다. 검색 후보, 생성기에 전달한 청크, 최종 인용을 차례로 대조한다. 외부 모델에 보낸 요청은 모델 호출부에서 확인한다. |
 | 평가·검증 | [채점 기준](problem.md#평가셋과-최종-80건), [브랜치별 평가셋과 실행 명령](../eval/README.md), [실행기](../src/evaluation/runner.py)를 확인한다. 실행기는 질문·위치·조건으로 요청을 만들고, 모범 답안과 허용 청크 ID는 채점에 사용한다. [CI 검사 명령](CI-AND-DEPENDENCIES.md) |
@@ -19,7 +19,7 @@
 
 설치는 [README](../README.md)의 루트 uv 환경을 사용한다. `.python-version`, `pyproject.toml`과 `uv.lock`을 함께 확인한다. 공용 의존성을 추가할 때 관련 담당자와 실행 가능성을 확인하고 의존성 파일과 잠금 파일을 함께 갱신한다.
 
-UI는 Streamlit으로 구현하고 공통 Python RAG 함수를 직접 호출하는 것이 목표다. 공통 파이프라인과 평가 실행기는 구현됐으며 같은 `RAGPipeline.run`을 사용한다. Streamlit은 공용 의존성에 포함되어 있고 `app.py`로 실행한다(데모 색인 선행, 명령은 [README](../README.md)). 지금 화면은 합성 데모 파이프라인에 연결되어 있다. 현재 터미널에서는 `scripts.search_index`로 실제 색인의 근거를 조회하고, 공통 응답 흐름은 `scripts.demo`의 합성 자동 실행으로 확인한다. 실행 방법은 [README](../README.md)를 따른다. 별도 Next.js 프론트엔드, FastAPI 진입점과 Compose 구성은 현재 필수 범위에 포함하지 않는다.
+Start team chat with `uv run --locked --env-file .env python -m scripts.run_chat` from the repository root. The launcher selects C with catalog rewriting. To select A, pass `--settings configs/team-a-rewrite-chat.json`. With either configuration, the app defaults to team execution. Starting `app.py` without `RAG_CHAT_SETTINGS` offers only the synthetic demo and requires its fixture index to answer a question. See the [setup and index commands](../README.md).
 
 합성 데모는 로컬 JSON 색인과 해시 임베딩을 사용한다. 조례·별표 인계 자료로 실제 색인을 만들 때는 `text-embedding-3-small`을 지정한다. 검색 CLI는 순위와 근거를 출력하고, 파이프라인 답변은 `create_runtime`에 전달한 생성기가 만든다. [환경변수 예시](../.env.example)
 
@@ -50,7 +50,7 @@ PR #24의 [공용 채팅 모듈](../src/infrastructure/chat_models.py)은 `creat
 | 질문에 연희동만 입력하고 구는 선택하지 않음 | 검색기와 생성기 모두 해석된 서대문구·연희동을 받는다. 실행 기록의 원래 요청에는 사용자가 구를 선택하지 않았다는 사실이 남는다. |
 | 사용자가 송파구를 선택 | 선택한 구와 연희동에서 추론한 구가 달라 검색과 생성 전에 지역을 다시 묻는다. |
 
-연습용 매핑표에는 동 4곳이 들어 있다. 위례동 일정 충돌은 송파구를 명시하고 근거를 고정한 별도 관찰 사례다.
+The [Seoul reference table](../data/reference/README.md) covers administrative and legal dong names. Select `송파구` under `지역` and enter `연희동 페트병 언제 버려요?` to see the resolver ask which district you mean. Enter `송파구` in `지역(구)` and press `다시 질문하기` so the resolver keeps `송파구` and drops `연희동`. The Wirye-dong schedule case is a separate fixed-evidence experiment.
 
 ## 질문, 지역과 답변
 
@@ -98,4 +98,4 @@ PR #24의 [공용 채팅 모듈](../src/infrastructure/chat_models.py)은 `creat
 
 각 담당자는 공통 예시로 독립 구현하고 준비된 작은 기능부터 통합한다. 화면용 예시, 고정 근거 생성 시험과 실제 RAG 실행은 기록에서 구분한다. 예시 응답만 표시한 상태를 실제 검색 연결로 보고하지 않는다.
 
-[공용 검증 모듈](../src/validation.py)과 관찰 패널은 뼈대 단계다. 현재 파이프라인은 인용 ID가 선택된 청크에 속하는지 검사한다. 생성 담당자는 재시도·보류 조건을 정하고, 공용 검증은 UI 없이도 사용할 수 있게 연결한다. 새 결과를 보고할 때는 해당 커밋의 테스트 출력, 모델 실행 기록 또는 평가 기록을 근거로 제시한다.
+The [inspection panel](../src/interface/inspection.py) calls [`check_response`](../src/validation.py) and shows warnings, rules it could not check, and candidate ranks. To display Faithfulness by configuration in the separate comparison panel, set `RAG_SCORES_CSV` to a scored run’s `scores.csv`. The panel summarizes eligible rows. For a reported result, cite the run or test output and its revision.
