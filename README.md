@@ -64,7 +64,7 @@ uv run --locked python -m scripts.search_index --index data/processed/ordinance-
 
 ## 팀 색인과 리라이트 비교
 
-팀 색인(JSON) 경로와 답변 모델을 [A 검색 실행 설정](configs/team-a-rewrite-chat.json)에 지정한다. 색인과 모델 키를 준비한 환경에서 다음 명령을 실행하면 Streamlit에 **실행(팀 색인)** 모드가 표시된다. `RAG_CHAT_SETTINGS`의 상대 경로는 저장소 루트 기준이다. 설정 파일의 `pipeline.rewrite_enabled`를 바꿔 저장하면 다음 질문부터 바뀐 값으로 실행한다.
+팀 색인(JSON) 경로와 답변 모델을 [A 검색 실행 설정](configs/team-a-rewrite-chat.json)에 지정한다. 색인과 모델 키를 준비한 환경에서 다음 명령을 실행하면 Streamlit에 **실행(팀 색인)** 모드가 표시된다. `RAG_CHAT_SETTINGS`의 상대 경로는 저장소 루트 기준이다. 설정 파일의 `pipeline.rewrite_enabled`를 바꿔 저장하면 다음 질문부터 바뀐 값으로 실행한다. 같은 경로의 팀 색인이나 활성 품목 사전을 교체해도 다음 질문에서 새 파일을 읽는다. 런타임을 가져오는 중에 파일이 바뀌었다는 메시지가 나오면 교체를 마친 뒤 다시 질문한다.
 
 ```sh
 RAG_CHAT_SETTINGS=configs/team-a-rewrite-chat.json \
@@ -79,6 +79,8 @@ uv run --locked --env-file .env python -m scripts.evaluate \
   --factory src.evaluation.answer_experiments.answer_evaluation_runtimes:create_a_rewrite_comparison \
   --output-dir results/local/catalog-rewrite-comparison
 ```
+
+기본 A/B/C 평가와 A 리라이트 비교는 별도의 출력 디렉터리에 기록한다. 기본 A 평균에는 기본 평가의 A 실행만 사용하고, 리라이트 효과는 별도의 A OFF/ON 결과로 비교한다.
 
 ON은 품목 사전 규칙으로 검색 질의를 보강한다. `evaluation.json`에는 원질문, 실제 검색 질의, 해석된 구·동, 리라이트 상태, 색인과 사전 버전이 들어간다. `runs.csv`와 `candidates.csv`에서 구성별 후보 청크와 허용 근거의 검색 순위를 비교한다.
 

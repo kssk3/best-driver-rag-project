@@ -29,6 +29,7 @@ from src.interface.chat import render_response
 from src.interface.inspection import render_inspection
 from src.interface.map import render_places
 from src.pipeline import PipelineConfigurationError
+from src.rewrite_dictionary import catalog
 
 # [임시] 예시(합성) 응답을 읽는다.
 SAMPLE_PATH = (
@@ -64,6 +65,32 @@ class TeamSettingsFileError(ValueError):
     """팀 실행 설정 파일을 읽거나 해석할 수 없는 경우."""
 
 
+class TeamResourceChangedError(RuntimeError):
+    """런타임을 가져오는 도중 팀 색인이나 품목 사전이 갱신된 경우."""
+
+
+type FileVersion = tuple[int, int, int, int, int]
+type TeamFileVersions = tuple[FileVersion | None, FileVersion | None]
+
+
+def _file_version(path: Path) -> FileVersion | None:
+    try:
+        info = path.stat()
+    except OSError:
+        # 실제 로더가 파일과 실행 설정 오류를 구분해서 보고한다.
+        return None
+    return info.st_dev, info.st_ino, info.st_size, info.st_mtime_ns, info.st_ctime_ns
+
+
+def _team_file_versions(settings: RuntimeSettings) -> TeamFileVersions:
+    return (
+        _file_version(settings.index_path),
+        _file_version(catalog.CATALOG_PATH)
+        if settings.pipeline.rewrite_enabled
+        else None,
+    )
+
+
 def read_team_settings(path: str) -> RuntimeSettings:
     try:
         return load_settings(PROJECT_ROOT / path, project_root=PROJECT_ROOT)
@@ -76,13 +103,31 @@ def read_team_settings(path: str) -> RuntimeSettings:
 @st.cache_resource(
     max_entries=2, hash_funcs={RuntimeSettings: RuntimeSettings.model_dump_json}
 )
-def load_pipeline(team_settings: RuntimeSettings | None = None):
+def _build_pipeline(
+    team_settings: RuntimeSettings | None = None,
+    file_versions: TeamFileVersions | None = None,
+):
     if team_settings is not None:
-        return create_a_catalog_runtime(team_settings)
+        pipeline = create_a_catalog_runtime(team_settings)
+        # 로드 중에 파일이 교체되면 이전 키로 새 결과를 캐시하지 않는다.
+        if _team_file_versions(team_settings) != file_versions:
+            raise TeamResourceChangedError
+        return pipeline
     settings = load_settings(
         PROJECT_ROOT / "configs" / "demo.json", project_root=PROJECT_ROOT
     )
     return create_demo_pipeline(settings)
+
+
+def load_pipeline(team_settings: RuntimeSettings | None = None):
+    if team_settings is None:
+        return _build_pipeline()
+    file_versions = _team_file_versions(team_settings)
+    pipeline = _build_pipeline(team_settings, file_versions)
+    # 캐시를 재사용할 때도 조회 중 교체된 파일이 있는지 확인한다.
+    if _team_file_versions(team_settings) != file_versions:
+        raise TeamResourceChangedError
+    return pipeline
 
 
 FAVICON_PATH = Path(__file__).parent / ".streamlit" / "favicon.png"
@@ -148,6 +193,8 @@ with user_tab:
                 )
             except MissingEnvironmentError:
                 st.error("팀 색인 실행에 필요한 OPENAI_API_KEY 환경변수를 설정하세요.")
+            except TeamResourceChangedError:
+                st.error("팀 색인이나 품목 사전이 갱신되었습니다. 다시 질문하세요.")
             except (OSError, ValueError) as error:
                 if mode != TEAM_INDEX_MODE:
                     st.error(

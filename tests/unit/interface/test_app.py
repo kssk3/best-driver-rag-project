@@ -1,6 +1,8 @@
 """app.py가 오류 없이 실행되고 예시 응답임을 알리는지 확인한다."""
 
 import json
+from hashlib import sha256
+from os import utime
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock
@@ -8,9 +10,12 @@ from unittest.mock import Mock
 import pytest
 from streamlit.testing.v1 import AppTest
 
-from src.contracts import GenerationResult
+from src.contracts import Chunk, GenerationResult
 from src.evaluation.answer_experiments import answer_evaluation_runtimes
+from src.infrastructure.stores import save_index
+from src.ingestion.indexing import build_index
 from src.retrieval.regions import resolve_request
+from src.rewrite_dictionary import catalog
 from src.rewrite_dictionary.runtime import make_catalog_rewriter
 from src.runtime import create_runtime
 
@@ -251,3 +256,122 @@ def test_app_reloads_team_runtime_when_same_settings_file_changes(
     assert not app.error
     assert factory.call_count == 2
     assert retrieve.call_count == 3
+
+
+def test_app_refreshes_same_path_index_and_active_catalog(
+    monkeypatch, tmp_path
+) -> None:
+    index_path = tmp_path / "index.json"
+    catalog_path = tmp_path / "catalog.json"
+    runs_path = tmp_path / "runs"
+    config = tmp_path / "chat.json"
+    config.write_text(
+        json.dumps(
+            {
+                "index_path": str(index_path),
+                "runs_path": str(runs_path),
+                "pipeline": {
+                    "rewrite_enabled": True,
+                    "versions": {"model": "offline-model"},
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    catalog_json = json.loads(catalog.CATALOG_PATH.read_bytes())
+    catalog_path.write_text(
+        json.dumps(catalog_json, ensure_ascii=False), encoding="utf-8"
+    )
+    monkeypatch.setattr(catalog, "CATALOG_PATH", catalog_path)
+    monkeypatch.setenv("RAG_CHAT_SETTINGS", str(config))
+    monkeypatch.setenv("OPENAI_API_KEY", "offline-unit-test-key")
+    embedder = SimpleNamespace(
+        identity='{"provider":"openai","model":"offline-embedding","dimensions":1}',
+        embed_documents=lambda texts: [[1.0] for _ in texts],
+        embed_query=lambda _: [1.0],
+    )
+    monkeypatch.setattr(
+        answer_evaluation_runtimes, "create_openai_embeddings", lambda *_: embedder
+    )
+    monkeypatch.setattr(
+        answer_evaluation_runtimes,
+        "make_model_draft",
+        lambda _: (
+            lambda request: {
+                "status": "answered",
+                "message": request["evidence"][0]["text"],
+                "citation_indices": [0],
+            }
+        ),
+    )
+
+    def synthetic_index(content):
+        chunk = Chunk(
+            chunk_id="offline-chunk",
+            source_document_id="offline-guide",
+            source_document_version="v1",
+            title="합성 안내",
+            content_format="json",
+            content=content,
+            source_url="https://example.org/guide",
+            source_location="합성 자료",
+            scope_type="district",
+            districts=["서대문구"],
+            chunking_version="synthetic-v1",
+        )
+        return build_index([chunk], embedder)
+
+    first = synthetic_index("이전 합성 근거")
+    second = synthetic_index("최신 합성 근거")
+    save_index(first, index_path)
+    app = AppTest.from_file(str(APP_PATH), default_timeout=10).run()
+    app.radio[0].set_value("실행(팀 색인)").run()
+    question = "우유팩은 어떻게 버려요?"
+    app.text_input[0].set_value(question)
+
+    def submit(expected_evidence):
+        old_runs = set(runs_path.glob("*.json"))
+        app.button[0].click().run()
+        assert not app.exception
+        assert not app.error
+        assert any(message.value == expected_evidence for message in app.success)
+        [record_path] = set(runs_path.glob("*.json")) - old_runs
+        return json.loads(record_path.read_bytes())
+
+    original_record = submit("이전 합성 근거")
+    assert original_record["options"]["versions"]["index"] == first.metadata.index_id
+    assert original_record["search_query"] == f"{question} (종이팩)"
+
+    first_stat = index_path.stat()
+    replacement_path = tmp_path / "replacement.json"
+    save_index(second, replacement_path)
+    utime(replacement_path, ns=(first_stat.st_atime_ns, first_stat.st_mtime_ns))
+    replacement_path.replace(index_path)
+    second_stat = index_path.stat()
+    assert second_stat.st_size == first_stat.st_size
+    assert second_stat.st_mtime_ns == first_stat.st_mtime_ns
+    assert second_stat.st_ino != first_stat.st_ino
+
+    new_record = submit("최신 합성 근거")
+    assert new_record["options"]["versions"]["index"] == second.metadata.index_id
+    assert new_record["search_query"] == f"{question} (종이팩)"
+
+    catalog_stat = catalog_path.stat()
+    catalog_json["item_aliases"]["우유팩"] = "새별칭"
+    catalog_path.write_text(
+        json.dumps(catalog_json, ensure_ascii=False), encoding="utf-8"
+    )
+    utime(catalog_path, ns=(catalog_stat.st_atime_ns, catalog_stat.st_mtime_ns))
+    assert catalog_path.stat().st_ino == catalog_stat.st_ino
+    assert catalog_path.stat().st_size == catalog_stat.st_size
+    assert catalog_path.stat().st_mtime_ns == catalog_stat.st_mtime_ns
+
+    catalog_record = submit("최신 합성 근거")
+    versions = catalog_record["options"]["versions"]
+    assert versions["index"] == second.metadata.index_id
+    assert versions["rewrite_catalog"] == sha256(catalog_path.read_bytes()).hexdigest()
+    assert (
+        versions["rewrite_catalog"]
+        != new_record["options"]["versions"]["rewrite_catalog"]
+    )
+    assert catalog_record["search_query"] == f"{question} (새별칭)"

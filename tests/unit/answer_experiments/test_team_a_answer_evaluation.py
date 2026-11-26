@@ -115,7 +115,17 @@ def test_a_evaluation_retrieves_and_cites_for_each_question(
         json.dumps(
             {
                 "index_path": str(index_path),
-                "pipeline": {"versions": {"model": "fake-model"}},
+                "pipeline": {
+                    "versions": {
+                        "model": "fake-model",
+                        "candidate_policy": "old-hybrid",
+                        "reranker_model": "old-reranker",
+                        "reranker_prompt": "old-reranker-prompt",
+                        "rewrite": "old-rewrite",
+                        "rewrite_catalog": "old-catalog",
+                        "dataset": "synthetic-v1",
+                    }
+                },
             }
         ),
         encoding="utf-8",
@@ -167,6 +177,10 @@ def test_a_evaluation_retrieves_and_cites_for_each_question(
         )
         assert rewrite["status"] == ("ok" if enabled else "skipped")
         versions = record["options"]["versions"]
+        assert {"candidate_policy", "reranker_model", "reranker_prompt"}.isdisjoint(
+            versions
+        )
+        assert versions["dataset"] == "synthetic-v1"
         if enabled:
             assert versions["rewrite"] == "catalog-rules-v1"
             assert (

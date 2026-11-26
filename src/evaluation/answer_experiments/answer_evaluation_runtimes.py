@@ -16,7 +16,7 @@ from src.ingestion.preprocessed_chunking import chunk_preprocessed_documents
 from src.pipeline import PipelineConfigurationError, RAGPipeline
 from src.retrieval.regions import resolve_request
 from src.retrieval.search import make_vector_retriever
-from src.rewrite_dictionary.catalog import CATALOG_PATH
+from src.rewrite_dictionary import catalog
 from src.rewrite_dictionary.runtime import make_catalog_rewriter
 from src.runtime import create_runtime
 
@@ -82,6 +82,14 @@ def _a_runtime_factory(
     retrieve = make_vector_retriever(index, embedder)
 
     options.run_kind = "rag"
+    for unused in (
+        "candidate_policy",
+        "reranker_model",
+        "reranker_prompt",
+        "rewrite",
+        "rewrite_catalog",
+    ):
+        options.versions.pop(unused, None)
     options.versions.update(
         {
             "index": index.metadata.index_id,
@@ -97,14 +105,12 @@ def _a_runtime_factory(
         configured = config.model_copy(deep=True)
         pipeline = configured.pipeline
         pipeline.rewrite_enabled = rewrite_enabled
-        pipeline.versions.pop("rewrite", None)
-        pipeline.versions.pop("rewrite_catalog", None)
         rewriter = None
         if rewrite_enabled:
-            rewriter = make_catalog_rewriter()
+            rewriter = make_catalog_rewriter(catalog.CATALOG_PATH)
             pipeline.versions["rewrite"] = "catalog-rules-v1"
             pipeline.versions["rewrite_catalog"] = sha256(
-                CATALOG_PATH.read_bytes()
+                catalog.CATALOG_PATH.read_bytes()
             ).hexdigest()
         return create_runtime(
             configured,
