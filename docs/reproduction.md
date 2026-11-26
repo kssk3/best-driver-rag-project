@@ -39,6 +39,23 @@ uv run --locked --env-file .env python -m scripts.score_quality --runs results/l
 
 저장소 안에서 확인할 수 있는 기록은 `results/`의 실행별 `runs.csv`, `scores.csv`, `candidates.csv`다(Git에서 제외되는 `results/local/`은 제외).
 
+## 독립 환경 재현 (AI 수행, 타인 재현이 아님)
+
+작성자의 PC에서 AI(Claude)가 **새로 받은 클론**에 README의 명령만 따라 처음부터 돌려 본 기록이다. 팀원의 재현을 대신하지 않으며 위 "타인 재현 기록"과 구분한다. 같은 PC·같은 OS라 다른 환경에서의 재현을 보장하지 않는다.
+
+| 날짜 | 실행자 | 환경 | 커밋 | 수행 |
+| --- | --- | --- | --- | --- |
+| 2026-11-26 | Claude(AI), 작성자 PC의 임시 새 클론 | Windows 11, Python 3.13.14, `.env` 없이 OS 환경변수의 키 사용 | `b49f59c`(브랜치 `feature/seungju/eval-sets`를 로컬 클론) | 아래 |
+
+1. `uv sync --locked`: 7초(캐시된 패키지), `python --version` 3.13.14. [측정]
+2. README의 `scripts.prepare_data`(`--openai-model text-embedding-3-small`): 18초, 543청크. 청킹 기준선 지문이 일치하고 청크 ID 집합이 원본 색인과 같다. 색인 `index_id`는 원본과 달랐다(재생성할 때마다 달라지는 값으로 보이며 원인은 확인하지 않았다). 검색 결과에는 영향이 없었다. [측정]
+3. 대표 질문 5개(정상 3, 조건 구분 1, 근거 없음 1, 한계 1: `test-d06`, `test-d08`, `test-v03`, `test-n01`, `test-v01`)를 A/B/C로 15건 실행했다. 질문은 최종 20문항에서 골랐고 공식 60건과 섞지 않는 **별도 재현 실행**이다. 결과: 15건 모두 **상태와 정답 청크 순위가 원본과 같았다.** 답변은 문장이 조금 달랐고(예: 현금 교환 안내의 표현) 금액·구간·정보 부족 안내 같은 핵심 사실은 같았다. 응답 시간은 평균 A 1.6초, B 1.8초, C 5.0초로 원본과 비슷했다. [측정]
+4. 원본은 [results/repro-clone-2026-11-26/](../results/repro-clone-2026-11-26/)(`runs.csv`, `candidates.csv`, `cases.csv`, `evaluation.json`)에 있다.
+
+**하지 않은 것**: Streamlit 화면과 `scripts.run_chat`, 채점(`score_answers`, `score_quality`), 테스트 실행, Windows 아닌 OS, `.env` 파일을 쓰는 경로. 타인 재현에서는 이 중 화면 실행과 `PYTHONUTF8` 없이 도는 Windows 한국어 환경(채점 테스트가 `cp949` 오류)을 우선 확인해야 한다.
+
+**팀원이 재현하려면**: 이 브랜치가 `dev`에 병합돼야 `eval/test.json`과 이 문서가 새 클론에 들어온다. 병합 전에는 브랜치를 받아야 한다.
+
 ## 타인 재현 기록
 
 아래 표에 다른 팀원이 처음부터 다시 돌려 확인한 결과를 적는다. 지금은 비어 있다.
