@@ -104,3 +104,9 @@ def test_search_text_only_collapses_for_table_row_chunks() -> None:
     assert search_text("세   탁   기", row) == "세탁기"
     article = '{"text": "가 나 다 라", "unit_type": "article"}'
     assert search_text("가 나 다 라", article) == "가 나 다 라"
+
+
+def test_search_text_joins_two_letter_cells_inside_the_flattened_chunk() -> None:
+    content = table_row(["책 장", "10ℓ"], [])
+    assert "책장" in search_text("용도 책 장 10ℓ", content)
+    assert search_text("제2항 및 제3항", content) == "제2항 및 제3항"

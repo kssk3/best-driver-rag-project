@@ -34,6 +34,7 @@ uv run --locked --env-file .env python -m scripts.score_quality --runs results/l
 ```sh
 uv run --locked --env-file .env python -m scripts.evaluate --cases eval/test.json --settings configs/team-c-rewrite-chat.json --factory src.evaluation.answer_experiments.answer_evaluation_runtimes:create_a_catalog_runtime --output-dir results/local/<C 질문 다듬기 폴더>
 uv run --locked python -m scripts.summarize_runs results/local/<C 질문 다듬기 폴더>/runs.csv
+uv run --locked --env-file .env python -m scripts.score_quality --runs results/local/<C 질문 다듬기 폴더>/runs.csv --candidates results/local/<C 질문 다듬기 폴더>/candidates.csv --cases eval/test.json --grading eval/test-grading.json --output-dir results/local/<C 질문 다듬기 품질 폴더>
 ```
 
 `summarize_runs` 출력에서 `C` 한 줄이 `rewrite=true`, `20/20`이면 `variant=C`, `rewrite_enabled=true`인 고유 문항 20개가 맞다. A/B/C OFF 폴더의 같은 출력은 `A·B·C` 세 줄이 모두 `false`다. 두 폴더는 서로 다른 채점 출력 폴더로 따로 채점하고 요약에서 섞지 않는다(채점기는 `(variant, rewrite_enabled)`별로 나눠 집계한다).

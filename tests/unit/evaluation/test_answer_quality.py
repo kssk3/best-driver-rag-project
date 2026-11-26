@@ -4,6 +4,7 @@ from scripts.score_quality import (
     check_inputs,
     cited_texts_by_run,
     fill_failed_rows,
+    load_grading,
     run_config,
 )
 from src.evaluation.answer_quality import (
@@ -299,3 +300,15 @@ def test_check_inputs_accepts_a_run_that_cites_the_same_candidate_twice() -> Non
     runs[0]["citation_ranks_json"] = "[1, 1]"
     candidates[0]["citation_position"] = "1"
     assert check_inputs(runs, candidates, questions, grading) == []
+
+
+def test_load_grading_rejects_a_case_id_that_appears_in_two_files(tmp_path) -> None:
+    first, second = tmp_path / "a.json", tmp_path / "b.json"
+    first.write_text('{"grading": {"c1": {}}}', encoding="utf-8")
+    second.write_text('{"c1": {}}', encoding="utf-8")
+    assert set(load_grading([first])) == {"c1"}
+    try:
+        load_grading([first, second])
+    except SystemExit:
+        return
+    raise AssertionError("겹치는 문항 ID를 막아야 한다")

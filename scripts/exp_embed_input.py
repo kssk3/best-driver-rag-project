@@ -47,7 +47,7 @@ def set_normalized_search_text(enabled: bool) -> None:
     rerankers_module.chunk_text = function
 
 
-TRANSFORM_VERSION = "table-text-v1"
+TRANSFORM_VERSION = "table-text-v2"  # v1: 7차 리뷰 전 공백 규칙(일반 문장도 합침)
 VARIANT_ID_MARKER = "-embed-input-"
 
 

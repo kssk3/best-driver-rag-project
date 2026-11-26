@@ -88,9 +88,18 @@ def row_embedding_text(content: str) -> str | None:
 
 
 def search_text(text: str, content: str) -> str:
-    """BM25·재정렬 입력(`chunk_text` 결과)용: 표 행 청크일 때만 글자 사이 공백을 합친다."""
-    return (
-        collapse_spaced_hangul(text)
-        if row_embedding_text(content) is not None
-        else text
-    )
+    """BM25·재정렬 입력(`chunk_text` 결과)용: 표 행 청크일 때만 글자 사이 공백을 합친다.
+
+    납작하게 이어 붙인 전체 글에서는 칸 경계를 알 수 없으므로, 칸·머리글·문단을 하나씩 합친 뒤 본문에서 바꾼다.
+    """
+    if row_embedding_text(content) is None:
+        return text
+    body = json.loads(content)
+    parts = [str(p) for p in body.get("paragraphs", [])]
+    for row in [*body.get("header_rows", []), body["row"]]:
+        parts += [str(c.get("text", "")) for c in row.get("cells", [])]
+    for raw in sorted(set(parts), key=len, reverse=True):
+        fixed = collapse_spaced_hangul(raw)
+        if fixed != raw:
+            text = text.replace(raw, fixed)
+    return collapse_spaced_hangul(text)

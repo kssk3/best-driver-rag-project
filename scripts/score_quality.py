@@ -31,7 +31,12 @@ def load_grading(paths: list[Path]) -> dict[str, dict]:
     merged: dict[str, dict] = {}
     for path in paths:
         data = json.loads(path.read_text(encoding="utf-8-sig"))
-        merged.update(data["grading"] if "grading" in data else data)
+        items = data["grading"] if "grading" in data else data
+        if duplicated := sorted(set(items) & set(merged)):
+            raise SystemExit(
+                f"{path}: 앞선 채점 파일과 문항 ID가 겹칩니다: {duplicated}"
+            )
+        merged.update(items)
     return merged
 
 
