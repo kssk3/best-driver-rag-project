@@ -22,6 +22,7 @@ from src.interface.adapter import (
 from src.interface.chat import render_response
 from src.interface.inspection import render_inspection
 from src.interface.map import render_places
+from src.interface.theme import inject_theme
 
 # [임시] 예시(합성) 응답을 읽는다.
 SAMPLE_PATH = (
@@ -59,6 +60,7 @@ def load_pipeline():
 FAVICON_PATH = Path(__file__).parent / ".streamlit" / "favicon.png"
 
 st.set_page_config(page_title="분리당", page_icon=str(FAVICON_PATH), layout="wide")
+inject_theme()
 st.title("분리당 -- 서울시 분리배출 안내 시스템")
 
 
