@@ -287,6 +287,7 @@ class Citation(BaseModel):
     title: str
 
 
+# 폐기 예정(2026-11-26 팀 합의): 화면에서는 쓰지 않는다. 삭제하지 않고 주석으로만 표시한다.
 class PlaceResult(BaseModel):
     place_id: str
     name: str
@@ -297,6 +298,7 @@ class PlaceResult(BaseModel):
     collection_types: list[str] = Field(default_factory=list)
 
 
+# 폐기 예정(2026-11-26 팀 합의): 화면에서는 쓰지 않는다. 삭제하지 않고 주석으로만 표시한다.
 class PlaceLookupResult(BaseModel):
     status: Literal["found", "empty", "unavailable", "error"] = "unavailable"
     places: list[PlaceResult] = Field(default_factory=list)
@@ -309,6 +311,7 @@ class PipelineResponse(BaseModel):
     status: ResponseStatus
     answer: str
     citations: list[Citation] = Field(default_factory=list)
+    # 폐기 예정(2026-11-26 팀 합의): 장소 조회 결과. 기존 실행 기록을 읽기 위해 삭제하지 않고 남긴다.
     places: PlaceLookupResult = Field(default_factory=PlaceLookupResult)
     # error는 기록용 내부 상세("타입: 메시지")이며 화면에는 answer를 표시한다.
     error: str | None = None
