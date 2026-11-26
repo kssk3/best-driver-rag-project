@@ -626,3 +626,45 @@ a.brand:hover b {
   display: inline-flex;
   align-items: center;
 }
+
+/* 라벨과 칩은 한 줄: 라벨 바로 오른쪽에 칩이 붙는다(왼쪽 정렬) */
+.st-key-region_row,
+.st-key-examples {
+  flex-direction: row !important;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  margin-top: 6px;
+}
+.st-key-region_row > [data-testid="stElementContainer"],
+.st-key-examples > [data-testid="stElementContainer"] {
+  width: auto !important;
+  flex: 0 0 auto;
+}
+.lbl {
+  margin: 0 4px 0 0;
+}
+
+/* 라벨 폭을 맞춰 두 줄의 칩이 같은 위치에서 시작 */
+.lbl {
+  min-width: 118px;
+}
+
+/* 지역 드롭다운 목록의 항목도 가운데 정렬 */
+[role="listbox"] [role="option"] {
+  justify-content: center;
+  text-align: center;
+}
+
+/* 헤더 쪽 배경: 화면 맨 위에서 아래로 옅어지는 그라데이션(페이지 배경이라 가로 스크롤이 생기지 않는다) */
+.stApp {
+  background-color: var(--page-bg, #f4f3ee);
+  background-image: linear-gradient(180deg, #e1ecdf 0, #eaf0e8 70px, #f4f3ee 150px);
+  background-repeat: no-repeat;
+}
+/* 헤더 높이를 조금 키운다 */
+a.brand {
+  min-height: 56px;
+  padding: 6px 0;
+}

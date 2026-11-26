@@ -1,9 +1,4 @@
-"""Streamlit 진입점.
-
-담당: 이승주
-상태: 구현 전 파일 뼈대. 세부 구현 항목은 Notion 구조 문서를 참고한다.
-공용 입출력과 함수 규격은 사용하는 담당자와 합의한 뒤 추가한다.
-"""
+"""Streamlit 진입점."""
 
 from html import escape
 from os import getenv
@@ -242,8 +237,9 @@ def search_bar(compact=False) -> None:
             question, submitted = search_form("다시 묻기")
     else:
         question, submitted = search_form("물어보기")
-        st.html('<span class="lbl">어느 지역에 계세요?</span>')
-        district = pick_district()
+        with st.container(key="region_row"):  # 라벨과 칩을 한 줄에
+            st.html('<span class="lbl">어느 지역에 계세요?</span>')
+            district = pick_district()
     if submitted:
         if not district:
             st.warning("지역을 선택하세요.")
@@ -260,12 +256,10 @@ def render_landing() -> None:
     with copy_col:
         st.html(HERO_HTML)
         search_bar()
-        st.html('<span class="lbl">이런 질문이 많아요!</span>')
-        with st.container(key="examples"):
-            for index, (col, (label, question)) in enumerate(
-                zip(st.columns(len(EXAMPLES)), EXAMPLES)
-            ):
-                if col.button(label, key=f"example_{index}"):
+        with st.container(key="examples"):  # 라벨과 칩을 한 줄에
+            st.html('<span class="lbl">이런 질문이 많아요!</span>')
+            for index, (label, question) in enumerate(EXAMPLES):
+                if st.button(label, key=f"example_{index}"):
                     district = st.session_state.get("pick_district")
                     if not district:
                         st.warning("지역을 선택하세요.")
@@ -326,8 +320,8 @@ def render_comparison() -> None:
         '<div class="sec-title">RAGAS 4대 지표 <small>실행 방식(A/B/C)별 평균</small></div>'
     )
     st.caption(
-        "Langfuse 점수를 같은 평가(데이터셋)끼리 묶어 보여 줍니다. 방식을 알 수 없는 점수는 평균에서 뺍니다. "
-        "검색 적중률(Hit@k)은 다른 지표라 섞지 않습니다. "
+        "Langfuse 점수를 같은 평가(데이터셋)끼리 묶어 보여 줍니다. 방식을 알 수 없는 점수는 평균에서 뺍니다.  \n"
+        "검색 적중률(Hit@k)은 다른 지표라 섞지 않습니다.  \n"
         "점수는 판정 모델의 편차가 있어, 같은 답변도 다시 채점하면 달라질 수 있습니다."
     )
     result = cached_scores()
@@ -394,7 +388,7 @@ else:
     if "pending" in st.session_state:
         # 랜딩에서 넘어오는 동안 검색이 끝날 때까지 옛 랜딩 요소가 흐리게 남는다. 숨긴다.
         st.html(
-            '<style>[data-stale="true"],[data-testid="stForm"]:has([data-stale="true"])'
+            '<style>[data-stale="true"],[data-testid="stLayoutWrapper"]:has(> [data-testid="stVerticalBlock"] > [data-stale="true"]),[data-testid="stLayoutWrapper"]:has(> [data-testid="stForm"] [data-stale="true"])'
             "{display:none !important}</style>"
         )
     search_bar(compact=True)
@@ -402,7 +396,7 @@ else:
         run_pending()  # 성공하면 st.rerun()으로 결과를 다시 그린다. 실패하면 오류가 보인다.
     view = current_view()  # 검색바에서 새 질문이 실패하면 이전 응답이 지워져 있다
     if view is None:
-        st.info("질문하면 결과가 여기에 나옵니다.")
+        st.info("질문하면 결과가 여기에 표시됩니다.")
     else:
         render_result(view)
 render_dev_panel(view)
