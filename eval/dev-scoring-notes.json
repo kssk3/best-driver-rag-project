@@ -1,28 +1,149 @@
 {
-    "p04-colors-trick": {
-        "status": "draft",
-        "checked_at": null,
-        "source_url": "http://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=160561037&flNm=%5B%EB%B3%84%ED%91%9C+1%5D+%EC%9E%AC%ED%99%9C%EC%9A%A9%ED%92%88+%EB%B3%B4%EA%B4%80%EC%8B%9C%EC%84%A4+%EB%98%90%EB%8A%94+%EC%9A%A9%EA%B8%B0%EC%9D%98+%EC%84%A4%EC%B9%98%2C+%EA%B7%9C%EA%B2%A9%C2%B7%EC%9E%AC%EC%A7%88%EA%B8%B0%EC%A4%80%0A%28%EC%A0%9C2%EC%A1%B0%EC%A0%9C1%ED%95%AD%EC%A0%9C4%ED%98%B8+%EA%B4%80%EB%A0%A8%29",
-        "source_document_id": "seodaemun-rules:attachment:160561037",
-        "source_location": "별표1 1. 공동주택의 경우 / 가. 일반용기 설치 / 품목별 색상(표기방법-영문병기)",
-        "chunk_id": "chunk-267d3d8946483d4ec51f48803b10fe6968881b0c83a042716d7dfffd08347d17",
-        "source_excerpt": "○ 캔  류 : 회색    ○ 유리병 : 주황색",
-        "required_facts": [
-            "공동주택 일반용기에서 유리병용 용기는 주황색이다.",
-            "공동주택 일반용기에서 캔용 용기는 회색이다."
-        ]
-    },
-    "p04-songpa-bulky-waste": {
-        "status": "draft",
-        "checked_at": null,
-        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2053883",
-        "source_document_id": "songpa-ordinance",
-        "source_location": "제10조 제1항 제1호",
-        "chunk_id": "chunk-a482ca0127c4c30a5cad3d2bb61487b0db08300bb301abfb63468d07760f23d0",
-        "source_excerpt": "배출일 전에 배출자의 주소·성명·물품명·크기·수량 등을 구청장에게 신고하여야 하며 구청장이 지정하는 장소에 내어 놓아야 한다. 다만, 폐기물처리업자가 대행수거하는 지역에서는 폐기물처리업자가 이를 대행한다.",
-        "required_facts": [
-            "배출일 전에 구청장에게 신고한다.",
-            "구청장이 지정하는 장소에 내놓는다."
-        ]
-    }
+  "p04-colors-trick": {
+    "status": "draft",
+    "checked_at": null,
+    "source_url": "http://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=160561037&flNm=%5B%EB%B3%84%ED%91%9C+1%5D+%EC%9E%AC%ED%99%9C%EC%9A%A9%ED%92%88+%EB%B3%B4%EA%B4%80%EC%8B%9C%EC%84%A4+%EB%98%90%EB%8A%94+%EC%9A%A9%EA%B8%B0%EC%9D%98+%EC%84%A4%EC%B9%98%2C+%EA%B7%9C%EA%B2%A9%C2%B7%EC%9E%AC%EC%A7%88%EA%B8%B0%EC%A4%80%0A%28%EC%A0%9C2%EC%A1%B0%EC%A0%9C1%ED%95%AD%EC%A0%9C4%ED%98%B8+%EA%B4%80%EB%A0%A8%29",
+    "source_document_id": "seodaemun-rules:attachment:160561037",
+    "source_location": "별표1 1. 공동주택의 경우 / 가. 일반용기 설치 / 품목별 색상(표기방법-영문병기)",
+    "chunk_id": "chunk-267d3d8946483d4ec51f48803b10fe6968881b0c83a042716d7dfffd08347d17",
+    "source_excerpt": "○ 캔  류 : 회색    ○ 유리병 : 주황색",
+    "required_facts": [
+      "공동주택 일반용기에서 유리병용 용기는 주황색이다.",
+      "공동주택 일반용기에서 캔용 용기는 회색이다."
+    ]
+  },
+  "p04-songpa-bulky-waste": {
+    "status": "draft",
+    "checked_at": null,
+    "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2053883",
+    "source_document_id": "songpa-ordinance",
+    "source_location": "제10조 제1항 제1호",
+    "chunk_id": "chunk-a482ca0127c4c30a5cad3d2bb61487b0db08300bb301abfb63468d07760f23d0",
+    "source_excerpt": "배출일 전에 배출자의 주소·성명·물품명·크기·수량 등을 구청장에게 신고하여야 하며 구청장이 지정하는 장소에 내어 놓아야 한다. 다만, 폐기물처리업자가 대행수거하는 지역에서는 폐기물처리업자가 이를 대행한다.",
+    "required_facts": [
+      "배출일 전에 구청장에게 신고한다.",
+      "구청장이 지정하는 장소에 내놓는다."
+    ]
+  },
+  "dev-sd-bag-10l-price": {
+    "status": "draft",
+    "checked_at": null,
+    "author": "AI 초안(2026-11-26), 사람의 원문 대조 필요",
+    "required_facts": [
+      "10ℓ 생활폐기물용은 250원이다."
+    ],
+    "evidence": [
+      {
+        "document_id": "seodaemun-ordinance:attachment:160319457",
+        "source_location": "table-1/row[4]"
+      }
+    ],
+    "reason": "서대문구 조례 별표 4의 10ℓ 행이 생활폐기물용 250원, 사업장 생활폐기물용 400원을 적고 있다.",
+    "reference_answer": "서대문구 규격봉투 가격표 기준으로 10ℓ 생활폐기물용 봉투는 250원입니다.",
+    "category": "direct"
+  },
+  "dev-sp-trunk-road-time": {
+    "status": "draft",
+    "checked_at": null,
+    "author": "AI 초안(2026-11-26), 사람의 원문 대조 필요",
+    "required_facts": [
+      "매일 오후 10시부터 새벽 1시까지다.",
+      "대로변 배출은 금지된다."
+    ],
+    "evidence": [
+      {
+        "document_id": "songpa-rules:attachment:121237861",
+        "source_location": "table-2/row[5]"
+      }
+    ],
+    "reason": "송파구 시행규칙 별표의 배출일시·장소 표 중 주요 가로변 행이 직접 적고 있다.",
+    "reference_answer": "송파구 주요 가로변(왕복 2차선 이상의 대로)은 매일 오후 10시부터 새벽 1시까지 건물 내(외) 지정장소 등에 배출할 수 있고, 대로변 배출은 금지됩니다.",
+    "category": "direct"
+  },
+  "dev-sd-newspaper": {
+    "status": "draft",
+    "checked_at": null,
+    "author": "AI 초안(2026-11-26), 사람의 원문 대조 필요",
+    "required_facts": [
+      "물기에 젖지 않게 반듯하게 펴 쌓아 묶어 배출한다.",
+      "비닐 코팅 광고지·비닐류·오물이 섞이지 않게 한다."
+    ],
+    "evidence": [
+      {
+        "document_id": "seodaemun-ordinance:attachment:160319453",
+        "source_location": "table-1/row[3]"
+      }
+    ],
+    "reason": "서대문구 조례 별표 2의 신문지 행이 배출요령을 직접 적고 있다.",
+    "reference_answer": "물기에 젖지 않도록 하고 반듯하게 펴서 차곡차곡 쌓은 뒤 묶어서 배출합니다. 비닐 코팅된 광고지, 비닐류, 오물이 섞이지 않게 해야 합니다.",
+    "category": "direct"
+  },
+  "dev-sd-aircon-66": {
+    "status": "draft",
+    "checked_at": null,
+    "author": "AI 초안(2026-11-26), 사람의 원문 대조 필요",
+    "required_facts": [
+      "에어컨 66㎡형 이상은 5,000원이다."
+    ],
+    "evidence": [
+      {
+        "document_id": "seodaemun-ordinance:attachment:160319451",
+        "source_location": "table-1/row[31]"
+      }
+    ],
+    "reason": "서대문구 조례 별표 1의 에어컨 규격 구간 행이 금액을 적고 있다.",
+    "reference_answer": "서대문구 대형폐기물 수수료표에서 에어컨은 66㎡형 이상이 5,000원입니다(66㎡형 미만은 3,000원).",
+    "category": "direct"
+  },
+  "dev-sd-fee-reduction": {
+    "status": "draft",
+    "checked_at": null,
+    "author": "AI 초안(2026-11-26), 사람의 원문 대조 필요",
+    "required_facts": [
+      "생계급여·의료급여 수급자 등을 감면할 수 있다.",
+      "가구당 매월 120ℓ 범위에서 무료로 지급한다."
+    ],
+    "evidence": [
+      {
+        "document_id": "seodaemun-ordinance",
+        "source_location": "조문/조[49] (조문번호 004100)"
+      }
+    ],
+    "reason": "서대문구 조례 제41조가 감면 대상과 무료 지급량을 적고 있다. 질문은 '형편이 어려우면'이라는 생활어로 바꿨다.",
+    "reference_answer": "구청장은 생계·의료급여 수급자, 국가유공자와 유족, 한부모가족 등에게 종량제 수수료를 감면할 수 있고, 일반규격봉투 중 생활폐기물용 봉투를 가구당 매월 120ℓ 범위에서 무료로 지급합니다(1인 가구는 월 60ℓ 범위).",
+    "category": "variation"
+  },
+  "dev-sp-special-bag-20l": {
+    "status": "draft",
+    "checked_at": null,
+    "author": "AI 초안(2026-11-26), 사람의 원문 대조 필요",
+    "required_facts": [
+      "특수규격봉투 20ℓ는 2,040원이다."
+    ],
+    "evidence": [
+      {
+        "document_id": "songpa-ordinance:attachment:154690991",
+        "source_location": "table-1/row[10]"
+      }
+    ],
+    "reason": "송파구 조례 별표의 특수규격봉투 행이 가격을 적고 있다. 서대문구에는 같은 용량의 봉투 가격 표기가 달라 구분해야 한다.",
+    "reference_answer": "송파구 규격봉투 판매가격표에서 특수규격봉투 20ℓ는 2,040원입니다.",
+    "category": "variation"
+  },
+  "dev-sd-bulky-sticker": {
+    "status": "draft",
+    "checked_at": null,
+    "author": "AI 초안(2026-11-26), 사람의 원문 대조 필요",
+    "absence_reason": "서대문구 조례·시행규칙·별표 어디에도 '스티커'가 없다(2026-11-26 청크 543개 전체 검색 0건). 수수료표는 있지만 스티커 구입처 규정은 없다.",
+    "reference_answer": "제공된 서대문구 자료에는 대형폐기물 스티커 구입처에 관한 내용이 없어 알 수 없습니다.",
+    "category": "no_evidence"
+  },
+  "dev-sd-waste-weekday": {
+    "status": "draft",
+    "checked_at": null,
+    "author": "AI 초안(2026-11-26), 사람의 원문 대조 필요",
+    "absence_reason": "서대문구 조례 제14조는 '구청장이 지정한 장소, 요일, 시간'이라고만 쓰고 구체적 요일은 없다. 송파구는 시행규칙 별표에 요일이 있어 지역 혼동을 보는 함정 문항.",
+    "reference_answer": "제공된 서대문구 자료에는 구체적인 배출 요일이 없습니다. 구청장이 지정한 장소·요일·시간에 배출한다는 일반 규정만 있습니다.",
+    "category": "no_evidence"
+  }
 }
