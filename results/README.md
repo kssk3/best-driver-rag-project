@@ -153,7 +153,7 @@ uv run --locked --env-file .env python -m scripts.upload_scores \
   --report judged/upload-1.csv --upload
 ```
 
-팀 프로젝트에서 해당 trace를 열고 **archived-run → faithfulness → Output**을 확인한다. `scorer_error`와 `no_score`는 확보한 상세만 올리고 숫자 점수는 건너뛴다. 재전송할 때 같은 두 입력 파일과 새 보고서명을 사용한다. `--judgments`를 생략하면 기존 메타데이터 전송 방식을 사용한다.
+팀 프로젝트에서 해당 trace를 연다. 실시간 추적을 켰다면 **rag-pipeline → faithfulness → Output**, 추적 없이 저장한 실행이라면 **archived-run → faithfulness → Output**에서 판정을 확인한다. `scorer_error`와 `no_score`는 확보한 상세만 올리고 숫자 점수는 건너뛴다. 재전송할 때 같은 두 입력 파일과 새 보고서명을 사용한다. `--judgments`를 생략하면 기존 메타데이터 전송 방식을 사용한다.
 
 ### 질문 실행 중 LangChain 추적
 
@@ -175,10 +175,11 @@ uv run --locked python -m scripts.upload_scores \
   --report results/local/faithfulness-smoke/preview.csv
 ```
 
-실서버 스모크는 앞 절에서 승인받아 채점한 한 문항의 CSV로 진행한다. 대상 프로젝트의 HTTPS `LANGFUSE_BASE_URL`, `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`를 환경변수로 설정하고 위 명령에 `--upload`를 붙인다. 보고서 이름은 `upload-1.csv`로 바꾼다. 최초 업로드 때 대상 프로젝트에서 trace ID와 span ID로 기존 기록을 조회한다. 새 실행이면 실행 시작 시각을 담은 OTLP span과 숫자 점수를 각각 POST한다. 상세 업로드에서는 판정 span도 한 건 보낸다. span은 실행 시점을 표시하는 길이 0의 기록이다. 본문은 파생 ID·고정 이름·시각·실행 유형·점수로 구성한다. 인증은 HTTPS Basic 헤더를 사용한다. [Langfuse OTLP 규격](https://github.com/langfuse/langfuse/blob/main/fern/apis/server/definition/opentelemetry.yml) · [점수 API 스키마](https://github.com/langfuse/langfuse/blob/main/fern/apis/server/definition/scores.yml)
+실서버 스모크는 앞 절에서 승인받아 채점한 한 문항의 CSV로 진행한다. 대상 프로젝트의 HTTPS `LANGFUSE_BASE_URL`, `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`를 환경변수로 설정하고 위 명령에 `--upload`를 붙인다. 보고서 이름은 `upload-1.csv`로 바꾼다. 업로더는 대상 프로젝트에서 해당 trace의 논리 루트를 조회한다. 루트가 하나면 판정 상세를 그 아래에 붙이고, 점수만 올릴 때는 점수만 POST한다. 실시간 추적 기록이 없는 보관본은 실행 시작 시각을 담은 루트를 만든다. 상세 업로드에서는 판정 span도 한 건 보낸다. span은 실행 시점을 표시하는 길이 0의 기록이다. 본문은 파생 ID·고정 이름·시각·실행 유형·점수로 구성한다. 인증은 HTTPS Basic 헤더를 사용한다. [Langfuse OTLP 규격](https://github.com/langfuse/langfuse/blob/main/fern/apis/server/definition/opentelemetry.yml) · [점수 API 스키마](https://github.com/langfuse/langfuse/blob/main/fern/apis/server/definition/scores.yml)
 
 보고서의 `trace_status`와 `score_status`에서 각 단계의 접수 상태를 확인한다. 실패하면 종료 코드 1을 반환한다. 재시도할 때 같은 입력 파일과 새 보고서명을 사용한다.
 
 - 업로드 CLI는 `scores.csv` 옆의 `langfuse-spans.sqlite3`에 프로젝트별 실행·판정 span ID와 접수 상태를 저장한다. 채점 결과 폴더를 옮길 때 이 파일도 보존한다. 접수된 span은 건너뛰므로 점수만 실패한 행은 원래 점수 ID·이름·`scored_at_utc`로 점수만 재전송한다. 업로드 시각은 `upload_attempted_at_utc`에서 확인한다.
+- 새 실행의 `langfuse_project`는 실시간 루트를 기록한 프로젝트의 해시다. 같은 프로젝트에서 루트가 아직 보이지 않거나 조회가 불완전하거나 루트가 여러 개면 해당 행은 `trace_unconfirmed`로 남고 전송을 보류한다. 이 열이 없는 예전 보관본을 실시간 추적했다면 대시보드에서 실행 루트가 보인 뒤 업로드한다. [Langfuse 논리 루트 규칙](https://langfuse.com/docs/api-and-data-platform/features/public-api#logical-root-observations)
 - 타임아웃 등으로 span 접수가 불명확하면 다음 시도에서 서버를 조회한다. 해당 span이 보이면 점수 전송으로 넘어간다. 조회 오류나 아직 보이지 않는 span은 `trace_unconfirmed`로 남긴다. 서버 수집 큐가 비었고 이전 업로드 프로세스가 끝났음을 확인한 뒤, 같은 명령에 `--retry-missing-spans`를 추가하면 다시 조회해 누락된 span만 보낸다.
 - 실서버에서는 보고서의 `trace_id`와 `score_id`로 표시된 값과 채점 날짜를 확인한다. [Langfuse 수집 및 점수 교체 규칙](https://langfuse.com/faq/all/tracing-data-updates)

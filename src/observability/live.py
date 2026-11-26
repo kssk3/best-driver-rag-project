@@ -8,7 +8,11 @@ from contextvars import ContextVar
 from functools import lru_cache
 from typing import TYPE_CHECKING
 
-from src.observability.tracing import langfuse_settings, trace_id_for_run
+from src.observability.tracing import (
+    langfuse_settings,
+    project_fingerprint,
+    trace_id_for_run,
+)
 
 if TYPE_CHECKING:
     from langfuse.langchain import CallbackHandler
@@ -32,9 +36,11 @@ def _configured_client():
         from langfuse import Langfuse
 
         url, public, secret = langfuse_settings()
-        return Langfuse(
-            public_key=public, secret_key=secret, base_url=url.geturl()
-        ), public
+        return (
+            Langfuse(public_key=public, secret_key=secret, base_url=url.geturl()),
+            public,
+            project_fingerprint(url, public),
+        )
     except Exception:
         logging.getLogger(__name__).warning(
             "Langfuse 초기화 실패. HTTPS 주소와 프로젝트 키를 확인하세요. 로컬 실행을 계속합니다."
@@ -49,11 +55,13 @@ def trace_pipeline(run_id: str, run_kind: str, variant: str):
         yield
         return
 
-    client, public = configured
+    client, public, project = configured
+    recorded_project = None
     stack = ExitStack()
     try:
         from langfuse import propagate_attributes
         from langfuse.langchain import CallbackHandler
+        from opentelemetry.trace import get_current_span
 
         stack.enter_context(
             client.start_as_current_observation(
@@ -63,6 +71,8 @@ def trace_pipeline(run_id: str, run_kind: str, variant: str):
                 metadata={"run_id": run_id, "variant": variant},
             )
         )
+        if get_current_span().is_recording():
+            recorded_project = project
         stack.enter_context(
             propagate_attributes(environment=run_kind, trace_name=f"RAG {variant}")
         )
@@ -71,10 +81,10 @@ def trace_pipeline(run_id: str, run_kind: str, variant: str):
     except Exception:
         logging.getLogger(__name__).warning("Langfuse 실행 추적을 시작할 수 없습니다.")
         _close_trace(stack)
-        yield
+        yield recorded_project
         return
     try:
-        yield
+        yield recorded_project
     finally:
         _close_trace(stack)
 
@@ -89,7 +99,7 @@ def _close_trace(stack: ExitStack):
 def flush_traces() -> None:
     configured = _configured_client() if tracing_enabled() else None
     if configured is not None:
-        client, _ = configured
+        client, _, _ = configured
         try:
             client.flush()
         except Exception:

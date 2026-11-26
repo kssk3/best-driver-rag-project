@@ -5,6 +5,7 @@ import csv
 import hashlib
 import json
 import os
+import re
 from contextlib import nullcontext
 from datetime import UTC, datetime, timedelta
 from http.client import HTTPResponse, HTTPSConnection
@@ -91,7 +92,7 @@ class LangfuseUpload:
         assert url.hostname is not None  # langfuse_settings에서 검증한 호스트
         self.hostname = url.hostname
         self.url = url
-        self.project = _identifier(url.geturl().rstrip("/"), public)
+        self.project = project_fingerprint(url, public)
         token = base64.b64encode(f"{public}:{secret}".encode()).decode("ascii")
         self.headers = {
             "Authorization": "Basic " + token,
@@ -122,6 +123,47 @@ class LangfuseUpload:
     def __call__(self, path, payload):
         return self.request("POST", path, payload)
 
+    def attach_to_root(self, payload, recorded_project):
+        spans = payload["resourceSpans"][0]["scopeSpans"][0]["spans"]
+        trace_id = spans[0]["traceId"]
+        query = urlencode(
+            {
+                "traceId": trace_id,
+                "isRootObservation": "true",
+                "fields": "core,basic",
+                "limit": 2,
+            }
+        )
+        body = self.request("GET", "/api/public/v2/observations?" + query)
+        if (
+            not isinstance(body, dict)
+            or not isinstance(body.get("meta"), dict)
+            or body["meta"].get("cursor")
+        ):
+            raise ValueError("incomplete root lookup")
+        rows = body.get("data")
+        if rows == [] and recorded_project != self.project:
+            return  # 이 프로젝트에서 추적한 기록이 없으면 보관본 루트를 쓴다.
+        if (
+            not isinstance(rows, list)
+            or len(rows) != 1
+            or not isinstance(rows[0], dict)
+        ):
+            raise ValueError("expected one root")
+        root = rows[0]
+        root_id = root.get("id")
+        if (
+            root.get("traceId") != trace_id
+            or root.get("isRootObservation") is not True
+            or not isinstance(root_id, str)
+            or not re.fullmatch(r"[0-9a-f]{16}", root_id)
+            or root_id == "0" * 16
+        ):
+            raise ValueError("invalid root")
+        spans.pop(0)
+        for child in spans:
+            child["parentSpanId"] = root_id
+
     def find_span(self, trace_id, span_id):
         filters = [
             {"column": column, "operator": "=", "type": "string", "value": value}
@@ -151,6 +193,10 @@ def langfuse_post() -> LangfuseUpload:
 def _identifier(*parts):
     encoded = json.dumps(parts, ensure_ascii=False, separators=(",", ":")).encode()
     return hashlib.sha256(encoded).hexdigest()[:32]
+
+
+def project_fingerprint(url: SplitResult, public: str) -> str:
+    return _identifier(url.geturl().rstrip("/"), public)
 
 
 def trace_id_for_run(run_id: str) -> str:
@@ -242,7 +288,7 @@ def _payloads(row, details=None):
     return trace, score
 
 
-def _publish(row, entry, post, seen_score_ids, details):
+def _publish(row, entry, post, seen_score_ids, details, attach_to_root):
     status = row["status"]
     if status not in {"scored", "skipped", "no_score", "input_error", "scorer_error"}:
         entry.update(status="failed", reason="unknown_score_status")
@@ -285,6 +331,8 @@ def _publish(row, entry, post, seen_score_ids, details):
     )
     for stage, path, payload in requests:
         try:
+            if stage == "trace" and attach_to_root is not None:
+                attach_to_root(payload, row.get("langfuse_project"))
             accepted = post(path, payload)
         except Exception:
             accepted = None
@@ -337,6 +385,7 @@ def publish_scores(
     """업로드 시도마다 새 영수증을 기록한다. post 미지정은 네트워크 없는 검증이다."""
     project = post.project if isinstance(post, LangfuseUpload) else "injected"
     lookup = post.find_span if isinstance(post, LangfuseUpload) else None
+    attach_to_root = post.attach_to_root if isinstance(post, LangfuseUpload) else None
     with scores.open(encoding="utf-8", newline="") as source:
         rows = csv.DictReader(source)
         required = {
@@ -384,7 +433,9 @@ def publish_scores(
                     row["run_id"],
                     row["metric"],
                 )
-                _publish(row, entry, send, seen_score_ids, details.get(key))
+                _publish(
+                    row, entry, send, seen_score_ids, details.get(key), attach_to_root
+                )
                 writer.writerow(entry)
                 stream.flush()
                 if entry["status"] == "failed":

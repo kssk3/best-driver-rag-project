@@ -62,6 +62,8 @@ def serve(connection, posts, lookups=None):
     lookups = iter(lookups) if lookups is not None else None
 
     def getresponse():
+        if "isRootObservation=true" in connection.request.call_args.args[1]:
+            return response(200, {"data": [], "meta": {}})
         if connection.request.call_args.args[0] == "GET":
             return (
                 next(lookups)
@@ -146,7 +148,7 @@ def test_upload_cli_retry_across_midnight(tmp_path, monkeypatch, transport):
         tracing.SCORES,
         tracing.SCORES,
     ]
-    assert transport.call_count == 4
+    assert transport.call_count == 6
     assert scores.read_bytes() == original
     _, other = tracing._payloads(dict(sample, evaluation_id="evaluation2"))
     assert other["id"] != score["id"] and other["traceId"] == score["traceId"]
@@ -499,7 +501,7 @@ def test_uncertain_span_is_reconciled_before_retry(tmp_path, transport, recovery
         )
         assert [c.args[1] for c in posts(conn)] == expected
         assert receipt(second)[0]["status"] == "accepted"
-    method, path, body, _ = conn.request.call_args_list[0].args
+    method, path, body, _ = conn.request.call_args_list[1].args
     assert method == "GET" and body is None
     query = parse_qs(urlsplit(path).query)
     assert query["fields"] == ["core"]
@@ -529,3 +531,41 @@ def test_uncertain_span_is_reconciled_before_retry(tmp_path, transport, recovery
 )
 def test_otlp_receipt_requires_confirmed_result(body, expected):
     assert tracing._accepted(tracing.TRACES, response(200, body)) is expected
+
+
+@pytest.mark.parametrize(
+    "scenario",
+    ["pending", "multiple", "incomplete", "malformed", "unavailable", "wrong_trace"],
+)
+def test_unconfirmed_root_never_creates_another_root(tmp_path, transport, scenario):
+    client = tracing.langfuse_post()
+    scores = tmp_path / "scores.csv"
+    row = write_scores(scores, langfuse_project=client.project)
+    trace_id = tracing.trace_id_for_run(row["run_id"])
+    root = {"traceId": trace_id, "id": "a" * 16, "isRootObservation": True}
+    rows = {
+        "pending": [],
+        "multiple": [root, dict(root, id="b" * 16)],
+        "malformed": [dict(root, isRootObservation=False)],
+        "wrong_trace": [dict(root, traceId="other")],
+    }.get(scenario, [root])
+    meta = {"cursor": "next"} if scenario == "incomplete" else {}
+    conn = transport.return_value
+    conn.getresponse.return_value = response(
+        503 if scenario == "unavailable" else 200, {"data": rows, "meta": meta}
+    )
+    report = tmp_path / "report.csv"
+    with pytest.raises(SystemExit) as error:
+        main(
+            [
+                "--upload",
+                "--scores",
+                str(scores),
+                "--report",
+                str(report),
+                "--retry-missing-spans",
+            ]
+        )
+    assert error.value.code == 1
+    assert receipt(report)[0]["reason"] == "trace_unconfirmed"
+    assert posts(conn) == []

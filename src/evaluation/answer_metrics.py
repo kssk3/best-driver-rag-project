@@ -22,7 +22,7 @@ FIELDS = (
     "evaluation_id attempt_index dataset_id case_id configuration run_id run_kind "
     "run_started_at_utc versions_json metric ragas_version judge_model status score "
     "reason scored_at_utc duration_ms variant rewrite_enabled reported_configuration "
-    "comparison_eligible comparison_exclusion_reason"
+    "comparison_eligible comparison_exclusion_reason langfuse_project"
 ).split()
 
 
@@ -224,6 +224,7 @@ async def _score(
         raise InputError("snapshot_conditions_mismatch")
     row.update(_comparison_metadata(record, run, attempt.get("configuration")))
     row.update(
+        langfuse_project=record.langfuse_project,
         run_kind=record.run_kind,
         versions_json=json.dumps(
             record.options.versions, sort_keys=True, ensure_ascii=False
