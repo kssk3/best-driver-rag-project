@@ -105,10 +105,10 @@ def test_empty_places_is_not_an_error() -> None:
     assert len(app.get("deck_gl_json_chart")) == 0
 
 
-def test_unavailable_is_neither_empty_nor_error() -> None:
+def test_unavailable_hides_the_places_section() -> None:
     app = pick_places("unavailable")
     assert not app.exception
-    assert any("조회 서비스 준비 중입니다" in i.value for i in app.info)
+    assert not any(s.value == "장소" for s in app.subheader)
     assert not any("해당하는 장소가 없습니다" in i.value for i in app.info)
     assert not app.error
 

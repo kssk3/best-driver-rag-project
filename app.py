@@ -291,10 +291,12 @@ def render_result(view) -> None:
         district=st.session_state.get("asked_district", ""),
         on_followup=None if view.kind == "fixture" else send_followup,
     )
-    # 장소는 답변 아래에 이어서 보인다.
-    st.subheader("장소")
-    if "places" in st.session_state:
-        render_places(st.session_state["places"])
+    # 장소는 답변 아래에 이어서 보인다. 조회할 장소가 없거나 서비스가 아직 연결되지 않았으면
+    # (unavailable) 구역 자체를 그리지 않는다.
+    places = st.session_state.get("places")
+    if places is not None and places.status != "unavailable":
+        st.subheader("장소")
+        render_places(places)
 
 
 @st.cache_data(ttl=60, show_spinner=False)
