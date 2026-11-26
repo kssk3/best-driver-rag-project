@@ -9,6 +9,7 @@ from src.config import load_settings
 from src.demo import create_demo_pipeline
 from src.evaluation.csv_export import write_evaluation_csv
 from src.evaluation.runner import evaluate_cases, load_evaluation_cases
+from src.observability.live import flush_traces
 from src.pipeline import RAGPipeline
 
 
@@ -58,12 +59,15 @@ def main() -> None:
                 "factory는 RAGPipeline 또는 구성 이름별 RAGPipeline dict를 반환해야 합니다."
             )
     output.mkdir(parents=True, exist_ok=False)
-    results = evaluate_cases(cases, pipelines)
-    path = output / "evaluation.json"
-    path.write_text(
-        json.dumps(results, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
-    )
-    write_evaluation_csv(output, cases, results)
+    try:
+        results = evaluate_cases(cases, pipelines)
+        path = output / "evaluation.json"
+        path.write_text(
+            json.dumps(results, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+        )
+        write_evaluation_csv(output, cases, results)
+    finally:
+        flush_traces()
     print(f"{len(results)}회 실행 기록: {path}")
     if any(result["status"] == "error" for result in results):
         raise SystemExit(1)

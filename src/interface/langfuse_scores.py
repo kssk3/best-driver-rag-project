@@ -151,7 +151,9 @@ def load_langfuse_scores() -> LangfuseScores:
             "limit": 100,
         },
     )
-    observations = _pages(OBSERVATIONS_PATH, {"fields": "core,basic,metadata", "limit": 1000})
+    observations = _pages(
+        OBSERVATIONS_PATH, {"fields": "core,basic,metadata", "limit": 1000}
+    )
     roots = {}
     for item in observations:
         if item.get("isRootObservation") and item.get("traceId"):

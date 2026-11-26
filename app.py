@@ -120,7 +120,6 @@ def load_pipeline(team_settings: RuntimeSettings | None = None):
 
 
 # 실행 모드에서 파이프라인을 돌려 결과를 session_state에 둔다. 실패하면 안내를 보이고 False.
-# 실행 모드에서 파이프라인을 돌려 결과를 session_state에 둔다. 실패하면 안내를 보이고 False.
 def ask_pipeline(mode: str, request: PipelineRequest) -> bool:
     try:
         team_settings = (
@@ -147,7 +146,14 @@ def ask_pipeline(mode: str, request: PipelineRequest) -> bool:
             and error.code == "evaluation.unsupported_configuration"
         ):
             st.error(
-                '팀 색인 모드의 실행 설정에서 pipeline.variant를 "A"로 지정하세요.'
+                '팀 색인 모드의 실행 설정에서 pipeline.variant를 "A" 또는 "C"로 지정하세요.'
+            )
+        elif (
+            isinstance(error, PipelineConfigurationError)
+            and error.code == "evaluation.missing_reranker_model"
+        ):
+            st.error(
+                "C 검색의 실행 설정에서 pipeline.versions.reranker_model에 재정렬 모델 ID를 지정하세요."
             )
         else:
             st.error(
@@ -283,7 +289,7 @@ def render_result(view) -> None:
         view,
         question=st.session_state.get("asked_question", ""),
         district=st.session_state.get("asked_district", ""),
-        on_followup=send_followup,
+        on_followup=None if view.kind == "fixture" else send_followup,
     )
     # 장소는 답변 아래에 이어서 보인다.
     st.subheader("장소")
@@ -308,7 +314,8 @@ def render_comparison() -> None:
     st.caption(
         "Langfuse의 faithfulness 점수를 실행 방식(A/B/C)별로 집계합니다. "
         "같은 평가(데이터셋)끼리만 묶고, 방식을 알 수 없는 점수는 평균에서 뺍니다. "
-        "검색 적중률(Hit@k)은 다른 지표라 섞지 않습니다."
+        "검색 적중률(Hit@k)은 다른 지표라 섞지 않습니다. "
+        "점수는 판정 모델의 편차가 있어, 같은 답변도 다시 채점하면 달라질 수 있습니다."
     )
     try:
         result = cached_scores()

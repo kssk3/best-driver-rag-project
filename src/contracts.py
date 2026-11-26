@@ -326,6 +326,8 @@ class StageRecord(BaseModel):
 
 
 class RunRecord(BaseModel):
+    # 실시간 실행 루트를 생성한 Langfuse 프로젝트의 비밀값 없는 식별자.
+    langfuse_project: str | None = None
     run_id: str
     request_id: str
     run_kind: Literal["demo", "rag", "fixed_evidence"]

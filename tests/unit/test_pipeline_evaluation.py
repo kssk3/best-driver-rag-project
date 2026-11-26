@@ -522,3 +522,231 @@ def test_duplicate_json_keys_are_rejected(tmp_path):
     path.write_text('[{"case_id":"a","case_id":"b","question":"Q"}]', encoding="utf-8")
     with pytest.raises(EvaluationCaseError, match="중복 JSON"):
         load_evaluation_cases(path)
+
+
+def test_concurrent_langfuse_callbacks_follow_each_pipeline_run(monkeypatch):
+    from collections import Counter
+    from concurrent.futures import ThreadPoolExecutor
+    from threading import Barrier
+
+    from langchain_core.language_models.fake_chat_models import FakeListChatModel
+    from langfuse import Langfuse
+    from opentelemetry.sdk.trace import TracerProvider
+    from opentelemetry.sdk.trace.export.in_memory_span_exporter import (
+        InMemorySpanExporter,
+    )
+
+    from src.infrastructure.chat_models import invoke_chat
+    from src.observability.live import current_handler, flush_traces
+    from src.observability.tracing import trace_id_for_run
+
+    monkeypatch.delenv("OTEL_SDK_DISABLED", raising=False)
+    monkeypatch.setenv("RAG_LANGFUSE_TRACE", "1")
+    monkeypatch.setenv("LANGFUSE_BASE_URL", "https://langfuse.invalid")
+    monkeypatch.setenv("LANGFUSE_PUBLIC_KEY", "pk-test-concurrent")
+    monkeypatch.setenv("LANGFUSE_SECRET_KEY", "sk-test-concurrent")
+    exporter = InMemorySpanExporter()
+    provider = TracerProvider()
+    client = Langfuse(
+        public_key="pk-test-concurrent",
+        secret_key="sk-test-concurrent",
+        base_url="https://langfuse.invalid",
+        span_exporter=exporter,
+        tracer_provider=provider,
+    )
+    barrier = Barrier(3)
+
+    def run(variant):
+        chat = FakeListChatModel(responses=["fixture"])
+
+        def search(query, **kwargs):
+            if variant == "C":
+                invoke_chat(chat, "rerank")
+            return retrieve(query, **kwargs)
+
+        observed = []
+
+        def answer(req, evidence):
+            barrier.wait(timeout=20)
+            invoke_chat(chat, req.question)
+            observed.append(current_handler().last_trace_id)
+            return generate(req, evidence)
+
+        pipe = RAGPipeline(
+            resolver=resolve,
+            retriever=search,
+            generator=answer,
+            options=PipelineOptions(variant=variant),
+        )
+        record = pipe.run(PipelineRequest(question="테스트 질문", district="송파구"))
+        trace_id = trace_id_for_run(record.run_id)
+        assert observed == [trace_id] and current_handler() is None
+        return trace_id
+
+    try:
+        with ThreadPoolExecutor(max_workers=3) as pool:
+            ids = list(pool.map(run, "ABC"))
+        flush_traces()
+        counts = Counter(
+            format(span.context.trace_id, "032x")
+            for span in exporter.get_finished_spans()
+        )
+        assert [counts[id] for id in ids] == [2, 2, 3]
+    finally:
+        client.shutdown()
+
+
+@pytest.mark.parametrize("failure", ["start", "close", "flush"])
+def test_tracing_sdk_failure_preserves_pipeline_exception(monkeypatch, caplog, failure):
+    from contextlib import contextmanager
+    from unittest.mock import Mock
+
+    import langfuse.langchain
+
+    from src.observability import live
+
+    client = Mock()
+
+    @contextmanager
+    def observation(**kwargs):
+        if failure == "start":
+            raise RuntimeError("private-start")
+        try:
+            yield
+        finally:
+            if failure == "close":
+                raise RuntimeError("private-close")
+
+    client.start_as_current_observation = observation
+    if failure == "flush":
+        client.flush.side_effect = RuntimeError("private-flush")
+    monkeypatch.setenv("RAG_LANGFUSE_TRACE", "1")
+    monkeypatch.setattr(
+        live, "_configured_client", lambda: (client, "synthetic", "project")
+    )
+    monkeypatch.setattr(langfuse.langchain, "CallbackHandler", Mock())
+    calls = []
+    with pytest.raises(ValueError, match="pipeline error"):
+        with live.trace_pipeline("run1", "demo", "A"):
+            calls.append(live.current_handler() is not None)
+            raise ValueError("pipeline error")
+    live.flush_traces()
+    assert calls == [failure != "start"]
+    assert live.current_handler() is None
+    assert "Langfuse" in caplog.text and "private-" not in caplog.text
+
+
+def test_live_run_then_archived_score_has_one_langfuse_root(tmp_path, monkeypatch):
+    import asyncio
+    from types import SimpleNamespace
+    from unittest.mock import AsyncMock
+    from urllib.parse import parse_qs, urlsplit
+
+    from langchain_core.language_models.fake_chat_models import FakeListChatModel
+    from langfuse import Langfuse
+    from opentelemetry.sdk.trace import TracerProvider
+    from opentelemetry.sdk.trace.export.in_memory_span_exporter import (
+        InMemorySpanExporter,
+    )
+
+    from scripts.upload_scores import main as upload
+    from src.evaluation.answer_metrics import score_archive
+    from src.infrastructure.chat_models import invoke_chat
+    from src.observability import live, tracing
+
+    monkeypatch.setenv("RAG_LANGFUSE_TRACE", "1")
+    monkeypatch.setenv("LANGFUSE_BASE_URL", "https://langfuse.invalid")
+    monkeypatch.setenv("LANGFUSE_PUBLIC_KEY", "pk-root-test")
+    monkeypatch.setenv("LANGFUSE_SECRET_KEY", "sk-root-test")
+    monkeypatch.delenv("OTEL_SDK_DISABLED", raising=False)
+    exporter = InMemorySpanExporter()
+    sdk = Langfuse(
+        public_key="pk-root-test",
+        secret_key="sk-root-test",
+        base_url="https://langfuse.invalid",
+        span_exporter=exporter,
+        tracer_provider=TracerProvider(),
+    )
+    project = tracing.langfuse_post().project
+    monkeypatch.setattr(
+        live, "_configured_client", lambda: (sdk, "pk-root-test", project)
+    )
+
+    def answer(request, evidence):
+        invoke_chat(FakeListChatModel(responses=["합성"]), request.question)
+        return generate(request, evidence)
+
+    cases = [EvaluationCase(case_id="test", question="합성 질문", district="송파구")]
+    try:
+        results = evaluate_cases(cases, {"A": pipeline(generator=answer)})
+        live.flush_traces()
+        spans = exporter.get_finished_spans()
+    finally:
+        sdk.shutdown()
+    (root,) = [s for s in spans if s.name == "rag-pipeline"]
+    (generation,) = [s for s in spans if s is not root]
+    assert generation.parent.span_id == root.context.span_id
+    assert root.attributes["langfuse.internal.as_root"] is True
+    trace_id, root_id = f"{root.context.trace_id:032x}", f"{root.context.span_id:016x}"
+    assert trace_id == tracing.trace_id_for_run(results[0]["run_id"])
+    assert results[0]["record"]["langfuse_project"] == project
+    archive = tmp_path / "evaluation.json"
+    archive.write_text(json.dumps(results))
+    write_evaluation_csv(tmp_path, cases, results)
+    judged = tmp_path / "judged"
+    assert asyncio.run(
+        score_archive(
+            archive,
+            tmp_path / "cases.csv",
+            judged,
+            judge_model="mock",
+            scorer=AsyncMock(return_value=SimpleNamespace(value=0.0)),
+            record_details=True,
+        )
+    )
+    with (judged / "scores.csv").open() as stream:
+        (score_row,) = csv.DictReader(stream)
+    assert score_row["langfuse_project"] == project
+
+    root_row = {
+        "traceId": trace_id,
+        "id": root_id,
+        "parentObservationId": f"{root.parent.span_id:016x}",
+        "isRootObservation": True,
+    }
+    published = []
+
+    def request(self, method, path, payload=None):
+        if method == "GET":
+            query = parse_qs(urlsplit(path).query)
+            if "isRootObservation" in query:
+                assert query["traceId"] == [trace_id] and query[
+                    "isRootObservation"
+                ] == ["true"]
+                return {"data": [root_row], "meta": {}}
+            return {"data": [], "meta": {}}
+        published.append((path, payload))
+        return True
+
+    monkeypatch.setattr(tracing.LangfuseUpload, "request", request)
+    args = ["--scores", str(judged / "scores.csv"), "--upload"]
+    upload([*args, "--report", str(tmp_path / "numeric.csv")])
+    assert [p for p, _ in published] == [tracing.SCORES]
+    upload(
+        [
+            *args,
+            "--judgments",
+            str(judged / "judgment-details.jsonl"),
+            "--report",
+            str(tmp_path / "details.csv"),
+        ]
+    )
+    assert [p for p, _ in published] == [tracing.SCORES, tracing.TRACES, tracing.SCORES]
+    (child,) = published[1][1]["resourceSpans"][0]["scopeSpans"][0]["spans"]
+    assert (child["name"], child["traceId"], child["parentSpanId"]) == (
+        "faithfulness",
+        trace_id,
+        root_id,
+    )
+    (score,) = published[2][1]
+    assert score["traceId"] == trace_id and score["value"] == 0.0

@@ -166,7 +166,10 @@ def test_app_reports_missing_key_before_creating_embedding_provider(
     (
         ({"variant": "A"}, "pipeline.versions.model"),
         ({"variant": "B", "versions": {"model": "offline-model"}}, "pipeline.variant"),
-        ({"variant": "C", "versions": {"model": "offline-model"}}, "pipeline.variant"),
+        (
+            {"variant": "C", "versions": {"model": "offline-model"}},
+            "pipeline.versions.reranker_model",
+        ),
     ),
 )
 def test_app_reports_team_configuration_field_before_opening_index(

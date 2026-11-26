@@ -16,6 +16,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 from src.common.env import require_env
 from src.common.errors import ApplicationError, ErrorCategory
 from src.common.log_setup import mask_secrets
+from src.observability.live import current_handler
 
 
 class ModelCallError(ApplicationError, RuntimeError):
@@ -76,7 +77,11 @@ def invoke_chat(
     langchain-openai가 형식이 다른 응답 본문에 내는 ValueError 등도 여기에 해당한다.
     """
     try:
-        reply = chat.invoke(messages)
+        handler = current_handler()
+        if handler is None:
+            reply = chat.invoke(messages)
+        else:
+            reply = chat.invoke(messages, config={"callbacks": [handler]})
     except APITimeoutError as error:
         raise ModelCallError(
             f"모델 응답 시간 초과: {type(error).__name__}",
