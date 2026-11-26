@@ -34,7 +34,7 @@
 └─ docs/                     팀 공통 기준과 재현 문서
 ```
 
-Streamlit 진입점인 루트 `app.py`와 `src/interface/`는 공통 `RAGPipeline.run` 결과(`RunRecord`)를 어댑터로 화면용 응답으로 바꿔 보여 준다. 지금 연결된 파이프라인은 합성 데모(`create_demo_pipeline`)이며, 실행 전에 데모 색인을 만들어야 한다([README](../README.md)). 터미널에서는 `scripts/search_index.py`로 실제 근거를 조회할 수 있다. Python 패키지에는 `__init__.py`를 두었다.
+Streamlit 진입점인 루트 `app.py`와 `src/interface/`는 공통 `RAGPipeline.run` 결과(`RunRecord`)를 어댑터로 화면용 응답으로 바꿔 보여 준다. 화면은 `RAG_CHAT_SETTINGS`로 지정한 팀 색인 실행(C 재정렬과 질문 다듬기)에 연결하고, 색인이 없으면 `scripts.run_chat`이 먼저 만든다([README](../README.md)). 합성 데모(`create_demo_pipeline`)는 키 없이 연결을 확인하는 오프라인 경로로 `scripts.demo`에 남아 있다. 터미널에서는 `scripts/search_index.py`로 실제 근거를 조회할 수 있다. Python 패키지에는 `__init__.py`를 두었다.
 
 ## 담당 경로
 

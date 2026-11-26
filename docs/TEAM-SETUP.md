@@ -19,7 +19,7 @@
 
 설치는 [README](../README.md)의 루트 uv 환경을 사용한다. `.python-version`, `pyproject.toml`과 `uv.lock`을 함께 확인한다. 공용 의존성을 추가할 때 관련 담당자와 실행 가능성을 확인하고 의존성 파일과 잠금 파일을 함께 갱신한다.
 
-UI는 Streamlit으로 구현하고 공통 Python RAG 함수를 직접 호출하는 것이 목표다. 공통 파이프라인과 평가 실행기는 구현됐으며 같은 `RAGPipeline.run`을 사용한다. Streamlit은 공용 의존성에 포함되어 있고 `app.py`로 실행한다(데모 색인 선행, 명령은 [README](../README.md)). 지금 화면은 합성 데모 파이프라인에 연결되어 있다. 현재 터미널에서는 `scripts.search_index`로 실제 색인의 근거를 조회하고, 공통 응답 흐름은 `scripts.demo`의 합성 자동 실행으로 확인한다. 실행 방법은 [README](../README.md)를 따른다. 별도 Next.js 프론트엔드, FastAPI 진입점과 Compose 구성은 현재 필수 범위에 포함하지 않는다.
+UI는 Streamlit으로 구현하고 공통 Python RAG 함수를 직접 호출하는 것이 목표다. 공통 파이프라인과 평가 실행기는 구현됐으며 같은 `RAGPipeline.run`을 사용한다. Streamlit은 공용 의존성에 포함되어 있고 `app.py`로 실행한다(명령은 [README](../README.md)). 화면은 `RAG_CHAT_SETTINGS`로 지정한 팀 색인 실행에 연결되고 `scripts.run_chat`이 색인이 없으면 먼저 만든다. 현재 터미널에서는 `scripts.search_index`로 실제 색인의 근거를 조회하고, 공통 응답 흐름은 `scripts.demo`의 합성 자동 실행으로 확인한다. 실행 방법은 [README](../README.md)를 따른다. 별도 Next.js 프론트엔드, FastAPI 진입점과 Compose 구성은 현재 필수 범위에 포함하지 않는다.
 
 합성 데모는 로컬 JSON 색인과 해시 임베딩을 사용한다. 조례·별표 인계 자료로 실제 색인을 만들 때는 `text-embedding-3-small`을 지정한다. 검색 CLI는 순위와 근거를 출력하고, 파이프라인 답변은 `create_runtime`에 전달한 생성기가 만든다. [환경변수 예시](../.env.example)
 
