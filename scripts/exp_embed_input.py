@@ -52,12 +52,18 @@ VARIANT_ID_MARKER = "-embed-input-"
 
 
 def variant_index_id(
-    base_id: str, embedding_identity: str, texts: list[str | None]
+    base_id: str,
+    embedding_identity: str,
+    texts: list[str | None],
+    vectors: list[list[float]],
 ) -> str:
-    """변환 입력의 내용·임베딩 정체·변환 버전으로 색인 ID를 만든다(같은 입력이면 같고 다르면 달라진다)."""
+    """변환 입력·실제 벡터·임베딩 정체·변환 버전으로 색인 ID를 만든다.
+
+    같은 입력이어도 제공자가 다른 벡터를 돌려주면 ID가 달라진다(정확히 어떤 색인인지 구별한다).
+    """
     digest = hashlib.sha256(
         json.dumps(
-            [TRANSFORM_VERSION, embedding_identity, texts], ensure_ascii=False
+            [TRANSFORM_VERSION, embedding_identity, texts, vectors], ensure_ascii=False
         ).encode("utf-8")
     ).hexdigest()[:16]
     return f"{base_id}{VARIANT_ID_MARKER}{digest}"
@@ -80,6 +86,7 @@ def build_variant_index(base, embedder):  # type: ignore[no-untyped-def]
                 base.metadata.index_id,
                 base.metadata.embedding_identity,
                 [texts[i] for i in order],
+                [list(v) for v in vectors],
             )
         }
     )

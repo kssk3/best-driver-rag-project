@@ -11,10 +11,15 @@ from scripts.exp_embed_input import (
 
 
 def test_variant_index_id_changes_with_texts_identity_and_is_stable() -> None:
-    base = variant_index_id("index-1", "emb-a", ["가", "나"])
-    assert base == variant_index_id("index-1", "emb-a", ["가", "나"])
-    assert base != variant_index_id("index-1", "emb-a", ["가", "다"])
-    assert base != variant_index_id("index-1", "emb-b", ["가", "나"])
+    v = [[0.1, 0.2], [0.3, 0.4]]
+    base = variant_index_id("index-1", "emb-a", ["가", "나"], v)
+    assert base == variant_index_id("index-1", "emb-a", ["가", "나"], v)
+    assert base != variant_index_id("index-1", "emb-a", ["가", "다"], v)
+    assert base != variant_index_id("index-1", "emb-b", ["가", "나"], v)
+    # 같은 입력이라도 제공자가 다른 벡터를 돌려주면 다른 색인이다.
+    assert base != variant_index_id(
+        "index-1", "emb-a", ["가", "나"], [[0.1, 0.2], [0.3, 0.5]]
+    )
     assert base.startswith("index-1" + VARIANT_ID_MARKER)
     assert TRANSFORM_VERSION  # 변환 버전이 해시에 들어간다
 

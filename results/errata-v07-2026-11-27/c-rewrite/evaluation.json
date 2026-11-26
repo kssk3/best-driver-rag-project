@@ -1,0 +1,291 @@
+[
+  {
+    "case_id": "test-v07-sd-food-container-apartment-corrected",
+    "configuration": "configured",
+    "run_id": "ae9a22a0b43540a3a80fd6d512e97a1a",
+    "status": "answered",
+    "response": {
+      "request_id": "6307c6c794d34f89a31620d273b6b63d",
+      "run_id": "ae9a22a0b43540a3a80fd6d512e97a1a",
+      "status": "answered",
+      "answer": "서대문구 아파트(공동주택)에서 사용하는 120리터 음식물류 전용용기 납부필증의 판매이윤은 1,080원입니다.",
+      "citations": [
+        {
+          "chunk_id": "chunk-d6af842fbae0acb15a74f665bc85c069ee628b84c7fab4dab4e8292e79e13f3f",
+          "document_id": "seodaemun-rules:attachment:160561043",
+          "document_version": "v1",
+          "source_url": "http://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=160561043&flNm=%5B%EB%B3%84%ED%91%9C+4%5D+%EC%A2%85%EB%9F%89%EC%A0%9C+%EA%B7%9C%EA%B2%A9%EB%B4%89%ED%88%AC%EC%9D%98+%ED%8C%90%EB%A7%A4%EC%9D%B4%EC%9C%A4+%EB%B0%8F+%EA%B3%B5%EA%B8%89%EC%88%98%EC%88%98%EB%A3%8C%28%EC%A0%9C5%EC%A1%B0%EC%A0%9C2%ED%95%AD+%EA%B4%80%EB%A0%A8%29",
+          "source_location": "table-3/row[13]",
+          "title": "[별표 4] 종량제 규격봉투의 판매이윤 및 공급수수료(제5조제2항 관련)"
+        }
+      ],
+      "places": {
+        "status": "unavailable",
+        "places": [],
+        "error": null
+      },
+      "error": null,
+      "error_code": null
+    },
+    "record": {
+      "langfuse_project": "62b1ba8163f8db59e3c61ba8a6db8b06",
+      "run_id": "ae9a22a0b43540a3a80fd6d512e97a1a",
+      "request_id": "6307c6c794d34f89a31620d273b6b63d",
+      "run_kind": "rag",
+      "started_at": "2026-11-26T16:42:48.198233Z",
+      "request": {
+        "request_id": "6307c6c794d34f89a31620d273b6b63d",
+        "question": "서대문구 아파트에서 쓰는 120리터 음식물류 전용용기 납부필증의 판매이윤은 얼마인가요?",
+        "district": "서대문구",
+        "dong": null,
+        "conditions": {},
+        "district_confirmed": false
+      },
+      "options": {
+        "variant": "C",
+        "rewrite_enabled": true,
+        "top_k": 5,
+        "max_context_chars": 12000,
+        "run_kind": "rag",
+        "versions": {
+          "model": "gpt-6-luna",
+          "index": "index-1c25b630ae0878a2c496716730e6c0622ba6995203d7ac0293759bdcb1bf5bef",
+          "chunking": "preprocessed-v2-row-v1",
+          "embedding": "text-embedding-3-small",
+          "prompt": "b0ec828702879ac2fbcdaabfbb0df5841beb2c8d6ff103472f0f5a03ff636305",
+          "candidate_policy": "vector+bm25/rrf-v1(k=60,depth=20)+llm-rerank-v1(passage_chars=1200)",
+          "reranker_model": "gpt-6-luna",
+          "reranker_prompt": "41e5bb7e69f9509b2d5a45d0dcbc25573973aeba2ee736895c2e5d25fd652413",
+          "rewrite": "catalog-rules-v1",
+          "rewrite_catalog": "172cc01ea615ded3bb8bc0010a9b5169a16c4fd6cf8002f92170c1cbd69f6664"
+        }
+      },
+      "resolved_query": {
+        "search_query": "서대문구 아파트에서 쓰는 120리터 음식물류 전용용기 납부필증의 판매이윤은 얼마인가요?",
+        "district": "서대문구",
+        "dong": null,
+        "status": "resolved",
+        "clarification_question": null,
+        "region_status": "no_dong",
+        "candidate_districts": []
+      },
+      "search_query": "서대문구 아파트에서 쓰는 120리터 음식물류 전용용기 납부필증의 판매이윤은 얼마인가요?",
+      "candidates": [
+        {
+          "chunk": {
+            "chunk_id": "chunk-d6af842fbae0acb15a74f665bc85c069ee628b84c7fab4dab4e8292e79e13f3f",
+            "source_document_id": "seodaemun-rules:attachment:160561043",
+            "source_document_version": "v1",
+            "title": "[별표 4] 종량제 규격봉투의 판매이윤 및 공급수수료(제5조제2항 관련)",
+            "content_format": "json",
+            "content": "{\"header_rows\":[{\"cells\":[{\"cell_id\":\"table-3-r0-c0\",\"colspan\":2,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":0,\"rowspan\":1,\"text\":\"구  분\"},{\"cell_id\":\"table-3-r0-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":0,\"rowspan\":1,\"text\":\"용  량\"},{\"cell_id\":\"table-3-r0-c3\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":3,\"origin_row\":0,\"rowspan\":1,\"text\":\"판매이윤\"}],\"row\":0}],\"paragraphs\":[\"〔별표 4〕<개정 2025. 12. 31.>\\n\",\"종량제 규격봉투의 판매이윤 및 공급수수료(제5조제2항 관련)\\n\",\"\",\"○ 생활폐기물 규격봉투 판매이윤\\n\",\"                                                                   (단위 : 원)\\n\",\"\\n\",\"\",\"○ 사업장생활계폐기물 규격봉투 공급수수료\\n\",\"                                                              (단위 : 원)\\n\",\"\\n\",\"○ 음식물폐기물 규격봉투 및 전용용기 납부필증 판매이윤\\n\",\"\",\"                                                             (단위 : 원)\\n\",\"\\n\",\"\"],\"row\":{\"cells\":[{\"cell_id\":\"table-3-r8-c0\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":0,\"origin_row\":8,\"rowspan\":6,\"text\":\"음식물류\\n전용용기\\n납부필증\"},{\"cell_id\":\"table-3-r13-c1\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":1,\"origin_row\":13,\"rowspan\":1,\"text\":\"공동\\n주택\"},{\"cell_id\":\"table-3-r13-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":13,\"rowspan\":1,\"text\":\"120ℓ\"},{\"cell_id\":\"table-3-r13-c3\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":3,\"origin_row\":13,\"rowspan\":1,\"text\":\"1,080\"}],\"row\":13},\"section_title\":\"〔별표 4〕<개정 2025. 12. 31.>\",\"table_id\":\"table-3\"}",
+            "source_url": "http://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=160561043&flNm=%5B%EB%B3%84%ED%91%9C+4%5D+%EC%A2%85%EB%9F%89%EC%A0%9C+%EA%B7%9C%EA%B2%A9%EB%B4%89%ED%88%AC%EC%9D%98+%ED%8C%90%EB%A7%A4%EC%9D%B4%EC%9C%A4+%EB%B0%8F+%EA%B3%B5%EA%B8%89%EC%88%98%EC%88%98%EB%A3%8C%28%EC%A0%9C5%EC%A1%B0%EC%A0%9C2%ED%95%AD+%EA%B4%80%EB%A0%A8%29",
+            "source_location": "table-3/row[13]",
+            "scope_type": "district",
+            "districts": [
+              "서대문구"
+            ],
+            "conditions": [],
+            "chunking_version": "preprocessed-v2-row-v1"
+          },
+          "rank": 1,
+          "score": 10.0,
+          "stage_scores": {
+            "vector": 0.44767193727782123,
+            "bm25": 85.46404313089499,
+            "rrf": 0.03125763125763126,
+            "rerank": 10.0
+          }
+        },
+        {
+          "chunk": {
+            "chunk_id": "chunk-f5c79632dbb54a36d96bd1652aebd9433e0593318594bb04aac3c269a18b4a70",
+            "source_document_id": "seodaemun-rules:attachment:160561043",
+            "source_document_version": "v1",
+            "title": "[별표 4] 종량제 규격봉투의 판매이윤 및 공급수수료(제5조제2항 관련)",
+            "content_format": "json",
+            "content": "{\"header_rows\":[{\"cells\":[{\"cell_id\":\"table-3-r0-c0\",\"colspan\":2,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":0,\"rowspan\":1,\"text\":\"구  분\"},{\"cell_id\":\"table-3-r0-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":0,\"rowspan\":1,\"text\":\"용  량\"},{\"cell_id\":\"table-3-r0-c3\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":3,\"origin_row\":0,\"rowspan\":1,\"text\":\"판매이윤\"}],\"row\":0}],\"paragraphs\":[\"〔별표 4〕<개정 2025. 12. 31.>\\n\",\"종량제 규격봉투의 판매이윤 및 공급수수료(제5조제2항 관련)\\n\",\"\",\"○ 생활폐기물 규격봉투 판매이윤\\n\",\"                                                                   (단위 : 원)\\n\",\"\\n\",\"\",\"○ 사업장생활계폐기물 규격봉투 공급수수료\\n\",\"                                                              (단위 : 원)\\n\",\"\\n\",\"○ 음식물폐기물 규격봉투 및 전용용기 납부필증 판매이윤\\n\",\"\",\"                                                             (단위 : 원)\\n\",\"\\n\",\"\"],\"row\":{\"cells\":[{\"cell_id\":\"table-3-r8-c0\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":0,\"origin_row\":8,\"rowspan\":6,\"text\":\"음식물류\\n전용용기\\n납부필증\"},{\"cell_id\":\"table-3-r8-c1\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":1,\"origin_row\":8,\"rowspan\":5,\"text\":\"음\\n식\\n점\"},{\"cell_id\":\"table-3-r12-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":12,\"rowspan\":1,\"text\":\"120ℓ\"},{\"cell_id\":\"table-3-r12-c3\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":3,\"origin_row\":12,\"rowspan\":1,\"text\":\"1,512\"}],\"row\":12},\"section_title\":\"〔별표 4〕<개정 2025. 12. 31.>\",\"table_id\":\"table-3\"}",
+            "source_url": "http://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=160561043&flNm=%5B%EB%B3%84%ED%91%9C+4%5D+%EC%A2%85%EB%9F%89%EC%A0%9C+%EA%B7%9C%EA%B2%A9%EB%B4%89%ED%88%AC%EC%9D%98+%ED%8C%90%EB%A7%A4%EC%9D%B4%EC%9C%A4+%EB%B0%8F+%EA%B3%B5%EA%B8%89%EC%88%98%EC%88%98%EB%A3%8C%28%EC%A0%9C5%EC%A1%B0%EC%A0%9C2%ED%95%AD+%EA%B4%80%EB%A0%A8%29",
+            "source_location": "table-3/row[12]",
+            "scope_type": "district",
+            "districts": [
+              "서대문구"
+            ],
+            "conditions": [],
+            "chunking_version": "preprocessed-v2-row-v1"
+          },
+          "rank": 2,
+          "score": 5.0,
+          "stage_scores": {
+            "vector": 0.45011413269672884,
+            "bm25": 85.63301196318476,
+            "rrf": 0.032266458495966696,
+            "rerank": 5.0
+          }
+        },
+        {
+          "chunk": {
+            "chunk_id": "chunk-63caca2db62d7966290a77bc2b791e87237c456eda930f2991070d325cdb81c1",
+            "source_document_id": "seodaemun-rules:attachment:160561043",
+            "source_document_version": "v1",
+            "title": "[별표 4] 종량제 규격봉투의 판매이윤 및 공급수수료(제5조제2항 관련)",
+            "content_format": "json",
+            "content": "{\"header_rows\":[{\"cells\":[{\"cell_id\":\"table-3-r0-c0\",\"colspan\":2,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":0,\"rowspan\":1,\"text\":\"구  분\"},{\"cell_id\":\"table-3-r0-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":0,\"rowspan\":1,\"text\":\"용  량\"},{\"cell_id\":\"table-3-r0-c3\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":3,\"origin_row\":0,\"rowspan\":1,\"text\":\"판매이윤\"}],\"row\":0}],\"paragraphs\":[\"〔별표 4〕<개정 2025. 12. 31.>\\n\",\"종량제 규격봉투의 판매이윤 및 공급수수료(제5조제2항 관련)\\n\",\"\",\"○ 생활폐기물 규격봉투 판매이윤\\n\",\"                                                                   (단위 : 원)\\n\",\"\\n\",\"\",\"○ 사업장생활계폐기물 규격봉투 공급수수료\\n\",\"                                                              (단위 : 원)\\n\",\"\\n\",\"○ 음식물폐기물 규격봉투 및 전용용기 납부필증 판매이윤\\n\",\"\",\"                                                             (단위 : 원)\\n\",\"\\n\",\"\"],\"row\":{\"cells\":[{\"cell_id\":\"table-3-r8-c0\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":0,\"origin_row\":8,\"rowspan\":6,\"text\":\"음식물류\\n전용용기\\n납부필증\"},{\"cell_id\":\"table-3-r8-c1\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":1,\"origin_row\":8,\"rowspan\":5,\"text\":\"음\\n식\\n점\"},{\"cell_id\":\"table-3-r9-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":9,\"rowspan\":1,\"text\":\"10ℓ\"},{\"cell_id\":\"table-3-r9-c3\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":3,\"origin_row\":9,\"rowspan\":1,\"text\":\"126\"}],\"row\":9},\"section_title\":\"〔별표 4〕<개정 2025. 12. 31.>\",\"table_id\":\"table-3\"}",
+            "source_url": "http://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=160561043&flNm=%5B%EB%B3%84%ED%91%9C+4%5D+%EC%A2%85%EB%9F%89%EC%A0%9C+%EA%B7%9C%EA%B2%A9%EB%B4%89%ED%88%AC%EC%9D%98+%ED%8C%90%EB%A7%A4%EC%9D%B4%EC%9C%A4+%EB%B0%8F+%EA%B3%B5%EA%B8%89%EC%88%98%EC%88%98%EB%A3%8C%28%EC%A0%9C5%EC%A1%B0%EC%A0%9C2%ED%95%AD+%EA%B4%80%EB%A0%A8%29",
+            "source_location": "table-3/row[9]",
+            "scope_type": "district",
+            "districts": [
+              "서대문구"
+            ],
+            "conditions": [],
+            "chunking_version": "preprocessed-v2-row-v1"
+          },
+          "rank": 3,
+          "score": 2.0,
+          "stage_scores": {
+            "vector": 0.4501148989932078,
+            "bm25": 85.54101720279203,
+            "rrf": 0.03225806451612903,
+            "rerank": 2.0
+          }
+        },
+        {
+          "chunk": {
+            "chunk_id": "chunk-e60f15f7a8a62145d6f7d61e5074e8fdac9a3c9ea6e550d73beaf5f0d166aab8",
+            "source_document_id": "seodaemun-rules:attachment:160561043",
+            "source_document_version": "v1",
+            "title": "[별표 4] 종량제 규격봉투의 판매이윤 및 공급수수료(제5조제2항 관련)",
+            "content_format": "json",
+            "content": "{\"header_rows\":[{\"cells\":[{\"cell_id\":\"table-3-r0-c0\",\"colspan\":2,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":0,\"rowspan\":1,\"text\":\"구  분\"},{\"cell_id\":\"table-3-r0-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":0,\"rowspan\":1,\"text\":\"용  량\"},{\"cell_id\":\"table-3-r0-c3\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":3,\"origin_row\":0,\"rowspan\":1,\"text\":\"판매이윤\"}],\"row\":0}],\"paragraphs\":[\"〔별표 4〕<개정 2025. 12. 31.>\\n\",\"종량제 규격봉투의 판매이윤 및 공급수수료(제5조제2항 관련)\\n\",\"\",\"○ 생활폐기물 규격봉투 판매이윤\\n\",\"                                                                   (단위 : 원)\\n\",\"\\n\",\"\",\"○ 사업장생활계폐기물 규격봉투 공급수수료\\n\",\"                                                              (단위 : 원)\\n\",\"\\n\",\"○ 음식물폐기물 규격봉투 및 전용용기 납부필증 판매이윤\\n\",\"\",\"                                                             (단위 : 원)\\n\",\"\\n\",\"\"],\"row\":{\"cells\":[{\"cell_id\":\"table-3-r8-c0\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":0,\"origin_row\":8,\"rowspan\":6,\"text\":\"음식물류\\n전용용기\\n납부필증\"},{\"cell_id\":\"table-3-r8-c1\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":1,\"origin_row\":8,\"rowspan\":5,\"text\":\"음\\n식\\n점\"},{\"cell_id\":\"table-3-r11-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":11,\"rowspan\":1,\"text\":\"25ℓ\"},{\"cell_id\":\"table-3-r11-c3\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":3,\"origin_row\":11,\"rowspan\":1,\"text\":\"315\"}],\"row\":11},\"section_title\":\"〔별표 4〕<개정 2025. 12. 31.>\",\"table_id\":\"table-3\"}",
+            "source_url": "http://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=160561043&flNm=%5B%EB%B3%84%ED%91%9C+4%5D+%EC%A2%85%EB%9F%89%EC%A0%9C+%EA%B7%9C%EA%B2%A9%EB%B4%89%ED%88%AC%EC%9D%98+%ED%8C%90%EB%A7%A4%EC%9D%B4%EC%9C%A4+%EB%B0%8F+%EA%B3%B5%EA%B8%89%EC%88%98%EC%88%98%EB%A3%8C%28%EC%A0%9C5%EC%A1%B0%EC%A0%9C2%ED%95%AD+%EA%B4%80%EB%A0%A8%29",
+            "source_location": "table-3/row[11]",
+            "scope_type": "district",
+            "districts": [
+              "서대문구"
+            ],
+            "conditions": [],
+            "chunking_version": "preprocessed-v2-row-v1"
+          },
+          "rank": 4,
+          "score": 2.0,
+          "stage_scores": {
+            "vector": 0.45043255912656616,
+            "bm25": 85.03332695427235,
+            "rrf": 0.031544957774465976,
+            "rerank": 2.0
+          }
+        },
+        {
+          "chunk": {
+            "chunk_id": "chunk-1270985b0e60ff71b01d89d955475a3abb75d0c22064fe52a78ea515303cea60",
+            "source_document_id": "seodaemun-rules:attachment:160561043",
+            "source_document_version": "v1",
+            "title": "[별표 4] 종량제 규격봉투의 판매이윤 및 공급수수료(제5조제2항 관련)",
+            "content_format": "json",
+            "content": "{\"header_rows\":[{\"cells\":[{\"cell_id\":\"table-3-r0-c0\",\"colspan\":2,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":0,\"rowspan\":1,\"text\":\"구  분\"},{\"cell_id\":\"table-3-r0-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":0,\"rowspan\":1,\"text\":\"용  량\"},{\"cell_id\":\"table-3-r0-c3\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":3,\"origin_row\":0,\"rowspan\":1,\"text\":\"판매이윤\"}],\"row\":0}],\"paragraphs\":[\"〔별표 4〕<개정 2025. 12. 31.>\\n\",\"종량제 규격봉투의 판매이윤 및 공급수수료(제5조제2항 관련)\\n\",\"\",\"○ 생활폐기물 규격봉투 판매이윤\\n\",\"                                                                   (단위 : 원)\\n\",\"\\n\",\"\",\"○ 사업장생활계폐기물 규격봉투 공급수수료\\n\",\"                                                              (단위 : 원)\\n\",\"\\n\",\"○ 음식물폐기물 규격봉투 및 전용용기 납부필증 판매이윤\\n\",\"\",\"                                                             (단위 : 원)\\n\",\"\\n\",\"\"],\"row\":{\"cells\":[{\"cell_id\":\"table-3-r8-c0\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":0,\"origin_row\":8,\"rowspan\":6,\"text\":\"음식물류\\n전용용기\\n납부필증\"},{\"cell_id\":\"table-3-r8-c1\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":1,\"origin_row\":8,\"rowspan\":5,\"text\":\"음\\n식\\n점\"},{\"cell_id\":\"table-3-r10-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":10,\"rowspan\":1,\"text\":\"20ℓ\"},{\"cell_id\":\"table-3-r10-c3\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":3,\"origin_row\":10,\"rowspan\":1,\"text\":\"252\"}],\"row\":10},\"section_title\":\"〔별표 4〕<개정 2025. 12. 31.>\",\"table_id\":\"table-3\"}",
+            "source_url": "http://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=160561043&flNm=%5B%EB%B3%84%ED%91%9C+4%5D+%EC%A2%85%EB%9F%89%EC%A0%9C+%EA%B7%9C%EA%B2%A9%EB%B4%89%ED%88%AC%EC%9D%98+%ED%8C%90%EB%A7%A4%EC%9D%B4%EC%9C%A4+%EB%B0%8F+%EA%B3%B5%EA%B8%89%EC%88%98%EC%88%98%EB%A3%8C%28%EC%A0%9C5%EC%A1%B0%EC%A0%9C2%ED%95%AD+%EA%B4%80%EB%A0%A8%29",
+            "source_location": "table-3/row[10]",
+            "scope_type": "district",
+            "districts": [
+              "서대문구"
+            ],
+            "conditions": [],
+            "chunking_version": "preprocessed-v2-row-v1"
+          },
+          "rank": 5,
+          "score": 2.0,
+          "stage_scores": {
+            "vector": 0.44897005188123607,
+            "bm25": 85.0551875712595,
+            "rrf": 0.031009615384615385,
+            "rerank": 2.0
+          }
+        }
+      ],
+      "model_input_chunk_ids": [
+        "chunk-d6af842fbae0acb15a74f665bc85c069ee628b84c7fab4dab4e8292e79e13f3f",
+        "chunk-f5c79632dbb54a36d96bd1652aebd9433e0593318594bb04aac3c269a18b4a70",
+        "chunk-63caca2db62d7966290a77bc2b791e87237c456eda930f2991070d325cdb81c1",
+        "chunk-e60f15f7a8a62145d6f7d61e5074e8fdac9a3c9ea6e550d73beaf5f0d166aab8",
+        "chunk-1270985b0e60ff71b01d89d955475a3abb75d0c22064fe52a78ea515303cea60"
+      ],
+      "response": {
+        "request_id": "6307c6c794d34f89a31620d273b6b63d",
+        "run_id": "ae9a22a0b43540a3a80fd6d512e97a1a",
+        "status": "answered",
+        "answer": "서대문구 아파트(공동주택)에서 사용하는 120리터 음식물류 전용용기 납부필증의 판매이윤은 1,080원입니다.",
+        "citations": [
+          {
+            "chunk_id": "chunk-d6af842fbae0acb15a74f665bc85c069ee628b84c7fab4dab4e8292e79e13f3f",
+            "document_id": "seodaemun-rules:attachment:160561043",
+            "document_version": "v1",
+            "source_url": "http://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=160561043&flNm=%5B%EB%B3%84%ED%91%9C+4%5D+%EC%A2%85%EB%9F%89%EC%A0%9C+%EA%B7%9C%EA%B2%A9%EB%B4%89%ED%88%AC%EC%9D%98+%ED%8C%90%EB%A7%A4%EC%9D%B4%EC%9C%A4+%EB%B0%8F+%EA%B3%B5%EA%B8%89%EC%88%98%EC%88%98%EB%A3%8C%28%EC%A0%9C5%EC%A1%B0%EC%A0%9C2%ED%95%AD+%EA%B4%80%EB%A0%A8%29",
+            "source_location": "table-3/row[13]",
+            "title": "[별표 4] 종량제 규격봉투의 판매이윤 및 공급수수료(제5조제2항 관련)"
+          }
+        ],
+        "places": {
+          "status": "unavailable",
+          "places": [],
+          "error": null
+        },
+        "error": null,
+        "error_code": null
+      },
+      "stages": [
+        {
+          "name": "resolve",
+          "status": "ok",
+          "duration_ms": 0.23299999884329736,
+          "error": null,
+          "error_code": null
+        },
+        {
+          "name": "rewrite",
+          "status": "ok",
+          "duration_ms": 0.4220000046188943,
+          "error": null,
+          "error_code": null
+        },
+        {
+          "name": "retrieve",
+          "status": "ok",
+          "duration_ms": 3341.259300003003,
+          "error": null,
+          "error_code": null
+        },
+        {
+          "name": "context",
+          "status": "ok",
+          "duration_ms": 0.10200000542681664,
+          "error": null,
+          "error_code": null
+        },
+        {
+          "name": "generate",
+          "status": "ok",
+          "duration_ms": 1298.096099999384,
+          "error": null,
+          "error_code": null
+        },
+        {
+          "name": "citations",
+          "status": "ok",
+          "duration_ms": 0.01200000406242907,
+          "error": null,
+          "error_code": null
+        },
+        {
+          "name": "place_lookup",
+          "status": "skipped",
+          "duration_ms": 0.0,
+          "error": null,
+          "error_code": null
+        }
+      ],
+      "duration_ms": 4640.332599999965,
+      "warnings": []
+    },
+    "error": null
+  }
+]

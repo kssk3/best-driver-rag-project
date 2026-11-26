@@ -74,11 +74,13 @@ def parse_verdict(raw: str) -> tuple[int, str]:
 
 def _ask(judge: Judge, prompt: str) -> tuple[int | None, str]:
     try:
-        return parse_verdict(judge(prompt))
-    except ValueError as error:
-        return None, str(error)  # 점수 없음. 0점과 섞지 않는다.
-    except Exception as error:  # noqa: BLE001 호출 실패는 점수 없음으로 남기고 다음 행을 계속한다.
+        raw = judge(prompt)
+    except Exception as error:  # noqa: BLE001 호출 실패(ValueError 포함)는 점수 없음으로 남기고 다음 행을 계속한다.
         return None, f"judge_call_failed:{type(error).__name__}"
+    try:
+        return parse_verdict(raw)
+    except ValueError as error:
+        return None, str(error)  # 응답을 읽지 못함. 점수 없음이고 0점과 섞지 않는다.
 
 
 def score_run(

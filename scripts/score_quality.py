@@ -92,6 +92,22 @@ def check_inputs(
     orphans = {r["run_id"] for r in candidates} - run_ids
     if orphans:
         problems.append(f"candidates에 runs에 없는 실행 {len(orphans)}개가 있습니다.")
+    rows_by_run: dict[str, list[dict[str, str]]] = {}
+    for row in candidates:
+        rows_by_run.setdefault(row["run_id"], []).append(row)
+    for run in runs:
+        rows = rows_by_run.get(run["run_id"], [])
+        count = run.get("candidate_count", "")
+        if count != "" and int(count) != len(rows):
+            problems.append(
+                f"{run['case_id']} {run.get('variant', '')}: 실행 기록의 후보 {count}개와 candidates의 후보 행 {len(rows)}개가 다릅니다(파일이 불완전)."
+            )
+        ranks = json.loads(run.get("citation_ranks_json") or "[]")
+        cited = sorted(int(r["rank"]) for r in rows if r.get("citation_position"))
+        if ranks and cited != sorted(ranks):
+            problems.append(
+                f"{run['case_id']} {run.get('variant', '')}: 인용 순위 {sorted(ranks)}가 candidates의 인용 행 {cited}과 다릅니다."
+            )
     case_ids = {r["case_id"] for r in runs}
     for case_id in sorted(case_ids - set(questions)):
         problems.append(f"{case_id}: 문항 파일(--cases)에 없습니다.")

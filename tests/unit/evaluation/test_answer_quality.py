@@ -92,6 +92,17 @@ def test_unreadable_judge_response_is_no_score_not_zero_and_is_counted_separatel
     assert summary["answer_correct_no_score"] == 1
 
 
+def test_a_judge_that_raises_value_error_is_a_call_failure_and_is_counted() -> None:
+    def broken(prompt):
+        raise ValueError("malformed provider response")
+
+    row = score_run(run("answered"), ANSWERABLE, "질문", ["근거"], broken)
+    assert row["answer_correct"] is None
+    assert row["answer_correct_reason"] == "judge_call_failed:ValueError"
+    (summary,) = summarize([row])
+    assert summary["answer_correct_no_score"] == 1
+
+
 def test_a_judge_that_raises_is_no_score() -> None:
     def broken(prompt):
         raise TimeoutError
@@ -160,23 +171,19 @@ def test_summarize_keeps_rewrite_on_and_off_separate() -> None:
 
 
 def inputs():
+    base = {
+        "dataset_id": "d",
+        "variant": "A",
+        "rewrite_enabled": "False",
+        "citation_ranks_json": "[]",
+    }
     runs = [
-        {
-            "run_id": "r1",
-            "dataset_id": "d",
-            "case_id": "c1",
-            "variant": "A",
-            "rewrite_enabled": "False",
-        },
-        {
-            "run_id": "r2",
-            "dataset_id": "d",
-            "case_id": "c2",
-            "variant": "A",
-            "rewrite_enabled": "False",
-        },
+        {**base, "run_id": "r1", "case_id": "c1", "candidate_count": "1"},
+        {**base, "run_id": "r2", "case_id": "c2", "candidate_count": "0"},  # 후보 0개
     ]
-    candidates = [{"run_id": "r1", "dataset_id": "d"}]
+    candidates = [
+        {"run_id": "r1", "dataset_id": "d", "rank": "1", "citation_position": ""}
+    ]
     return runs, candidates, {"c1": "q1", "c2": "q2"}, {"c1": {}, "c2": {}}
 
 
@@ -210,3 +217,22 @@ def test_check_inputs_requires_every_graded_case_unless_subset_is_allowed() -> N
         for p in check_inputs(runs, candidates, questions, grading)
     )
     assert check_inputs(runs, candidates, questions, grading, allow_subset=True) == []
+
+
+def test_check_inputs_tells_a_missing_candidate_file_from_zero_candidates() -> None:
+    runs, candidates, questions, grading = inputs()
+    assert (
+        check_inputs(runs, candidates, questions, grading) == []
+    )  # r2의 후보 0개는 정상
+    problems = check_inputs(runs, [], questions, grading)  # r1의 후보 행이 통째로 빠짐
+    assert any("불완전" in p for p in problems)
+
+
+def test_check_inputs_stops_when_a_cited_row_is_missing() -> None:
+    runs, candidates, questions, grading = inputs()
+    runs[0]["citation_ranks_json"] = "[1]"
+    assert any(
+        "인용 순위" in p for p in check_inputs(runs, candidates, questions, grading)
+    )
+    candidates[0]["citation_position"] = "1"
+    assert check_inputs(runs, candidates, questions, grading) == []
