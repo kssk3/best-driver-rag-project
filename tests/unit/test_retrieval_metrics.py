@@ -3,12 +3,22 @@
 import pytest
 
 from src.common.errors import ErrorCategory
-from src.contracts import Chunk, SearchCandidate
+from src.contracts import (
+    Chunk,
+    EvaluationCase,
+    GenerationResult,
+    PipelineOptions,
+    ResolvedQuery,
+    SearchCandidate,
+)
 from src.evaluation.retrieval_metrics import (
     RetrievalMetricError,
     hit_at_k,
+    hit_rate_by_configuration,
     mean_hit_rate,
 )
+from src.evaluation.runner import evaluate_cases
+from src.pipeline import RAGPipeline
 
 
 def candidate(chunk_id: str, rank: int) -> SearchCandidate:
@@ -140,3 +150,117 @@ def test_mean_hit_rate_rejects_values_other_than_zero_or_one():
     # [1, 5]를 받아 3.0을 돌려주면 Hit 비율이 1을 넘는다.
     with pytest.raises(RetrievalMetricError, match="5"):
         mean_hit_rate([1, 5])
+
+
+# --- hit_rate_by_configuration ----------------------------------------------
+
+
+def case(case_id: str, allowed: list[str]) -> EvaluationCase:
+    return EvaluationCase(
+        case_id=case_id, question="합성 질문", allowed_chunk_ids=allowed
+    )
+
+
+def result(case_id: str, configuration: str, top_ids: list[str] | None) -> dict:
+    """evaluate_cases 결과 한 줄. top_ids=None이면 실행 오류(record 없음)."""
+    if top_ids is None:
+        return {"case_id": case_id, "configuration": configuration, "record": None}
+    candidates = [
+        candidate(chunk_id, rank).model_dump(mode="json")
+        for rank, chunk_id in enumerate(top_ids, start=1)
+    ]
+    return {
+        "case_id": case_id,
+        "configuration": configuration,
+        "record": {"candidates": candidates},
+    }
+
+
+CASES = [case("q1", ["row-1"]), case("q2", ["row-9"])]
+
+
+def test_rate_is_grouped_by_configuration():
+    results = [
+        result("q1", "A", ["row-1", "row-2"]),  # 정답 1위 → 1
+        result("q2", "A", ["row-1", "row-2"]),  # 정답 없음 → 0
+        result("q1", "B", ["row-2", "row-1"]),  # 정답 2위 → 1
+        result("q2", "B", ["row-9"]),  # 정답 1위 → 1
+    ]
+    assert hit_rate_by_configuration(results, CASES) == {"A": 0.5, "B": 1.0}
+
+
+def test_failed_run_counts_as_miss_and_keeps_denominator():
+    results = [
+        result("q1", "C", ["row-1"]),  # 1
+        result("q2", "C", None),  # 실행 오류 → 0 (빼지 않음)
+    ]
+    assert hit_rate_by_configuration(results, CASES) == {"C": 0.5}
+
+
+def test_case_without_evidence_is_skipped():
+    cases = [*CASES, case("no-evidence", [])]
+    results = [
+        result("q1", "A", ["row-1"]),
+        result("no-evidence", "A", ["row-1"]),  # 근거 없는 문항 → 계산에서 뺌
+    ]
+    assert hit_rate_by_configuration(results, cases) == {"A": 1.0}
+
+
+def test_answer_outside_k_is_miss():
+    results = [result("q1", "A", ["x-1", "x-2", "row-1"])]  # 정답 3위
+    assert hit_rate_by_configuration(results, CASES, k=2) == {"A": 0.0}
+
+
+def test_unknown_case_id_is_rejected():
+    with pytest.raises(RetrievalMetricError):
+        hit_rate_by_configuration([result("other", "A", ["row-1"])], CASES)
+
+
+def test_rate_from_real_evaluate_cases_output():
+    # 손으로 만든 dict가 아니라 공용 실행기(evaluate_cases)가 실제로 내놓는 결과 모양으로 확인한다.
+    # 구성마다 검색 결과를 다르게: A는 정답이 6위(5위 밖), B는 정답이 1위
+    ranked_ids = {
+        "A": [f"x-{n}" for n in range(1, 6)] + ["row-1"],
+        "B": ["row-1", "x-1"],
+    }
+
+    def retrieve(query, *, variant, top_k):
+        ids = ranked_ids[variant][:top_k]
+        return [candidate(chunk_id, rank) for rank, chunk_id in enumerate(ids, 1)]
+
+    def make_pipeline(variant):
+        return RAGPipeline(
+            resolver=lambda request: ResolvedQuery(
+                search_query=request.question, district=request.district
+            ),
+            retriever=retrieve,
+            generator=lambda request, evidence: GenerationResult(
+                status="answered",
+                answer="합성 답변",
+                cited_chunk_ids=[evidence[0].chunk_id],
+            ),
+            options=PipelineOptions(variant=variant, top_k=5, run_kind="demo"),
+        )
+
+    class BrokenPipeline:
+        def run(self, request):
+            raise RuntimeError("합성 실행 실패")
+
+    cases = [
+        EvaluationCase(
+            case_id="q1",
+            question="합성 질문",
+            district="송파구",
+            allowed_chunk_ids=["row-1"],
+        )
+    ]
+    results = evaluate_cases(
+        cases,
+        {"A": make_pipeline("A"), "B": make_pipeline("B"), "broken": BrokenPipeline()},
+    )
+
+    assert hit_rate_by_configuration(results, cases, k=5) == {
+        "A": 0.0,  # top_k=5라 6위 정답은 검색 결과에 없다
+        "B": 1.0,
+        "broken": 0.0,  # 실행 오류는 0점
+    }
