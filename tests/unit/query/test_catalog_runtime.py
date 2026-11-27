@@ -108,17 +108,17 @@ class CatalogRuntimeTests(TestCase):
             (
                 "송파구에서 스치로폼이랑 족발뼈 중 스치로폼만 어디 버려?",
                 {"스치로폼": "스티로폼"},
-                "송파구에서 스치로폼만 어디 버려? (스티로폼)",
+                "송파구에서 스치로폼이랑 족발뼈 중 스치로폼만 어디 버려? (스티로폼)",
             ),
             (
                 "스치로폼, 족발뼈 중에서 족발뼈만 어디 버려?",
                 {"족발뼈": "돼지뼈"},
-                "족발뼈만 어디 버려? (돼지뼈)",
+                "스치로폼, 족발뼈 중에서 족발뼈만 어디 버려? (돼지뼈)",
             ),
             (
                 "스치로폼이랑 족발뼈랑 LED전구 중 스치로폼이랑 LED전구만 버려요.",
                 {"스치로폼": "스티로폼", "LED전구": "LED 전구"},
-                "스치로폼이랑 LED전구만 버려요. (LED 전구) (스티로폼)",
+                "스치로폼이랑 족발뼈랑 LED전구 중 스치로폼이랑 LED전구만 버려요. (LED 전구) (스티로폼)",
             ),
             (
                 "스치로폼이랑 족발뼈 중 내일만 버릴 수 있어?",
@@ -153,6 +153,19 @@ class CatalogRuntimeTests(TestCase):
                 )
                 self.assertEqual(rewrite(question), rewritten)
                 self.assertEqual(rewrite(rewritten), rewritten)
+
+    def test_selection_preserves_exclusions_and_comparison_conditions(self):
+        rewrite = make_question_rewriter()
+        cases = {
+            "서대문구에서 우유팩이랑 유리병 중 우유팩만 버려요.": " (종이팩)",
+            "우유팩 말고 족발뼈만 버려요.": " (돼지뼈)",
+            "다른 구와 달리 송파구에서는 스치로폼이랑 족발뼈 중 스치로폼만 버려요.": " (스티로폼)",
+        }
+        for question, suffix in cases.items():
+            with self.subTest(question=question):
+                result = rewrite(question)
+                self.assertEqual(result, question + suffix)
+                self.assertEqual(rewrite(result), result)
 
     def test_selection_with_additional_intent_preserves_both_items(self):
         rewrite = make_question_rewriter()
@@ -189,10 +202,10 @@ class CatalogRuntimeTests(TestCase):
             build(question)["item_mentions"],
         )
 
-    def test_rewrite_only_projects_a_matching_resolved_location_prefix(self):
+    def test_rewrite_keeps_selection_and_resolved_location_prefix(self):
         rewrite = make_catalog_rewriter()
         options = "스치로폼이랑 족발뼈 중 스치로폼만 어디 버려?"
-        chosen = "스치로폼만 어디 버려? (스티로폼)"
+        chosen = options + " (스티로폼)"
         for prefix in ("잠실동에서 ", "연희동 ", "위례동은 ", "송파구는 "):
             with self.subTest(prefix=prefix):
                 resolved = resolve_request(PipelineRequest(question=prefix + options))
@@ -212,13 +225,13 @@ class CatalogRuntimeTests(TestCase):
         rewrite = make_question_rewriter()
         build = make_prompt_context_builder()
         question = "스치로폼이랑 족발뼈 중 스티로폼만 어디 버려?"
-        chosen = "스티로폼만 어디 버려?"
+        chosen = question
         self.assertEqual(rewrite(question), chosen)
         self.assertEqual(rewrite(chosen), chosen)
         self.assertEqual(build(question)["item_aliases"], {"스치로폼": "스티로폼"})
 
         same_category = "우유팩이랑 두유팩 중 두유팩만 어디 버려?"
-        self.assertEqual(rewrite(same_category), "두유팩만 어디 버려? (종이팩)")
+        self.assertEqual(rewrite(same_category), same_category + " (종이팩)")
         self.assertEqual(build(same_category)["item_aliases"], {"두유팩": "종이팩"})
         not_listed = "우유펙이랑 유리병 중 주스팩만 어디 버려?"
         self.assertEqual(rewrite(not_listed), not_listed + " (종이팩)")
@@ -230,17 +243,17 @@ class CatalogRuntimeTests(TestCase):
         cases = (
             (
                 "족발뼈랑 페트병 중 패트병만 어디 버려?",
-                "패트병만 어디 버려? (페트병)",
+                "족발뼈랑 페트병 중 패트병만 어디 버려?",
                 {"패트병": "페트병"},
             ),
             (
                 "유리벵이랑 족발뼈 중 유리병만 어디 버려?",
-                "유리병만 어디 버려?",
+                "유리벵이랑 족발뼈 중 유리병만 어디 버려?",
                 {"유리벵": "유리병"},
             ),
             (
                 "스치로폼이랑 족빨뼈 중 족발뼈만 어디 버려?",
-                "족발뼈만 어디 버려? (돼지뼈)",
+                "스치로폼이랑 족빨뼈 중 족발뼈만 어디 버려? (돼지뼈)",
                 {"족빨뼈": "돼지뼈", "족발뼈": "돼지뼈"},
             ),
         )
