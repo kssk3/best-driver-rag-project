@@ -12,9 +12,10 @@ from .matching import (
     compile_item_matcher,
     fold_item_text,
     mentioned_items,
-    project_selected_items,
     selection_spelling_aliases,
 )
+
+CATALOG_REWRITE_VERSION = "catalog-rules-v2"
 
 
 class SearchQuery(Protocol):
@@ -53,14 +54,8 @@ def make_question_rewriter(path: Path = CATALOG_PATH) -> QuestionRewriter:
     def rewrite(
         question: str, *, district: str | None = None, dong: str | None = None
     ) -> str:
-        question = project_selected_items(
-            item_pattern,
-            normalize(question),
-            spelling_aliases,
-            aliases,
-            district=district,
-            dong=dong,
-        )
+        # 선택·제외 판단은 별칭 후보에만 적용하고 질문 본문은 줄이지 않는다.
+        question = normalize(question)
         matched = mentioned_items(
             active_item_matches(item_pattern, question, spelling_aliases, aliases)
         )
