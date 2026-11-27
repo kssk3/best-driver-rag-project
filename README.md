@@ -40,7 +40,7 @@
 
 ## 팀원과 역할 분담
 
-<table>
+<table width="100%">
   <tr>
     <td align="center" width="20%"><a href="https://github.com/Cocode96"><img src="docs/readme/team/ysh.png" width="96" alt="양석호 프로필"><br><b>양석호</b></a><br><sub>공통 기반 및 규격 인계<br>런타임 · 실행 기록</sub></td>
     <td align="center" width="20%"><a href="https://github.com/kssk3"><img src="docs/readme/team/kss.png" width="96" alt="강성수 프로필"><br><b>강성수</b></a><br><sub>답변 · 품질 추적<br>재질문 · Ragas · Langfuse</sub></td>
