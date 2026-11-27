@@ -306,6 +306,7 @@ LANGFUSE_MESSAGES = {
     "not_configured": "Langfuse 주소와 키(LANGFUSE_BASE_URL, LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY)를 설정하고 다시 실행하세요.",
     "unreachable": "Langfuse 서버에 연결하지 못했습니다. 주소와 네트워크를 확인하세요.",
     "timeout": "Langfuse 서버가 제때 응답하지 않습니다(서버가 바쁜 것 같습니다). 잠시 후 새로고침하세요.",
+    "bad_response": "Langfuse 응답이 올바르지 않거나 중간에 끊겼습니다. 잠시 후 새로고침하세요.",
     "too_many_pages": "Langfuse 기록이 너무 많아 일부만 읽을 수 있어 집계하지 않았습니다.",
 }
 

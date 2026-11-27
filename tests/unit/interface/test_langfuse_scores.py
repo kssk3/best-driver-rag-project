@@ -87,7 +87,7 @@ def test_unlinked_scores_are_counted_per_metric() -> None:
     result = build_scores(
         [
             score("x", 1, name="answer_relevancy"),
-            score("x", 1, name="answer_relevancy"),
+            score("y", 1, name="answer_relevancy"),
         ],
         {},
     )
@@ -255,6 +255,150 @@ def test_scores_are_requested_with_details_so_their_metadata_comes_back(
     langfuse_scores.load_langfuse_scores()
 
     assert "details" in seen["fields"] and "subject" in seen["fields"]
+
+
+def test_eligibility_applies_only_to_faithfulness_not_to_the_other_metrics() -> None:
+    # 근거 없는 답변은 Faithfulness만 비교 대상이 아니다. 같은 실행의 다른 지표는 포함한다.
+    runs = {"r1": {"dataset_id": "d1", "rewrite_enabled": False, "eligible": False}}
+    result = build_scores(
+        [
+            score("t1", 1, name="faithfulness"),
+            score("t1", 0.7, name="answer_relevancy"),
+        ],
+        {"t1": {"variant": "A", "run_id": "r1"}},
+        runs,
+    )
+
+    [group] = result.groups
+    assert result.ineligible["faithfulness"] == 1
+    assert group.metrics["answer_relevancy"][0].count == 1
+    assert group.metrics["faithfulness"][0].count == 0
+
+
+def test_a_run_scored_twice_counts_once_with_the_latest_score() -> None:
+    old = score("t1", 0.0) | {"timestamp": "2026-11-26T01:00:00Z"}
+    new = score("t1", 1.0) | {"timestamp": "2026-11-27T01:00:00Z"}
+
+    for order in ([old, new], [new, old]):
+        [group] = build_scores(order, {"t1": root("A")}).groups
+        assert faithfulness(group)["A"].count == 1
+        assert faithfulness(group)["A"].mean == 1.0
+
+
+def test_run_index_finds_nested_folders_and_skips_local(tmp_path) -> None:
+    nested = tmp_path / "errata" / "abc"
+    nested.mkdir(parents=True)
+    (nested / "runs.csv").write_text(
+        "run_id,dataset_id,rewrite_enabled" + chr(10) + "r-nested,d1,false" + chr(10),
+        encoding="utf-8",
+    )
+    (tmp_path / "local").mkdir()
+    (tmp_path / "local" / "runs.csv").write_text(
+        "run_id,dataset_id,rewrite_enabled" + chr(10) + "r-local,d1,false" + chr(10),
+        encoding="utf-8",
+    )
+
+    runs = langfuse_scores.load_run_index(tmp_path)
+
+    assert "r-nested" in runs and "r-local" not in runs
+
+
+def test_a_trace_with_two_roots_is_left_out_as_unverified(monkeypatch) -> None:
+    def fake_pages(path, params):
+        if path == langfuse_scores.SCORES_PATH:
+            return [score("t1", 1)]
+        meta = {
+            "variant": "A",
+            "dataset_id": "d",
+            "rewrite_enabled": False,
+            "comparison_eligible": True,
+        }
+        return [
+            {"isRootObservation": True, "traceId": "t1", "metadata": meta},
+            {"isRootObservation": True, "traceId": "t1", "metadata": meta},
+        ]
+
+    monkeypatch.setattr(langfuse_scores, "_pages", fake_pages)
+    result = langfuse_scores.load_langfuse_scores()
+
+    assert result.groups == [] and result.unverified["faithfulness"] == 1
+
+
+def test_only_rows_that_are_really_roots_are_used(monkeypatch) -> None:
+    def fake_pages(path, params):
+        if path == langfuse_scores.SCORES_PATH:
+            return [score("t1", 1)]
+        return [
+            {"isRootObservation": "true", "traceId": "t1", "metadata": {"variant": "A"}}
+        ]
+
+    monkeypatch.setattr(langfuse_scores, "_pages", fake_pages)
+    result = langfuse_scores.load_langfuse_scores()
+
+    assert result.groups == [] and result.unlinked["faithfulness"] == 1
+
+
+def _fake_connection(response_factory):
+    class Connection:
+        def request(self, *args, **kwargs):
+            pass
+
+        def getresponse(self):
+            return response_factory()
+
+        def close(self):
+            pass
+
+    return Connection
+
+
+def test_a_truncated_response_body_becomes_a_read_error(monkeypatch) -> None:
+    import http.client
+
+    class Truncated:
+        status = 200
+
+        def read(self):
+            raise http.client.IncompleteRead(b"{", 100)
+
+    monkeypatch.setenv("LANGFUSE_BASE_URL", "https://slow.invalid")
+    monkeypatch.setenv("LANGFUSE_PUBLIC_KEY", "pk")
+    monkeypatch.setenv("LANGFUSE_SECRET_KEY", "sk")
+    monkeypatch.setattr(
+        langfuse_scores,
+        "HTTPSConnection",
+        lambda *a, **k: _fake_connection(Truncated)(),
+    )
+
+    with pytest.raises(LangfuseReadError) as error:
+        langfuse_scores._get("/x", {})
+    assert error.value.code == "bad_response"
+
+
+def test_panel_shows_an_error_and_refresh_when_the_body_is_cut_off(monkeypatch) -> None:
+    import http.client
+
+    class Truncated:
+        status = 200
+
+        def read(self):
+            raise http.client.IncompleteRead(b"{", 100)
+
+    monkeypatch.setenv("LANGFUSE_BASE_URL", "https://slow.invalid")
+    monkeypatch.setenv("LANGFUSE_PUBLIC_KEY", "pk")
+    monkeypatch.setenv("LANGFUSE_SECRET_KEY", "sk")
+    monkeypatch.setattr(
+        langfuse_scores,
+        "HTTPSConnection",
+        lambda *a, **k: _fake_connection(Truncated)(),
+    )
+    app = new_app().run()
+    button(app, "점수 불러오기").click().run()
+
+    assert not app.exception  # Streamlit 예외가 아니라 안내로 보인다
+    [error] = app.error
+    assert "끊겼습니다" in error.value
+    assert any(b.label == "새로고침" for b in app.button)
 
 
 def test_old_scores_are_confirmed_through_the_run_id_in_local_records() -> None:
