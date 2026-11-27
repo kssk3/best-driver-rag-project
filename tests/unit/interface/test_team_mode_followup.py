@@ -189,4 +189,4 @@ def test_unsupported_guidance_has_no_resend_form_and_points_back_to_the_inputs(
     assert [b.label for b in app.button] == [
         "다시 묻기"
     ]  # 같은 요청을 다시 보내는 버튼이 없다
-    assert any("바꿔서 다시 질문" in c.value for c in app.caption)
+    assert any("바꿔서 다시 질문" in w.value for w in app.warning)  # 안내와 한 덩어리

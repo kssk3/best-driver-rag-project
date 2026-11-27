@@ -171,14 +171,16 @@ def _render_clarification(
     on_followup: Callable[[dict], None] | None,
 ) -> None:
 
-    with _bubble("조금만 더 알려주세요", "warn"):
-        st.warning(view.answer or "질문하신 내용은 추가 정보가 필요합니다.")
+    message = view.answer or "질문하신 내용은 추가 정보가 필요합니다."
+    if not view.required_fields:
+        # 더 채울 값이 없다(지원 밖 안내 등). 같은 요청을 다시 보내면 같은 안내만 나오므로
+        # 입력칸 없이 안내 한 덩어리로 보여 주고, 처음 입력칸에서 지역이나 질문을 바꾸게 한다.
+        with _bubble("안내드려요", "warn"):
+            st.warning(f"{message}  \n위의 지역이나 질문을 바꿔서 다시 질문해 주세요.")
+        return
 
-        if not view.required_fields:
-            # 더 채울 값이 없다(지원 밖 안내 등). 같은 요청을 다시 보내면 같은 안내만 나오므로
-            # 폼 대신 처음 입력칸에서 지역이나 질문을 바꾸도록 안내한다.
-            st.caption("위의 지역이나 질문을 바꿔서 다시 질문해 주세요.")
-            return
+    with _bubble("조금만 더 알려주세요", "warn"):
+        st.warning(message)
 
         with st.form("followup"):
             # 라벨은 숨기고 입력칸 안내 문구(placeholder)로 대신한다. 입력칸이 하나면 버튼을 옆에 둔다.
