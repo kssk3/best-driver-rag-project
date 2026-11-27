@@ -245,6 +245,25 @@ def _utc(value):
     return parsed
 
 
+# 비교 화면이 점수를 같은 평가끼리 묶으려면 평가 세트·리라이트 여부·비교 대상 여부가 필요하다.
+# 점수 CSV 행에 있는 값만 점수와 새로 만드는 루트의 메타데이터에 남긴다(없으면 만들어 내지 않는다).
+COMPARISON_METADATA = (
+    "dataset_id",
+    "case_id",
+    "evaluation_id",
+    "rewrite_enabled",
+    "comparison_eligible",
+)
+
+
+def comparison_metadata(row) -> dict[str, str]:
+    return {
+        key: str(row[key])
+        for key in COMPARISON_METADATA
+        if row.get(key) not in (None, "")
+    }
+
+
 def _trace_payload(row, details: JudgmentDetails | None = None):
     if (
         row["run_kind"] not in {"rag", "fixed_evidence", "demo"}
@@ -265,6 +284,13 @@ def _trace_payload(row, details: JudgmentDetails | None = None):
             {
                 "key": "langfuse.observation.metadata.variant",
                 "value": {"stringValue": variant},
+            }
+        )
+    for key, value in comparison_metadata(row).items():
+        root_attributes.append(
+            {
+                "key": f"langfuse.observation.metadata.{key}",
+                "value": {"stringValue": value},
             }
         )
     span = {
@@ -330,6 +356,8 @@ def _payloads(row, details=None):
         "value": value,
         "timestamp": scored_at.isoformat(),
     }
+    if metadata := comparison_metadata(row):
+        score["metadata"] = metadata
     return trace, score
 
 

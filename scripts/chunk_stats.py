@@ -1,6 +1,5 @@
 """청킹 결과의 현황을 한 줄로 요약해 CSV에 누적한다.
 
-담당: 이승주
 `scripts.prepare_data`가 만든 `chunks-html.json` 또는 `chunks-json.json`을 읽는다. 외부 호출은 하지 않는다.
 청킹 버전(`chunking_version`)과 형식(`content_format`)은 청크에서 읽는다. 한 파일에 여러 값이 섞여 있으면 거부한다.
 python -m scripts.chunk_stats --help 참조.

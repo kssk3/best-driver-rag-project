@@ -1,0 +1,4 @@
+run_id,case_id,variant,rewrite_enabled,status,answer_correct,citation_valid,absence_ok,answer_correct_reason,citation_valid_reason,absence_ok_reason,judge_model
+a30997b4f6f649199cd2618f0337e9a7,test-d10-sp-reusable-bag-corrected,A,false,answered,1,1,,재사용 종량제봉투를 제작할 수 있다는 점과 유통매장에서 구입하기 쉽도록 판매방법 개선 및 고객 홍보를 추진한다는 점을 모두 담고 있습니다.,"답변의 제작 목적과 규격, 판매방법 개선·고객 홍보 의무, 상업광고 게재 가능성 및 비용 분담 별도 결정이 모두 근거에 명시되어 있습니다.",,gpt-6-luna
+d27ccb5a2bca4f79be61959b37594efc,test-d10-sp-reusable-bag-corrected,B,false,answered,1,1,,"구청장이 재사용 종량제봉투를 제작할 수 있고, 유통매장에서 쉽게 구입하도록 판매방법 개선과 고객 홍보를 추진한다고 밝혔습니다.",재사용 종량제봉투의 제작 기준·판매 촉진·광고 및 봉투 구입과 판매소 지정에 관한 주장이 모두 인용 근거로 뒷받침됩니다.,,gpt-6-luna
+062ad6d923f147dbbfacd875771dd7df,test-d10-sp-reusable-bag-corrected,C,false,answered,1,1,,구청장의 재사용 종량제봉투 제작 가능성과 유통매장의 판매방법 개선 및 고객 홍보 추진을 모두 담고 있습니다.,"재사용 종량제봉투의 제작 기준·판매 및 홍보 의무·상업광고와 비용 분담, 해당 용량 생활폐기물용 봉투와 같은 가격이라는 내용이 모두 근거에 명시되어 있습니다.",,gpt-6-luna

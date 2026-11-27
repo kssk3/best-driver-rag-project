@@ -1,0 +1,7 @@
+[theme]
+base = "light"
+primaryColor = "#2fb36a"
+backgroundColor = "#f4f3ee"
+secondaryBackgroundColor = "#ffffff"
+textColor = "#24352b"
+font = "Noto Sans KR:https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap"

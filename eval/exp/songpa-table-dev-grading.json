@@ -1,0 +1,224 @@
+{
+  "grading": {
+    "exp-sp-trash-can": {
+      "category": "exp",
+      "required_facts": [
+        "가정용 쓰레기통은 1,000원이다."
+      ],
+      "evidence": [
+        {
+          "document_id": "songpa-rules:attachment:121237861",
+          "source_location": "table-5/row[54]"
+        },
+        {
+          "document_id": "songpa-rules:attachment:121237861",
+          "source_location": "table-5/row[55]"
+        }
+      ],
+      "reason": "송파구 시행규칙 별표 표 행. 글자 벌어진 품목명",
+      "reference_answer": "송파구 대형폐기물 수수료표에서 쓰레기통 가정용은 1,000원입니다."
+    },
+    "exp-sp-wood-table": {
+      "category": "exp",
+      "required_facts": [
+        "나무 식탁 4인 이상은 4,000원이다."
+      ],
+      "evidence": [
+        {
+          "document_id": "songpa-rules:attachment:121237861",
+          "source_location": "table-5/row[35]"
+        },
+        {
+          "document_id": "songpa-rules:attachment:121237861",
+          "source_location": "table-5/row[36]"
+        }
+      ],
+      "reason": "송파구 시행규칙 별표 표 행. 글자 벌어진 품목명, 규격 구간",
+      "reference_answer": "송파구 대형폐기물 수수료표에서 식탁(나무, 의자 별도) 4인 이상은 4,000원입니다."
+    },
+    "exp-sp-shoe-rack": {
+      "category": "exp",
+      "required_facts": [
+        "신발장 높이 1.5m 이상은 4,000원이다."
+      ],
+      "evidence": [
+        {
+          "document_id": "songpa-rules:attachment:121237861",
+          "source_location": "table-5/row[43]"
+        },
+        {
+          "document_id": "songpa-rules:attachment:121237861",
+          "source_location": "table-5/row[44]"
+        }
+      ],
+      "reason": "송파구 시행규칙 별표 표 행. 글자 벌어진 품목명, 규격 구간 판단",
+      "reference_answer": "송파구 대형폐기물 수수료표에서 신발장은 높이 1.5m 이상이 4,000원입니다."
+    },
+    "exp-sp-icebox-40l": {
+      "category": "exp",
+      "required_facts": [
+        "아이스박스 30L 이상은 2,000원이다."
+      ],
+      "evidence": [
+        {
+          "document_id": "songpa-rules:attachment:121237861",
+          "source_location": "table-5/row[58]"
+        },
+        {
+          "document_id": "songpa-rules:attachment:121237861",
+          "source_location": "table-5/row[59]"
+        },
+        {
+          "document_id": "songpa-rules:attachment:121237861",
+          "source_location": "table-5/row[60]"
+        }
+      ],
+      "reason": "송파구 시행규칙 별표 표 행. 글자 벌어진 품목명, 단위(리터→L), 규격 구간 판단",
+      "reference_answer": "송파구 대형폐기물 수수료표에서 아이스박스는 30L 이상이 2,000원입니다(50L 이상은 3,000원)."
+    },
+    "exp-sp-stroller-2": {
+      "category": "exp",
+      "required_facts": [
+        "유모차 2인용은 4,000원이다."
+      ],
+      "evidence": [
+        {
+          "document_id": "songpa-rules:attachment:121237861",
+          "source_location": "table-6/row[17]"
+        }
+      ],
+      "reason": "송파구 시행규칙 별표 표 행. 글자 벌어진 품목명",
+      "reference_answer": "송파구 대형폐기물 수수료표에서 유모차 2인용은 4,000원입니다."
+    },
+    "exp-sp-safe-1m": {
+      "category": "exp",
+      "required_facts": [
+        "가정용 금고 가장 긴 면 1m 미만은 15,000원이다."
+      ],
+      "evidence": [
+        {
+          "document_id": "songpa-rules:attachment:121237861",
+          "source_location": "table-6/row[14]"
+        },
+        {
+          "document_id": "songpa-rules:attachment:121237861",
+          "source_location": "table-6/row[15]"
+        }
+      ],
+      "reason": "송파구 시행규칙 별표 표 행. 글자 벌어진 품목명",
+      "reference_answer": "송파구 대형폐기물 수수료표에서 금고(가정용) 가장 긴 면 1m 미만은 15,000원입니다."
+    },
+    "exp-sp-piano": {
+      "category": "exp",
+      "required_facts": [
+        "일반 피아노는 16,000원이다."
+      ],
+      "evidence": [
+        {
+          "document_id": "songpa-rules:attachment:121237861",
+          "source_location": "table-7/row[9]"
+        }
+      ],
+      "reason": "송파구 시행규칙 별표 표 행. 글자 벌어진 품목명, 종류 구분",
+      "reference_answer": "송파구 대형폐기물 수수료표에서 피아노 일반은 16,000원입니다(디지털은 5,000원)."
+    },
+    "exp-sp-tent-4": {
+      "category": "exp",
+      "required_facts": [
+        "텐트 4인용 이상은 4,000원이다."
+      ],
+      "evidence": [
+        {
+          "document_id": "songpa-rules:attachment:121237861",
+          "source_location": "table-7/row[7]"
+        }
+      ],
+      "reason": "송파구 시행규칙 별표 표 행. 글자 벌어진 품목명, 규격 구간",
+      "reference_answer": "송파구 대형폐기물 수수료표에서 텐트 4인용 이상은 4,000원입니다."
+    },
+    "exp-sp-western-toilet": {
+      "category": "exp",
+      "required_facts": [
+        "양변기는 8,000원이다."
+      ],
+      "evidence": [
+        {
+          "document_id": "songpa-rules:attachment:121237861",
+          "source_location": "table-7/row[8]"
+        }
+      ],
+      "reason": "송파구 시행규칙 별표 표 행. 글자 벌어진 품목명, 종류 구분",
+      "reference_answer": "송파구 대형폐기물 수수료표에서 변기 양변기는 8,000원입니다(좌변기는 5,000원)."
+    },
+    "exp-sp-treadmill": {
+      "category": "exp",
+      "required_facts": [
+        "런닝머신은 15,000원이다."
+      ],
+      "evidence": [
+        {
+          "document_id": "songpa-rules:attachment:121237861",
+          "source_location": "table-7/row[15]"
+        }
+      ],
+      "reason": "송파구 시행규칙 별표 표 행. 글자 벌어진 품목명, 상위 분류 아래 품목",
+      "reference_answer": "송파구 대형폐기물 수수료표에서 헬스기구 런닝머신은 15,000원입니다."
+    },
+    "exp-sp-bag-20l-use": {
+      "category": "exp",
+      "required_facts": [
+        "20ℓ는 생활폐기물용·일반사업장용·가락시장용·공공용·특수규격봉투다."
+      ],
+      "evidence": [
+        {
+          "document_id": "songpa-rules:attachment:121237861",
+          "source_location": "table-1/row[4]"
+        }
+      ],
+      "reason": "송파구 시행규칙 별표 표 행. 품목명 없는 행(용량 숫자뿐)",
+      "reference_answer": "송파구 시행규칙 별표에서 20ℓ는 생활폐기물용, 일반사업장용, 가락시장용, 공공용, 특수규격봉투로 쓰입니다."
+    },
+    "exp-sp-bag-75l-use": {
+      "category": "exp",
+      "required_facts": [
+        "75ℓ는 생활폐기물용·일반사업장용·가락시장용·공공용이다."
+      ],
+      "evidence": [
+        {
+          "document_id": "songpa-rules:attachment:121237861",
+          "source_location": "table-1/row[6]"
+        }
+      ],
+      "reason": "송파구 시행규칙 별표 표 행. 품목명 없는 행(용량 숫자뿐)",
+      "reference_answer": "송파구 시행규칙 별표에서 75ℓ는 생활폐기물용, 일반사업장용, 가락시장용, 공공용입니다."
+    },
+    "exp-sp-bangi-weekday": {
+      "category": "exp",
+      "required_facts": [
+        "화, 목, 일 오후 6시부터 11시까지 배출한다."
+      ],
+      "evidence": [
+        {
+          "document_id": "songpa-rules:attachment:121237861",
+          "source_location": "table-2/row[3]"
+        }
+      ],
+      "reason": "송파구 시행규칙 별표 표 행. 동 이름 나열형 표",
+      "reference_answer": "송파구 시행규칙 별표에서 방이동은 화·목·일 오후 6시부터 11시까지이며, 가정은 내 집 앞, 상가는 건물 내(외) 지정장소에 내놓습니다."
+    },
+    "exp-sp-wirye-apt-time": {
+      "category": "exp",
+      "required_facts": [
+        "아파트동(위례)은 매일 오후 6시부터 11시까지 지정장소에 배출한다."
+      ],
+      "evidence": [
+        {
+          "document_id": "songpa-rules:attachment:121237861",
+          "source_location": "table-2/row[4]"
+        }
+      ],
+      "reason": "송파구 시행규칙 별표 표 행. 동 이름 나열형 표",
+      "reference_answer": "송파구 시행규칙 별표에서 아파트동(위례 등)은 매일 오후 6시부터 11시까지 지정장소에 배출하며, 보관용기가 설치된 공동주택은 격일 수거도 가능합니다."
+    }
+  }
+}

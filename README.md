@@ -1,81 +1,186 @@
-# 서울 분리배출 RAG
+<p align="center">
+  <img src="docs/readme/banner.svg" alt="서울 분리배출 RAG, 공식 문서에서 근거를 찾아 배출 방법을 안내하는 서비스" width="100%">
+</p>
 
-서대문구와 송파구 주민이 품목과 배출 상황을 질문하면 공식 문서에서 근거를 찾아 배출 방법과 출처를 안내하는 서비스를 만든다. 필요한 조건은 되묻고, 자료에 답이 없으면 정보 부족을 알린다.
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.13-3776AB?style=flat-square&amp;logo=python&amp;logoColor=white" alt="Python 3.13">
+  <img src="https://img.shields.io/badge/Streamlit-FF4B4B?style=flat-square&amp;logo=streamlit&amp;logoColor=white" alt="Streamlit">
+  <img src="https://img.shields.io/badge/LangChain-1C3C3C?style=flat-square&amp;logo=langchain&amp;logoColor=white" alt="LangChain">
+  <img src="https://img.shields.io/badge/OpenAI-412991?style=flat-square&amp;logo=openai&amp;logoColor=white" alt="OpenAI">
+  <img src="https://img.shields.io/badge/uv-DE5FE9?style=flat-square&amp;logo=uv&amp;logoColor=white" alt="uv">
+  <img src="https://img.shields.io/badge/pytest-0A9EDC?style=flat-square&amp;logo=pytest&amp;logoColor=white" alt="pytest">
+</p>
 
-Streamlit answers disposal questions for Seodaemun-gu and Songpa-gu using the team ordinance index. The [roadmap](ROADMAP.md#현재-도달지점) tracks implementation and remaining delivery goals.
+<br>
 
-| To do this | Use |
-| --- | --- |
-| Ask a question against the team index | Start [team chat](#팀-색인과-리라이트-비교). The default launcher uses C (hybrid retrieval and reranking) with catalog rewriting enabled. An A vector-search configuration is also available. |
-| Check the pipeline without a model key | Run the [synthetic demo](#자동-데모와-검증) for answer, clarification and insufficient-evidence examples. |
-| Compare retrieval and answers | Run the [A/B/C evaluation](eval/README.md#abc-실검색-답변-비교) with rewriting off, or use the separate A rewrite comparison below. Review the saved runs before scoring. |
-| Check how a neighborhood was resolved | The [resolver](src/retrieval/regions.py) uses the [Seoul administrative and legal dong table](data/reference/README.md). The service provides disposal guidance for the two supported districts. |
+<p align="center">
+  <b>분리당(分離當)</b> · TEAM <b>너구리 여객</b><br>
+  <i>"오늘의 분리배출 당번"</i><br>
+  <b>서대문구·송파구 분리배출 질문에 공식 문서 근거와 출처로 답하는 RAG 기초 팀 프로젝트</b><br>
+  <i>필요한 조건은 되묻고, 자료에 답이 없으면 정보 부족을 알립니다.</i>
+</p>
 
-현재 담당자와 변경 사항을 전달할 대상은 [4인 역할표](ROADMAP.md#업무-분담과-인계), 작업별 참고 파일은 [담당 경로](docs/architecture.md#담당-경로)에서 확인한다. 기존 공통 기반의 구현 범위와 검증 결과는 [양석호의 인계 기록](docs/handoff.md)에 있으며, 담당자별 연결 지점은 [Notion 인수인계](https://app.notion.com/p/422dc8b0e16381758494e218a97087aa)에서도 확인할 수 있다. 검색/생성 연결 함수가 준비돼 있다는 사실과 실제 서비스가 동작한다는 사실을 구분한다.
+<p align="center">
+  <a href="#프로젝트-소개">소개</a> / <a href="#팀원과-역할-분담">팀</a> / <a href="#프로젝트-구조">구조</a> / <a href="#화면-미리보기">화면</a> / <a href="#실행-방법">실행</a> / <a href="#평가-결과">평가</a> / <a href="#공통-문서">문서</a>
+</p>
 
-## 개발 환경
+## 프로젝트 소개
 
-이 README가 있는 저장소 루트에서 실행한다. Python `3.13.14`, uv `0.13.9` 이상과 `uv.lock`을 사용한다. 로컬 변경의 완료와 원격 브랜치 반영은 별개다.
+서대문구와 송파구 주민이 품목과 배출 상황을 질문하면 공식 문서에서 근거를 찾아 배출 방법과 출처를 안내한다. 동 이름으로 구를 판별하고, 구가 충돌하거나 조건이 부족하면 되묻고, 근거가 없으면 정보 부족으로 답한다. Streamlit 화면과 평가 실행기는 같은 Python RAG 함수를 호출한다. A/B/C 검색, 검색부터 답변·인용까지의 연결, 평가 실행기와 Langfuse 점수 연결까지 구현되어 있다.
+
+| 구성 | 내용                                                                                           |
+| ---- | ---------------------------------------------------------------------------------------------- |
+| 검색 | 지역 제한 벡터(A) · BM25+벡터 융합(B) · LLM 재정렬(C), 선택적 질문 다듬기                      |
+| 답변 | 근거 기반 모델 답변 · 인용 검증 · 재질문 · 근거 부족 · 오류 안내                               |
+| 모델 | OpenAI 임베딩(text-embedding-3-small) · 채팅 모델                                              |
+| 평가 | pytest · Ragas · Langfuse, 개발 10·최종 20문항, 실행 JSON·CSV 기록                             |
+| 도구 | Python 3.13.14 · uv · LangChain · rank-bm25 · Selenium(선택) · Codecov · Dependabot · Gitleaks |
+
+<br>
+
+## 팀원과 역할 분담
+
+<table width="100%">
+  <tr>
+    <td align="center" width="20%"><a href="https://github.com/Cocode96"><img src="docs/readme/team/ysh.png" width="150" alt="양석호 프로필"><br><b>양석호</b></a><br><sub>공통 기반 및 규격 인계<br>런타임 · 실행 기록</sub></td>
+    <td align="center" width="20%"><a href="https://github.com/kssk3"><img src="docs/readme/team/kss.png" width="150" alt="강성수 프로필"><br><b>강성수</b></a><br><sub>답변 · 품질 추적<br>재질문 · Ragas · Langfuse</sub></td>
+    <td align="center" width="20%"><a href="https://github.com/axfehlerlee"><img src="docs/readme/team/ljw.png" width="150" alt="이정은 프로필"><br><b>이정은</b></a><br><sub>자료 검수 · 질문 다듬기<br>별칭 · 프롬프트 개선</sub></td>
+    <td align="center" width="20%"><a href="https://github.com/mjlee0914"><img src="docs/readme/team/lmj.png" width="150" alt="이명지 프로필"><br><b>이명지</b></a><br><sub>검색 · 지역 구분<br>A/B/C 검색 · 검색 지표</sub></td>
+    <td align="center" width="20%"><a href="https://github.com/eeseuju"><img src="docs/readme/team/lsj.png" width="150" alt="이승주 프로필"><br><b>이승주</b></a><br><sub>청킹 · 평가셋<br>챗봇 · 관찰 패널</sub></td>
+  </tr>
+</table>
+
+<br>
+
+### 협업 규칙
+
+통합 기준 브랜치는 `dev`, 작업 브랜치는 `feature/<작성자>/<작업명>`이다. 검증 후 `dev`를 대상으로 PR을 열고 리뷰를 거쳐 병합한다. 공통 기반은 해당 기능 담당자가 변경을 주도하고, 결과를 받는 담당자와 입출력을 확인한다. 큰 버전 업데이트가 완료되면 `main`에 병합한다.
+
+<br>
+
+## 프로젝트 구조
+
+```text
+best-driver-rag-project/
+├─ src/          # 공통 실행 기반과 담당별 Python 모듈
+├─ configs/ prompts/ .streamlit/   # 공통 설정, 프롬프트, 화면 설정
+├─ scripts/      # 수집, 색인과 평가 실행 진입점
+├─ data/         # 수집 원문, 정제 자료와 색인
+├─ eval/         # 개발·최종 문항과 채점용 정답 근거
+├─ results/      # 실행 원본, 평가와 비교 결과
+├─ tests/        # 단위 검사, 연동 검사와 작은 검증 자료
+├─ docs/         # 구조·인계·기준 문서
+└─ app.py        # Streamlit 화면
+```
+
+```mermaid
+flowchart LR
+  JE[수집·정제·원문 검수<br/>품목 별칭·질문 다듬기] -->|원질문·변환 질의·변경 전후 사례| MJ[검색·지역 해석·A/B/C<br/>검색 지표]
+  SJ[청킹 개선·화면·검증 패널<br/>최종 평가셋] -->|재색인할 문서·청킹 버전| MJ
+  SJ -->|개발 문항의 원문 위치·새 chunk_id| SS[근거 기반 답변·인용 검증<br/>품질 추적]
+  MJ -->|지역 적용 후보 순위·청크 ID·원문 위치| SS
+  SS -->|응답 상태·실제 인용| SJ
+  JE -->|프롬프트 변경 시 고정 근거 확인| SS
+  JE -->|허용 근거 원문 위치| SJ
+
+  OA[(OpenAI<br/>임베딩·답변·재정렬·채점)]
+  LF[(Langfuse<br/>실행 추적·점수 저장·조회)]
+  MJ -.->|색인·질문 임베딩, C 재정렬| OA
+  SS -.->|답변 생성, 채점 판정| OA
+  SS -.->|실행 추적·점수 전송| LF
+  LF -.->|RAGAS 4대 지표 조회| SJ
+```
+
+_※ 상세 파일 목록과 연결 원칙은 [구조와 책임](docs/architecture.md), 파일별 구현 항목은 [Notion 구조 문서](https://app.notion.com/p/422dc8b0e1638150b62acfe703074f30?pvs=204)에서 확인할 수 있습니다._
+
+<br>
+
+## 화면 미리보기
+
+<table width="100%">
+  <tr>
+    <td rowspan="2" width="46%" align="center">
+      <img src="docs/readme/screen.png" alt="분리당 화면: 지역과 질문 입력, 근거가 붙은 답변, 검증·비교 대시보드" width="100%">
+    </td>
+    <td width="54%" align="center">
+      <img src="docs/readme/demo-a.webp" alt="시연 영상 1: 질문에 답하고 Langfuse에 실행 기록이 쌓이는 과정" width="100%">
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="docs/readme/demo-b.webp" alt="시연 영상 2: 정상 질문, 표현 함정, 근거 없는 질문 시연" width="100%">
+    </td>
+  </tr>
+</table>
+
+<p align="center">
+  <sub><i>왼쪽은 랜딩 화면과 검증·비교 대시보드 목업, 오른쪽 두 장은 시연 영상을 변환한 움직이는 이미지(WebP)입니다.<br>데모 화면이라 답변과 후보 점수는 화면 확인용이며 평가 결과가 아닙니다.</i></sub>
+</p>
+
+<br>
+
+## 실행 방법
+
+저장소 루트에서 Python `3.13.14`와 uv `0.13.9` 이상을 사용해 `uv.lock`에 고정된 의존성을 설치한다.
 
 ```sh
 uv sync --locked
-uv run --locked python --version
-uv run --locked python -m pytest --version
 ```
 
-로컬 uv가 요구 버전보다 낮으면 전역 설치를 바꾸지 않고 `uv tool run --from uv==0.13.9 uv sync --locked`로 같은 환경을 준비할 수 있다. 첫 설치는 Python 배포 서버와 PyPI 연결이 필요하다. 이 방식으로 설치했다면 실행도 `uv tool run --from uv==0.13.9 uv run --locked python --version`처럼 같은 uv 버전을 사용한다. 기존 Python 3.15 가상환경도 동기화하면 `.python-version`에 맞는 3.13.14 환경으로 다시 생성한다.
+### 화면 실행: C 검색기 (권장)
 
-루트 의존성 파일은 Streamlit을 포함한 공용 Python 환경을 관리한다. 공식 웹 안내는 [Selenium 선택 그룹으로 수집한다](docs/official-guide-collection.md). Langfuse SDK도 `uv sync --locked`로 설치된다. 팀 계정으로 기존 실험을 조회하거나 각자 실행한 A/B/C 기록을 팀 EC2에 보내려면 [팀 Langfuse 설정](docs/TEAM-SETUP.md#팀-langfuse-설정)을 따른다. 기존 FastAPI 의존성이 남아 있어도 별도 HTTP 서버 구현을 요구하지 않는다.
-
-For the synthetic Streamlit demo, build the fixture index first and leave `RAG_CHAT_SETTINGS` unset. These commands use local documents and hash embeddings.
-
-```bash
-uv run --locked python -m scripts.index --documents tests/fixtures/handoff_documents.json --output data/indexes/demo.json --demo --dimensions 128
-uv run --locked streamlit run app.py
-```
-
-## 실제 자료 준비와 근거 조회
-
-저장소의 전처리 인계 자료에는 [PR #8의 전처리 결과](https://github.com/kssk3/best-driver-rag-project/pull/8)와 [PR #10의 수정 사항](https://github.com/kssk3/best-driver-rag-project/pull/10)이 반영돼 있다. 저장소 루트에서 아래 명령을 실행하고, 출력 경로에는 아직 없는 폴더를 지정한다.
-
-```sh
-uv run --locked python -m scripts.prepare_data --bundle data/handoff/jungeun/ordinance-handoff-2026-11-24 --version v1 --output-dir data/processed/ordinance-v2-prepared
-```
-
-이 명령은 외부 호출 없이 공용 문서와 HTML/JSON 청크를 만든다. 별도로 받은 v2 인계 ZIP도 `--bundle "받은 ZIP의 실제 경로"`으로 지정할 수 있다. `--version v1`은 원문 버전이며 인계 파일명의 `v2`와는 별개다.
-
-실제 색인까지 만들려면 `OPENAI_API_KEY` 환경변수를 준비한 뒤 별도 출력 폴더로 실행한다. 기존 키 파일은 `--api-key-file`로 명시할 수도 있으며 `.env`는 자동 로드하지 않는다.
-
-```sh
-uv run --locked python -m scripts.prepare_data --bundle data/handoff/jungeun/ordinance-handoff-2026-11-24 --version v1 --output-dir data/processed/ordinance-v2-openai-small --openai-model text-embedding-3-small
-```
-
-검토한 인계 자료는 Git에 포함돼 있다. 새로 생성한 청크, 색인과 실행 결과는 Git 제외 경로에 저장하며 개인 보관 ZIP과 키 파일도 커밋하지 않는다.
-
-현재 로컬에서 검증한 실제 색인으로 반복 질문하려면 다음과 같이 실행한다. 새 체크아웃에서는 같은 출력 위치로 색인을 먼저 준비해야 한다.
-
-```sh
-uv run --locked python -m scripts.search_index --index data/processed/ordinance-v2-openai-small/index-html.json --index data/processed/ordinance-v2-openai-small/index-json.json --district 송파구
-```
-
-`--question "질문"`을 지정하면 한 번 조회하고, 생략하면 질문을 반복 입력한다. `/종료`로 끝낸다. 이 명령은 지역을 제한한 코사인 유사도 검색 결과를 출력한다. 관련성 하한이 없어 `안녕`에도 무관한 결과가 나올 수 있고, 실제 질문에서 관련 별표가 상위 결과에 빠진 사례도 있다. 팀 파이프라인용 [A 벡터 검색기](src/retrieval/search.py)는 별도 진입점이다. HTML·JSON 비교의 범위와 재실행 방법은 [전처리 자료 인계 기록](docs/handoff.md#실제-전처리-자료-연결)에 있다.
-
-## 팀 색인과 리라이트 비교
-
-팀 색인(JSON) 경로와 답변 모델을 [A 검색 실행 설정](configs/team-a-rewrite-chat.json)에 지정한다. 색인과 모델 키를 준비한 환경에서 다음 명령을 실행하면 Streamlit에 **실행** 모드가 표시된다. `RAG_CHAT_SETTINGS`의 상대 경로는 저장소 루트 기준이다. 설정 파일의 `pipeline.rewrite_enabled`를 바꿔 저장하면 다음 질문부터 바뀐 값으로 실행한다. 같은 경로의 팀 색인이나 활성 품목 사전을 교체해도 다음 질문에서 새 파일을 읽는다. 런타임을 가져오는 중에 파일이 바뀌었다는 메시지가 나오면 교체를 마친 뒤 다시 질문한다.
-
-```sh
-RAG_CHAT_SETTINGS=configs/team-a-rewrite-chat.json \
-  uv run --locked --env-file .env streamlit run app.py
-```
-
-The launcher defaults to the [C chat configuration](configs/team-c-rewrite-chat.json). Set `OPENAI_API_KEY` in the local `.env`. If the default team index is missing, the launcher builds it using OpenAI embeddings. It checks the chunk fingerprint of both existing and newly built default indexes against the [JSON baseline](results/chunking/chunk_stats.csv) before starting Streamlit. If a custom settings file points elsewhere, prepare that index yourself.
+로컬 `.env`에 `OPENAI_API_KEY`를 설정하고 채팅 실행 명령을 입력한다. 기본값은 C 검색(BM25와 벡터 검색을 결합한 뒤 모델로 재정렬)과 품목 사전 기반 질문 다듬기다. 기본 팀 색인이 없으면 OpenAI 임베딩으로 생성한다. Streamlit을 시작하기 전에 청크 지문을 [청킹 기준선 CSV](results/chunking/chunk_stats.csv)의 JSON 행과 대조한다.
 
 ```sh
 uv run --locked --env-file .env python -m scripts.run_chat
 ```
 
-A 검색의 OFF/ON을 같은 질문·색인·검색 옵션·답변 모델로 한 번에 실행한다. 출력 경로에는 새 이름을 사용한다.
+1. 첫 화면에서 `서대문구` 또는 `송파구`를 선택하고, 질문을 입력한 뒤 `물어보기`를 누른다.
+2. 결과 화면에서 답변과 인용 출처를 확인한다. 숫자 범위는 `12~25인치`처럼 물결표를 포함해 표시된다. 아래 `검증 패널`에서 같은 응답의 검색 후보 순위와 검증 경고를 확인한다.
+3. 업로드된 평가 점수를 보려면 `비교 패널`에서 `점수 불러오기`를 누른다. 이 기능은 [팀 Langfuse 설정](docs/TEAM-SETUP.md#팀-langfuse-설정)을 사용한다.
+
+다른 채팅 설정을 사용하려면 실행 명령에 `--settings`로 설정 파일을 지정한다. `streamlit run app.py`로 직접 시작하려면 `RAG_CHAT_SETTINGS`를 설정하고 해당 색인을 먼저 준비한다. 합성 데모는 아래 명령으로 실행한다.
+
+### API 키 없이 연결 검사
+
+```sh
+uv run --locked python -m scripts.demo
+```
+
+이 명령은 합성 문서와 해시 임베딩으로 색인부터 실행 기록 저장까지 연결을 확인한다. 정상 답변, 자치구 재질문, 근거 부족 응답을 각각 확인하며 외부 API를 호출하지 않는다.
+
+<details>
+<summary>&nbsp;&nbsp;📦&nbsp;uv 환경 준비 · 전처리 자료로 청크 & 색인 만들기 · 색인에서 근거 조회하기</summary>
+
+로컬 uv가 요구 버전보다 낮으면 `uv tool run --from uv==0.13.9 uv sync --locked`로 같은 환경을 준비하고, 이후 실행도 같은 uv 버전을 쓴다. 첫 설치는 Python 배포 서버와 PyPI 연결이 필요하다. 공식 웹 안내는 [Selenium 선택 그룹](docs/official-guide-collection.md)으로 수집한다.
+
+전처리 인계 자료([PR #8](https://github.com/kssk3/best-driver-rag-project/pull/8), [PR #10](https://github.com/kssk3/best-driver-rag-project/pull/10))로 HTML·JSON 청크를 만든다. 출력 경로에는 아직 없는 폴더를 지정한다. `--version v1`은 원문 버전이며 인계 파일명의 `v2`와 별개다.
+
+```sh
+uv run --locked python -m scripts.prepare_data --bundle data/handoff/jungeun/ordinance-handoff-2026-11-24 --version v1 --output-dir data/processed/ordinance-v2-prepared
+```
+
+색인까지 만들려면 `OPENAI_API_KEY`를 준비하고 `--openai-model text-embedding-3-small`을 더해 별도 폴더로 실행한다(`.env`는 자동 로드하지 않고, 키 파일은 `--api-key-file`로 지정한다). 생성한 청크·색인·실행 결과와 개인 키 파일은 커밋하지 않는다. 만든 색인으로 반복 질문하려면 다음과 같이 실행한다.
+
+```sh
+uv run --locked python -m scripts.search_index --index data/processed/ordinance-v2-openai-small/index-html.json --index data/processed/ordinance-v2-openai-small/index-json.json --district 송파구
+```
+
+`--question "질문"`은 한 번 조회하고, 생략하면 `/종료`까지 반복 입력한다. 지역을 제한한 코사인 유사도 결과만 출력하며 관련성 하한이 없어 무관한 질문에도 결과가 나온다. HTML·JSON 비교 범위는 [전처리 자료 인계 기록](docs/handoff.md#실제-전처리-자료-연결)에 있다.
+
+</details>
+
+<details>
+<summary>&nbsp;&nbsp;🖥️&nbsp;A 검색으로 채팅 실행 · 질문 다듬기 OFF/ON 비교</summary>
+
+채팅 화면은 A와 C 검색을 지원한다. A를 사용하려면 [A 검색 설정](configs/team-a-rewrite-chat.json)으로 실행한다. 앱은 질문마다 설정을 읽고, 색인이나 사용 중인 품목 사전 파일이 바뀌면 실행 구성을 다시 불러온다. 사전 기반 질문 다듬기는 설정 파일의 `pipeline.rewrite_enabled`로 켜거나 끈다.
+
+```sh
+uv run --locked --env-file .env python -m scripts.run_chat \
+  --settings configs/team-a-rewrite-chat.json
+```
+
+아래 명령은 같은 개발 문항·색인·답변 모델을 사용해 A 검색에서 질문 다듬기를 끈 경우와 켠 경우를 비교한다. 실행할 때마다 새 출력 폴더를 지정한다. `evaluation.json`에는 원질문, 실제 검색 질의, 해석한 구·동, 질문 다듬기 상태, 색인과 사전 버전이 남는다. 구성별 검색 후보 순위는 `runs.csv`와 `candidates.csv`에서 대조한다.
 
 ```sh
 uv run --locked --env-file .env python -m scripts.evaluate \
@@ -84,57 +189,48 @@ uv run --locked --env-file .env python -m scripts.evaluate \
   --output-dir results/local/catalog-rewrite-comparison
 ```
 
-기본 A/B/C 평가와 A 리라이트 비교는 별도의 출력 디렉터리에 기록한다. 기본 A 평균에는 기본 평가의 A 실행만 사용하고, 리라이트 효과는 별도의 A OFF/ON 결과로 비교한다.
+</details>
 
-ON은 품목 사전 규칙으로 검색 질의를 보강한다. `evaluation.json`에는 원질문, 실제 검색 질의, 해석된 구·동, 리라이트 상태, 색인과 사전 버전이 들어간다. `runs.csv`와 `candidates.csv`에서 구성별 후보 청크와 허용 근거의 검색 순위를 비교한다.
-
-## 자동 데모와 검증
-
-```sh
-uv run --locked python -m scripts.demo
-```
-
-API 키 없이 합성 문서 3개로 색인부터 답변, 지역 재질문, 근거 부족과 실행 기록 저장까지 확인한다. 실행할 때마다 `results/local/handoff-demo-<실행 식별자>/`에 색인과 결과 JSON, 문항·실행·검색 후보 CSV를 만든다. 해시 임베딩과 본문 인용을 사용하는 연결 검사이며 실제 분리배출 안내나 검색 품질 평가 결과가 아니다.
-
-### dev 반영 후 답변과 지역 해석 검증
-
-팀 `dev`에서 지역 해석, 고정 근거 답변, 검색 비교를 확인하는 명령이다. Python 3.13.14와 uv 0.13.9 이상을 사용한다. 아래 테스트와 검색 비교에는 모델 API 키가 필요 없다. 실제 모델을 호출하는 개발 문항 실험은 [평가셋 실행 안내](eval/README.md)를 따른다.
+<details>
+<summary>&nbsp;&nbsp;🧪&nbsp;단위 테스트 및 벡터 vs. BM25 & 벡터 검색 순위 비교 (API 키 불필요)</summary>
 
 ```sh
-git switch dev
-git pull --ff-only origin dev
-uv sync --locked
 uv run --locked python -m pytest -q tests/unit/generation tests/unit/answer_experiments tests/unit/test_regions.py
 uv run --locked python -m src.evaluation.answer_experiments.evidence_retrieval_benchmark --output-dir results/local/evidence-team-check --repeats 10
 ```
 
-Use a new output directory for each benchmark run. The full test command is `uv run --locked python -m pytest -q tests`. The PR #11 integration run recorded 68 focused tests and 403 full-suite tests, each with 25 subtests and one LangChain Community deprecation warning. These counts describe that historical revision.
+위 테스트와 검색 비교에는 API 키가 필요 없고, 비교는 실행마다 새 출력 폴더를 지정한다. 전체 테스트는 `uv run --locked python -m pytest -q tests`다. 실제 모델을 호출하는 실험은 [평가셋 안내](eval/README.md)를 따른다. 세 사례의 순위·답변·인용은 [전처리 자료 결과표](results/testData.md)에서 CSV 원본과 대조할 수 있고, 지역 해석과 답변 생성의 연결은 [TEAM-SETUP](docs/TEAM-SETUP.md#전처리-자료-지역-해석과-답변-생성-연결)에 있다. 입력 규격과 팀 함수 연결 예시는 [인계 문서](docs/handoff.md), 환경변수는 [.env.example](.env.example)을 본다.
 
-[전처리 자료 질문별 결과표](results/testData.md)에서 세 사례의 검색 순위, 답변, 인용을 CSV 원본과 대조할 수 있다. 동 이름에서 추론한 구를 검색기와 생성기가 각각 어떻게 사용하는지는 [지역 해석과 답변 생성 연결](docs/TEAM-SETUP.md#전처리-자료-지역-해석과-답변-생성-연결)에 정리했다.
+</details>
 
-입력 자료 규격, 색인/평가 명령과 팀 함수 연결 예시는 [인계 문서](docs/handoff.md)에 있다. `sources.json`은 문서 목록과 첨부 관계를 읽는 별도 입력이며 전처리 묶음 대신 넣지 않는다. OpenAI 임베딩 환경변수는 [.env.example](.env.example)을 참고한다.
+<br>
 
-## 작업 위치
+## 평가 결과
 
-| 경로 | 용도 |
-| --- | --- |
-| `src/` | 공통 실행 기반과 담당별 Python 모듈 |
-| `configs/`, `prompts/`, `.streamlit/` | 공통 설정, 프롬프트와 화면 설정 |
-| `scripts/` | 수집, 색인과 평가 실행 진입점 |
-| `data/` | 수집 원문, 정제 자료와 색인 |
-| `eval/` | 개발·최종 문항과 채점용 정답 근거. 목표 문항 수와 브랜치별 준비 상태는 [평가셋 안내](eval/README.md) 참고 |
-| `results/` | 실행 원본, 평가와 비교 결과 |
-| `tests/` | 단위 검사, 연동 검사와 작은 검증 자료 |
+- **문항**
+  - [개발 10](eval/dev.json) · [최종 20](eval/test.json)
+  - 채점용 정답 근거와 작성 규칙은 [평가셋 안내](eval/README.md)
+- **실행**
+  - A/B/C 각 20건(질문 다듬기 OFF)과 C/질문 다듬기 20건
+  - 저장된 실행으로 Faithfulness·Answer Relevancy·ID 정밀도/재현율을 사후 계산한다.
+- **결과**
+  - [비교 보고서](report.md)와 [실행 기록 안내](results/README.md)
+  - 재현 명령은 [재현 문서](docs/reproduction.md)
+  - 실행 뒤 확인된 문항 결함은 [정오표](eval/errata/README.md)에 따로 두었다. (공식 최종셋은 그대로)
 
-상세 파일 목록, 담당 경로와 연결 원칙은 [구조와 책임](docs/architecture.md)에 있다. 파일별 구현 항목과 플로우 차트는 [Notion 구조 문서](https://app.notion.com/p/422dc8b0e1638150b62acfe703074f30?pvs=204)에서 확인한다. 폴더의 `.gitkeep`은 빈 작업 위치를 Git에 보존하기 위한 파일이다.
+<br>
 
-## 팀 공통 문서
+## 공통 문서
 
-- [문제와 평가 기준](docs/problem.md): 지원 범위, 평가 분리와 완료 기준
-- [공동 진행 단계](ROADMAP.md): 7단계와 병렬 작업 흐름
-- [개발 환경과 연결 기준](docs/TEAM-SETUP.md): 공용 규격과 인계 방식
-- [검사와 의존성 관리](docs/CI-AND-DEPENDENCIES.md): pytest, Codecov, Dependabot과 Gitleaks
-- [출처 목록 로더](docs/source-manifest-loader.md): `sources.json` 필드와 첨부 관계 읽기
-- [공통 기반 최소 인계본](docs/handoff.md): 입력 규격, API, 실행 명령, 현재 한계와 검증 결과
-
-통합 기준 브랜치는 `dev`다. 작업 브랜치는 `feature/<작성자>/<작업명>`으로 만들고, 검증 후 `dev`를 대상으로 PR을 연다. 합성 검증 자료는 `tests/fixtures/`에 있으며 실제 최종 평가셋과 품질 평가 결과는 포함되어 있지 않다.
+| #   | 문서                                              | 내용                                                |
+| --- | ------------------------------------------------- | --------------------------------------------------- |
+| 01  | [문제와 평가 기준](docs/problem.md)               | 지원 범위 · 평가 분리 · 완료 기준                   |
+| 02  | [진행 계획](ROADMAP.md)                           | 7단계 · 병렬 작업 흐름 · 역할과 인계                |
+| 03  | [개발 환경과 연결 기준](docs/TEAM-SETUP.md)       | 공용 규격과 인계 방식                               |
+| 04  | [출처 목록 로더](docs/source-manifest-loader.md)  | `sources.json` 필드와 첨부 관계                     |
+| 05  | [공통 기반 인계본](docs/handoff.md)               | 입력 규격 · API · 실행 명령 · 현재 한계와 검증 결과 |
+| 06  | [검사와 의존성 관리](docs/CI-AND-DEPENDENCIES.md) | pytest · Codecov · Dependabot · Gitleaks            |
+| 07  | [문서 목록](docs/documents.md)                    | 색인에 쓰는 자치법규와 별표 및 별지 목록            |
+| 08  | [데이터 이용과 보안 점검](docs/data-usage.md)     | 이용 조건 · 외부 모델 전송 · 비밀정보 및 로그 점검  |
+| 09  | [시연 질문 목록](docs/demo-script.md)             | 발표와 영상에 쓸 질문과 기대 응답                   |
+| 10  | [팀 기여 기록](contributions.md)                  | 담당별 PR · 리뷰 · 커밋 근거                        |

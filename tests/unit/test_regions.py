@@ -88,8 +88,9 @@ def test_resolve_request_asks_which_district_for_shared_dong():
     # 신사동 → needs_clarification + ambiguous. 후보 구를 넣어 되묻는다.
     result = resolve_request(PipelineRequest(question="신사동 쓰레기 언제?"))
 
+    # 후보 구(강남구·관악구·은평구)가 모두 지원 밖이라 되묻지 않고 바로 안내한다.
     assert result.status == "needs_clarification"
-    assert result.region_status == "ambiguous"
+    assert result.region_status == "unsupported"
     assert "강남구" in result.clarification_question
 
 
@@ -390,7 +391,9 @@ def test_resolve_request_says_unsupported_when_user_picks_an_unsupported_candida
         PipelineRequest(question=question, district=picked, district_confirmed=True)
     )
 
-    assert asked.region_status == "ambiguous"  # 구가 없는 질문은 기존대로 되묻는다.
+    assert (
+        asked.region_status == "unsupported"
+    )  # 후보가 모두 지원 밖이면 되묻지 않는다.
     assert picked_result.status == "needs_clarification"
     assert picked_result.region_status == "unsupported"
     assert picked_result.district == picked
@@ -441,7 +444,9 @@ def test_resolve_request_still_asks_when_the_written_district_is_not_a_candidate
         PipelineRequest(question="서대문구 삼성동 쓰레기 언제?", district="서대문구")
     )
 
-    assert result.region_status == "ambiguous"  # 서대문구는 삼성동의 후보가 아니다.
+    assert (
+        result.region_status == "unsupported"
+    )  # 서대문구는 삼성동의 후보가 아니고 후보는 모두 지원 밖이다.
 
 
 def test_resolve_request_keeps_asking_when_the_picked_district_is_not_a_candidate():
@@ -451,4 +456,27 @@ def test_resolve_request_keeps_asking_when_the_picked_district_is_not_a_candidat
         )
     )
 
-    assert result.region_status == "ambiguous"
+    assert result.region_status == "unsupported"
+
+
+def test_unsupported_district_in_question_is_answered_without_asking_which_district():
+    # 되물어도 서대문구·송파구 어느 쪽을 고르든 거절되므로 처음부터 안내한다.
+    result = resolve_request(
+        PipelineRequest(
+            question="강남구에서 페트병 라벨은 어떻게 버려요?", district="서대문구"
+        )
+    )
+    assert result.status == "needs_clarification"
+    assert result.region_status == "unsupported"
+    assert result.district == "강남구"
+    assert "아직 지원하지 않아요" in (result.clarification_question or "")
+
+
+def test_ambiguous_dong_with_only_unsupported_candidates_ends_with_guidance():
+    # 신사동(강남구·관악구·은평구)은 서대문구·송파구를 고를 수 없어 되물으면 끝없이 반복된다.
+    result = resolve_request(
+        PipelineRequest(question="신사동 종량제봉투 어떻게 버려?", district="서대문구")
+    )
+    assert result.status == "needs_clarification"
+    assert result.region_status == "unsupported"
+    assert "모두 아직 지원하지 않아요" in (result.clarification_question or "")

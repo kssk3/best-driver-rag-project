@@ -1,8 +1,13 @@
-from collections.abc import Callable
+import re
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
+from html import escape
 
 import streamlit as st
 
 from src.interface.adapter import Citation, ViewResponse
+from src.interface.theme import avatar_html
+from src.retrieval.regions import SUPPORTED_DISTRICTS
 
 # 실패해도 응답 상태와 answer를 바꾸지 않고 문서 답변을 이어 가는 단계(docs/ERRORS.md)
 RECOVERABLE_STAGES = {"rewrite", "place_lookup"}
@@ -13,6 +18,18 @@ REQUIRED_FIELD_LABELS = {
     "housing_type": "주택 유형",
     "item": "품목",
 }
+
+
+# 코드 구간 안에서는 마크다운이 백슬래시 이스케이프를 처리하지 않으므로 거기의 물결표는 그대로 둔다.
+_CODE_SPAN = re.compile(r"(```.*?```|`[^`\n]*`)", re.DOTALL)
+
+
+def _plain(text: str) -> str:
+    # 답변의 "12~25인치" 같은 물결표를 마크다운 취소선으로 읽지 않게 한다.
+    parts = _CODE_SPAN.split(text)  # 홀수 번째 조각이 코드 구간이다.
+    return "".join(
+        part if i % 2 else part.replace("~", r"\~") for i, part in enumerate(parts)
+    )
 
 
 def build_followup_request(
@@ -28,7 +45,7 @@ def build_followup_request(
     if "dong" in conditions:
         request["dong"] = conditions.pop("dong")
     if "district" in conditions:
-        # 되묻기에서 사용자가 구를 직접 입력했다. 해석기가 같은 되묻기를 되풀이하지 않도록
+        # 되묻기에서 사용자가 구를 선택 상자에서 골랐다. 해석기가 같은 되묻기를 되풀이하지 않도록
         # 확정 표시를 전용 필드로 보낸다(조건에 섞으면 생성기 입력과 W5 검증에 샌다).
         request["district"] = conditions.pop("district")
         request["district_confirmed"] = True
@@ -43,22 +60,73 @@ def is_safe_url(url: str | None) -> bool:
     return bool(url) and url.startswith(("https://", "http://"))
 
 
-# 인용을 명확히 전달하기 위한 포매팅
-def format_citation(citation: Citation) -> str:
+# shortcut: 조례 이름을 색인에서 읽지 않고 고정 표로 둔다. 지역이나 문서가 늘면 여기에 추가한다.
+PARENT_TITLES = {
+    "seodaemun-ordinance": "서대문구 폐기물 관리 조례",
+    "seodaemun-rules": "서대문구 폐기물 관리 조례 시행규칙",
+    "songpa-ordinance": "송파구 폐기물 관리 조례",
+    "songpa-rules": "송파구 폐기물 관리 조례 시행규칙",
+}
 
-    # 제목에 대괄호가 있어도 마크다운 링크가 깨지지 않게 막는다.
-    label = (
-        (citation.title or citation.chunk_id).replace("[", "\\[").replace("]", "\\]")
+
+def _followup_placeholder(field: str) -> str:
+    if field == "district":
+        return "답변의 기준이 될 지역(구)를 선택해 주세요."
+    return f"{REQUIRED_FIELD_LABELS.get(field, field)}을(를) 기재해 주세요."
+
+
+def _followup_input(container, field: str) -> str:
+    label = REQUIRED_FIELD_LABELS.get(field, field)
+    key = f"followup:{field}"
+    if field == "district":
+        # 자유 입력이면 "강남구요"나 "서대문구는 안 돼요"가 구로 들어가므로 지원하는 구만 고르게 한다.
+        return (
+            container.selectbox(
+                label,
+                sorted(SUPPORTED_DISTRICTS),
+                index=None,
+                key=key,
+                placeholder=_followup_placeholder(field),
+                label_visibility="collapsed",
+            )
+            or ""
+        )
+    return container.text_input(
+        label,
+        key=key,
+        placeholder=_followup_placeholder(field),
+        label_visibility="collapsed",
     )
-    if is_safe_url(citation.source_url):
-        line = f"- [{label}]({citation.source_url})"
-    else:
-        line = f"- {label} (원문 링크 없음)"
-    if citation.source_location:
-        line += f" · 위치: {citation.source_location}"
-    if citation.document_version:
-        line += f" · 문서 버전: {citation.document_version}"
-    return line
+
+
+def _citation_card(citation: Citation, number: int) -> None:
+    """말풍선 안의 인용 한 건. 번호 말머리가 붙은 칩 하나에 제목(링크)만 보인다."""
+    label = escape(" ".join((citation.title or citation.chunk_id).split()))
+    # 별표는 어느 조례의 것인지 앞에 붙인다(송파구 별표는 제목이 "별표"뿐이다).
+    parent = PARENT_TITLES.get(
+        (citation.document_id or "").partition(":attachment:")[0]
+    )
+    if parent and ":attachment:" in (citation.document_id or ""):
+        label = f"{escape(parent)} › {label}"
+    title = (
+        f'<a href="{escape(citation.source_url)}" target="_blank" rel="noopener noreferrer">{label}</a>'
+        if is_safe_url(citation.source_url)
+        else f"{label} (원문 링크 없음)"
+    )
+    st.html(
+        f'<div class="cite"><b class="cite-no">{number}</b>'
+        f'<span class="cite-body">{title}</span></div>'
+    )
+
+
+@contextmanager
+def _bubble(label: str, tone: str) -> Iterator[None]:
+    """당번이 아바타 옆 말풍선. 안의 st.success/warning/info는 CSS가 말풍선 모양으로 바꾼다."""
+    body, avatar = st.columns([14, 1], vertical_alignment="top")
+    avatar.html(avatar_html())
+    with body, st.container(key="answerbox"):
+        st.html(f'<span class="badge {tone}">{label}</span>')
+        yield
 
 
 def render_response(
@@ -97,15 +165,16 @@ def render_response(
 
 def _render_answered(view: ViewResponse) -> None:
 
-    st.success(view.answer or "(답변 내용 없음)")
-    st.markdown("근거")
+    with _bubble("근거 확인됨", "ok"):
+        st.success(_plain(view.answer or "(답변 내용 없음)"))
+        st.html('<div class="ev-label"></div>')  # 답변과 인용 사이 실선
 
-    if not view.citations:
-        st.warning("인용된 근거가 없습니다.")
-        return
+        if not view.citations:
+            st.warning("인용된 근거가 없습니다.")
+            return
 
-    for citation in view.citations:
-        st.markdown(format_citation(citation))
+        for number, citation in enumerate(view.citations, 1):
+            _citation_card(citation, number)
 
 
 def _render_clarification(
@@ -115,46 +184,57 @@ def _render_clarification(
     on_followup: Callable[[dict], None] | None,
 ) -> None:
 
-    st.warning(view.answer or "질문하신 내용은 추가 정보가 필요합니다.")
-
+    message = view.answer or "질문하신 내용은 추가 정보가 필요합니다."
     if not view.required_fields:
         # 더 채울 값이 없다(지원 밖 안내 등). 같은 요청을 다시 보내면 같은 안내만 나오므로
-        # 폼 대신 처음 입력칸에서 지역이나 질문을 바꾸도록 안내한다.
-        st.caption("위의 지역이나 질문을 바꿔서 다시 질문해 주세요.")
+        # 입력칸 없이 안내 한 덩어리로 보여 주고, 처음 입력칸에서 지역이나 질문을 바꾸게 한다.
+        with _bubble("안내드려요", "warn"):
+            st.warning(
+                f"{_plain(message)}  \n위의 지역이나 질문을 바꿔서 다시 질문해 주세요."
+            )
         return
 
-    with st.form("followup"):
-        extra_conditions = {
-            field: st.text_input(
-                REQUIRED_FIELD_LABELS.get(field, field), key=f"followup:{field}"
+    with _bubble("조금만 더 알려주세요", "warn"):
+        st.warning(_plain(message))
+
+        with st.form("followup"):
+            # 라벨은 숨기고 입력칸 안내 문구(placeholder)로 대신한다. 입력칸이 하나면 버튼을 옆에 둔다.
+            one_field = len(view.required_fields) == 1
+            input_col, button_col = (
+                st.columns([5, 1.4], vertical_alignment="center")
+                if one_field
+                else (st.container(), st.container())
             )
-            for field in view.required_fields
-        }
+            extra_conditions = {
+                field: _followup_input(input_col, field)
+                for field in view.required_fields
+            }
+            submitted = button_col.form_submit_button("다시 질문하기")
 
-        submitted = st.form_submit_button("다시 질문하기")
-
-    if submitted:
-        request = build_followup_request(question, district, extra_conditions)
-        if on_followup is not None:
-            on_followup(request)
-        else:
-            st.caption("다시 보낼 요청입니다. 실제 전송이 아닌 예시입니다.")
-            st.json(request)
+        if submitted:
+            request = build_followup_request(question, district, extra_conditions)
+            if on_followup is not None:
+                on_followup(request)
+            else:
+                st.caption("다시 보낼 요청입니다. 실제 전송이 아닌 예시입니다.")
+                st.json(request)
 
 
 def _render_insufficient_evidence(view: ViewResponse) -> None:
 
-    st.info("질문하신 내용은 답변이 어렵습니다.")
+    with _bubble("근거가 부족해요", "warn"):
+        st.info("질문하신 내용은 답변이 어렵습니다.")
 
-    # 근거는 찾았지만 답을 하나로 정할 수 없는 경우(출처끼리 내용이 다름)에는
-    # 안내 문장과 출처를 함께 보여 준다. 근거가 없으면 위 안내 한 줄만 보인다.
-    for line in (view.answer or "").splitlines():
-        if line.strip():
-            st.write(line)
-    if view.citations:
-        st.markdown("확인한 출처")
-        for citation in view.citations:
-            st.markdown(format_citation(citation))
+        # 근거는 찾았지만 답을 하나로 정할 수 없는 경우(출처끼리 내용이 다름)에는
+        # 안내 문장과 출처를 함께 보여 준다. 근거가 없으면 위 안내 한 줄만 보인다.
+        for line in (view.answer or "").splitlines():
+            # 위의 고정 안내와 같은 뜻의 거절 문장은 되풀이하지 않는다.
+            if line.strip() and "답변하기 어렵" not in line:
+                st.write(_plain(line))
+        if view.citations:
+            st.html('<div class="ev-label"></div>')  # 답변과 출처 사이 실선
+            for number, citation in enumerate(view.citations, 1):
+                _citation_card(citation, number)
 
 
 def _render_error(view: ViewResponse) -> None:
@@ -172,6 +252,6 @@ def _render_error(view: ViewResponse) -> None:
         any(e.name == "record" for e in view.stage_errors) and not primary_failed
     )
     st.error(
-        (None if only_record_failed else view.answer)
+        _plain((None if only_record_failed else view.answer) or "")
         or "처리 중 오류가 발생했습니다. 다시 시도해주세요."
     )

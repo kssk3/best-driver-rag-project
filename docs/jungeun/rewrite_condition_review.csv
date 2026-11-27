@@ -1,0 +1,25 @@
+﻿review_id,question,required_fragments,rule_group,reference_case_id,human_status,reviewer,reviewed_at,source_checked,decision,note,route,rewritten_question,missing_fragments,body_preserved,automatic_status
+d01,서대문구에서 우유팩은 어떻게 배출하나요?,서대문구 | 우유팩,의미 별칭,test-d01-sd-milk-carton,미검수,,,,,,catalog-rules,서대문구에서 우유팩은 어떻게 배출하나요? (종이팩),,true,문자열 보존
+d01,서대문구에서 우유팩은 어떻게 배출하나요?,서대문구 | 우유팩,의미 별칭,test-d01-sd-milk-carton,미검수,,,,,,prompt-rule-expected,서대문구에서 우유팩은 어떻게 배출하나요? (종이팩),,true,문자열 보존
+d05,송파구에서 100리터 종량제 봉투는 어떤 용도로 쓰나요?,송파구 | 100리터 | 용도,붙여쓰기,test-d05-sp-bag-100l-use,미검수,,,,,,catalog-rules,송파구에서 100리터 종량제 봉투는 어떤 용도로 쓰나요? (종량제봉투),,true,문자열 보존
+d05,송파구에서 100리터 종량제 봉투는 어떤 용도로 쓰나요?,송파구 | 100리터 | 용도,붙여쓰기,test-d05-sp-bag-100l-use,미검수,,,,,,prompt-rule-expected,송파구에서 100리터 종량제 봉투는 어떤 용도로 쓰나요?,,true,문자열 보존
+d07,서대문구 50리터 종량제 봉투(생활폐기물용) 가격이 얼마예요?,서대문구 | 50리터 | 생활폐기물용,붙여쓰기,test-d07-sd-bag-50l,미검수,,,,,,catalog-rules,서대문구 50리터 종량제 봉투(생활폐기물용) 가격이 얼마예요? (종량제봉투),,true,문자열 보존
+d07,서대문구 50리터 종량제 봉투(생활폐기물용) 가격이 얼마예요?,서대문구 | 50리터 | 생활폐기물용,붙여쓰기,test-d07-sd-bag-50l,미검수,,,,,,prompt-rule-expected,서대문구 50리터 종량제 봉투(생활폐기물용) 가격이 얼마예요?,,true,문자열 보존
+d09,송파구에서 종량제 봉투는 어디서 사야 하나요?,송파구 | 어디서 | 사야,붙여쓰기,test-d09-sp-bag-where-to-buy,미검수,,,,,,catalog-rules,송파구에서 종량제 봉투는 어디서 사야 하나요? (종량제봉투),,true,문자열 보존
+d09,송파구에서 종량제 봉투는 어디서 사야 하나요?,송파구 | 어디서 | 사야,붙여쓰기,test-d09-sp-bag-where-to-buy,미검수,,,,,,prompt-rule-expected,송파구에서 종량제 봉투는 어디서 사야 하나요?,,true,문자열 보존
+n03,송파구 종량제 봉투 가격이 앞으로 오를 예정인가요?,송파구 | 앞으로 | 오를 예정,미래 계획,test-n03-sp-bag-price-rise,미검수,,,,,,catalog-rules,송파구 종량제 봉투 가격이 앞으로 오를 예정인가요? (종량제봉투),,true,문자열 보존
+n03,송파구 종량제 봉투 가격이 앞으로 오를 예정인가요?,송파구 | 앞으로 | 오를 예정,미래 계획,test-n03-sp-bag-price-rise,미검수,,,,,,prompt-rule-expected,송파구 종량제 봉투 가격이 앞으로 오를 예정인가요?,,true,문자열 보존
+business,송파구 사업장용 일반규격봉투 20리터는 얼마인가요?,송파구 | 사업장용 | 20리터,용도·용량,test-d06-sp-business-bag-20l,미검수,,,,,,catalog-rules,송파구 사업장용 일반규격봉투 20리터는 얼마인가요?,,true,문자열 보존
+business,송파구 사업장용 일반규격봉투 20리터는 얼마인가요?,송파구 | 사업장용 | 20리터,용도·용량,test-d06-sp-business-bag-20l,미검수,,,,,,prompt-rule-expected,송파구 사업장용 일반규격봉투 20리터는 얼마인가요?,,true,문자열 보존
+cold-box,서대문구에서 비닐이 붙어 분리되지 않는 택배 보냉 상자는 어떻게 버려요?,서대문구 | 비닐이 붙어 | 분리되지 않는 | 보냉,예외 조건,test-v05-sd-delivery-box,미검수,,,,,,catalog-rules,서대문구에서 비닐이 붙어 분리되지 않는 택배 보냉 상자는 어떻게 버려요?,,true,문자열 보존
+cold-box,서대문구에서 비닐이 붙어 분리되지 않는 택배 보냉 상자는 어떻게 버려요?,서대문구 | 비닐이 붙어 | 분리되지 않는 | 보냉,예외 조건,test-v05-sd-delivery-box,미검수,,,,,,prompt-rule-expected,서대문구에서 비닐이 붙어 분리되지 않는 택배 보냉 상자는 어떻게 버려요?,,true,문자열 보존
+actual-sale,송파구는 재사용 종량제봉투를 실제로 만들어 파나요?,송파구 | 재사용 | 실제로 | 만들어 파나요,실제 판매,test-d10-sp-reusable-bag,미검수,,,,,,catalog-rules,송파구는 재사용 종량제봉투를 실제로 만들어 파나요?,,true,문자열 보존
+actual-sale,송파구는 재사용 종량제봉투를 실제로 만들어 파나요?,송파구 | 재사용 | 실제로 | 만들어 파나요,실제 판매,test-d10-sp-reusable-bag,미검수,,,,,,prompt-rule-expected,송파구는 재사용 종량제봉투를 실제로 만들어 파나요?,,true,문자열 보존
+washer,서대문구에서 10킬로그램 넘는 세탁기를 버리려면 수수료가 얼마예요?,서대문구 | 10킬로그램 넘는 | 세탁기,단위·경계,test-v02-sd-washer-10kg,미검수,,,,,,catalog-rules,서대문구에서 10킬로그램 넘는 세탁기를 버리려면 수수료가 얼마예요?,,true,문자열 보존
+washer,서대문구에서 10킬로그램 넘는 세탁기를 버리려면 수수료가 얼마예요?,서대문구 | 10킬로그램 넘는 | 세탁기,단위·경계,test-v02-sd-washer-10kg,미검수,,,,,,prompt-rule-expected,서대문구에서 10킬로그램 넘는 세탁기를 버리려면 수수료가 얼마예요?,,true,문자열 보존
+fridge,송파구에서 400리터 냉장고를 버리려면 얼마예요?,송파구 | 400리터 | 냉장고,지역·용량,test-v04-sp-fridge-400l,미검수,,,,,,catalog-rules,송파구에서 400리터 냉장고를 버리려면 얼마예요?,,true,문자열 보존
+fridge,송파구에서 400리터 냉장고를 버리려면 얼마예요?,송파구 | 400리터 | 냉장고,지역·용량,test-v04-sp-fridge-400l,미검수,,,,,,prompt-rule-expected,송파구에서 400리터 냉장고를 버리려면 얼마예요?,,true,문자열 보존
+residue,송파구 잠실본동 단독주택에서 안 씻은 우유팩은 어디 버려요?,송파구 | 잠실본동 | 단독주택 | 안 씻은 | 우유팩,지역·오염,test-d01-sd-milk-carton,미검수,,,,,,catalog-rules,송파구 잠실본동 단독주택에서 안 씻은 우유팩은 어디 버려요? (종이팩),,true,문자열 보존
+residue,송파구 잠실본동 단독주택에서 안 씻은 우유팩은 어디 버려요?,송파구 | 잠실본동 | 단독주택 | 안 씻은 | 우유팩,지역·오염,test-d01-sd-milk-carton,미검수,,,,,,prompt-rule-expected,송파구 잠실본동 단독주택에서 안 씻은 우유팩은 어디 버려요? (종이팩),,true,문자열 보존
+selection,서대문구에서 우유팩이랑 유리병 중 우유팩만 버려요.,서대문구 | 우유팩 | 유리병 | 중 | 우유팩만,선택·제외,test-d01-sd-milk-carton,미검수,,,,,,catalog-rules,서대문구에서 우유팩만 버려요. (종이팩),유리병 | 중,false,조건 누락 후보
+selection,서대문구에서 우유팩이랑 유리병 중 우유팩만 버려요.,서대문구 | 우유팩 | 유리병 | 중 | 우유팩만,선택·제외,test-d01-sd-milk-carton,미검수,,,,,,prompt-rule-expected,서대문구에서 우유팩이랑 유리병 중 우유팩만 버려요. (종이팩),,true,문자열 보존

@@ -1,0 +1,241 @@
+{
+  "langfuse_project": "project:cmwx4ub9u0006ps1syc3peguq",
+  "run_id": "35c203d8b05443a3974fee7561731e3b",
+  "request_id": "e8bf41b973314bf19a662ac20f634b05",
+  "run_kind": "rag",
+  "started_at": "2026-11-26T18:51:30.663038Z",
+  "request": {
+    "request_id": "e8bf41b973314bf19a662ac20f634b05",
+    "question": "송파구 종량제 봉투 가격이 앞으로 오를 예정인가요?",
+    "district": "송파구",
+    "dong": null,
+    "conditions": {},
+    "district_confirmed": false
+  },
+  "options": {
+    "variant": "B",
+    "rewrite_enabled": false,
+    "top_k": 5,
+    "max_context_chars": 12000,
+    "run_kind": "rag",
+    "versions": {
+      "model": "gpt-6-luna",
+      "index": "index-1c25b630ae0878a2c496716730e6c0622ba6995203d7ac0293759bdcb1bf5bef-embed-input-table-text-v2-7a9cfb43ffc4fa0f",
+      "chunking": "preprocessed-v2-row-v1",
+      "embedding": "text-embedding-3-small",
+      "prompt": "b0ec828702879ac2fbcdaabfbb0df5841beb2c8d6ff103472f0f5a03ff636305",
+      "candidate_policy": "vector+bm25/rrf-v1(k=60,depth=20)"
+    }
+  },
+  "resolved_query": {
+    "search_query": "송파구 종량제 봉투 가격이 앞으로 오를 예정인가요?",
+    "district": "송파구",
+    "dong": null,
+    "status": "resolved",
+    "clarification_question": null,
+    "region_status": "no_dong",
+    "candidate_districts": []
+  },
+  "search_query": "송파구 종량제 봉투 가격이 앞으로 오를 예정인가요?",
+  "candidates": [
+    {
+      "chunk": {
+        "chunk_id": "chunk-fa32e1b1dd512feed797d82784711ef8d40bfe163d02bf8668d698c299f54d17",
+        "source_document_id": "songpa-ordinance:attachment:154690991",
+        "source_document_version": "v1",
+        "title": "별표",
+        "content_format": "json",
+        "content": "{\"header_rows\":[{\"cells\":[{\"cell_id\":\"table-1-r0-c0\",\"colspan\":2,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":0,\"rowspan\":1,\"text\":\"구     분\"},{\"cell_id\":\"table-1-r0-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":0,\"rowspan\":1,\"text\":\"용량\"},{\"cell_id\":\"table-1-r0-c3\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":3,\"origin_row\":0,\"rowspan\":1,\"text\":\"규격봉투 판매가격\"},{\"cell_id\":\"table-1-r0-c4\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":4,\"origin_row\":0,\"rowspan\":1,\"text\":\"비고\"}],\"row\":0}],\"paragraphs\":[\"〔별표 3〕<개정 2015.4.2., 2017.3.30., 2019.11.7., 2021.09.30>\\n\",\"\",\"규 격 봉 투 가 격(제14조제2항 관련)\\n\",\"\",\"(단위 : 원)\\n\",\"\\n\",\"\",\"비고  1. 사업장용 규격봉투 판매가격은 수집·운반수수료, 폐기물반입수수료, 제작비 등의 변동에 따라 변경할 수 있다.\\n\",\"      2. 사업장용 규격봉투 가격을 변경할 때에는 변경일자와 변경금액을 구보에 게재하여야 한다.\\n\",\"    ※ 단, 재사용봉투의 가격은 해당용량의 생활폐기물용 봉투의 가격과 같다.\\n\",\"\",\"\"],\"row\":{\"cells\":[{\"cell_id\":\"table-1-r10-c0\",\"colspan\":2,\"inherited_from_previous_row\":true,\"origin_col\":0,\"origin_row\":10,\"rowspan\":2,\"text\":\"특수규격봉투\"},{\"cell_id\":\"table-1-r11-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":11,\"rowspan\":1,\"text\":\"50ℓ\"},{\"cell_id\":\"table-1-r11-c3\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":3,\"origin_row\":11,\"rowspan\":1,\"text\":\"5,100\"},{\"cell_id\":\"table-1-r11-c4\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":4,\"origin_row\":11,\"rowspan\":1,\"text\":\"\"}],\"row\":11},\"section_title\":\"〔별표 3〕<개정 2015.4.2., 2017.3.30., 2019.11.7., 2021.09.30>\",\"table_id\":\"table-1\"}",
+        "source_url": "http://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=154690991&flNm=%EB%B3%84%ED%91%9C",
+        "source_location": "table-1/row[11]",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 1,
+      "score": 0.02878726010616578,
+      "stage_scores": {
+        "vector": 0.4342052345581183,
+        "bm25": 25.260206702590917,
+        "rrf": 0.02878726010616578
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-ecfea334b419ae0995b3a4bb271aebd51bad295cfb17037d94cf9bf74e41cb06",
+        "source_document_id": "songpa-ordinance",
+        "source_document_version": "v1",
+        "title": "서울특별시 송파구 폐기물 관리 조례",
+        "content_format": "json",
+        "content": "{\"applicability_status\":\"historical_and_current_mixed_review_required\",\"note\":\"과거 부칙의 시행일·경과조치 포함. 현행 일반 배출 기준으로 일괄 적용 금지.\",\"promulgation_date\":\"20250710\",\"promulgation_number\":\"1781\",\"text\":\"부칙  ① (시행일) 이 조례는 1997년 1월 1일부터 시행한다.\\n② (일반적 경과조치) 이 조례 시행 당시 종전의 규정에 의하여 부과하였거나 부과하여야 할 수수료 등에 대하여는 종전의 규정에 의한다. 다만, 새로운규격봉투를 제작·판매할 때에는 기판매된 규격봉투의 사용은 새로운 규격봉투 판매 개시일 이후 1개월까지로 한다.\\n부칙 (97·12·1) ① (시행일) 이 조례는 1997년 12월 1일부터 시행하되, 사업장용 규격봉투에 대하여는 1998년 1월 1일부터 시행한다.\\n② (경과조치) 이 조례 시행 당시 종전의 규정에 의하여 부과하였거나 부과하여야 할 수수료 등에 대하여는 종전의 규정에 의한다.\\n부칙 (98·7·8) 제1조(시행일) 이 조례는 공포한 날부터 시행한다.\\n제2조(다른조례의 개정) ① 서울특별시송파구오수·분뇨및축산폐수의처리에관한조례 중 다음과 같이 개정한다.\\n제20조제2항을 삭제한다.\\n② 서울특별시송파구쓰레기줄이기와자원재활용촉진에관한조례 중 다음과 같이 개정한다.\\n제8조를 삭제한다.\\n부칙 (98·10·13) 이 조례는 공포한 날부터 시행한다.\\n부칙 (99·5·20) 이 조례는 공포한 날부터 시행한다.\\n부칙 (99·8·10) 이 조례는 공포한 날부터 시행한다.\\n부칙 (99·12·31) 이 조례는 공포한 날부터 시행한다.\\n부칙 (2000·4·4) 이 조례는 공포한 날부터 시행한다.\\n부칙 (2000·6·8) 이 조례는 공포한 날부터 시행한다.\\n부칙 (2001·3·16) 이 조례는 공포한 날부터 시행한다.\\n부칙 (2003·7·14) 이 조례는 공포한 날부터 시행한다.\\n부칙 (2006·12·26) 이 조례는 공포한 날부터 시행한다.\\n부칙 (2008· 9·22) 이 조례는 공포한 날부터 시행한다.\\n부칙 (2009· 11·9) 이 조례는 공포한 날부터 시행한다.\\n부칙 (2011. 6. 7) 이 조례는 공포한 날부터 시행한다. 다만, 제17조부터 제30조까지의 개정규정은 2011. 7. 24일부터 시행한다.\\n부칙 (2011.12.12) 이 조례는 공포한 날부터 시행한다.\\n부칙 <제1,226호, 2014.9.25> 이 조례는 공포한 날부터 시행한다.\\n부칙 <제1,251호, 2015.4.2> 이 조례는 공포한 날부터 시행한다.\\n부칙 <제1,348호, 2017.3.30> 이 조례는 공포한 날부터 시행한다.\\n부칙 <제1,438호, 2018.6.29.> 이 조례는 공포 후 30일이 경과한 날부터 시행한다.\\n부 칙 <제1,502호, 2019.11.7.> 제1조(시행일) 이 조례는 공포한 날부터 시행한다.\\n제2조(경과조치) 이 조례 시행 당시 종전의 규정에 의하여 부과하였거나 부과하여야 할 수수료에 대하여는 종전의 규정에 의한다.\\n부 칙 <제1591호, 2021.09.30.> 제1조(시행일) 이 조례는 공포한 날부터 시행한다.\\n제2조(규격봉투에 관한 경과조치) · 이 조례 시행 당시 종전의 규정에 다라 제작·판매된 종량제봉투 100리터는 계속하여 사용할 수 있다.\\n· 가락시장용 종량제봉투는 재고 소진까지 사업장용 종량제봉투로 간주하여 판매한다.\\n부 칙 <제1781호, 알기 쉬운 법령 정비기준 등에 따른 서울특별시 송파구 교통환경국 소관 조례 정비를 위한 일괄개정조례, 2025.07.10.> 이 조례는 공포한 날부터 시행한다.\\n\",\"unit_type\":\"supplement\"}",
+        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2053883",
+        "source_location": "부칙[1]/부칙내용",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 2,
+      "score": 0.028665028665028666,
+      "stage_scores": {
+        "vector": 0.3636427437907356,
+        "bm25": 29.89180813619424,
+        "rrf": 0.028665028665028666
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-225a2d424691e440b65fda01dc6c8eac1393e3834339b4ccfee961965979d3b2",
+        "source_document_id": "songpa-ordinance",
+        "source_document_version": "v1",
+        "title": "서울특별시 송파구 폐기물 관리 조례",
+        "content_format": "json",
+        "content": "{\"text\":\"제17조의2(재사용 종량제봉투 제작) \\n① 구청장은 1회용 비닐봉투 사용량을 줄이기 위하여 1회용 비닐봉투 대용으로 재사용 종량제봉투를 제작할 수 있고, 봉투의 디자인, 용량 및 크기 등은 단체표준 규격에 따라 제작하여야 한다.<신설 2011.6.7>\\n② 구청장은 유통매장에서 재사용 종량제봉투 구입이 편리하도록 판매방법 개선 및 고객홍보를 추진하여야 한다.<신설 2011.6.7>\\n③ 구청장은 재사용 종량제봉투 판매확대를 위하여 판매업소의 명칭, 로고 등 상업광고를 게재할 수 있으며 이에 따른 제반비용 분담에 관한 사항은 별도로 정한다.<신설 2011.6.7>\\n\",\"unit_type\":\"article\"}",
+        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2053883",
+        "source_location": "조문/조[26] (조문번호 001702)",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 3,
+      "score": 0.028612012987012988,
+      "stage_scores": {
+        "vector": 0.34757746689505375,
+        "bm25": 31.762243084133672,
+        "rrf": 0.028612012987012988
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-d75ab5c2181ba792b848e120136de6d3a23782550d39b65667beedf4c1f392eb",
+        "source_document_id": "songpa-ordinance:attachment:154690991",
+        "source_document_version": "v1",
+        "title": "별표",
+        "content_format": "json",
+        "content": "{\"header_rows\":[{\"cells\":[{\"cell_id\":\"table-1-r0-c0\",\"colspan\":2,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":0,\"rowspan\":1,\"text\":\"구     분\"},{\"cell_id\":\"table-1-r0-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":0,\"rowspan\":1,\"text\":\"용량\"},{\"cell_id\":\"table-1-r0-c3\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":3,\"origin_row\":0,\"rowspan\":1,\"text\":\"규격봉투 판매가격\"},{\"cell_id\":\"table-1-r0-c4\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":4,\"origin_row\":0,\"rowspan\":1,\"text\":\"비고\"}],\"row\":0}],\"paragraphs\":[\"〔별표 3〕<개정 2015.4.2., 2017.3.30., 2019.11.7., 2021.09.30>\\n\",\"\",\"규 격 봉 투 가 격(제14조제2항 관련)\\n\",\"\",\"(단위 : 원)\\n\",\"\\n\",\"\",\"비고  1. 사업장용 규격봉투 판매가격은 수집·운반수수료, 폐기물반입수수료, 제작비 등의 변동에 따라 변경할 수 있다.\\n\",\"      2. 사업장용 규격봉투 가격을 변경할 때에는 변경일자와 변경금액을 구보에 게재하여야 한다.\\n\",\"    ※ 단, 재사용봉투의 가격은 해당용량의 생활폐기물용 봉투의 가격과 같다.\\n\",\"\",\"\"],\"row\":{\"cells\":[{\"cell_id\":\"table-1-r10-c0\",\"colspan\":2,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":10,\"rowspan\":2,\"text\":\"특수규격봉투\"},{\"cell_id\":\"table-1-r10-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":10,\"rowspan\":1,\"text\":\"20ℓ\"},{\"cell_id\":\"table-1-r10-c3\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":3,\"origin_row\":10,\"rowspan\":1,\"text\":\"2,040\"},{\"cell_id\":\"table-1-r10-c4\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":4,\"origin_row\":10,\"rowspan\":1,\"text\":\"\"}],\"row\":10},\"section_title\":\"〔별표 3〕<개정 2015.4.2., 2017.3.30., 2019.11.7., 2021.09.30>\",\"table_id\":\"table-1\"}",
+        "source_url": "http://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=154690991&flNm=%EB%B3%84%ED%91%9C",
+        "source_location": "table-1/row[10]",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 4,
+      "score": 0.02844551282051282,
+      "stage_scores": {
+        "vector": 0.4317103743222678,
+        "bm25": 25.260206702590917,
+        "rrf": 0.02844551282051282
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-6f7913d4a4ef4c3fe723fc2745ea2e98e0cc6f09f9999edc5b50bddec22489be",
+        "source_document_id": "songpa-ordinance",
+        "source_document_version": "v1",
+        "title": "서울특별시 송파구 폐기물 관리 조례",
+        "content_format": "json",
+        "content": "{\"text\":\"제24조(규격봉투의 현금교환) \\n① 종량제폐기물 배출자가 다른 지역으로 전출하는 사유 등으로 규격봉투의 현금교환을 요청할 때에는 이를 판매가격으로 교환하여야 한다. 이 경우 현금교환은 동일한 규격봉투를 판매하는 봉투판매소에서 한다.[전문개정 98·10·13] <개정 2001·3·16, 2003·7·14>\\n② 제1항에 의거 다른 지역의 봉투판매인이 규격봉투를 교환하였을 경우에 폐기물처리업자는 상호정산을 하여야 한다. 다만, 교환된 규격봉투가 판매하기 어렵다고 판단될 경우에는 구에 재 공급을 요청할 수 있다. <신설 2003·7·14>\\n\",\"unit_type\":\"article\"}",
+        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2053883",
+        "source_location": "조문/조[33] (조문번호 002400)",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 5,
+      "score": 0.028205128205128206,
+      "stage_scores": {
+        "vector": 0.3446958426525293,
+        "bm25": 31.324645130753105,
+        "rrf": 0.028205128205128206
+      }
+    }
+  ],
+  "model_input_chunk_ids": [
+    "chunk-fa32e1b1dd512feed797d82784711ef8d40bfe163d02bf8668d698c299f54d17",
+    "chunk-ecfea334b419ae0995b3a4bb271aebd51bad295cfb17037d94cf9bf74e41cb06",
+    "chunk-225a2d424691e440b65fda01dc6c8eac1393e3834339b4ccfee961965979d3b2",
+    "chunk-d75ab5c2181ba792b848e120136de6d3a23782550d39b65667beedf4c1f392eb",
+    "chunk-6f7913d4a4ef4c3fe723fc2745ea2e98e0cc6f09f9999edc5b50bddec22489be"
+  ],
+  "response": {
+    "request_id": "e8bf41b973314bf19a662ac20f634b05",
+    "run_id": "35c203d8b05443a3974fee7561731e3b",
+    "status": "insufficient_evidence",
+    "answer": "현재 확인한 자료로는 답변하기 어렵습니다.",
+    "citations": [],
+    "places": {
+      "status": "unavailable",
+      "places": [],
+      "error": null
+    },
+    "error": null,
+    "error_code": null
+  },
+  "stages": [
+    {
+      "name": "resolve",
+      "status": "ok",
+      "duration_ms": 0.16769999638199806,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "rewrite",
+      "status": "skipped",
+      "duration_ms": 0.0,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "retrieve",
+      "status": "ok",
+      "duration_ms": 310.1583999959985,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "context",
+      "status": "ok",
+      "duration_ms": 0.05740000051446259,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "generate",
+      "status": "ok",
+      "duration_ms": 1312.9580999957398,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "citations",
+      "status": "ok",
+      "duration_ms": 0.0033999967854470015,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "place_lookup",
+      "status": "skipped",
+      "duration_ms": 0.0,
+      "error": null,
+      "error_code": null
+    }
+  ],
+  "duration_ms": 1623.4746999980416,
+  "warnings": []
+}

@@ -1,0 +1,250 @@
+{
+  "langfuse_project": "project:cmwx4ub9u0006ps1syc3peguq",
+  "run_id": "99f83ddea5b64d7faa9225835c8cf9a3",
+  "request_id": "9acd18f9ae0e4b5fbc2c88baaa88fda6",
+  "run_kind": "rag",
+  "started_at": "2026-11-26T18:50:41.669820Z",
+  "request": {
+    "request_id": "9acd18f9ae0e4b5fbc2c88baaa88fda6",
+    "question": "서대문구에서 이사 가게 돼서 쓰레기봉투를 현금으로 바꾸려면 어디로 가야 하나요?",
+    "district": "서대문구",
+    "dong": null,
+    "conditions": {},
+    "district_confirmed": false
+  },
+  "options": {
+    "variant": "B",
+    "rewrite_enabled": false,
+    "top_k": 5,
+    "max_context_chars": 12000,
+    "run_kind": "rag",
+    "versions": {
+      "model": "gpt-6-luna",
+      "index": "index-1c25b630ae0878a2c496716730e6c0622ba6995203d7ac0293759bdcb1bf5bef-embed-input-table-text-v2-7a9cfb43ffc4fa0f",
+      "chunking": "preprocessed-v2-row-v1",
+      "embedding": "text-embedding-3-small",
+      "prompt": "b0ec828702879ac2fbcdaabfbb0df5841beb2c8d6ff103472f0f5a03ff636305",
+      "candidate_policy": "vector+bm25/rrf-v1(k=60,depth=20)"
+    }
+  },
+  "resolved_query": {
+    "search_query": "서대문구에서 이사 가게 돼서 쓰레기봉투를 현금으로 바꾸려면 어디로 가야 하나요?",
+    "district": "서대문구",
+    "dong": null,
+    "status": "resolved",
+    "clarification_question": null,
+    "region_status": "no_dong",
+    "candidate_districts": []
+  },
+  "search_query": "서대문구에서 이사 가게 돼서 쓰레기봉투를 현금으로 바꾸려면 어디로 가야 하나요?",
+  "candidates": [
+    {
+      "chunk": {
+        "chunk_id": "chunk-4d6d4d15a72220ff1f823041ab7be5d201bb051e2f020b568a736716d50814bb",
+        "source_document_id": "seodaemun-ordinance",
+        "source_document_version": "v1",
+        "title": "서울특별시 서대문구 폐기물 관리 조례",
+        "content_format": "json",
+        "content": "{\"text\":\"제34조(규격봉투의 현금교환) 종량제 폐기물 배출자가 다른 지역으로 전출하는 사유 등으로 규격봉투의 현금교환을 요청할 때에는 이를 판매가격으로 교환하여야 한다. 이 경우 현금교환은 동일한 규격봉투를 판매하는 봉투판매소에서 한다.\\n\",\"unit_type\":\"article\"}",
+        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2101297",
+        "source_location": "조문/조[41] (조문번호 003400)",
+        "scope_type": "district",
+        "districts": [
+          "서대문구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 1,
+      "score": 0.03278688524590164,
+      "stage_scores": {
+        "vector": 0.38937269929987095,
+        "bm25": 64.75978748992237,
+        "rrf": 0.03278688524590164
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-47bca6cf8982a09783402041260bd2c1e7406b3517038dd4f65add6984c6ca24",
+        "source_document_id": "seodaemun-ordinance",
+        "source_document_version": "v1",
+        "title": "서울특별시 서대문구 폐기물 관리 조례",
+        "content_format": "json",
+        "content": "{\"text\":\"제36조(수수료 등의 세입처리) 폐기물 수수료 등은 서대문구의 수입으로 한다.  <개정 2011. 8. 10., 2015. 6. 3.>\\n\",\"unit_type\":\"article\"}",
+        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2101297",
+        "source_location": "조문/조[44] (조문번호 003600)",
+        "scope_type": "district",
+        "districts": [
+          "서대문구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 2,
+      "score": 0.030303030303030304,
+      "stage_scores": {
+        "vector": 0.36207782149628576,
+        "bm25": 58.16973810745926,
+        "rrf": 0.030303030303030304
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-4fef0f4386385a01096e4d97976bf1a2ac10d959967025e6736f80f85618a2d0",
+        "source_document_id": "seodaemun-ordinance",
+        "source_document_version": "v1",
+        "title": "서울특별시 서대문구 폐기물 관리 조례",
+        "content_format": "json",
+        "content": "{\"text\":\"제38조(수수료 등의 납기 및 징수방법 등) \\n① 구청장은 제37조제2항에 따라 반입수수료가 규격봉투가격에 포함된 경우 법 제14조제4항에 따른 폐기물처리업자로부터 반입수수료를 징수하되, 수도권매립지 관리공사로부터 대행업체별로 구분 통보 시는 매월 징수하고 그러하지 아니한 경우에는 봉투를 공급할 때에 수시분으로 고지 수납하며, 납기는 다음 달 16일부터 말일까지로 한다. <개정 2011. 8. 10.>\\n② 제35조제1항제2호에 따른 대형폐기물의 수수료는 폐기물처리업자가 지정하는 은행계좌 또는 서대문구 홈페이지의 전자지불제도를 활용하여 납부하여야 한다.  <개정 2011. 8. 10., 2013. 4. 5.>\\n\",\"unit_type\":\"article\"}",
+        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2101297",
+        "source_location": "조문/조[46] (조문번호 003800)",
+        "scope_type": "district",
+        "districts": [
+          "서대문구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 3,
+      "score": 0.029418126757516764,
+      "stage_scores": {
+        "vector": 0.3581386351490286,
+        "bm25": 55.64212642354312,
+        "rrf": 0.029418126757516764
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-58ed9c612b5780cfad0a84d03070891b559f842929b31fcf163e0943c1bdeae4",
+        "source_document_id": "seodaemun-ordinance",
+        "source_document_version": "v1",
+        "title": "서울특별시 서대문구 폐기물 관리 조례",
+        "content_format": "json",
+        "content": "{\"text\":\"제40조(가산금 등) \\n① 제33조에 따른 규격봉투대금을 납부기한 내에  완납하지 아니할 때에는 서대문구 일반회계의 금고 업무를 취급하기 위하여 금고로 지정된 금융기관의 일반 연체이자율을 준용한다. <개정 2011. 8. 10.>\\n② 제38조에 따른 폐기물의 반입수수료를 납부기한 내에 완납하지 아니한 때에는 체납액의 100분의 5에 해당하는 금액의 가산금을 징수한다. <개정 2011. 8. 10.>\\n\",\"unit_type\":\"article\"}",
+        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2101297",
+        "source_location": "조문/조[48] (조문번호 004000)",
+        "scope_type": "district",
+        "districts": [
+          "서대문구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 4,
+      "score": 0.028531243721117136,
+      "stage_scores": {
+        "vector": 0.3826472674861128,
+        "bm25": 53.265530524800795,
+        "rrf": 0.028531243721117136
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-41da4eb0e71377f50788455a927f97a5064c10443e4a886eae05fae1f07b327c",
+        "source_document_id": "seodaemun-ordinance",
+        "source_document_version": "v1",
+        "title": "서울특별시 서대문구 폐기물 관리 조례",
+        "content_format": "json",
+        "content": "{\"text\":\"제3조(폐기물 관할구역) \\n① 서울특별시 서대문구(이하 “서대문구”라   한다) 전 지역을 폐기물 관할 구역으로 한다. <개정 2011. 8. 10.>\\n② 서울특별시 서대문구청장(이하 “구청장”이라 한다)은 제1항에 따른 폐기물 관할 구역의 경계가 하천, 공원, 도로, 고가차도, 터널 등 시설물의 중앙 또는 일부에 걸쳐 있어 폐기물의 효율적 관리가 곤란하다고 인정되면 경계에 인접한 해당 구청장과 상호 협의하여 조정할 수 있다. <개정 2011. 8. 10.>\\n③ 구청장은 제2항에 따른 상호 협의가 성립되지 아니 할 경우에는 「폐기물관리법」(이하 “법”이라 한다) 제4조제2항에 따라 서울특별시장(이하··시장··이라 한다)에게 조정을 건의할 수 있으며, 시장이 조정 결정한 사항에 대해서는 이에 따라야 한다.  <개정 2011. 8. 10., 2021. 11. 3.>\\n④ 제2항에 따른 폐기물 관할 구역의 조정과 「폐기물관리법 시행규칙」제13조에 따른 예외적 매립시설에서의 폐기물 처리를 지정 또는 해제하는 때에는 서울특별시 서대문구의회에 통보하여야 한다.  <개정 2011. 8. 10.>\\n\",\"unit_type\":\"article\"}",
+        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2101297",
+        "source_location": "조문/조[4] (조문번호 000300)",
+        "scope_type": "district",
+        "districts": [
+          "서대문구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 5,
+      "score": 0.028125,
+      "stage_scores": {
+        "vector": 0.30781171657171597,
+        "bm25": 58.826597243056696,
+        "rrf": 0.028125
+      }
+    }
+  ],
+  "model_input_chunk_ids": [
+    "chunk-4d6d4d15a72220ff1f823041ab7be5d201bb051e2f020b568a736716d50814bb",
+    "chunk-47bca6cf8982a09783402041260bd2c1e7406b3517038dd4f65add6984c6ca24",
+    "chunk-4fef0f4386385a01096e4d97976bf1a2ac10d959967025e6736f80f85618a2d0",
+    "chunk-58ed9c612b5780cfad0a84d03070891b559f842929b31fcf163e0943c1bdeae4",
+    "chunk-41da4eb0e71377f50788455a927f97a5064c10443e4a886eae05fae1f07b327c"
+  ],
+  "response": {
+    "request_id": "9acd18f9ae0e4b5fbc2c88baaa88fda6",
+    "run_id": "99f83ddea5b64d7faa9225835c8cf9a3",
+    "status": "answered",
+    "answer": "같은 규격의 종량제봉투를 판매하는 봉투판매소에 가져가시면 판매가격으로 현금 교환받을 수 있습니다.",
+    "citations": [
+      {
+        "chunk_id": "chunk-4d6d4d15a72220ff1f823041ab7be5d201bb051e2f020b568a736716d50814bb",
+        "document_id": "seodaemun-ordinance",
+        "document_version": "v1",
+        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2101297",
+        "source_location": "조문/조[41] (조문번호 003400)",
+        "title": "서울특별시 서대문구 폐기물 관리 조례"
+      }
+    ],
+    "places": {
+      "status": "unavailable",
+      "places": [],
+      "error": null
+    },
+    "error": null,
+    "error_code": null
+  },
+  "stages": [
+    {
+      "name": "resolve",
+      "status": "ok",
+      "duration_ms": 0.27460001001600176,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "rewrite",
+      "status": "skipped",
+      "duration_ms": 0.0,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "retrieve",
+      "status": "ok",
+      "duration_ms": 244.74739999277517,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "context",
+      "status": "ok",
+      "duration_ms": 0.057199998991563916,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "generate",
+      "status": "ok",
+      "duration_ms": 2568.683100005728,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "citations",
+      "status": "ok",
+      "duration_ms": 0.010599993402138352,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "place_lookup",
+      "status": "skipped",
+      "duration_ms": 0.0,
+      "error": null,
+      "error_code": null
+    }
+  ],
+  "duration_ms": 2813.923599998816,
+  "warnings": []
+}

@@ -22,6 +22,7 @@ def create_runtime(
     retriever: Callable[..., list[SearchCandidate]],
     generator: Callable[[PipelineRequest, list[Chunk]], GenerationResult],
     rewriter: Callable[[ResolvedQuery], str] | None = None,
+    # 폐기 예정(2026-11-26 팀 합의)
     place_lookup: Callable[[PipelineRequest, ResolvedQuery], PlaceLookupResult]
     | None = None,
 ) -> RAGPipeline:
