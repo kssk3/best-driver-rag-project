@@ -97,12 +97,24 @@ _※ 상세 파일 목록과 연결 원칙은 [구조와 책임](docs/architectu
 
 ## 화면 미리보기
 
-<p align="center">
-  <img src="docs/readme/screen.png" alt="분리당 화면: 지역과 질문 입력, 근거가 붙은 답변, 검증·비교 대시보드" width="70%">
-</p>
+<table width="100%">
+  <tr>
+    <td rowspan="2" width="46%" align="center">
+      <img src="docs/readme/screen.png" alt="분리당 화면: 지역과 질문 입력, 근거가 붙은 답변, 검증·비교 대시보드" width="100%">
+    </td>
+    <td width="54%" align="center">
+      <img src="docs/readme/demo-a.webp" alt="시연 영상 1: 질문에 답하고 Langfuse에 실행 기록이 쌓이는 과정" width="100%">
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="docs/readme/demo-b.webp" alt="시연 영상 2: 정상 질문, 표현 함정, 근거 없는 질문 시연" width="100%">
+    </td>
+  </tr>
+</table>
 
 <p align="center">
-  <sub><i>랜딩 화면과 검증·비교 대시보드 목업입니다.<br>데모 화면이라 답변과 후보 점수는 화면 확인용이며 평가 결과가 아닙니다.</i></sub>
+  <sub><i>왼쪽은 랜딩 화면과 검증·비교 대시보드 목업, 오른쪽 두 장은 시연 영상을 변환한 움직이는 이미지(WebP)입니다.<br>데모 화면이라 답변과 후보 점수는 화면 확인용이며 평가 결과가 아닙니다.</i></sub>
 </p>
 
 <br>
