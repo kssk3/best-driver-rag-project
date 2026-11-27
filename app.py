@@ -357,7 +357,7 @@ def render_comparison() -> None:
         if result.unlinked[name]
     ]
     if left_out:
-        st.caption("방식을 알 수 없어 평균에서 뺀 점수: " + ", ".join(left_out))
+        st.caption("※ 방식을 알 수 없어 평균에서 뺀 점수: " + ", ".join(left_out))
     if st.button("새로고침", key="refresh_scores"):
         cached_scores.clear()
         st.rerun()
@@ -367,7 +367,11 @@ def render_dev_panel(view) -> None:
     # 내부 데모 전용: 사용자 화면 아래에 항상 보이는 검증·비교 대시보드.
     with st.container(key="devpanel"):
         st.html('<div class="dash-title">검증·비교 대시보드</div>')
-        inspection_tab, comparison_tab = st.tabs(["검증 패널", "비교 패널"])
+        # 랜딩으로 돌아오면(빈 질문·실패로 응답이 지워짐) 이전에 보던 탭이 남지 않게 화면별로 키를 나눈다.
+        inspection_tab, comparison_tab = st.tabs(
+            ["검증 패널", "비교 패널"],
+            key="dash_tabs_result" if view is not None else "dash_tabs_landing",
+        )
         with inspection_tab:
             render_inspection(view, st.session_state.get("asked_district"))
         with comparison_tab:

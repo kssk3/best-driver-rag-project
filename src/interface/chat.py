@@ -46,24 +46,6 @@ def is_safe_url(url: str | None) -> bool:
     return bool(url) and url.startswith(("https://", "http://"))
 
 
-# 인용을 명확히 전달하기 위한 포매팅
-def format_citation(citation: Citation) -> str:
-
-    # 제목에 대괄호가 있어도 마크다운 링크가 깨지지 않게 막는다.
-    label = (
-        (citation.title or citation.chunk_id).replace("[", "\\[").replace("]", "\\]")
-    )
-    if is_safe_url(citation.source_url):
-        line = f"- [{label}]({citation.source_url})"
-    else:
-        line = f"- {label} (원문 링크 없음)"
-    if citation.source_location:
-        line += f" · 위치: {citation.source_location}"
-    if citation.document_version:
-        line += f" · 문서 버전: {citation.document_version}"
-    return line
-
-
 def _followup_placeholder(field: str) -> str:
     if field == "district":
         return "답변의 기준이 될 지역(구)를 기재해 주세요."
@@ -198,9 +180,9 @@ def _render_insufficient_evidence(view: ViewResponse) -> None:
             if line.strip() and "답변하기 어렵" not in line:
                 st.write(line)
         if view.citations:
-            st.markdown("확인한 출처")
-            for citation in view.citations:
-                st.markdown(format_citation(citation))
+            st.html('<div class="ev-label"></div>')  # 답변과 출처 사이 실선
+            for number, citation in enumerate(view.citations, 1):
+                _citation_card(citation, number)
 
 
 def _render_error(view: ViewResponse) -> None:

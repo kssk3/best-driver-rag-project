@@ -6,8 +6,7 @@ import pytest
 from screen_helpers import FIXTURES, button, fixture_app
 from streamlit.testing.v1 import AppTest
 
-from src.interface.adapter import Citation
-from src.interface.chat import build_followup_request, format_citation, is_safe_url
+from src.interface.chat import build_followup_request, is_safe_url
 
 
 def ask(sample_name: str, question: str = "") -> AppTest:
@@ -95,20 +94,6 @@ def test_followup_form_keeps_original_question_and_district() -> None:
     }
 
 
-def test_format_citation_escapes_brackets_and_shows_details() -> None:
-    citation = Citation(
-        "c1", "https://example.invalid/a", "[가상] 안내", "표 > 행", "v1"
-    )
-    assert format_citation(citation) == (
-        "- [\\[가상\\] 안내](https://example.invalid/a) · 위치: 표 > 행 · 문서 버전: v1"
-    )
-
-
-@pytest.mark.parametrize("url", ["", None, "javascript:alert(1)"])
-def test_format_citation_without_safe_link(url: str | None) -> None:
-    assert format_citation(Citation("c1", url)) == "- c1 (원문 링크 없음)"
-
-
 def test_conflicting_sources_are_both_shown_for_insufficient_evidence() -> None:
     app = ask("insufficient_evidence_conflict")
     assert not app.exception
@@ -117,11 +102,9 @@ def test_conflicting_sources_are_both_shown_for_insufficient_evidence() -> None:
     shown = " ".join(item.value for item in app.markdown)
     assert "월·수·금" in shown
     assert "화·목·일" in shown
-    assert "예시 안내 웹페이지(가상)" in shown
-    assert "예시 안내 PDF(가상)" in shown
-    assert "PDF 3쪽 > 마지막 예시동 행" in shown
-    assert "문서 버전: fx-v1" in shown
-    assert "문서 버전: fx-v2" in shown
+    chips = " ".join(item.value for item in app.get("html"))
+    assert "예시 안내 웹페이지(가상)" in chips
+    assert "예시 안내 PDF(가상)" in chips
 
 
 def test_plain_insufficient_evidence_shows_no_source_list() -> None:
