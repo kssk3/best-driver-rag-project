@@ -11,7 +11,7 @@ import streamlit as st
 
 HERE = Path(__file__).parent
 BRAND_DIR = HERE.parent.parent / "assets" / "brand"
-HERO_IMAGE = BRAND_DIR / "dang-beoni-cutout.png"
+HERO_IMAGE = BRAND_DIR / "dang-beoni-hero.webp"
 LOGO_IMAGE = BRAND_DIR / "dang-beoni-head-cutout.png"
 AVATAR_IMAGE = BRAND_DIR / "dang-beoni-chat-avatar.png"
 
@@ -35,7 +35,13 @@ def inject_theme() -> None:
 @cache
 def _data_uri(path: Path) -> str:
     data = base64.b64encode(path.read_bytes()).decode("ascii")
-    return f"data:image/png;base64,{data}"
+    mime = "image/webp" if path.suffix == ".webp" else "image/png"
+    return f"data:{mime};base64,{data}"
+
+
+def hero_html() -> str:
+    # st.image는 움직이는 WebP를 정지 PNG로 바꿔 버리므로 img 태그로 직접 넣는다.
+    return f'<img class="hero-img" src="{_data_uri(HERO_IMAGE)}" alt="분리당 마스코트 당번이">'
 
 
 def brand_html() -> str:

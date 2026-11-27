@@ -23,8 +23,8 @@ from src.interface.inspection import render_inspection
 from src.interface.theme import (
     FOOTER_HTML,
     HERO_HTML,
-    HERO_IMAGE,
     brand_html,
+    hero_html,
     inject_theme,
 )
 from src.pipeline import PipelineConfigurationError
@@ -275,7 +275,7 @@ def render_landing() -> None:
                             question  # 대화 화면 검색창에 채운다
                         )
                         st.rerun()
-    image_col.image(str(HERO_IMAGE))
+    image_col.html(hero_html())
 
 
 def render_result(view) -> None:
