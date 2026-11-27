@@ -188,6 +188,75 @@ def test_scores_marked_not_eligible_are_left_out_and_counted() -> None:
     assert result.ineligible["faithfulness"] == 1
 
 
+def test_score_metadata_groups_a_score_on_an_existing_root_without_local_records() -> (
+    None
+):
+    # 새 점수는 기존 루트에 붙고 비교용 값은 점수 metadata에만 있다. 로컬 CSV 없이도 확인 불가가 아니다.
+    bare_root = {"variant": "C", "start": "2026-11-27T00:00:00Z"}
+    new_score = score("t1", 1) | {
+        "metadata": '{"dataset_id": "d7", "rewrite_enabled": "true", "comparison_eligible": "true"}'
+    }
+    nested = score("t2", 0) | {
+        "details": {
+            "metadata": {
+                "dataset_id": "d7",
+                "rewrite_enabled": "true",
+                "comparison_eligible": "true",
+            }
+        }
+    }
+
+    result = build_scores([new_score, nested], {"t1": bare_root, "t2": bare_root})
+
+    [group] = result.groups
+    assert (group.dataset_id, group.rewrite_enabled) == ("d7", True)
+    assert faithfulness(group)["C"].count == 2
+    assert result.unverified["faithfulness"] == 0
+
+
+def test_score_metadata_not_eligible_is_counted_as_excluded() -> None:
+    bare_root = {"variant": "A"}
+    meta = {
+        "dataset_id": "d7",
+        "rewrite_enabled": "false",
+        "comparison_eligible": "false",
+    }
+
+    result = build_scores([score("t1", 1) | {"metadata": meta}], {"t1": bare_root})
+
+    assert result.groups == []
+    assert (
+        result.ineligible["faithfulness"] == 1
+        and result.unverified["faithfulness"] == 0
+    )
+
+
+def test_score_metadata_wins_over_root_metadata() -> None:
+    result = build_scores(
+        [score("t1", 1) | {"metadata": {"rewrite_enabled": "true"}}],
+        {"t1": root("C", "d1", rewrite=False)},
+    )
+
+    [group] = result.groups
+    assert group.rewrite_enabled is True
+
+
+def test_scores_are_requested_with_details_so_their_metadata_comes_back(
+    monkeypatch,
+) -> None:
+    seen = {}
+
+    def fake_pages(path, params):
+        if path == langfuse_scores.SCORES_PATH:
+            seen.update(params)
+        return []
+
+    monkeypatch.setattr(langfuse_scores, "_pages", fake_pages)
+    langfuse_scores.load_langfuse_scores()
+
+    assert "details" in seen["fields"] and "subject" in seen["fields"]
+
+
 def test_old_scores_are_confirmed_through_the_run_id_in_local_records() -> None:
     old_root = {"variant": "B", "run_id": "r1", "start": "2026-11-26T00:00:00Z"}
     runs = {"r1": {"dataset_id": "d9", "rewrite_enabled": False, "eligible": True}}

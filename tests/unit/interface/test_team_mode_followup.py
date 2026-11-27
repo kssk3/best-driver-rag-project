@@ -134,6 +134,8 @@ def test_followup_in_team_mode_is_actually_sent_with_the_confirmed_district(
     assert (
         app.session_state["asked_district"] == "송파구"
     )  # 이어지는 되묻기도 이 구를 기준으로 한다
+    # 검색창 옆 드롭다운도 확정한 구로 바뀌어야 다음 질문이 옛 구로 가지 않는다.
+    assert app.selectbox(key="district_compact").value == "송파구"
 
 
 def test_followup_failure_shows_the_modes_message_and_keeps_the_form(

@@ -119,18 +119,30 @@ def load_run_index(results_dir: Path = RESULTS_DIR) -> dict[str, dict]:
 
 
 def _resolve(
-    root: dict, runs: dict[str, dict]
+    root: dict, runs: dict[str, dict], meta: dict
 ) -> tuple[str | None, bool | None, bool | None]:
-    """(평가 세트, 리라이트 여부, 비교 자격). 트레이스 메타데이터가 있으면 그것을, 없으면 run_id로 로컬 기록을 쓴다."""
+    """(평가 세트, 리라이트 여부, 비교 자격). 점수 자체의 메타데이터를 먼저, 없는 값은 루트 메타데이터,
+    그다음 루트의 run_id로 맞춘 로컬 기록으로 채운다."""
     info = runs.get(str(root.get("run_id"))) or {}
-    dataset = root.get("dataset_id") or info.get("dataset_id")
-    rewrite = _flag(root.get("rewrite_enabled"))
-    eligible = _flag(root.get("comparison_eligible"))
+    dataset = meta.get("dataset_id") or root.get("dataset_id") or info.get("dataset_id")
+    rewrite = _flag(meta.get("rewrite_enabled"))
+    if rewrite is None:
+        rewrite = _flag(root.get("rewrite_enabled"))
+    eligible = _flag(meta.get("comparison_eligible"))
+    if eligible is None:
+        eligible = _flag(root.get("comparison_eligible"))
     return (
         dataset,
         info.get("rewrite_enabled") if rewrite is None else rewrite,
         info.get("eligible") if eligible is None else eligible,
     )
+
+
+def _score_metadata(score: dict) -> dict:
+    """점수 응답의 비교용 메타데이터. v3 응답에서 어느 필드에 오는지 확인하지 못해 최상위와 details 안을 모두 읽는다."""
+    details = score.get("details")
+    inner = _metadata(details.get("metadata")) if isinstance(details, dict) else {}
+    return inner | _metadata(score.get("metadata"))
 
 
 def build_scores(
@@ -159,7 +171,7 @@ def build_scores(
         ):
             unlinked[name] += 1
             continue
-        dataset, rewrite, eligible = _resolve(root, runs)
+        dataset, rewrite, eligible = _resolve(root, runs, _score_metadata(score))
         if dataset is None or rewrite is None or eligible is None:
             unverified[name] += 1
             continue
@@ -267,7 +279,7 @@ def _metadata(raw) -> dict:
 
 def load_langfuse_scores() -> LangfuseScores:
     scores = _pages(
-        SCORES_PATH, {"environment": "rag", "fields": "subject", "limit": 100}
+        SCORES_PATH, {"environment": "rag", "fields": "subject,details", "limit": 100}
     )
     observations = _pages(
         OBSERVATIONS_PATH,

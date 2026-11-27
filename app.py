@@ -192,6 +192,8 @@ def send_followup(fields: dict) -> None:
     with st.spinner("답변을 찾고 있어요..."):
         sent = ask_pipeline(PipelineRequest(**fields))
     if sent:
+        # 되묻기에서 다른 구를 확정했을 수 있다. 이미 그려진 드롭다운은 지금 바꿀 수 없어서 다음 실행에서 맞춘다.
+        st.session_state["sync_district"] = True
         st.rerun()
 
 
@@ -233,6 +235,8 @@ def search_bar(compact=False) -> None:
     if compact:
         # 대화 화면: 지역은 검색창 왼쪽의 드롭다운이다.
         select_col, form_col = st.columns([1.3, 6], vertical_alignment="center")
+        if st.session_state.pop("sync_district", False):
+            st.session_state["district_compact"] = current_district()
         district = select_col.selectbox(
             "지역",
             DISTRICTS,
