@@ -361,17 +361,23 @@ def render_comparison() -> None:
         st.info("방식별로 집계할 점수가 아직 없습니다.")
     for group in result.groups:
         st.html(
-            f'<div class="mx-head">{"평가" if group.by_evaluation else "데이터셋"} <b>{escape(group.dataset_id[:8])}</b>'
+            f'<div class="mx-head">데이터셋 <b>{escape(group.dataset_id[:8])}</b>'
+            f"<span>리라이트 {'ON' if group.rewrite_enabled else 'OFF'}</span>"
             f"<span>최근 실행 {escape(group.latest[:10])}</span></div>"
             + metrics_html(group)
         )
-    left_out = [
-        f"{label} {result.unlinked[name]}건"
-        for name, label, _ in langfuse_scores.METRICS
-        if result.unlinked[name]
-    ]
-    if left_out:
-        st.caption("※ 방식을 알 수 없어 평균에서 뺀 점수: " + ", ".join(left_out))
+    for counts, reason in (
+        (result.unlinked, "방식(A/B/C)을 알 수 없어"),
+        (result.unverified, "평가 세트·리라이트 여부를 확인할 수 없어"),
+        (result.ineligible, "비교 대상이 아니어서"),
+    ):
+        left_out = [
+            f"{label} {counts[name]}건"
+            for name, label, _ in langfuse_scores.METRICS
+            if counts[name]
+        ]
+        if left_out:
+            st.caption(f"※ {reason} 평균에서 뺀 점수: " + ", ".join(left_out))
     if st.button("새로고침", key="refresh_scores"):
         cached_scores.clear()
         st.rerun()

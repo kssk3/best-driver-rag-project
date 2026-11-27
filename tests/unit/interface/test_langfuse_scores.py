@@ -21,8 +21,22 @@ def score(
     return {"name": name, "value": value, "subject": {"kind": kind, "id": trace_id}}
 
 
-def root(variant, dataset="dataset-1", start="2026-11-26T05:00:00Z") -> dict:
-    return {"variant": variant, "dataset_id": dataset, "start": start}
+def root(
+    variant,
+    dataset="dataset-1",
+    start="2026-11-26T05:00:00Z",
+    rewrite=False,
+    eligible=True,
+    run_id=None,
+) -> dict:
+    return {
+        "variant": variant,
+        "dataset_id": dataset,
+        "rewrite_enabled": rewrite,
+        "comparison_eligible": eligible,
+        "run_id": run_id,
+        "start": start,
+    }
 
 
 def faithfulness(group: DatasetGroup) -> dict[str, VariantSummary]:
@@ -123,21 +137,88 @@ def test_datasets_are_not_mixed_and_newest_comes_first() -> None:
     roots = {
         "t1": root("A", "old", "2026-11-25T00:00:00Z"),
         "t2": root("A", "new", "2026-11-26T00:00:00Z"),
-        "t3": root("B", None, "2026-11-24T00:00:00Z"),
     }
-    result = build_scores([score("t1", 1), score("t2", 0), score("t3", 1)], roots)
+    result = build_scores([score("t1", 1), score("t2", 0)], roots)
 
-    assert [g.dataset_id for g in result.groups] == ["new", "old", "알 수 없음"]
+    assert [g.dataset_id for g in result.groups] == ["new", "old"]
     assert faithfulness(result.groups[0])["A"].mean == 0.0
 
 
-def test_missing_dataset_id_groups_by_evaluation_id() -> None:
-    old = root("B", None, "2026-11-24T00:00:00Z") | {"evaluation_id": "e5321726abc"}
-    result = build_scores([score("t1", 1)], {"t1": old})
+def test_rewrite_off_and_on_of_the_same_dataset_are_not_mixed() -> None:
+    roots = {"t1": root("C", "d1", rewrite=False), "t2": root("C", "d1", rewrite=True)}
+    result = build_scores([score("t1", 1), score("t2", 0)], roots)
 
-    assert [(g.dataset_id, g.by_evaluation) for g in result.groups] == [
-        ("e5321726abc", True)
-    ]
+    assert {(g.dataset_id, g.rewrite_enabled) for g in result.groups} == {
+        ("d1", False),
+        ("d1", True),
+    }
+    by_rewrite = {g.rewrite_enabled: faithfulness(g)["C"] for g in result.groups}
+    assert (by_rewrite[False].mean, by_rewrite[True].mean) == (1.0, 0.0)
+
+
+def test_scores_without_verifiable_dataset_or_rewrite_are_counted_apart() -> None:
+    roots = {
+        "t1": root("A", None),  # 평가 세트를 모른다
+        "t2": {
+            "variant": "A",
+            "dataset_id": "d",
+            "comparison_eligible": True,
+        },  # 리라이트 여부를 모른다
+        "t3": {
+            "variant": "A",
+            "dataset_id": "d",
+            "rewrite_enabled": False,
+        },  # 비교 자격을 모른다
+    }
+    result = build_scores([score("t1", 1), score("t2", 1), score("t3", 1)], roots)
+
+    assert result.groups == []  # 확인 못 한 평가가 한 그룹으로 섞이지 않는다.
+    assert result.unverified["faithfulness"] == 3
+    assert result.unlinked["faithfulness"] == 0
+
+
+def test_scores_marked_not_eligible_are_left_out_and_counted() -> None:
+    result = build_scores(
+        [score("t1", 1), score("t2", 0)],
+        {"t1": root("A"), "t2": root("A", eligible=False)},
+    )
+
+    [group] = result.groups
+    assert faithfulness(group)["A"].count == 1
+    assert result.ineligible["faithfulness"] == 1
+
+
+def test_old_scores_are_confirmed_through_the_run_id_in_local_records() -> None:
+    old_root = {"variant": "B", "run_id": "r1", "start": "2026-11-26T00:00:00Z"}
+    runs = {"r1": {"dataset_id": "d9", "rewrite_enabled": False, "eligible": True}}
+
+    result = build_scores([score("t1", 1)], {"t1": old_root}, runs)
+
+    [group] = result.groups
+    assert (group.dataset_id, group.rewrite_enabled) == ("d9", False)
+    assert result.unverified["faithfulness"] == 0
+
+
+def test_run_index_reads_dataset_rewrite_and_eligibility_from_results(tmp_path) -> None:
+    (tmp_path / "a").mkdir()
+    (tmp_path / "a" / "runs.csv").write_text(
+        "run_id,dataset_id,rewrite_enabled\nr1,d1,false\nr2,d1,true\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "a" / "scores.csv").write_text(
+        "run_id,dataset_id,rewrite_enabled,comparison_eligible\n"
+        "r1,d1,false,true\nr1,d1,false,false\n",
+        encoding="utf-8",
+    )
+
+    runs = langfuse_scores.load_run_index(tmp_path)
+
+    assert runs["r1"] == {
+        "dataset_id": "d1",
+        "rewrite_enabled": False,
+        "eligible": False,
+    }
+    assert runs["r2"]["eligible"] is None  # runs.csv에는 비교 자격이 없다.
 
 
 def test_loader_joins_scores_to_root_variant(monkeypatch) -> None:
@@ -148,7 +229,7 @@ def test_loader_joins_scores_to_root_variant(monkeypatch) -> None:
             return [score("t1", 1)]
         return [
             {"isRootObservation": True, "traceId": "t1", "startTime": "s",
-             "metadata": {"variant": "B", "dataset_id": "d"}},
+             "metadata": {"variant": "B", "dataset_id": "d", "rewrite_enabled": False, "comparison_eligible": True}},
             {"isRootObservation": False, "traceId": "t1", "metadata": {"variant": "C"}},
         ]  # fmt: skip
 
@@ -175,7 +256,8 @@ def _load_with_root_metadata(monkeypatch, metadata):
 
 def test_root_metadata_json_string_is_decoded(monkeypatch) -> None:
     result = _load_with_root_metadata(
-        monkeypatch, '{"variant": "B", "dataset_id": "d"}'
+        monkeypatch,
+        '{"variant": "B", "dataset_id": "d", "rewrite_enabled": false, "comparison_eligible": true}',
     )
     [group] = result.groups
     assert [(s.variant, s.count) for s in group.metrics["faithfulness"]][1] == ("B", 1)

@@ -1,16 +1,21 @@
 """비교 패널: Langfuse에 올라간 RAGAS 4대 지표 점수를 실행 방식(variant)별로 집계한다.
 
-점수의 subject.id(trace ID)를 실행 루트 관측의 traceId와 잇고, 루트의 metadata.variant와
-dataset_id를 읽는다. variant가 A/B/C가 아니거나 루트를 못 찾은 점수는 평균에서 뺀다.
+점수의 subject.id(trace ID)를 실행 루트 관측의 traceId와 잇고, 루트의 metadata에서 variant,
+dataset_id, rewrite_enabled, comparison_eligible을 읽는다. 옛 트레이스에는 이 값이 없어서 루트의 run_id로
+저장소 results/*/runs.csv, scores.csv를 맞춰 보충한다. 같은 평가 세트라도 리라이트 OFF와 ON은 따로 묶고,
+comparison_eligible이 true인 점수만 평균에 넣는다. 방식(A/B/C)을 모르거나, 평가 세트·리라이트·비교 자격을
+확인할 수 없는 점수는 평균에서 빼고 따로 센다.
 이 서버는 v4 events_only 모드라 구형 /scores 조회는 404이고 v3 scores와 v2 observations만 된다.
 """
 
 import base64
+import csv
 import json
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from http.client import HTTPSConnection
 from math import isfinite
+from pathlib import Path
 from statistics import mean
 from urllib.parse import urlencode, urlsplit
 
@@ -19,7 +24,7 @@ from src.interface.comparison import VARIANTS, VariantSummary
 SCORES_PATH = "/api/public/v3/scores"
 OBSERVATIONS_PATH = "/api/public/v2/observations"
 MAX_PAGES = 20
-UNKNOWN_DATASET = "알 수 없음"
+RESULTS_DIR = Path(__file__).resolve().parents[2] / "results"
 # (Langfuse 점수 이름, 화면 이름, 영문 이름). 근거 정밀도·재현율은 정답 근거 ID 기준 상위 5개 값이다.
 METRICS = (
     ("faithfulness", "근거 충실도", "Faithfulness"),
@@ -44,22 +49,99 @@ class DatasetGroup:
     latest: str  # 가장 최근 실행 시각(UTC ISO 문자열)
     # 지표 이름 → 방식(A/B/C)별 건수·평균
     metrics: dict[str, list[VariantSummary]]
-    # dataset_id가 없는 옛 실행은 evaluation_id로 묶는다. 화면에서 "데이터셋"과 "평가"를 구별한다.
-    by_evaluation: bool = False
+    rewrite_enabled: bool = False  # 같은 데이터셋이어도 리라이트 OFF와 ON은 따로 묶는다
+
+
+def _zero() -> dict[str, int]:
+    return {m: 0 for m in METRIC_NAMES}
 
 
 @dataclass(frozen=True)
 class LangfuseScores:
     groups: list[DatasetGroup]
-    unlinked: dict[str, int]  # 지표별로 방식을 알 수 없어 평균에서 뺀 점수 건수
+    unlinked: dict[str, int]  # 지표별로 방식(A/B/C)을 알 수 없어 평균에서 뺀 점수 건수
+    # 평가 세트·리라이트 여부·비교 자격을 확인할 수 없어 뺀 점수. 섞이면 틀린 평균이 되므로 따로 센다.
+    unverified: dict[str, int] = field(default_factory=_zero)
+    ineligible: dict[str, int] = field(
+        default_factory=_zero
+    )  # 비교 대상이 아니라고 기록된 점수
 
 
-def build_scores(scores: list[dict], roots: dict[str, dict]) -> LangfuseScores:
-    """순수 집계. roots는 traceId → {"variant", "dataset_id", "start"}."""
-    values: dict[str, dict[str, dict[str, list[float]]]] = {}
-    latest: dict[str, str] = {}
-    evaluation_keys: set[str] = set()
-    unlinked = {m: 0 for m in METRIC_NAMES}
+def _flag(value) -> bool | None:
+    """true/false(불리언 또는 문자열)를 읽는다. 그 밖의 값은 알 수 없음(None)이다."""
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str) and value.strip().lower() in ("true", "false"):
+        return value.strip().lower() == "true"
+    return None
+
+
+def load_run_index(results_dir: Path = RESULTS_DIR) -> dict[str, dict]:
+    """저장소 results/*/runs.csv와 scores.csv에서 run_id → 평가 세트·리라이트·비교 자격을 읽는다.
+
+    트레이스 메타데이터에 이 값이 없는 옛 점수를 run_id로 이어 확인하는 용도다.
+    비교 자격(comparison_eligible)은 scores.csv에만 있고, 한 실행의 여러 행 중 하나라도 false이면 false다.
+    """
+    runs: dict[str, dict] = {}
+
+    def read(name: str):
+        for path in sorted(results_dir.glob(f"*/{name}")):
+            try:
+                with path.open(encoding="utf-8-sig", newline="") as file:
+                    yield from csv.DictReader(file)
+            except OSError:
+                continue
+
+    for row in read("runs.csv"):
+        runs.setdefault(
+            row.get("run_id", ""),
+            {
+                "dataset_id": row.get("dataset_id") or None,
+                "rewrite_enabled": _flag(row.get("rewrite_enabled")),
+                "eligible": None,
+            },
+        )
+    for row in read("scores.csv"):
+        info = runs.setdefault(
+            row.get("run_id", ""),
+            {
+                "dataset_id": row.get("dataset_id") or None,
+                "rewrite_enabled": _flag(row.get("rewrite_enabled")),
+                "eligible": None,
+            },
+        )
+        eligible = _flag(row.get("comparison_eligible"))
+        if eligible is not None:
+            info["eligible"] = (
+                eligible if info["eligible"] is None else info["eligible"] and eligible
+            )
+    return runs
+
+
+def _resolve(
+    root: dict, runs: dict[str, dict]
+) -> tuple[str | None, bool | None, bool | None]:
+    """(평가 세트, 리라이트 여부, 비교 자격). 트레이스 메타데이터가 있으면 그것을, 없으면 run_id로 로컬 기록을 쓴다."""
+    info = runs.get(str(root.get("run_id"))) or {}
+    dataset = root.get("dataset_id") or info.get("dataset_id")
+    rewrite = _flag(root.get("rewrite_enabled"))
+    eligible = _flag(root.get("comparison_eligible"))
+    return (
+        dataset,
+        info.get("rewrite_enabled") if rewrite is None else rewrite,
+        info.get("eligible") if eligible is None else eligible,
+    )
+
+
+def build_scores(
+    scores: list[dict], roots: dict[str, dict], runs: dict[str, dict] | None = None
+) -> LangfuseScores:
+    """순수 집계. roots는 traceId → {"variant", "dataset_id", "run_id", "rewrite_enabled",
+    "comparison_eligible", "start"}, runs는 run_id → load_run_index() 항목이다."""
+    runs = runs or {}
+    values: dict[tuple[str, bool], dict[str, dict[str, list[float]]]] = {}
+    latest: dict[tuple[str, bool], str] = {}
+    unlinked, unverified, ineligible = _zero(), _zero(), _zero()
     for score in scores:
         name = score.get("name")
         if name not in METRIC_NAMES:
@@ -77,18 +159,23 @@ def build_scores(scores: list[dict], roots: dict[str, dict]) -> LangfuseScores:
         ):
             unlinked[name] += 1
             continue
-        dataset = root.get("dataset_id") or root.get("evaluation_id") or UNKNOWN_DATASET
-        if not root.get("dataset_id") and root.get("evaluation_id"):
-            evaluation_keys.add(dataset)
+        dataset, rewrite, eligible = _resolve(root, runs)
+        if dataset is None or rewrite is None or eligible is None:
+            unverified[name] += 1
+            continue
+        if not eligible:
+            ineligible[name] += 1
+            continue
+        key = (dataset, rewrite)
         by_metric = values.setdefault(
-            dataset, {m: {v: [] for v in VARIANTS} for m in METRIC_NAMES}
+            key, {m: {v: [] for v in VARIANTS} for m in METRIC_NAMES}
         )
         by_metric[name][root["variant"]].append(float(value))
-        latest[dataset] = max(latest.get(dataset, ""), root.get("start") or "")
+        latest[key] = max(latest.get(key, ""), root.get("start") or "")
     groups = [
         DatasetGroup(
-            dataset,
-            latest[dataset],
+            key[0],
+            latest[key],
             {
                 metric: [
                     VariantSummary(variant, len(found), mean(found) if found else None)
@@ -96,12 +183,12 @@ def build_scores(scores: list[dict], roots: dict[str, dict]) -> LangfuseScores:
                 ]
                 for metric, by_variant in by_metric.items()
             },
-            dataset in evaluation_keys,
+            key[1],
         )
-        for dataset, by_metric in values.items()
+        for key, by_metric in values.items()
     ]
     groups.sort(key=lambda group: group.latest, reverse=True)
-    return LangfuseScores(groups, unlinked)
+    return LangfuseScores(groups, unlinked, unverified, ineligible)
 
 
 def _connect() -> tuple[HTTPSConnection, str, str]:
@@ -193,7 +280,9 @@ def load_langfuse_scores() -> LangfuseScores:
             roots[item["traceId"]] = {
                 "variant": metadata.get("variant"),
                 "dataset_id": metadata.get("dataset_id"),
-                "evaluation_id": metadata.get("evaluation_id"),
+                "run_id": metadata.get("run_id"),
+                "rewrite_enabled": metadata.get("rewrite_enabled"),
+                "comparison_eligible": metadata.get("comparison_eligible"),
                 "start": item.get("startTime") or "",
             }
-    return build_scores(scores, roots)
+    return build_scores(scores, roots, load_run_index())
