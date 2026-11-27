@@ -83,6 +83,13 @@ LangChain, Ragas, FastAPI 등의 패키지가 선언되어 있어도 해당 기�
 
 [Dependabot 설정](../.github/dependabot.yml)은 루트 Python 의존성인 `uv`와 `github-actions`를 매주 확인한다. 새 Dockerfile 등 별도 관리 대상이 생기면 실제 파일과 실행 환경을 확인한 뒤 해당 항목을 추가한다.
 
+### 알려진 취약점 기록 (2026-11-27)
+
+- **`diskcache` 5.6.3**: 기본 직렬화가 pickle이라, 캐시 디렉터리에 쓰기 권한이 있는 공격자가 그 캐시를 읽는 앱에서 임의 코드를 실행할 수 있다는 Dependabot 알림이다(알림 기준 5.6.3까지 영향, 패치 버전 없음).
+- **경로**: 직접 의존성이 아니라 `ragas 0.4.4`의 간접 의존성이다(`uv tree --invert --package diskcache`). 이 저장소의 `src`, `scripts`, `tests`는 `diskcache`를 import하지 않고, `ragas`도 `Faithfulness`, `AnswerRelevancy`, `llm_factory`, `embedding_factory`만 쓰며 디스크 캐시 설정은 켜지 않는다.
+- **판단**: 캐시 디렉터리를 만들거나 읽는 경로가 없고 평가 스크립트는 로컬에서만 실행하며 서비스로 배포하지 않으므로 악용 경로는 낮다고 본다. 패치 버전이 없어 업그레이드로는 닫을 수 없다. GitHub 알림은 사유("사용하지 않는 경로, 패치 없음")를 적어 닫는다.
+- **다시 볼 조건**: `diskcache` 패치 릴리스가 나오거나 ragas가 이 의존성을 바꾸면 `uv lock --upgrade-package ragas`로 갱신한다. ragas 캐시를 켜거나 캐시 디렉터리를 공유하는 환경이 생기면 위험이 올라가므로 이 판단을 다시 한다.
+
 ## 비밀정보 검사
 
 [Gitleaks 워크플로](../.github/workflows/gitleaks.yml)는 PR, `main` 푸시 또는 수동 실행에서 동작한다. `dev` 푸시만으로는 이 워크플로가 실행되지 않는다. 전체 Git 이력을 체크아웃하고 checkout 인증 정보는 남기지 않는다. Gitleaks `8.30.1`의 Linux 배포 파일을 받아 워크플로에 고정한 SHA-256과 대조한 후 실행한다.
