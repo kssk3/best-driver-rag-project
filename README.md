@@ -42,11 +42,11 @@
 
 <table width="100%">
   <tr>
-    <td align="center" width="20%"><a href="https://github.com/Cocode96"><img src="docs/readme/team/ysh.png" width="96" alt="양석호 프로필"><br><b>양석호</b></a><br><sub>공통 기반 및 규격 인계<br>런타임 · 실행 기록</sub></td>
-    <td align="center" width="20%"><a href="https://github.com/kssk3"><img src="docs/readme/team/kss.png" width="96" alt="강성수 프로필"><br><b>강성수</b></a><br><sub>답변 · 품질 추적<br>재질문 · Ragas · Langfuse</sub></td>
-    <td align="center" width="20%"><a href="https://github.com/axfehlerlee"><img src="docs/readme/team/ljw.png" width="96" alt="이정은 프로필"><br><b>이정은</b></a><br><sub>자료 검수 · 질문 다듬기<br>별칭 · 프롬프트 개선</sub></td>
-    <td align="center" width="20%"><a href="https://github.com/mjlee0914"><img src="docs/readme/team/lmj.png" width="96" alt="이명지 프로필"><br><b>이명지</b></a><br><sub>검색 · 지역 구분<br>A/B/C 검색 · 검색 지표</sub></td>
-    <td align="center" width="20%"><a href="https://github.com/eeseuju"><img src="docs/readme/team/lsj.png" width="96" alt="이승주 프로필"><br><b>이승주</b></a><br><sub>청킹 · 평가셋<br>챗봇 · 관찰 패널</sub></td>
+    <td align="center" width="20%"><a href="https://github.com/Cocode96"><img src="docs/readme/team/ysh.png" width="150" alt="양석호 프로필"><br><b>양석호</b></a><br><sub>공통 기반 및 규격 인계<br>런타임 · 실행 기록</sub></td>
+    <td align="center" width="20%"><a href="https://github.com/kssk3"><img src="docs/readme/team/kss.png" width="150" alt="강성수 프로필"><br><b>강성수</b></a><br><sub>답변 · 품질 추적<br>재질문 · Ragas · Langfuse</sub></td>
+    <td align="center" width="20%"><a href="https://github.com/axfehlerlee"><img src="docs/readme/team/ljw.png" width="150" alt="이정은 프로필"><br><b>이정은</b></a><br><sub>자료 검수 · 질문 다듬기<br>별칭 · 프롬프트 개선</sub></td>
+    <td align="center" width="20%"><a href="https://github.com/mjlee0914"><img src="docs/readme/team/lmj.png" width="150" alt="이명지 프로필"><br><b>이명지</b></a><br><sub>검색 · 지역 구분<br>A/B/C 검색 · 검색 지표</sub></td>
+    <td align="center" width="20%"><a href="https://github.com/eeseuju"><img src="docs/readme/team/lsj.png" width="150" alt="이승주 프로필"><br><b>이승주</b></a><br><sub>청킹 · 평가셋<br>챗봇 · 관찰 패널</sub></td>
   </tr>
 </table>
 
@@ -97,12 +97,24 @@ _※ 상세 파일 목록과 연결 원칙은 [구조와 책임](docs/architectu
 
 ## 화면 미리보기
 
-<p align="center">
-  <img src="docs/readme/screen.png" alt="분리당 화면: 지역과 질문 입력, 근거가 붙은 답변, 검증·비교 대시보드" width="70%">
-</p>
+<table width="100%">
+  <tr>
+    <td rowspan="2" width="46%" align="center">
+      <img src="docs/readme/screen.png" alt="분리당 화면: 지역과 질문 입력, 근거가 붙은 답변, 검증·비교 대시보드" width="100%">
+    </td>
+    <td width="54%" align="center">
+      <img src="docs/readme/demo-a.webp" alt="시연 영상 1: 질문에 답하고 Langfuse에 실행 기록이 쌓이는 과정" width="100%">
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="docs/readme/demo-b.webp" alt="시연 영상 2: 정상 질문, 표현 함정, 근거 없는 질문 시연" width="100%">
+    </td>
+  </tr>
+</table>
 
 <p align="center">
-  <sub><i>랜딩 화면과 검증·비교 대시보드 목업입니다.<br>데모 화면이라 답변과 후보 점수는 화면 확인용이며 평가 결과가 아닙니다.</i></sub>
+  <sub><i>왼쪽은 랜딩 화면과 검증·비교 대시보드 목업, 오른쪽 두 장은 시연 영상을 변환한 움직이는 이미지(WebP)입니다.<br>데모 화면이라 답변과 후보 점수는 화면 확인용이며 평가 결과가 아닙니다.</i></sub>
 </p>
 
 <br>
