@@ -1,0 +1,240 @@
+{
+  "langfuse_project": "project:cmwx4ub9u0006ps1syc3peguq",
+  "run_id": "ac56d91b42334b11b5778572d198b366",
+  "request_id": "9ac4bcca898243b6b4a2b3643c55a27a",
+  "run_kind": "rag",
+  "started_at": "2026-11-26T18:50:22.463237Z",
+  "request": {
+    "request_id": "9ac4bcca898243b6b4a2b3643c55a27a",
+    "question": "송파구 사업장용 일반규격봉투 20리터는 얼마인가요?",
+    "district": "송파구",
+    "dong": null,
+    "conditions": {},
+    "district_confirmed": false
+  },
+  "options": {
+    "variant": "A",
+    "rewrite_enabled": false,
+    "top_k": 5,
+    "max_context_chars": 12000,
+    "run_kind": "rag",
+    "versions": {
+      "model": "gpt-6-luna",
+      "index": "index-1c25b630ae0878a2c496716730e6c0622ba6995203d7ac0293759bdcb1bf5bef-embed-input-table-text-v2-7a9cfb43ffc4fa0f",
+      "chunking": "preprocessed-v2-row-v1",
+      "embedding": "text-embedding-3-small",
+      "prompt": "b0ec828702879ac2fbcdaabfbb0df5841beb2c8d6ff103472f0f5a03ff636305",
+      "candidate_policy": "vector-v1"
+    }
+  },
+  "resolved_query": {
+    "search_query": "송파구 사업장용 일반규격봉투 20리터는 얼마인가요?",
+    "district": "송파구",
+    "dong": null,
+    "status": "resolved",
+    "clarification_question": null,
+    "region_status": "no_dong",
+    "candidate_districts": []
+  },
+  "search_query": "송파구 사업장용 일반규격봉투 20리터는 얼마인가요?",
+  "candidates": [
+    {
+      "chunk": {
+        "chunk_id": "chunk-1d1aaba67f049a5294f8bdf1f79ce247aa8b182823094146fa3fa0dd6f2181e0",
+        "source_document_id": "songpa-rules:attachment:121237861",
+        "source_document_version": "v1",
+        "title": "별표",
+        "content_format": "json",
+        "content": "{\"header_rows\":[{\"cells\":[{\"cell_id\":\"table-1-r0-c0\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":0,\"rowspan\":1,\"text\":\"용  량 (ℓ)\"},{\"cell_id\":\"table-1-r0-c1\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":1,\"origin_row\":0,\"rowspan\":1,\"text\":\"용               도\"}],\"row\":0}],\"paragraphs\":[\"[별표 2] <개정 98․6․12, 09․10․20, 2017.4.6. 2020.03.19.>\\n\",\"규격봉투 용량별 용도(제4조제2호 관련)\\n\",\"\\n\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\"],\"row\":{\"cells\":[{\"cell_id\":\"table-1-r4-c0\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":4,\"rowspan\":1,\"text\":\"20\"},{\"cell_id\":\"table-1-r4-c1\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":1,\"origin_row\":4,\"rowspan\":1,\"text\":\"생활폐기물용, 일반사업장용, 가락시장용, 공공용, 특수규격봉투\"}],\"row\":4},\"section_title\":\"[별표 2] <개정 98․6․12, 09․10․20, 2017.4.6. 2020.03.19.>\",\"table_id\":\"table-1\"}",
+        "source_url": "http://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=121237861&flNm=%EB%B3%84%ED%91%9C",
+        "source_location": "table-1/row[4]",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 1,
+      "score": 0.544113825565306,
+      "stage_scores": {
+        "vector": 0.544113825565306
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-04aafa2d6951f071cc221c34542f7712c753ee242a46f68e5eb7cbf12562b546",
+        "source_document_id": "songpa-rules:attachment:121237861",
+        "source_document_version": "v1",
+        "title": "별표",
+        "content_format": "json",
+        "content": "{\"header_rows\":[{\"cells\":[{\"cell_id\":\"table-1-r0-c0\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":0,\"rowspan\":1,\"text\":\"용  량 (ℓ)\"},{\"cell_id\":\"table-1-r0-c1\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":1,\"origin_row\":0,\"rowspan\":1,\"text\":\"용               도\"}],\"row\":0}],\"paragraphs\":[\"[별표 2] <개정 98․6․12, 09․10․20, 2017.4.6. 2020.03.19.>\\n\",\"규격봉투 용량별 용도(제4조제2호 관련)\\n\",\"\\n\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\"],\"row\":{\"cells\":[{\"cell_id\":\"table-1-r5-c0\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":5,\"rowspan\":1,\"text\":\"50\"},{\"cell_id\":\"table-1-r5-c1\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":1,\"origin_row\":5,\"rowspan\":1,\"text\":\"생활폐기물용, 일반사업장용, 가락시장용, 공공용, 특수규격봉투\"}],\"row\":5},\"section_title\":\"[별표 2] <개정 98․6․12, 09․10․20, 2017.4.6. 2020.03.19.>\",\"table_id\":\"table-1\"}",
+        "source_url": "http://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=121237861&flNm=%EB%B3%84%ED%91%9C",
+        "source_location": "table-1/row[5]",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 2,
+      "score": 0.5219658212513879,
+      "stage_scores": {
+        "vector": 0.5219658212513879
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-be524f15d4a57ccb153bf6ec240ed02f473461c89cc6f7c204537c022a17d19f",
+        "source_document_id": "songpa-ordinance:attachment:154690991",
+        "source_document_version": "v1",
+        "title": "별표",
+        "content_format": "json",
+        "content": "{\"header_rows\":[{\"cells\":[{\"cell_id\":\"table-1-r0-c0\",\"colspan\":2,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":0,\"rowspan\":1,\"text\":\"구     분\"},{\"cell_id\":\"table-1-r0-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":0,\"rowspan\":1,\"text\":\"용량\"},{\"cell_id\":\"table-1-r0-c3\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":3,\"origin_row\":0,\"rowspan\":1,\"text\":\"규격봉투 판매가격\"},{\"cell_id\":\"table-1-r0-c4\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":4,\"origin_row\":0,\"rowspan\":1,\"text\":\"비고\"}],\"row\":0}],\"paragraphs\":[\"〔별표 3〕<개정 2015.4.2., 2017.3.30., 2019.11.7., 2021.09.30>\\n\",\"\",\"규 격 봉 투 가 격(제14조제2항 관련)\\n\",\"\",\"(단위 : 원)\\n\",\"\\n\",\"\",\"비고  1. 사업장용 규격봉투 판매가격은 수집·운반수수료, 폐기물반입수수료, 제작비 등의 변동에 따라 변경할 수 있다.\\n\",\"      2. 사업장용 규격봉투 가격을 변경할 때에는 변경일자와 변경금액을 구보에 게재하여야 한다.\\n\",\"    ※ 단, 재사용봉투의 가격은 해당용량의 생활폐기물용 봉투의 가격과 같다.\\n\",\"\",\"\"],\"row\":{\"cells\":[{\"cell_id\":\"table-1-r1-c0\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":0,\"origin_row\":1,\"rowspan\":9,\"text\":\"일반규격봉투\"},{\"cell_id\":\"table-1-r7-c1\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":1,\"origin_row\":7,\"rowspan\":3,\"text\":\"사업장용\"},{\"cell_id\":\"table-1-r7-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":7,\"rowspan\":1,\"text\":\"20ℓ\"},{\"cell_id\":\"table-1-r7-c3\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":3,\"origin_row\":7,\"rowspan\":1,\"text\":\"800\"},{\"cell_id\":\"table-1-r7-c4\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":4,\"origin_row\":7,\"rowspan\":1,\"text\":\"\"}],\"row\":7},\"section_title\":\"〔별표 3〕<개정 2015.4.2., 2017.3.30., 2019.11.7., 2021.09.30>\",\"table_id\":\"table-1\"}",
+        "source_url": "http://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=154690991&flNm=%EB%B3%84%ED%91%9C",
+        "source_location": "table-1/row[7]",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 3,
+      "score": 0.5072994799701411,
+      "stage_scores": {
+        "vector": 0.5072994799701411
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-c2e7b16c2ef2c4c1fc57b56908648a261cb510dd01b6f0d7f1774e04bbbcfa64",
+        "source_document_id": "songpa-ordinance:attachment:154690991",
+        "source_document_version": "v1",
+        "title": "별표",
+        "content_format": "json",
+        "content": "{\"header_rows\":[{\"cells\":[{\"cell_id\":\"table-1-r0-c0\",\"colspan\":2,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":0,\"rowspan\":1,\"text\":\"구     분\"},{\"cell_id\":\"table-1-r0-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":0,\"rowspan\":1,\"text\":\"용량\"},{\"cell_id\":\"table-1-r0-c3\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":3,\"origin_row\":0,\"rowspan\":1,\"text\":\"규격봉투 판매가격\"},{\"cell_id\":\"table-1-r0-c4\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":4,\"origin_row\":0,\"rowspan\":1,\"text\":\"비고\"}],\"row\":0}],\"paragraphs\":[\"〔별표 3〕<개정 2015.4.2., 2017.3.30., 2019.11.7., 2021.09.30>\\n\",\"\",\"규 격 봉 투 가 격(제14조제2항 관련)\\n\",\"\",\"(단위 : 원)\\n\",\"\\n\",\"\",\"비고  1. 사업장용 규격봉투 판매가격은 수집·운반수수료, 폐기물반입수수료, 제작비 등의 변동에 따라 변경할 수 있다.\\n\",\"      2. 사업장용 규격봉투 가격을 변경할 때에는 변경일자와 변경금액을 구보에 게재하여야 한다.\\n\",\"    ※ 단, 재사용봉투의 가격은 해당용량의 생활폐기물용 봉투의 가격과 같다.\\n\",\"\",\"\"],\"row\":{\"cells\":[{\"cell_id\":\"table-1-r1-c0\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":0,\"origin_row\":1,\"rowspan\":9,\"text\":\"일반규격봉투\"},{\"cell_id\":\"table-1-r7-c1\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":1,\"origin_row\":7,\"rowspan\":3,\"text\":\"사업장용\"},{\"cell_id\":\"table-1-r8-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":8,\"rowspan\":1,\"text\":\"50ℓ\"},{\"cell_id\":\"table-1-r8-c3\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":3,\"origin_row\":8,\"rowspan\":1,\"text\":\"2,000\"},{\"cell_id\":\"table-1-r8-c4\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":4,\"origin_row\":8,\"rowspan\":1,\"text\":\"\"}],\"row\":8},\"section_title\":\"〔별표 3〕<개정 2015.4.2., 2017.3.30., 2019.11.7., 2021.09.30>\",\"table_id\":\"table-1\"}",
+        "source_url": "http://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=154690991&flNm=%EB%B3%84%ED%91%9C",
+        "source_location": "table-1/row[8]",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 4,
+      "score": 0.4999069148427978,
+      "stage_scores": {
+        "vector": 0.4999069148427978
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-01b56df7a55c997f0fe3b1a3fd34f76f22538a803aa99b6bf82a2c451f07e16f",
+        "source_document_id": "songpa-ordinance:attachment:154690991",
+        "source_document_version": "v1",
+        "title": "별표",
+        "content_format": "json",
+        "content": "{\"header_rows\":[{\"cells\":[{\"cell_id\":\"table-1-r0-c0\",\"colspan\":2,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":0,\"rowspan\":1,\"text\":\"구     분\"},{\"cell_id\":\"table-1-r0-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":0,\"rowspan\":1,\"text\":\"용량\"},{\"cell_id\":\"table-1-r0-c3\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":3,\"origin_row\":0,\"rowspan\":1,\"text\":\"규격봉투 판매가격\"},{\"cell_id\":\"table-1-r0-c4\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":4,\"origin_row\":0,\"rowspan\":1,\"text\":\"비고\"}],\"row\":0}],\"paragraphs\":[\"〔별표 3〕<개정 2015.4.2., 2017.3.30., 2019.11.7., 2021.09.30>\\n\",\"\",\"규 격 봉 투 가 격(제14조제2항 관련)\\n\",\"\",\"(단위 : 원)\\n\",\"\\n\",\"\",\"비고  1. 사업장용 규격봉투 판매가격은 수집·운반수수료, 폐기물반입수수료, 제작비 등의 변동에 따라 변경할 수 있다.\\n\",\"      2. 사업장용 규격봉투 가격을 변경할 때에는 변경일자와 변경금액을 구보에 게재하여야 한다.\\n\",\"    ※ 단, 재사용봉투의 가격은 해당용량의 생활폐기물용 봉투의 가격과 같다.\\n\",\"\",\"\"],\"row\":{\"cells\":[{\"cell_id\":\"table-1-r1-c0\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":0,\"origin_row\":1,\"rowspan\":9,\"text\":\"일반규격봉투\"},{\"cell_id\":\"table-1-r1-c1\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":1,\"origin_row\":1,\"rowspan\":6,\"text\":\"생활\\n폐기물용\"},{\"cell_id\":\"table-1-r4-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":4,\"rowspan\":1,\"text\":\"20ℓ\"},{\"cell_id\":\"table-1-r4-c3\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":3,\"origin_row\":4,\"rowspan\":1,\"text\":\"490\"},{\"cell_id\":\"table-1-r4-c4\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":4,\"origin_row\":4,\"rowspan\":1,\"text\":\"\"}],\"row\":4},\"section_title\":\"〔별표 3〕<개정 2015.4.2., 2017.3.30., 2019.11.7., 2021.09.30>\",\"table_id\":\"table-1\"}",
+        "source_url": "http://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=154690991&flNm=%EB%B3%84%ED%91%9C",
+        "source_location": "table-1/row[4]",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 5,
+      "score": 0.498363209521352,
+      "stage_scores": {
+        "vector": 0.498363209521352
+      }
+    }
+  ],
+  "model_input_chunk_ids": [
+    "chunk-1d1aaba67f049a5294f8bdf1f79ce247aa8b182823094146fa3fa0dd6f2181e0",
+    "chunk-04aafa2d6951f071cc221c34542f7712c753ee242a46f68e5eb7cbf12562b546",
+    "chunk-be524f15d4a57ccb153bf6ec240ed02f473461c89cc6f7c204537c022a17d19f",
+    "chunk-c2e7b16c2ef2c4c1fc57b56908648a261cb510dd01b6f0d7f1774e04bbbcfa64",
+    "chunk-01b56df7a55c997f0fe3b1a3fd34f76f22538a803aa99b6bf82a2c451f07e16f"
+  ],
+  "response": {
+    "request_id": "9ac4bcca898243b6b4a2b3643c55a27a",
+    "run_id": "ac56d91b42334b11b5778572d198b366",
+    "status": "answered",
+    "answer": "송파구 사업장용 일반규격봉투 20리터는 800원입니다.",
+    "citations": [
+      {
+        "chunk_id": "chunk-be524f15d4a57ccb153bf6ec240ed02f473461c89cc6f7c204537c022a17d19f",
+        "document_id": "songpa-ordinance:attachment:154690991",
+        "document_version": "v1",
+        "source_url": "http://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=154690991&flNm=%EB%B3%84%ED%91%9C",
+        "source_location": "table-1/row[7]",
+        "title": "별표"
+      }
+    ],
+    "places": {
+      "status": "unavailable",
+      "places": [],
+      "error": null
+    },
+    "error": null,
+    "error_code": null
+  },
+  "stages": [
+    {
+      "name": "resolve",
+      "status": "ok",
+      "duration_ms": 0.18279999494552612,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "rewrite",
+      "status": "skipped",
+      "duration_ms": 0.0,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "retrieve",
+      "status": "ok",
+      "duration_ms": 224.70599999360275,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "context",
+      "status": "ok",
+      "duration_ms": 0.06059999577701092,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "generate",
+      "status": "ok",
+      "duration_ms": 1601.6508000029717,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "citations",
+      "status": "ok",
+      "duration_ms": 0.009399998816661537,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "place_lookup",
+      "status": "skipped",
+      "duration_ms": 0.0,
+      "error": null,
+      "error_code": null
+    }
+  ],
+  "duration_ms": 1826.7592000047443,
+  "warnings": []
+}

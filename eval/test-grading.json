@@ -1,0 +1,268 @@
+{
+  "grading": {
+    "test-d01-sd-milk-carton": {
+      "category": "direct",
+      "required_facts": [
+        "내용물을 비우고 헹궈 말린 뒤 배출한다.",
+        "종이팩 전용수거함에 배출한다."
+      ],
+      "evidence": [
+        {
+          "document_id": "seodaemun-ordinance:attachment:160319453",
+          "source_location": "table-1/row[2]"
+        },
+        {
+          "document_id": "seodaemun-ordinance:attachment:160319453",
+          "source_location": "table-3/row[1]"
+        }
+      ],
+      "reason": "서대문구 조례 별표 2의 종이팩 행이 우유팩을 해당 품목 예시로 들며 배출요령을 적고 있다. 같은 별표의 통합 배출 표(ab910bef)에도 종이팩 배출요령이 있어 허용 근거로 함께 둔다.",
+      "reference_answer": "내용물을 비우고 물로 헹구는 등 이물질을 제거해 말린 뒤, 빨대·비닐 등 다른 재질을 제거하고 종이팩 전용수거함에 배출합니다. 전용수거함이 없으면 종이류와 구분되게 끈 등으로 묶어 종이류 수거함으로 배출합니다."
+    },
+    "test-d02-sp-massage-chair": {
+      "category": "direct",
+      "required_facts": [
+        "안마의자는 10,000원이다."
+      ],
+      "evidence": [
+        {
+          "document_id": "songpa-rules:attachment:121237861",
+          "source_location": "table-4/row[42]"
+        }
+      ],
+      "reason": "송파구 시행규칙 별표의 안마의자 행이 금액을 직접 적고 있다.",
+      "reference_answer": "송파구 대형폐기물 수수료표에서 안마의자는 10,000원입니다."
+    },
+    "test-d03-sd-fluorescent": {
+      "category": "direct",
+      "required_facts": [
+        "깨지지 않은 상태로 배출한다.",
+        "주요 거점 수거함 또는 지정된 수거일·장소에 배출한다."
+      ],
+      "evidence": [
+        {
+          "document_id": "seodaemun-ordinance:attachment:160319453",
+          "source_location": "table-2/row[9]"
+        }
+      ],
+      "reason": "서대문구 조례 별표 2의 형광등 행이 직접 적고 있다.",
+      "reference_answer": "깨지지 않은 상태로 주요 거점에 비치된 수거함에 배출하거나 지정된 수거일·장소에 배출합니다."
+    },
+    "test-d04-sd-small-appliance": {
+      "category": "direct",
+      "required_facts": [
+        "원형 그대로 보존한다.",
+        "인근 수거함에 배출하거나 구청에 접수한 뒤 배출한다."
+      ],
+      "evidence": [
+        {
+          "document_id": "seodaemun-ordinance:attachment:160319453",
+          "source_location": "table-2/row[10]"
+        }
+      ],
+      "reason": "서대문구 조례 별표 2의 전자제품(소형가전) 행이 직접 적고 있다.",
+      "reference_answer": "원형 그대로 보존하여 인근 수거함에 배출하거나 구청 접수 후 배출합니다."
+    },
+    "test-d05-sp-bag-100l-use": {
+      "category": "direct",
+      "required_facts": [
+        "100ℓ는 생활폐기물용과 공공용이다."
+      ],
+      "evidence": [
+        {
+          "document_id": "songpa-rules:attachment:121237861",
+          "source_location": "table-1/row[7]"
+        }
+      ],
+      "reason": "송파구 시행규칙 별표의 규격봉투 용량별 용도 표 중 100ℓ 행이 직접 적고 있다.",
+      "reference_answer": "송파구 시행규칙 별표에서 용량 100ℓ는 생활폐기물용과 공공용입니다."
+    },
+    "test-d06-sp-business-bag-20l": {
+      "category": "direct",
+      "required_facts": [
+        "사업장용 20ℓ는 800원이다."
+      ],
+      "evidence": [
+        {
+          "document_id": "songpa-ordinance:attachment:154690991",
+          "source_location": "table-1/row[7]"
+        }
+      ],
+      "reason": "송파구 조례 별표의 일반규격봉투 사업장용 행이 가격을 적고 있다.",
+      "reference_answer": "송파구 규격봉투 판매가격표에서 일반규격봉투 사업장용 20ℓ는 800원입니다."
+    },
+    "test-d07-sd-bag-50l": {
+      "category": "direct",
+      "required_facts": [
+        "50ℓ 생활폐기물용은 1,250원이다."
+      ],
+      "evidence": [
+        {
+          "document_id": "seodaemun-ordinance:attachment:160319457",
+          "source_location": "table-1/row[6]"
+        }
+      ],
+      "reason": "서대문구 조례 별표 4의 50ℓ 행이 가격을 적고 있다.",
+      "reference_answer": "서대문구 규격봉투 가격표 기준으로 50ℓ 생활폐기물용 봉투는 1,250원입니다."
+    },
+    "test-d08-sd-bag-exchange": {
+      "category": "direct",
+      "required_facts": [
+        "전출 사유 등으로 요청하면 판매가격으로 교환한다.",
+        "동일한 규격봉투를 판매하는 봉투판매소에서 교환한다."
+      ],
+      "evidence": [
+        {
+          "document_id": "seodaemun-ordinance",
+          "source_location": "조문/조[41] (조문번호 003400)"
+        }
+      ],
+      "reason": "서대문구 조례 제34조가 직접 적고 있다. 질문은 '이사 가게 돼서'라는 생활어로 전출 사유를 바꿔 썼지만 핵심은 직접 검색이다.",
+      "reference_answer": "종량제 폐기물 배출자가 다른 지역으로 전출하는 등의 사유로 요청하면 판매가격으로 교환해 주며, 현금교환은 동일한 규격봉투를 판매하는 봉투판매소에서 합니다."
+    },
+    "test-d09-sp-bag-where-to-buy": {
+      "category": "direct",
+      "required_facts": [
+        "구청장이 지정하는 봉투판매소에서 규격봉투를 직접 구입한다."
+      ],
+      "evidence": [
+        {
+          "document_id": "songpa-ordinance",
+          "source_location": "조문/조[28] (조문번호 001900)"
+        }
+      ],
+      "reason": "송파구 조례 제19조 제3항이 직접 적고 있다.",
+      "reference_answer": "종량제 폐기물을 배출하는 사람은 구청장이 지정하는 봉투판매소에서 규격봉투를 직접 구입해 사용해야 합니다. 사업장생활폐기물 배출자는 폐기물처리업자로부터 직접 공급받아 사용할 수 있습니다."
+    },
+    "test-d10-sp-reusable-bag": {
+      "category": "direct",
+      "required_facts": [
+        "구청장은 재사용 종량제봉투를 제작할 수 있다.",
+        "유통매장에서 구입이 편리하도록 판매방법 개선과 홍보를 추진한다."
+      ],
+      "evidence": [
+        {
+          "document_id": "songpa-ordinance",
+          "source_location": "조문/조[26] (조문번호 001702)"
+        }
+      ],
+      "reason": "송파구 조례 제17조의2가 직접 적고 있다.",
+      "reference_answer": "구청장은 1회용 비닐봉투 사용량을 줄이기 위해 재사용 종량제봉투를 제작할 수 있고, 유통매장에서 구입이 편리하도록 판매방법 개선과 고객 홍보를 추진해야 합니다."
+    },
+    "test-n01-sd-bulky-call-center": {
+      "category": "no_evidence",
+      "absence_reason": "서대문구 조례·시행규칙·별표에 '콜센터'가 없고 대형폐기물 신청 연락처도 없다(2026-11-26 청크 543개 검색). 무단투기 신고가 '전화'로 가능하다는 문장은 있으나 대형폐기물 신청과 무관하다.",
+      "reference_answer": "제공된 서대문구 자료에는 대형폐기물 신청 전화번호가 없어 알 수 없습니다. 수수료와 배출 규정은 안내할 수 있습니다."
+    },
+    "test-n02-sp-bulky-app": {
+      "category": "no_evidence",
+      "absence_reason": "송파구 조례·시행규칙·별표에 '앱', '인터넷', '온라인'이 없다(2026-11-26 청크 543개 검색 0건). 신고 방법은 '구청장에게 신고'로만 적혀 있다.",
+      "reference_answer": "제공된 송파구 자료에는 모바일 앱으로 신청한다는 내용이 없어 알 수 없습니다. 배출일 전에 구청장에게 신고한다는 규정만 있습니다."
+    },
+    "test-n03-sp-bag-price-rise": {
+      "category": "no_evidence",
+      "absence_reason": "송파구 자료에 '인상', '예정'이 없다(2026-11-26 청크 543개 검색 0건). 가격표는 현재 기준만 적고 있다.",
+      "reference_answer": "제공된 송파구 자료에는 봉투 가격 인상 계획이 없어 알 수 없습니다. 현재 가격표만 확인할 수 있습니다."
+    },
+    "test-v01-sp-washer-10kg": {
+      "category": "variation",
+      "required_facts": [
+        "세탁기 10kg 이상은 4,000원이다."
+      ],
+      "evidence": [
+        {
+          "document_id": "songpa-rules:attachment:121237861",
+          "source_location": "table-4/row[34]"
+        }
+      ],
+      "reason": "송파구 시행규칙 별표의 세탁기 행. 서대문구는 같은 규격이 5,000원이라 구 구분이 필요하다(test-v02와 한 쌍).",
+      "reference_answer": "송파구 대형폐기물 수수료표에서 세탁기 10kg 이상은 4,000원입니다."
+    },
+    "test-v02-sd-washer-10kg": {
+      "category": "variation",
+      "required_facts": [
+        "세탁기 10kg 이상은 5,000원이다."
+      ],
+      "evidence": [
+        {
+          "document_id": "seodaemun-ordinance:attachment:160319451",
+          "source_location": "table-1/row[12]"
+        }
+      ],
+      "reason": "서대문구 조례 별표 1의 세탁기 행. 송파구는 4,000원이라 구 구분이 필요하다(test-v01과 한 쌍).",
+      "reference_answer": "서대문구 대형폐기물 수수료표에서 세탁기 10kg 이상은 5,000원입니다."
+    },
+    "test-v03-sd-fridge-400l": {
+      "category": "variation",
+      "required_facts": [
+        "냉장고 300ℓ 이상 500ℓ 미만은 10,000원이다."
+      ],
+      "evidence": [
+        {
+          "document_id": "seodaemun-ordinance:attachment:160319451",
+          "source_location": "table-1/row[26]"
+        }
+      ],
+      "reason": "서대문구 조례 별표 1의 냉장고 규격 구간 행. 질문은 구간 경계가 아니라 400ℓ라는 값만 주어 구간을 직접 판단해야 한다.",
+      "reference_answer": "서대문구 대형폐기물 수수료표에서 냉장고는 300ℓ 이상 500ℓ 미만이 10,000원입니다."
+    },
+    "test-v04-sp-fridge-400l": {
+      "category": "variation",
+      "required_facts": [
+        "냉장고 300L 이상은 7,000원이다."
+      ],
+      "evidence": [
+        {
+          "document_id": "songpa-rules:attachment:121237861",
+          "source_location": "table-4/row[19]"
+        }
+      ],
+      "reason": "송파구 시행규칙 별표의 냉장고 규격 구간 행. 서대문구는 같은 400ℓ가 10,000원이라 구 구분이 필요하다(test-v03과 한 쌍).",
+      "reference_answer": "송파구 대형폐기물 수수료표에서 냉장고는 300L 이상(500L 미만)이 7,000원입니다."
+    },
+    "test-v05-sd-delivery-box": {
+      "category": "variation",
+      "required_facts": [
+        "비닐코팅·테이프·철핀·알루미늄박을 제거하고 접어서 배출한다.",
+        "택배용 보냉 상자류 등 분리되지 않는 상자는 해당하지 않는다."
+      ],
+      "evidence": [
+        {
+          "document_id": "seodaemun-ordinance:attachment:160319453",
+          "source_location": "table-1/row[1]"
+        }
+      ],
+      "reason": "서대문구 조례 별표 2의 골판지류 행. 질문의 '택배 상자'는 원문의 '골판지상자'와 표현이 다르고, 보냉 상자 예외까지 읽어야 한다.",
+      "reference_answer": "골판지상자는 비닐코팅 부분, 테이프·철핀, 알루미늄박 등을 제거하고 접어서 배출합니다. 다만 택배용 보냉 상자류처럼 내부에 알루미늄박이나 비닐이 붙어 종이와 분리되지 않는 상자는 해당 품목이 아닙니다."
+    },
+    "test-v06-sp-ogeum-weekday": {
+      "category": "variation",
+      "required_facts": [
+        "월, 수, 금 오후 6시부터 11시까지다.",
+        "가정은 내 집 앞, 상가는 건물 내(외) 지정장소에 배출한다."
+      ],
+      "evidence": [
+        {
+          "document_id": "songpa-rules:attachment:121237861",
+          "source_location": "table-2/row[2]"
+        }
+      ],
+      "reason": "송파구 시행규칙 별표 배출일시 표에서 동 이름(오금)으로 행을 찾아야 한다. 같은 표의 아파트동 행(매일)과 구분해야 한다.",
+      "reference_answer": "송파구 시행규칙 별표에서 오금동은 월·수·금 오후 6시부터 11시까지이며, 가정은 내 집 앞, 상가는 건물 내(외) 지정장소에 내놓습니다."
+    },
+    "test-v07-sd-food-container-apartment": {
+      "category": "variation",
+      "required_facts": [
+        "공동주택 120ℓ는 1,080원이다."
+      ],
+      "evidence": [
+        {
+          "document_id": "seodaemun-rules:attachment:160561043",
+          "source_location": "table-3/row[13]"
+        }
+      ],
+      "reason": "서대문구 시행규칙 별표 4의 공동주택 행. 같은 120ℓ라도 음식점은 1,512원이라 대상 구분이 필요하다.",
+      "reference_answer": "서대문구 시행규칙 별표 4에서 음식물류 전용용기 납부필증 중 공동주택 120ℓ는 1,080원입니다(음식점 120ℓ는 1,512원)."
+    }
+  }
+}

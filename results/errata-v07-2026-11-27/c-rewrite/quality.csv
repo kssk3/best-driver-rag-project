@@ -1,0 +1,2 @@
+run_id,case_id,variant,rewrite_enabled,status,answer_correct,citation_valid,absence_ok,answer_correct_reason,citation_valid_reason,absence_ok_reason,judge_model
+ae9a22a0b43540a3a80fd6d512e97a1a,test-v07-sd-food-container-apartment-corrected,C,true,answered,1,1,,"공동주택 120리터 납부필증의 판매이윤이 1,080원이라고 답했습니다.","근거 표에 음식물류 전용용기 납부필증의 공동주택 120ℓ 판매이윤이 1,080원으로 제시되어 있습니다.",,gpt-6-luna

@@ -1,0 +1,233 @@
+{
+  "langfuse_project": "project:cmwx4ub9u0006ps1syc3peguq",
+  "run_id": "7e9cf79fcdaf4e748f57ba83d31d9f1b",
+  "request_id": "5e85e9f4f9f644458885193a8b0865c5",
+  "run_kind": "rag",
+  "started_at": "2026-11-26T18:51:37.601654Z",
+  "request": {
+    "request_id": "5e85e9f4f9f644458885193a8b0865c5",
+    "question": "송파구에서 10킬로그램 넘는 세탁기를 버리려면 수수료가 얼마예요?",
+    "district": "송파구",
+    "dong": null,
+    "conditions": {
+      "item": "세탁기"
+    },
+    "district_confirmed": false
+  },
+  "options": {
+    "variant": "A",
+    "rewrite_enabled": false,
+    "top_k": 5,
+    "max_context_chars": 12000,
+    "run_kind": "rag",
+    "versions": {
+      "model": "gpt-6-luna",
+      "index": "index-1c25b630ae0878a2c496716730e6c0622ba6995203d7ac0293759bdcb1bf5bef-embed-input-table-text-v2-7a9cfb43ffc4fa0f",
+      "chunking": "preprocessed-v2-row-v1",
+      "embedding": "text-embedding-3-small",
+      "prompt": "b0ec828702879ac2fbcdaabfbb0df5841beb2c8d6ff103472f0f5a03ff636305",
+      "candidate_policy": "vector-v1"
+    }
+  },
+  "resolved_query": {
+    "search_query": "송파구에서 10킬로그램 넘는 세탁기를 버리려면 수수료가 얼마예요?",
+    "district": "송파구",
+    "dong": null,
+    "status": "resolved",
+    "clarification_question": null,
+    "region_status": "no_dong",
+    "candidate_districts": []
+  },
+  "search_query": "송파구에서 10킬로그램 넘는 세탁기를 버리려면 수수료가 얼마예요?",
+  "candidates": [
+    {
+      "chunk": {
+        "chunk_id": "chunk-9c16af4d960c93f4abadea70e1fc9fbe21f29e53b46de152c9fbfe61c41c8b80",
+        "source_document_id": "songpa-ordinance",
+        "source_document_version": "v1",
+        "title": "서울특별시 송파구 폐기물 관리 조례",
+        "content_format": "json",
+        "content": "{\"text\":\"제30조(수수료의 감면 등) \\n① 구청장은 다음 각 호의 어느 하나에 해당하는 사람에 대하여 수수료를 감면할 수 있다.<개정 2011.12.12, 2017.3.30.>\\n1. 「국민기초생활 보장법」 제7조제1항제1호 및 제3호에 따른 생계·의료급여 수급자 <개정 2003.7.14, 2009.11.9, 2017.3.30.>\\n2. 「국가유공자 등 예우 및 지원에 관한 법률」 제5조의 유족 또는 가족으로서 「의료급여법」 제3조제1항제5호에 따른 의료급여가 필요하다고 인정된 사람 <개정 2009.11.9, 2017.3.30.>\\n3. 그 밖에 구청장이 인정하는 자\\n② 제1항에 따라 종량제폐기물을 배출하는 자에게 감면할 때에는 일반규격봉투 중 생활폐기물용봉투를 무료로 지급하되 가구당 매월 120리터 범위에서 지급한다. 다만, 1인 가구에 대해서는 월 60리터 범위에서 지급할 수 있다.<개정 97.12.1, 2011.6.7, 2011.12.12, 2019.11.7.>\\n③ 구청장은 폐기물의 감량 및 재활용 시책을 촉진시키기 위해 개인이나 단체 또는 폐기물처리업자 등에 지원금을 지급하거나 필요한 조치를 명할 수 있다.<신설 2003·7·14><개정 2015.4.2>\\n\",\"unit_type\":\"article\"}",
+        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2053883",
+        "source_location": "조문/조[40] (조문번호 003000)",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 1,
+      "score": 0.41508993597167,
+      "stage_scores": {
+        "vector": 0.41508993597167
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-e13d308b2312ca3c4d1902b17cf116698f90bccc1620795ee0876f99cd64ad7b",
+        "source_document_id": "songpa-ordinance",
+        "source_document_version": "v1",
+        "title": "서울특별시 송파구 폐기물 관리 조례",
+        "content_format": "json",
+        "content": "{\"text\":\"제7조(생활폐기물의 처리) \\n① 구청장은 필요하다고 인정할 경우 관할구역 안에서 배출되는 생활폐기물을 법 제25조제3항에 따라 폐기물처리업의 허가를 \\t받은 자(이하 \\\"폐기물처리업자\\\"라 한다)로 하여금 수집·운반 또는 처리를 대행하게 할 수 있다. 이 경우 대행구역을 지정하여야 한다. <개정 2008·9·22, 2011.6.7, 2011.12.12>\\n② 구청장은 관할구역 안에서 배출되는 생활폐기물의 수집·운반 또는 처리를 제1항에 따른 폐기물처리업자로 하여금 대행하게 할 때에는 다음 각 호의 사항이 포함된 대행계약을 체결하여야 한다.<개정 2011.12.12>\\n1. 대행구역 및 기간\\n2. 대행구역 안에서 배출되는 생활폐기물의 수집·운반·처리방법 <개정2003·7·14>\\n2의2. 폐기물 수수료 징수 및 폐기물 수집·운반수수료 등의 지급에 관한 사항 <신설 2015.4.2>\\n3. 수집운반차량의 적재 톤수별·형식별 대수 <개정 2003·7·14>\\n4. 환경미화원 임금 및 후생복지에 관한 사항 <개정 2003·7·14>\\n4의2.폐기물 부적정 수거시 업체 또는 직원의 불이익에 관한 사항 <신설 2003·7·14>\\n5. 적환장, 차고 및 사무소의 소재지에 관한 사항 <개정 2003·7·14>\\n6. 법 제27조에 따른 영업의 정지 또는 취소시 대행방법·비용부담 등에 관한 사항 <개정 2008·9·22>\\n7. 그 밖에 폐기물의 적정처리 및 질적향상에 필요하다고 인정되는 사항<개정 2003·7·14, 개정 2015.4.2>\\n③ 구청장은 재해·폐기물처리업체의 여건변화 등의 사유에 따른 생활폐기물의 적정처리를 위하여 자치단체간 상호협력 및 지원을 할 수 있으며, 대행업체 상호간의 청소인력·장비를 지원하도록 조치할 수 있다.<신설 2003·7·14>\\n\",\"unit_type\":\"article\"}",
+        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2053883",
+        "source_location": "조문/조[9] (조문번호 000700)",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 2,
+      "score": 0.411973862319903,
+      "stage_scores": {
+        "vector": 0.411973862319903
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-3a5da172c0e466601439c2a08caa46b24cc8a5935e0f71ccf1772bcb336d4e4d",
+        "source_document_id": "songpa-ordinance",
+        "source_document_version": "v1",
+        "title": "서울특별시 송파구 폐기물 관리 조례",
+        "content_format": "json",
+        "content": "{\"text\":\"제27조(폐기물처리시설 반입수수료 등) <개정 2014.9.25>\\n① 구청장은 법 제6조에 따른 반입수수료를 납부하는 경우 폐기물을 배출하는 자로 하여금 이를 부담하게 할 수 있다. <개정 2008·9·22, 2011.12.12>\\n② 제1항에 따라 폐기물을 배출하는 자로 하여금 반입수수료를 부담하게 한 경우 종량제폐기물 중 일반쓰레기는 규격봉투가격에, 음식물류폐기물은 납부필증 또는 전자방식의 계량기기 정산가격에 이를 포함하여야 하며 건설폐기물에 대한 반입수수료는 폐기물처리업자가 징수하여 직접 또는 구청장이 최종 처리자에게 납부한다.<개정 2011.12.12, 개정 2015.4.2>\\n③ 구청장이 설치·운영하는 폐기물처리시설에 관외지역 등의 폐기물을 반입·처리하는 경우에는 반입수수료를 폐기물을 반입하는 자로부터 부과·징수할 수 있다. <신설 2014.9.25>\\n④ 제3항에 따른 반입수수료는 구청장이 사업시행자와 협의하여 결정하며 반입하는 폐기물에 대하여 그 수수료의 100분의 10 범위에서 가산금을 따로 부과·징수할 수 있다.  <신설 2014.9.25>\\n\",\"unit_type\":\"article\"}",
+        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2053883",
+        "source_location": "조문/조[37] (조문번호 002700)",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 3,
+      "score": 0.4116496376647118,
+      "stage_scores": {
+        "vector": 0.4116496376647118
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-53400096a207b517d00750f2b2a4e448f1daeb4dbf875e1c1e9748417cea57ba",
+        "source_document_id": "songpa-ordinance",
+        "source_document_version": "v1",
+        "title": "서울특별시 송파구 폐기물 관리 조례",
+        "content_format": "json",
+        "content": "{\"text\":\"제25조(수수료 등의 부과·징수 등) \\n① 제14조에 따른 종량제를 실시하지 아니하는 폐기물의 수집·운반·처리에 관한 수수료의 부과·징수는 다음 각 호에 따른다.<개정 2011.12.12>\\n1. 가정에서 배출되는 연탄재와 사업 활동에서 발생하는 연탄재 중 차상위계층 대상자가 운영하는 사업장, 재래시장 및 소규모사업장에서 배출되는 연탄재와 분리배출한 재활용가능자원의 수수료는 부과하지 아니한다. <개정 2008·9·22, 2009.11.9, 2015.4.2>\\n1의2. 화훼농가 등 사업 활동에 수반하여 다량 발생되는 연탄재는 폐기물처리 시설에서 무상으로 처리 시 수집·운반수수료를 징수할 수 있다.<신설 2015.4.2>\\n2. 대형폐기물의 수수료는 규칙으로 정한다.<개정 2006.12.26, 2018.6.29.>\\n3. 삭제<99·5·20>\\n② 제1항제2호에 따른 수수료는 폐기물 배출자에게 부과·징수하되, 배출자에게 부과·징수하기가 곤란한 경우에는 건물의 관리자 등에게 부과·징수할 수 있다. <개정 1998.10.13, 2009.11.9, 2011.12.12>\\n\",\"unit_type\":\"article\"}",
+        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2053883",
+        "source_location": "조문/조[35] (조문번호 002500)",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 4,
+      "score": 0.4091388999647746,
+      "stage_scores": {
+        "vector": 0.4091388999647746
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-a482ca0127c4c30a5cad3d2bb61487b0db08300bb301abfb63468d07760f23d0",
+        "source_document_id": "songpa-ordinance",
+        "source_document_version": "v1",
+        "title": "서울특별시 송파구 폐기물 관리 조례",
+        "content_format": "json",
+        "content": "{\"text\":\"제10조(생활폐기물배출자의 처리 협조 등) \\n① 생활폐기물배출자가 폐기물을 스스로 처리할 수 없을 때에는 수집·운반이 용이하게 대형폐기물·건설폐기물·그 밖에 생활폐기물로 분류하여 다음 각 호의 기준에 따라 보관 또는 배출하여야 한다.<개정 2011.12.12, 2019.11.7.>\\n1. 대형폐기물: 배출일 전에 배출자의 주소·성명·물품명·크기·수량 등을 구청장에게 신고하여야 하며 구청장이 지정하는 장소에 내어 놓아야 한다. 다만, 폐기물처리업자가 대행수거하는 지역에서는 폐기물처리업자가 이를 대행한다. <개정 98·10·13, 개정 99·5·20>\\n2. 공사장 생활폐기물: 일련의 공사·작업 등으로 발생되는 5톤 미만의 폐기물을 배출하는 자는 종류별·성상별로 분류하여 관급규격봉투인 특수규격봉투에 담아 묶은 후 배출하거나, 폐기물처리업자, 「건설폐기물의 재활용촉진에 관한 법률」 제21조에 따라 건설폐기물수집·운반업의 허가를 받은 자(이하 “건설폐기물수집·운반업자”라 한다) 또는 폐기물(건설폐기물)처리시설의 설치·운영자에게 위탁하여 처리할 수 있다. <개정 2000·6·8, 2008·9·22,2009.11.9, 2011.6.7 >\\n3. 그 밖에 생활폐기물: 관급규격봉투나 용기에 담아 보관 또는 배출하여야 한다.\\n② 구청장은 수집·운반을 용이하게 하기 위하여 폐기물의 종류 및 성상별로 보관·배출방법·배출시간 등을 규칙으로 정하여 보관·배출하게 할수 있다.\\n\",\"unit_type\":\"article\"}",
+        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2053883",
+        "source_location": "조문/조[13] (조문번호 001000)",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 5,
+      "score": 0.3992378170084627,
+      "stage_scores": {
+        "vector": 0.3992378170084627
+      }
+    }
+  ],
+  "model_input_chunk_ids": [
+    "chunk-9c16af4d960c93f4abadea70e1fc9fbe21f29e53b46de152c9fbfe61c41c8b80",
+    "chunk-e13d308b2312ca3c4d1902b17cf116698f90bccc1620795ee0876f99cd64ad7b",
+    "chunk-3a5da172c0e466601439c2a08caa46b24cc8a5935e0f71ccf1772bcb336d4e4d",
+    "chunk-53400096a207b517d00750f2b2a4e448f1daeb4dbf875e1c1e9748417cea57ba",
+    "chunk-a482ca0127c4c30a5cad3d2bb61487b0db08300bb301abfb63468d07760f23d0"
+  ],
+  "response": {
+    "request_id": "5e85e9f4f9f644458885193a8b0865c5",
+    "run_id": "7e9cf79fcdaf4e748f57ba83d31d9f1b",
+    "status": "insufficient_evidence",
+    "answer": "현재 확인한 자료로는 답변하기 어렵습니다.",
+    "citations": [],
+    "places": {
+      "status": "unavailable",
+      "places": [],
+      "error": null
+    },
+    "error": null,
+    "error_code": null
+  },
+  "stages": [
+    {
+      "name": "resolve",
+      "status": "ok",
+      "duration_ms": 0.22560000070370734,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "rewrite",
+      "status": "skipped",
+      "duration_ms": 0.0,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "retrieve",
+      "status": "ok",
+      "duration_ms": 240.65150000387803,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "context",
+      "status": "ok",
+      "duration_ms": 0.06450001092161983,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "generate",
+      "status": "ok",
+      "duration_ms": 1314.9017999967327,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "citations",
+      "status": "ok",
+      "duration_ms": 0.0029999937396496534,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "place_lookup",
+      "status": "skipped",
+      "duration_ms": 0.0,
+      "error": null,
+      "error_code": null
+    }
+  ],
+  "duration_ms": 1555.9916000056546,
+  "warnings": []
+}

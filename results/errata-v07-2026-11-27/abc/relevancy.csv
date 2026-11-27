@@ -1,0 +1,4 @@
+case_id,configuration,rewrite_enabled,status,score,error
+test-v07-sd-food-container-apartment-corrected,A,false,answered,0.9183,
+test-v07-sd-food-container-apartment-corrected,B,false,answered,0.9522,
+test-v07-sd-food-container-apartment-corrected,C,false,answered,0.9183,

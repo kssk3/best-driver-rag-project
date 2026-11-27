@@ -101,12 +101,11 @@ info.detail        # 실행 기록에 남긴다. 예: "ValueError: boom"
 | `PipelineResponse.error` | `status="error"` | 기록용 내부 상세 `"타입: 메시지"`. 화면에 표시하지 않는다. |
 | `PipelineResponse.error_code` | `status="error"` | 응답을 실패시킨 원인 코드 |
 | `StageRecord.error`, `StageRecord.error_code` | 해당 단계가 실패 | 그 단계의 내부 상세와 원인 코드 |
-| `PlaceLookupResult.error` | 장소 조회 실패(폐기 예정) | 내부 상세. 코드는 `place_lookup` 단계 기록에 있다. |
 
-- 질문 다듬기와 장소 조회가 실패해도 문서 답변은 계속 진행한다. 이때 응답의 `error_code`는 `None`이고 코드는 `rewrite` 또는 `place_lookup` 단계 기록에만 남는다. 장소 조회는 예외를 던진 경우와 `PlaceLookupResult(status="error")`를 반환한 경우 모두 `place_lookup` 단계가 `error`로 기록된다. 장소 조회는 2026-11-26 팀 합의로 폐기 예정이다.
+- 질문 다듬기가 실패해도 문서 답변은 계속 진행한다. 이때 응답의 `error_code`는 `None`이고 코드는 `rewrite` 단계 기록에만 남는다.
 - 실행 기록 저장이 실패하면 응답이 `error`로 바뀐다. 이미 앞 단계에서 실패했다면 응답의 `error_code`는 최초 원인을 유지한다.
 - 평가는 실패한 단계 이름과 `error_code`를 묶어 실패를 분류한다. 예: `citations` 단계의 `pipeline.citation_outside_evidence`와 `generate` 단계의 `generation.invalid_citation`·`generation.missing_citation`은 잘못된 인용이다.
-- 여러 단계가 `error`일 때 응답을 실패시킨 단계는 `resolve`, `retrieve`, `context`, `generate`, `citations` 중 `error`인 단계다. 이 단계들은 첫 실패에서 멈추므로 많아야 하나다. 그중 실패가 없으면 `record` 단계다. `rewrite`와 `place_lookup` 실패는 응답 상태를 바꾸지 않으므로 응답 실패 원인으로 세지 않는다.
+- 여러 단계가 `error`일 때 응답을 실패시킨 단계는 `resolve`, `retrieve`, `context`, `generate`, `citations` 중 `error`인 단계다. 이 단계들은 첫 실패에서 멈추므로 많아야 하나다. 그중 실패가 없으면 `record` 단계다. `rewrite` 실패는 응답 상태를 바꾸지 않으므로 응답 실패 원인으로 세지 않는다.
 - `error_code` 필드가 없는 이전 실행 기록 JSON도 그대로 읽힌다. 분류(`category`)는 아직 기록하지 않는다.
 
 ### 파이프라인 검사 코드
@@ -125,9 +124,7 @@ info.detail        # 실행 기록에 남긴다. 예: "ValueError: boom"
 | `pipeline.missing_citation` | `citations` | `answered`인데 인용이 없다. |
 | `pipeline.citation_outside_evidence` | `citations` | 모델 입력에 없던 청크를 인용했다. |
 | `pipeline.invalid_callback_result` | 해당 콜백 단계 | 콜백 결과가 공용 규격 검증을 통과하지 못했다. |
-| `pipeline.place_lookup_failed` | `place_lookup` | 장소 조회 콜백이 `status="error"`를 반환했다. 응답과 `places`는 그대로다(폐기 예정). |
 
-`pipeline.place_lookup_failed`는 예외 없이 단계 기록에 직접 붙이는 코드다. 이 단계의 `error`에는 `"타입: 메시지"` 대신 콜백이 반환한 `PlaceLookupResult.error`가 들어가며, 비어 있으면 "장소 조회 콜백이 실패 상태를 반환했습니다."를 쓴다.
 
 `pipeline.missing_citation`과 `pipeline.citation_outside_evidence`는 생성기가 청크 ID를 직접 돌려줄 때 걸린다. `make_answer_generator`를 쓰는 전처리 자료 생성기는 인용 번호를 먼저 검사하므로, 같은 문제가 `generate` 단계의 `generation.missing_citation`·`generation.invalid_citation`으로 기록된다.
 

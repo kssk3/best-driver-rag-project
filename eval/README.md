@@ -1,6 +1,13 @@
 # 평가셋
 
-이 브랜치의 [개발셋](dev.json)에는 서대문구 공동주택 수거용기 색상과 송파구 대형폐기물 신고·배출에 관한 두 문항이 있다. [채점 메모](dev-scoring-notes.json)는 문항별 허용 청크를 원문 위치와 연결한다. 두 정답표 모두 초안이며 사람의 대조 날짜(`checked_at`)는 아직 비어 있다. 서대문구는 별표 1의 공동주택 일반용기 색상 행을 확인한다. 송파구는 직접 신고하는 경우를 묻는다. 원문 발췌에는 대행수거 지역의 단서도 보존했으며, 이를 필수 채점 사실에 포함할지는 원문 검수 때 결정한다. 목표는 개발 10문항(답변 가능 8개·근거 없음 2개)과 별도 최종 20문항이다. 실행기 연결 검사용 [합성 3문항](../tests/fixtures/handoff_eval.json)은 따로 관리한다. [팀 평가 기준](../docs/problem.md)
+## 개발셋과 최종셋
+
+- **개발셋** [dev.json](dev.json): 10문항(답변 가능 8, 근거 없음 2). 처음 2문항(서대문구 공동주택 수거용기 색상, 송파구 대형폐기물 신고·배출)에 8문항을 더했다. [채점 메모](dev-scoring-notes.json)는 문항별 허용 청크, 원문 위치, 필수 사실을 담는다. 튜닝에 쓴다.
+- **최종셋** [test.json](test.json): 20문항(직접 검색 10, 표현 변형·조건 구분 7, 근거 없음 3, 서대문구와 송파구 각 10). 채점 자료는 [test-grading.json](test-grading.json)이다. 이 파일을 만든 시점(2026-11-26)부터 개발과 튜닝에 쓰지 않는다. 개발셋, 화면 점검용 문항(`tests/fixtures/interface/screen_check_set`)과 허용 근거 청크가 겹치지 않는다.
+- **상태**: 정은님이 2026-11-27에 문항·정답·근거를 원문과 대조해 고칠 곳이 없다고 전달받았다(문항별 기록 파일은 없고, 해시로 고정된 파일이라 `checked_at`은 비워 둔다). 2026-11-26에 A/B/C와 C+질문 다듬기를 한 번씩 실행했고 결과는 [보고서](../report.md) 7장에 있다. 모델 판정(정답 충족·근거 적합)도 같은 날 정은님이 검토했고 수정은 없었다([보고서](../report.md) 7.3). 실행 뒤 문항 결함 3건이 확인됐다(d10 정정판 포함, 아래 두 건 외 `test-d10-sp-reusable-bag`는 질문이 근거와 어긋남). `test-v07-sd-food-container-apartment`의 정답 표현(가격이 아니라 판매이윤 열)과 `test-v06-sp-ogeum-weekday`의 분류(정답 근거가 검색 제외 대상이라 도달 불가, 근거 없음에 해당)이다. 공식 `test.json`은 바꾸지 않고 정정판을 [errata/](errata/README.md)에 따로 두었으며 결과는 보고서 7.4절에 있다.
+- **허용 청크 ID**는 청킹 버전 `preprocessed-v2-row-v1`(543청크)의 값이다. 청킹을 바꿔 ID가 달라지면 근거 매핑을 갱신하고 최종 평가 전에 다시 고정한다.
+- 구성과 겹침 점검: `uv run --locked python -m src.evaluation.case_set --cases eval/test.json --grading eval/test-grading.json --dev eval/dev.json`. 같은 점검이 `tests/unit/evaluation/test_eval_sets.py`에도 있다.
+- 실행기 연결 검사용 [합성 3문항](../tests/fixtures/handoff_eval.json)은 따로 관리한다. [팀 평가 기준](../docs/problem.md)
 
 개발문항 초안은 답변 생성과 품질 추적 담당자(강성수), 최종셋 관리는 화면과 관찰 검증 담당자(이승주), 원문 근거 교차 확인은 데이터 수집과 질문 정제 담당자(이정은)가 맡는다.
 

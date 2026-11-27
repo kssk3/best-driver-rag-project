@@ -1,0 +1,241 @@
+{
+  "langfuse_project": "project:cmwx4ub9u0006ps1syc3peguq",
+  "run_id": "bc30e59ec71f4c8c87a3a7918048619c",
+  "request_id": "e17ae70139444b35918b3b5f9ef3e1f2",
+  "run_kind": "rag",
+  "started_at": "2026-11-26T18:52:20.365766Z",
+  "request": {
+    "request_id": "e17ae70139444b35918b3b5f9ef3e1f2",
+    "question": "송파구 오금동에서는 쓰레기를 무슨 요일 몇 시에 내놓나요?",
+    "district": "송파구",
+    "dong": null,
+    "conditions": {},
+    "district_confirmed": false
+  },
+  "options": {
+    "variant": "B",
+    "rewrite_enabled": false,
+    "top_k": 5,
+    "max_context_chars": 12000,
+    "run_kind": "rag",
+    "versions": {
+      "model": "gpt-6-luna",
+      "index": "index-1c25b630ae0878a2c496716730e6c0622ba6995203d7ac0293759bdcb1bf5bef-embed-input-table-text-v2-7a9cfb43ffc4fa0f",
+      "chunking": "preprocessed-v2-row-v1",
+      "embedding": "text-embedding-3-small",
+      "prompt": "b0ec828702879ac2fbcdaabfbb0df5841beb2c8d6ff103472f0f5a03ff636305",
+      "candidate_policy": "vector+bm25/rrf-v1(k=60,depth=20)"
+    }
+  },
+  "resolved_query": {
+    "search_query": "송파구 오금동에서는 쓰레기를 무슨 요일 몇 시에 내놓나요?",
+    "district": "송파구",
+    "dong": "오금동",
+    "status": "resolved",
+    "clarification_question": null,
+    "region_status": "ok",
+    "candidate_districts": []
+  },
+  "search_query": "송파구 오금동에서는 쓰레기를 무슨 요일 몇 시에 내놓나요?",
+  "candidates": [
+    {
+      "chunk": {
+        "chunk_id": "chunk-2401227c07717ca42b995673ac088e66e0ecf0f5c9702b9fc168261ab962b5ea",
+        "source_document_id": "songpa-rules",
+        "source_document_version": "v1",
+        "title": "서울특별시 송파구 폐기물 관리 조례 시행규칙",
+        "content_format": "json",
+        "content": "{\"text\":\"제2조 (분리보관 및 배출방법) ①생활폐기물은 「서울특별시 송파구 폐기물관리 조례」(이하 \\\"조례\\\"라 한다) 제10조제2항에 따라 다음 각 호의 기준에 따라 분리보관 또는 배출하여야 한다. <개정 개정 09·10·20, 2015.10.22.>\\n1. 연탄재 : 가정이나 재래시장 및 소규모영세사업장에서는 수집·운반이 용이하도록 다른 생활폐기물과 혼합되지않게 순수한 연탄재만 비닐 등의 용기에 담아 일정장소에 배출하고 화훼농가 등 사업활동에 수반하여 다량으로 발생되는 연탄재는 서울특별시 송파구청장이 정하는 방법에 의해 배출하여야 한다.\\n2. 가내공업폐기물 : 1일 배출량이 300㎏미만인 폐합성수지, 폐합성섬유, 폐합성고무, 폐합성피혁 등은 종량제 규격봉투(생활폐기물용)에 넣어 주소·성명·전화번호를 기재후 일정장소에 배출하여야 한다. 다만, 제조공정에서 발생되는 폐합성수지 및 폐합성고무는 생활폐기물과 혼합되지 않도록분리 보관하였다가 지정폐기물수집·운반업자에게 의뢰 처리하여야 한다.<개정 98·6·12, 99·3·31>\\n3. 병원배출 생활폐기물 : 「폐기물관리법」제2조(또는「폐기물관리법 시행령」제4조)에 따른 의료폐기물이 혼합되지 않도록 별도로 분리하여 종량제 규격봉투에 넣어 일정장소에 배출하여야 한다.\\n4. 제1호부터 3호까지에서 규정한 이외의 생활계폐기물은 수집·운반이 용이하도록 일정장소에 성상별로 종량제 규격봉투에 담아 배출하여야 하며 지정폐기물과 혼합하여 배출하여서는 아니된다.\\n②일반가정, 점포 등에서 배출하는 생활 폐기물은 물기를 제거한 후 종량제규격봉투에 담아 지정된 일시·장소에 배출하여야 한다. 가로변에 배출하는 폐기물은 환경과 도시미관을 위하여 오후 10시부터 새벽 01시까지 배출하여야 한다. <전문개정98·6·12> <개정 09·10·20>\\n③조례 제8조제1항의 규정에 의한 지정된 일시·장소는 별표 4와 같다.<신설98·6·12>\\n\",\"unit_type\":\"article\"}",
+        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=1481479",
+        "source_location": "조문/조[2] (조문번호 000200)",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 1,
+      "score": 0.031754032258064516,
+      "stage_scores": {
+        "vector": 0.27292316040051756,
+        "bm25": 44.12397076901623,
+        "rrf": 0.031754032258064516
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-79ce8eb198458b15743e147de9e516a25abb7ce9bc85d10218c8029d70c5428a",
+        "source_document_id": "songpa-ordinance",
+        "source_document_version": "v1",
+        "title": "서울특별시 송파구 폐기물 관리 조례",
+        "content_format": "json",
+        "content": "{\"text\":\"제3조(폐기물 관할구역) \\n① 서울특별시 송파구(이하 \\\"구\\\"라 한다) 전 지역을 폐기물 관할구역으로 한다.\\n② 제1항의 규정에 따른 폐기물 관할구역의 경계가 하천·공원·도로·고가차도·터널 등 시설물의 중앙 또는 일부에 걸쳐 있어 폐기물의 효율적관리가 곤란하다고 인정될 경우에는 경계에 인접한 자치단체와 상호 협의하여 조정할 수 있다.<개정 2003·7·14, 2011.12.12>\\n③ 제2항에 따른 협의가 성립되지 않을 경우에는 「폐기물관리법」(이하 “법”이라 한다) 제4조제2항에 따라 서울특별시장(이하 \\\"시장\\\"이라 한다)에게 조정을 건의할 수 있으며, 시장이 조정·결정한 사항에 대하여는 이에 따른다.<개정 2011.12.12, 2017.3.30., 2018.6.29.>\\n④ 제2항에 따른 폐기물 관할구역의 조정과 「폐기물관리법 시행규칙」 제15조에 따른 생활폐기물 관리제외지역을 지정 또는 해제하는 때에는 서울특별시 송파구의회(이하 \\\"구의회\\\" 라 한다)에 통보하여야 한다.<개정 2003·7·14, 2009.11.9 ><개정 2011.12.12>\\n\",\"unit_type\":\"article\"}",
+        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2053883",
+        "source_location": "조문/조[4] (조문번호 000300)",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 2,
+      "score": 0.031754032258064516,
+      "stage_scores": {
+        "vector": 0.30498089036606607,
+        "bm25": 40.00392001889463,
+        "rrf": 0.031754032258064516
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-d5c1e7539d6b867fc58f2f3781e9d0d944e10ec0553b02946c4fef991864f0e7",
+        "source_document_id": "songpa-rules:attachment:121237861",
+        "source_document_version": "v1",
+        "title": "별표",
+        "content_format": "json",
+        "content": "{\"header_rows\":[{\"cells\":[{\"cell_id\":\"table-3-r0-c0\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":0,\"rowspan\":2,\"text\":\"부  과  항  목\"},{\"cell_id\":\"table-3-r0-c1\",\"colspan\":3,\"inherited_from_previous_row\":false,\"origin_col\":1,\"origin_row\":0,\"rowspan\":1,\"text\":\"신고포상금\\n(천원)\"},{\"cell_id\":\"table-3-r0-c4\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":4,\"origin_row\":0,\"rowspan\":2,\"text\":\"비 고\"}],\"row\":0},{\"cells\":[{\"cell_id\":\"table-3-r0-c0\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":0,\"origin_row\":0,\"rowspan\":2,\"text\":\"부  과  항  목\"},{\"cell_id\":\"table-3-r1-c1\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":1,\"origin_row\":1,\"rowspan\":1,\"text\":\"1차\\n위반\"},{\"cell_id\":\"table-3-r1-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":1,\"rowspan\":1,\"text\":\"2차\\n위반\"},{\"cell_id\":\"table-3-r1-c3\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":3,\"origin_row\":1,\"rowspan\":1,\"text\":\"3차\\n위반\"},{\"cell_id\":\"table-3-r0-c4\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":4,\"origin_row\":0,\"rowspan\":2,\"text\":\"비 고\"}],\"row\":1}],\"paragraphs\":[\"[별표 5] <신설 2003․8․4, 개정2009․10․20, 2010.8.12.>\\n\",\"포 상 금 지 급 기 준 (제6조 관련)\\n\",\"\\n\",\"\"],\"row\":{\"cells\":[{\"cell_id\":\"table-3-r15-c0\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":15,\"rowspan\":1,\"text\":\"라. 휴식 또는 행락중 발생된 쓰레기를 수거하지 아니하는 행위\"},{\"cell_id\":\"table-3-r15-c1\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":1,\"origin_row\":15,\"rowspan\":1,\"text\":\"50\"},{\"cell_id\":\"table-3-r15-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":15,\"rowspan\":1,\"text\":\"75\"},{\"cell_id\":\"table-3-r15-c3\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":3,\"origin_row\":15,\"rowspan\":1,\"text\":\"100\"},{\"cell_id\":\"table-3-r15-c4\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":4,\"origin_row\":15,\"rowspan\":1,\"text\":\"\"}],\"row\":15,\"source_cell_ids\":[\"table-3-r15-c0\",\"table-3-r16-c0\"],\"source_rows\":[15,16]},\"section_title\":\"[별표 5] <신설 2003․8․4, 개정2009․10․20, 2010.8.12.>\",\"table_id\":\"table-3\"}",
+        "source_url": "http://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=121237861&flNm=%EB%B3%84%ED%91%9C",
+        "source_location": "table-3/row[15]",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 3,
+      "score": 0.03047794966520434,
+      "stage_scores": {
+        "vector": 0.2463383303271694,
+        "bm25": 45.35398091267031,
+        "rrf": 0.03047794966520434
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-ecfea334b419ae0995b3a4bb271aebd51bad295cfb17037d94cf9bf74e41cb06",
+        "source_document_id": "songpa-ordinance",
+        "source_document_version": "v1",
+        "title": "서울특별시 송파구 폐기물 관리 조례",
+        "content_format": "json",
+        "content": "{\"applicability_status\":\"historical_and_current_mixed_review_required\",\"note\":\"과거 부칙의 시행일·경과조치 포함. 현행 일반 배출 기준으로 일괄 적용 금지.\",\"promulgation_date\":\"20250710\",\"promulgation_number\":\"1781\",\"text\":\"부칙  ① (시행일) 이 조례는 1997년 1월 1일부터 시행한다.\\n② (일반적 경과조치) 이 조례 시행 당시 종전의 규정에 의하여 부과하였거나 부과하여야 할 수수료 등에 대하여는 종전의 규정에 의한다. 다만, 새로운규격봉투를 제작·판매할 때에는 기판매된 규격봉투의 사용은 새로운 규격봉투 판매 개시일 이후 1개월까지로 한다.\\n부칙 (97·12·1) ① (시행일) 이 조례는 1997년 12월 1일부터 시행하되, 사업장용 규격봉투에 대하여는 1998년 1월 1일부터 시행한다.\\n② (경과조치) 이 조례 시행 당시 종전의 규정에 의하여 부과하였거나 부과하여야 할 수수료 등에 대하여는 종전의 규정에 의한다.\\n부칙 (98·7·8) 제1조(시행일) 이 조례는 공포한 날부터 시행한다.\\n제2조(다른조례의 개정) ① 서울특별시송파구오수·분뇨및축산폐수의처리에관한조례 중 다음과 같이 개정한다.\\n제20조제2항을 삭제한다.\\n② 서울특별시송파구쓰레기줄이기와자원재활용촉진에관한조례 중 다음과 같이 개정한다.\\n제8조를 삭제한다.\\n부칙 (98·10·13) 이 조례는 공포한 날부터 시행한다.\\n부칙 (99·5·20) 이 조례는 공포한 날부터 시행한다.\\n부칙 (99·8·10) 이 조례는 공포한 날부터 시행한다.\\n부칙 (99·12·31) 이 조례는 공포한 날부터 시행한다.\\n부칙 (2000·4·4) 이 조례는 공포한 날부터 시행한다.\\n부칙 (2000·6·8) 이 조례는 공포한 날부터 시행한다.\\n부칙 (2001·3·16) 이 조례는 공포한 날부터 시행한다.\\n부칙 (2003·7·14) 이 조례는 공포한 날부터 시행한다.\\n부칙 (2006·12·26) 이 조례는 공포한 날부터 시행한다.\\n부칙 (2008· 9·22) 이 조례는 공포한 날부터 시행한다.\\n부칙 (2009· 11·9) 이 조례는 공포한 날부터 시행한다.\\n부칙 (2011. 6. 7) 이 조례는 공포한 날부터 시행한다. 다만, 제17조부터 제30조까지의 개정규정은 2011. 7. 24일부터 시행한다.\\n부칙 (2011.12.12) 이 조례는 공포한 날부터 시행한다.\\n부칙 <제1,226호, 2014.9.25> 이 조례는 공포한 날부터 시행한다.\\n부칙 <제1,251호, 2015.4.2> 이 조례는 공포한 날부터 시행한다.\\n부칙 <제1,348호, 2017.3.30> 이 조례는 공포한 날부터 시행한다.\\n부칙 <제1,438호, 2018.6.29.> 이 조례는 공포 후 30일이 경과한 날부터 시행한다.\\n부 칙 <제1,502호, 2019.11.7.> 제1조(시행일) 이 조례는 공포한 날부터 시행한다.\\n제2조(경과조치) 이 조례 시행 당시 종전의 규정에 의하여 부과하였거나 부과하여야 할 수수료에 대하여는 종전의 규정에 의한다.\\n부 칙 <제1591호, 2021.09.30.> 제1조(시행일) 이 조례는 공포한 날부터 시행한다.\\n제2조(규격봉투에 관한 경과조치) · 이 조례 시행 당시 종전의 규정에 다라 제작·판매된 종량제봉투 100리터는 계속하여 사용할 수 있다.\\n· 가락시장용 종량제봉투는 재고 소진까지 사업장용 종량제봉투로 간주하여 판매한다.\\n부 칙 <제1781호, 알기 쉬운 법령 정비기준 등에 따른 서울특별시 송파구 교통환경국 소관 조례 정비를 위한 일괄개정조례, 2025.07.10.> 이 조례는 공포한 날부터 시행한다.\\n\",\"unit_type\":\"supplement\"}",
+        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2053883",
+        "source_location": "부칙[1]/부칙내용",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 4,
+      "score": 0.029877369007803793,
+      "stage_scores": {
+        "vector": 0.25542372281860704,
+        "bm25": 39.14005222950322,
+        "rrf": 0.029877369007803793
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-009da0a5953724da6f21e72b85061156ff20e75938a644582d1a2bd5cfb23691",
+        "source_document_id": "songpa-ordinance",
+        "source_document_version": "v1",
+        "title": "서울특별시 송파구 폐기물 관리 조례",
+        "content_format": "json",
+        "content": "{\"text\":\"제4조(구의 책무) \\n① 서울특별시 송파구청장(이하 \\\"구청장\\\"이라 한다)은 관할구역 안의 폐기물이 적정처리될 수 있도록 폐기물처리시설을 설치·운영하는 등 법 제4조제1항의 규정을 충실히 수행하는 한편, 폐기물의 감량·재활용·안전처리를 위하여 노력하여야 한다.<개정 2011.12.12>\\n② <개정 2008·9·22, 2011.12.12> <삭제 2018.6.29.>\\n③ 구청장은 관할구역 안의 생활환경개선과 마을청소 등 활성화를 위하여 노력하여야 하며, 이를 위한 우수 참여자 또는 기여자에게 장비지원·표창 및 그 밖에 우대 혜택을 부여할 수 있다.<신설 2003· 7· 14><개정 2011.12.12., 2025.07.10.>\\n④ 구청장은 토지·건물의 소유자·점유자 또는 관리자가 법 제7조제2항에 따른 청결을 유지하지 아니한 경우 30일 이내의 기간을 정하여 필요한 조치를 명할 수 있다. <신설2003· 7· 14, 2008·9·22><개정 2011.12.12>\\n\",\"unit_type\":\"article\"}",
+        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2053883",
+        "source_location": "조문/조[5] (조문번호 000400)",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 5,
+      "score": 0.029726775956284153,
+      "stage_scores": {
+        "vector": 0.30993842149864514,
+        "bm25": 37.33065184701947,
+        "rrf": 0.029726775956284153
+      }
+    }
+  ],
+  "model_input_chunk_ids": [
+    "chunk-2401227c07717ca42b995673ac088e66e0ecf0f5c9702b9fc168261ab962b5ea",
+    "chunk-79ce8eb198458b15743e147de9e516a25abb7ce9bc85d10218c8029d70c5428a",
+    "chunk-d5c1e7539d6b867fc58f2f3781e9d0d944e10ec0553b02946c4fef991864f0e7",
+    "chunk-ecfea334b419ae0995b3a4bb271aebd51bad295cfb17037d94cf9bf74e41cb06",
+    "chunk-009da0a5953724da6f21e72b85061156ff20e75938a644582d1a2bd5cfb23691"
+  ],
+  "response": {
+    "request_id": "e17ae70139444b35918b3b5f9ef3e1f2",
+    "run_id": "bc30e59ec71f4c8c87a3a7918048619c",
+    "status": "insufficient_evidence",
+    "answer": "현재 확인한 자료로는 답변하기 어렵습니다.",
+    "citations": [],
+    "places": {
+      "status": "unavailable",
+      "places": [],
+      "error": null
+    },
+    "error": null,
+    "error_code": null
+  },
+  "stages": [
+    {
+      "name": "resolve",
+      "status": "ok",
+      "duration_ms": 0.142700009746477,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "rewrite",
+      "status": "skipped",
+      "duration_ms": 0.0,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "retrieve",
+      "status": "ok",
+      "duration_ms": 298.14040000201203,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "context",
+      "status": "ok",
+      "duration_ms": 0.05610000516753644,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "generate",
+      "status": "ok",
+      "duration_ms": 1925.090700009605,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "citations",
+      "status": "ok",
+      "duration_ms": 0.0040000013541430235,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "place_lookup",
+      "status": "skipped",
+      "duration_ms": 0.0,
+      "error": null,
+      "error_code": null
+    }
+  ],
+  "duration_ms": 2223.5710000095423,
+  "warnings": []
+}

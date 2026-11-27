@@ -1,0 +1,231 @@
+{
+  "langfuse_project": "project:cmwx4ub9u0006ps1syc3peguq",
+  "run_id": "3b82977298534163b188efd9aaf2a7ab",
+  "request_id": "61a8e992f3c94731ad0e7857e200e36d",
+  "run_kind": "rag",
+  "started_at": "2026-11-26T18:49:37.640567Z",
+  "request": {
+    "request_id": "61a8e992f3c94731ad0e7857e200e36d",
+    "question": "서대문구에서 우유팩은 어떻게 배출하나요?",
+    "district": "서대문구",
+    "dong": null,
+    "conditions": {},
+    "district_confirmed": false
+  },
+  "options": {
+    "variant": "A",
+    "rewrite_enabled": false,
+    "top_k": 5,
+    "max_context_chars": 12000,
+    "run_kind": "rag",
+    "versions": {
+      "model": "gpt-6-luna",
+      "index": "index-1c25b630ae0878a2c496716730e6c0622ba6995203d7ac0293759bdcb1bf5bef-embed-input-table-text-v2-7a9cfb43ffc4fa0f",
+      "chunking": "preprocessed-v2-row-v1",
+      "embedding": "text-embedding-3-small",
+      "prompt": "b0ec828702879ac2fbcdaabfbb0df5841beb2c8d6ff103472f0f5a03ff636305",
+      "candidate_policy": "vector-v1"
+    }
+  },
+  "resolved_query": {
+    "search_query": "서대문구에서 우유팩은 어떻게 배출하나요?",
+    "district": "서대문구",
+    "dong": null,
+    "status": "resolved",
+    "clarification_question": null,
+    "region_status": "no_dong",
+    "candidate_districts": []
+  },
+  "search_query": "서대문구에서 우유팩은 어떻게 배출하나요?",
+  "candidates": [
+    {
+      "chunk": {
+        "chunk_id": "chunk-47bca6cf8982a09783402041260bd2c1e7406b3517038dd4f65add6984c6ca24",
+        "source_document_id": "seodaemun-ordinance",
+        "source_document_version": "v1",
+        "title": "서울특별시 서대문구 폐기물 관리 조례",
+        "content_format": "json",
+        "content": "{\"text\":\"제36조(수수료 등의 세입처리) 폐기물 수수료 등은 서대문구의 수입으로 한다.  <개정 2011. 8. 10., 2015. 6. 3.>\\n\",\"unit_type\":\"article\"}",
+        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2101297",
+        "source_location": "조문/조[44] (조문번호 003600)",
+        "scope_type": "district",
+        "districts": [
+          "서대문구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 1,
+      "score": 0.31654394466586344,
+      "stage_scores": {
+        "vector": 0.31654394466586344
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-41da4eb0e71377f50788455a927f97a5064c10443e4a886eae05fae1f07b327c",
+        "source_document_id": "seodaemun-ordinance",
+        "source_document_version": "v1",
+        "title": "서울특별시 서대문구 폐기물 관리 조례",
+        "content_format": "json",
+        "content": "{\"text\":\"제3조(폐기물 관할구역) \\n① 서울특별시 서대문구(이하 “서대문구”라   한다) 전 지역을 폐기물 관할 구역으로 한다. <개정 2011. 8. 10.>\\n② 서울특별시 서대문구청장(이하 “구청장”이라 한다)은 제1항에 따른 폐기물 관할 구역의 경계가 하천, 공원, 도로, 고가차도, 터널 등 시설물의 중앙 또는 일부에 걸쳐 있어 폐기물의 효율적 관리가 곤란하다고 인정되면 경계에 인접한 해당 구청장과 상호 협의하여 조정할 수 있다. <개정 2011. 8. 10.>\\n③ 구청장은 제2항에 따른 상호 협의가 성립되지 아니 할 경우에는 「폐기물관리법」(이하 “법”이라 한다) 제4조제2항에 따라 서울특별시장(이하··시장··이라 한다)에게 조정을 건의할 수 있으며, 시장이 조정 결정한 사항에 대해서는 이에 따라야 한다.  <개정 2011. 8. 10., 2021. 11. 3.>\\n④ 제2항에 따른 폐기물 관할 구역의 조정과 「폐기물관리법 시행규칙」제13조에 따른 예외적 매립시설에서의 폐기물 처리를 지정 또는 해제하는 때에는 서울특별시 서대문구의회에 통보하여야 한다.  <개정 2011. 8. 10.>\\n\",\"unit_type\":\"article\"}",
+        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2101297",
+        "source_location": "조문/조[4] (조문번호 000300)",
+        "scope_type": "district",
+        "districts": [
+          "서대문구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 2,
+      "score": 0.27937948110803,
+      "stage_scores": {
+        "vector": 0.27937948110803
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-8989a64a6d0777fe16674d27bd58f08f111f5bbcc20aa91012ea2487199a8bf4",
+        "source_document_id": "seodaemun-ordinance",
+        "source_document_version": "v1",
+        "title": "서울특별시 서대문구 폐기물 관리 조례",
+        "content_format": "json",
+        "content": "{\"text\":\"제14조(생활폐기물의 배출방법) \\n① 법 제15조제1항에 따른 생활폐기  물을 배출하려면 구청장이 제작하여 공급하는 관급 규격봉투(이하··규격봉투··라 한다)에 담아 묶은 후 구청장이 지정한 장소, 요일, 시간에 배출하거나 또는 용기에 담아 배출하여야 한다. 다만, 폐기물 처리업자가 수거하는 지역에서는 해당 업자가 공급하는 규격봉투를 사용하여야 한다. <개정 2011. 8. 10.>\\n② 재활용 가능품은 별표 2에서 정한 배출요령에 따라 구청장이 지정하는 시간, 장소에 배출하여야 하며, 구청장은 재활용 가능품의 수집을 활성화하기 위하여 노력하여야 한다. <개정 2011. 8. 10.>\\n\",\"unit_type\":\"article\"}",
+        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2101297",
+        "source_location": "조문/조[18] (조문번호 001400)",
+        "scope_type": "district",
+        "districts": [
+          "서대문구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 3,
+      "score": 0.2739547473326177,
+      "stage_scores": {
+        "vector": 0.2739547473326177
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-4507070dbe9339e673823332bc07aa729d820dc92dd92c90e869fdec62785976",
+        "source_document_id": "seodaemun-ordinance",
+        "source_document_version": "v1",
+        "title": "서울특별시 서대문구 폐기물 관리 조례",
+        "content_format": "json",
+        "content": "{\"text\":\"제2장 폐기물의 배출 및 처리 <개정 2011. 8. 10.>\\n\",\"unit_type\":\"heading\"}",
+        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2101297",
+        "source_location": "조문/조[13] (조문번호 000000)",
+        "scope_type": "district",
+        "districts": [
+          "서대문구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 4,
+      "score": 0.26791098930791124,
+      "stage_scores": {
+        "vector": 0.26791098930791124
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-a27102fc35b3f7fdee285070211f55f4e2dbd9f8c0f5089036e01b8c845596d3",
+        "source_document_id": "seodaemun-ordinance",
+        "source_document_version": "v1",
+        "title": "서울특별시 서대문구 폐기물 관리 조례",
+        "content_format": "json",
+        "content": "{\"text\":\"제5조(서대문구의 책무) 구청장은 관할 구역의 폐기물의 배출 및 처 리상황을 파악하여 폐기물이 적정하게 처리될 수 있도록 폐기물처리시설을 설치ㆍ운영하여야 하며, 폐기물의 처리방법의 개선 및 관계인의 자질향상으로 폐기물 처리사업을 능률적으로 수행하는 한편, 주민과 사업자의 청소의식 함양과 폐기물 발생 억제를 위하여 노력하여야 한다.\\n\\n[전문개정 2021. 11. 3.]\\n\",\"unit_type\":\"article\"}",
+        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2101297",
+        "source_location": "조문/조[6] (조문번호 000500)",
+        "scope_type": "district",
+        "districts": [
+          "서대문구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 5,
+      "score": 0.25852952522100564,
+      "stage_scores": {
+        "vector": 0.25852952522100564
+      }
+    }
+  ],
+  "model_input_chunk_ids": [
+    "chunk-47bca6cf8982a09783402041260bd2c1e7406b3517038dd4f65add6984c6ca24",
+    "chunk-41da4eb0e71377f50788455a927f97a5064c10443e4a886eae05fae1f07b327c",
+    "chunk-8989a64a6d0777fe16674d27bd58f08f111f5bbcc20aa91012ea2487199a8bf4",
+    "chunk-4507070dbe9339e673823332bc07aa729d820dc92dd92c90e869fdec62785976",
+    "chunk-a27102fc35b3f7fdee285070211f55f4e2dbd9f8c0f5089036e01b8c845596d3"
+  ],
+  "response": {
+    "request_id": "61a8e992f3c94731ad0e7857e200e36d",
+    "run_id": "3b82977298534163b188efd9aaf2a7ab",
+    "status": "insufficient_evidence",
+    "answer": "현재 확인한 자료로는 답변하기 어렵습니다.",
+    "citations": [],
+    "places": {
+      "status": "unavailable",
+      "places": [],
+      "error": null
+    },
+    "error": null,
+    "error_code": null
+  },
+  "stages": [
+    {
+      "name": "resolve",
+      "status": "ok",
+      "duration_ms": 0.2463000128045678,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "rewrite",
+      "status": "skipped",
+      "duration_ms": 0.0,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "retrieve",
+      "status": "ok",
+      "duration_ms": 824.9144000001252,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "context",
+      "status": "ok",
+      "duration_ms": 0.06949999078642577,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "generate",
+      "status": "ok",
+      "duration_ms": 1918.2922000036342,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "citations",
+      "status": "ok",
+      "duration_ms": 0.0043000036384910345,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "place_lookup",
+      "status": "skipped",
+      "duration_ms": 0.0,
+      "error": null,
+      "error_code": null
+    }
+  ],
+  "duration_ms": 2743.6727000022074,
+  "warnings": []
+}

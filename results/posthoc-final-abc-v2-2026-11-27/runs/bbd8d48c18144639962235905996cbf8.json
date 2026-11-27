@@ -1,0 +1,231 @@
+{
+  "langfuse_project": "project:cmwx4ub9u0006ps1syc3peguq",
+  "run_id": "bbd8d48c18144639962235905996cbf8",
+  "request_id": "a8cc5655a1b045e4a0d1b0c9b5889733",
+  "run_kind": "rag",
+  "started_at": "2026-11-26T18:52:18.519383Z",
+  "request": {
+    "request_id": "a8cc5655a1b045e4a0d1b0c9b5889733",
+    "question": "송파구 오금동에서는 쓰레기를 무슨 요일 몇 시에 내놓나요?",
+    "district": "송파구",
+    "dong": null,
+    "conditions": {},
+    "district_confirmed": false
+  },
+  "options": {
+    "variant": "A",
+    "rewrite_enabled": false,
+    "top_k": 5,
+    "max_context_chars": 12000,
+    "run_kind": "rag",
+    "versions": {
+      "model": "gpt-6-luna",
+      "index": "index-1c25b630ae0878a2c496716730e6c0622ba6995203d7ac0293759bdcb1bf5bef-embed-input-table-text-v2-7a9cfb43ffc4fa0f",
+      "chunking": "preprocessed-v2-row-v1",
+      "embedding": "text-embedding-3-small",
+      "prompt": "b0ec828702879ac2fbcdaabfbb0df5841beb2c8d6ff103472f0f5a03ff636305",
+      "candidate_policy": "vector-v1"
+    }
+  },
+  "resolved_query": {
+    "search_query": "송파구 오금동에서는 쓰레기를 무슨 요일 몇 시에 내놓나요?",
+    "district": "송파구",
+    "dong": "오금동",
+    "status": "resolved",
+    "clarification_question": null,
+    "region_status": "ok",
+    "candidate_districts": []
+  },
+  "search_query": "송파구 오금동에서는 쓰레기를 무슨 요일 몇 시에 내놓나요?",
+  "candidates": [
+    {
+      "chunk": {
+        "chunk_id": "chunk-009da0a5953724da6f21e72b85061156ff20e75938a644582d1a2bd5cfb23691",
+        "source_document_id": "songpa-ordinance",
+        "source_document_version": "v1",
+        "title": "서울특별시 송파구 폐기물 관리 조례",
+        "content_format": "json",
+        "content": "{\"text\":\"제4조(구의 책무) \\n① 서울특별시 송파구청장(이하 \\\"구청장\\\"이라 한다)은 관할구역 안의 폐기물이 적정처리될 수 있도록 폐기물처리시설을 설치·운영하는 등 법 제4조제1항의 규정을 충실히 수행하는 한편, 폐기물의 감량·재활용·안전처리를 위하여 노력하여야 한다.<개정 2011.12.12>\\n② <개정 2008·9·22, 2011.12.12> <삭제 2018.6.29.>\\n③ 구청장은 관할구역 안의 생활환경개선과 마을청소 등 활성화를 위하여 노력하여야 하며, 이를 위한 우수 참여자 또는 기여자에게 장비지원·표창 및 그 밖에 우대 혜택을 부여할 수 있다.<신설 2003· 7· 14><개정 2011.12.12., 2025.07.10.>\\n④ 구청장은 토지·건물의 소유자·점유자 또는 관리자가 법 제7조제2항에 따른 청결을 유지하지 아니한 경우 30일 이내의 기간을 정하여 필요한 조치를 명할 수 있다. <신설2003· 7· 14, 2008·9·22><개정 2011.12.12>\\n\",\"unit_type\":\"article\"}",
+        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2053883",
+        "source_location": "조문/조[5] (조문번호 000400)",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 1,
+      "score": 0.30993842149864514,
+      "stage_scores": {
+        "vector": 0.30993842149864514
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-79ce8eb198458b15743e147de9e516a25abb7ce9bc85d10218c8029d70c5428a",
+        "source_document_id": "songpa-ordinance",
+        "source_document_version": "v1",
+        "title": "서울특별시 송파구 폐기물 관리 조례",
+        "content_format": "json",
+        "content": "{\"text\":\"제3조(폐기물 관할구역) \\n① 서울특별시 송파구(이하 \\\"구\\\"라 한다) 전 지역을 폐기물 관할구역으로 한다.\\n② 제1항의 규정에 따른 폐기물 관할구역의 경계가 하천·공원·도로·고가차도·터널 등 시설물의 중앙 또는 일부에 걸쳐 있어 폐기물의 효율적관리가 곤란하다고 인정될 경우에는 경계에 인접한 자치단체와 상호 협의하여 조정할 수 있다.<개정 2003·7·14, 2011.12.12>\\n③ 제2항에 따른 협의가 성립되지 않을 경우에는 「폐기물관리법」(이하 “법”이라 한다) 제4조제2항에 따라 서울특별시장(이하 \\\"시장\\\"이라 한다)에게 조정을 건의할 수 있으며, 시장이 조정·결정한 사항에 대하여는 이에 따른다.<개정 2011.12.12, 2017.3.30., 2018.6.29.>\\n④ 제2항에 따른 폐기물 관할구역의 조정과 「폐기물관리법 시행규칙」 제15조에 따른 생활폐기물 관리제외지역을 지정 또는 해제하는 때에는 서울특별시 송파구의회(이하 \\\"구의회\\\" 라 한다)에 통보하여야 한다.<개정 2003·7·14, 2009.11.9 ><개정 2011.12.12>\\n\",\"unit_type\":\"article\"}",
+        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2053883",
+        "source_location": "조문/조[4] (조문번호 000300)",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 2,
+      "score": 0.30498089036606607,
+      "stage_scores": {
+        "vector": 0.30498089036606607
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-986a9de523bb772249173aacaee2139726b9b379dd26bd1afce795a7c6b286c4",
+        "source_document_id": "songpa-ordinance",
+        "source_document_version": "v1",
+        "title": "서울특별시 송파구 폐기물 관리 조례",
+        "content_format": "json",
+        "content": "{\"text\":\"제10조의2(공사장 생활폐기물 보관장소의 지정) \\n① 구청장은 공사장 생활폐기물을 건설폐기물에 관한 기준 및 방법으로 수집·운반·보관·처리하려는 경우 폐기물의 운반거리, 발생량 등을 고려하여 다음 각 호와 같이 적정한 공사장 생활폐기물 보관장소(이하“보관장소”라 한다)를 지정하여야 한다.<개정 2011.12.12>\\n1. 공사장 생활폐기물을 수집·운반하는 자가 적재능력이 작은 차량으로 공사장 생활폐기물을 수집하여 적재능력이 큰 차량으로 옮겨 싣기 위하여 필요한 보관 장소\\n2. 공사장 생활폐기물 처리장소까지의 운반거리가 멀어 최초로 수집·운반한 자가 수집한 공사장 생활폐기물을 처리장소까지 운반할 수 없는 경우 폐기물을 임시로 보관할 수 있는 장소\\n② 다음 각 호의 사항을 고려하여 건설폐기물수집·운반업자가 승인받은 임시보관장소는 공사장 생활폐기물 보관장소로 지정받은 것으로 본다.<개정 2011.6.7>\\n1. 공사장 생활폐기물을 건설폐기물과 별도 보관할 수 있는 장소 확보 등 공사장 생활폐기물 수집·운반 기준의 준수 가능 여부\\n2. 「건설폐기물의 재활용촉진에 관한 법률 시행규칙」 제4조제4항에 따라 임시보관장소 설치 변경승인을 받는 등 필요한 조치 이행 여부\\n\",\"unit_type\":\"article\"}",
+        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2053883",
+        "source_location": "조문/조[14] (조문번호 001002)",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 3,
+      "score": 0.29894916041840863,
+      "stage_scores": {
+        "vector": 0.29894916041840863
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-2401227c07717ca42b995673ac088e66e0ecf0f5c9702b9fc168261ab962b5ea",
+        "source_document_id": "songpa-rules",
+        "source_document_version": "v1",
+        "title": "서울특별시 송파구 폐기물 관리 조례 시행규칙",
+        "content_format": "json",
+        "content": "{\"text\":\"제2조 (분리보관 및 배출방법) ①생활폐기물은 「서울특별시 송파구 폐기물관리 조례」(이하 \\\"조례\\\"라 한다) 제10조제2항에 따라 다음 각 호의 기준에 따라 분리보관 또는 배출하여야 한다. <개정 개정 09·10·20, 2015.10.22.>\\n1. 연탄재 : 가정이나 재래시장 및 소규모영세사업장에서는 수집·운반이 용이하도록 다른 생활폐기물과 혼합되지않게 순수한 연탄재만 비닐 등의 용기에 담아 일정장소에 배출하고 화훼농가 등 사업활동에 수반하여 다량으로 발생되는 연탄재는 서울특별시 송파구청장이 정하는 방법에 의해 배출하여야 한다.\\n2. 가내공업폐기물 : 1일 배출량이 300㎏미만인 폐합성수지, 폐합성섬유, 폐합성고무, 폐합성피혁 등은 종량제 규격봉투(생활폐기물용)에 넣어 주소·성명·전화번호를 기재후 일정장소에 배출하여야 한다. 다만, 제조공정에서 발생되는 폐합성수지 및 폐합성고무는 생활폐기물과 혼합되지 않도록분리 보관하였다가 지정폐기물수집·운반업자에게 의뢰 처리하여야 한다.<개정 98·6·12, 99·3·31>\\n3. 병원배출 생활폐기물 : 「폐기물관리법」제2조(또는「폐기물관리법 시행령」제4조)에 따른 의료폐기물이 혼합되지 않도록 별도로 분리하여 종량제 규격봉투에 넣어 일정장소에 배출하여야 한다.\\n4. 제1호부터 3호까지에서 규정한 이외의 생활계폐기물은 수집·운반이 용이하도록 일정장소에 성상별로 종량제 규격봉투에 담아 배출하여야 하며 지정폐기물과 혼합하여 배출하여서는 아니된다.\\n②일반가정, 점포 등에서 배출하는 생활 폐기물은 물기를 제거한 후 종량제규격봉투에 담아 지정된 일시·장소에 배출하여야 한다. 가로변에 배출하는 폐기물은 환경과 도시미관을 위하여 오후 10시부터 새벽 01시까지 배출하여야 한다. <전문개정98·6·12> <개정 09·10·20>\\n③조례 제8조제1항의 규정에 의한 지정된 일시·장소는 별표 4와 같다.<신설98·6·12>\\n\",\"unit_type\":\"article\"}",
+        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=1481479",
+        "source_location": "조문/조[2] (조문번호 000200)",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 4,
+      "score": 0.27292316040051756,
+      "stage_scores": {
+        "vector": 0.27292316040051756
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-b43c4b1dfbabf97e6ffd65cf1c113caa7f8abfa16fe37a458acbb52f02d6d075",
+        "source_document_id": "songpa-ordinance",
+        "source_document_version": "v1",
+        "title": "서울특별시 송파구 폐기물 관리 조례",
+        "content_format": "json",
+        "content": "{\"text\":\"제13조(폐기물처리업자에 대한 지도감독) 구청장은 폐기물 처리업자에 대하여 인력·시설·장비·기술능력 확보상태·폐기물 처리기준 및 방법 등 준수여부, 수수료 과징의 적정성과 주민편의를 위한 행정지시 이행상태 등을 년 1회 이상 지도·점검하여야 한다.<개정 2000·4·4, 2003·7·14>\\n\",\"unit_type\":\"article\"}",
+        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2053883",
+        "source_location": "조문/조[20] (조문번호 001300)",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 5,
+      "score": 0.26891468357055104,
+      "stage_scores": {
+        "vector": 0.26891468357055104
+      }
+    }
+  ],
+  "model_input_chunk_ids": [
+    "chunk-009da0a5953724da6f21e72b85061156ff20e75938a644582d1a2bd5cfb23691",
+    "chunk-79ce8eb198458b15743e147de9e516a25abb7ce9bc85d10218c8029d70c5428a",
+    "chunk-986a9de523bb772249173aacaee2139726b9b379dd26bd1afce795a7c6b286c4",
+    "chunk-2401227c07717ca42b995673ac088e66e0ecf0f5c9702b9fc168261ab962b5ea",
+    "chunk-b43c4b1dfbabf97e6ffd65cf1c113caa7f8abfa16fe37a458acbb52f02d6d075"
+  ],
+  "response": {
+    "request_id": "a8cc5655a1b045e4a0d1b0c9b5889733",
+    "run_id": "bbd8d48c18144639962235905996cbf8",
+    "status": "insufficient_evidence",
+    "answer": "현재 확인한 자료로는 답변하기 어렵습니다.",
+    "citations": [],
+    "places": {
+      "status": "unavailable",
+      "places": [],
+      "error": null
+    },
+    "error": null,
+    "error_code": null
+  },
+  "stages": [
+    {
+      "name": "resolve",
+      "status": "ok",
+      "duration_ms": 0.15859999984968454,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "rewrite",
+      "status": "skipped",
+      "duration_ms": 0.0,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "retrieve",
+      "status": "ok",
+      "duration_ms": 212.1449000114808,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "context",
+      "status": "ok",
+      "duration_ms": 0.05990000499878079,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "generate",
+      "status": "ok",
+      "duration_ms": 1631.5930999990087,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "citations",
+      "status": "ok",
+      "duration_ms": 0.00340001133736223,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "place_lookup",
+      "status": "skipped",
+      "duration_ms": 0.0,
+      "error": null,
+      "error_code": null
+    }
+  ],
+  "duration_ms": 1844.090700004017,
+  "warnings": []
+}

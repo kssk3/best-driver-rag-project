@@ -1,0 +1,61 @@
+run_id,case_id,variant,rewrite_enabled,status,answer_correct,citation_valid,absence_ok,answer_correct_reason,citation_valid_reason,absence_ok_reason,judge_model
+3b82977298534163b188efd9aaf2a7ab,test-d01-sd-milk-carton,A,false,insufficient_evidence,0,0,,답변하지 못함(상태 insufficient_evidence),답변하지 못함(상태 insufficient_evidence),,gpt-6-luna
+2aab00b5c9fb4ef4a41d19697795edd2,test-d01-sd-milk-carton,B,false,insufficient_evidence,0,0,,답변하지 못함(상태 insufficient_evidence),답변하지 못함(상태 insufficient_evidence),,gpt-6-luna
+c5f0321776ca4dc190d34f49d7e91617,test-d01-sd-milk-carton,C,false,answered,1,1,,내용물을 비우고 헹궈 말린 뒤 종이팩 전용수거함에 배출한다고 했습니다.,"근거에 우유팩이 종이팩의 예시로 제시되어 있고, 헹구고 말리기·빨대나 비닐 제거·전용수거함 배출 및 전용수거함이 없을 때 끈으로 묶어 종이류 수거함에 배출하는 요령이 모두 명시되어 있습니다.",,gpt-6-luna
+3706b14748be4265beed429d637c3975,test-d02-sp-massage-chair,A,false,insufficient_evidence,0,0,,답변하지 못함(상태 insufficient_evidence),답변하지 못함(상태 insufficient_evidence),,gpt-6-luna
+5c2ad3e1fda44d678138fd38f4d93193,test-d02-sp-massage-chair,B,false,answered,1,1,,"답변에 안마의자 대형폐기물 수수료가 10,000원이라고 명시되어 있습니다.","근거 표에 송파구 대형생활폐기물 품목 ‘안마의자’의 부과금액이 10,000원으로 기재되어 있습니다.",,gpt-6-luna
+61c00b6b87bf401a8c470775e0766f52,test-d02-sp-massage-chair,C,false,answered,1,1,,"답변에 안마의자 수수료가 10,000원이라고 명시되어 있습니다.","근거 표에 송파구 안마의자의 부과금액이 10,000원으로 기재되어 있습니다.",,gpt-6-luna
+61f520eed02446d49f628eac8ef71569,test-d03-sd-fluorescent,A,false,insufficient_evidence,0,0,,답변하지 못함(상태 insufficient_evidence),답변하지 못함(상태 insufficient_evidence),,gpt-6-luna
+52a71209fbf146ba98975de0db48f731,test-d03-sd-fluorescent,B,false,insufficient_evidence,0,0,,답변하지 못함(상태 insufficient_evidence),답변하지 못함(상태 insufficient_evidence),,gpt-6-luna
+a9f60a819d88428b964ab39ff404b822,test-d03-sd-fluorescent,C,false,answered,1,1,,깨지지 않은 상태로 주요 거점 수거함이나 지정된 수거일과 장소에 배출한다고 안내해 필수 사실을 모두 포함합니다.,근거에 형광등은 깨지지 않은 상태로 주요 거점 수거함이나 지정된 수거일·장소에 배출하도록 명시되어 있습니다.,,gpt-6-luna
+0eb047314ba04e60937a51de4cc7cd1b,test-d04-sd-small-appliance,A,false,insufficient_evidence,0,0,,답변하지 못함(상태 insufficient_evidence),답변하지 못함(상태 insufficient_evidence),,gpt-6-luna
+20099b3f0fd341069e491857cc45974a,test-d04-sd-small-appliance,B,false,insufficient_evidence,0,0,,답변하지 못함(상태 insufficient_evidence),답변하지 못함(상태 insufficient_evidence),,gpt-6-luna
+90202fc7db394db4874e076143050e9f,test-d04-sd-small-appliance,C,false,answered,1,0,,원형 그대로 보존하고 인근 수거함에 배출하거나 구청에 접수한 뒤 배출한다고 했습니다.,근거는 소형가전의 배출요령을 제시하지만 ‘고장 난’ 제품에 한정한다는 내용은 뒷받침하지 않습니다.,,gpt-6-luna
+3991e98e853046a681db2be3ee2e471e,test-d05-sp-bag-100l-use,A,false,answered,1,1,,100리터 봉투가 생활폐기물용과 공공용이라고 정확히 답했습니다.,근거에 송파구 규격봉투 용량 100ℓ의 용도가 생활폐기물용과 공공용이라고 명시되어 있습니다.,,gpt-6-luna
+4034a62de2d8474aa3ac597388d97d1c,test-d05-sp-bag-100l-use,B,false,answered,1,1,,100리터 봉투가 생활폐기물용과 공공용이라고 답해 필수 사실을 담았습니다.,근거에 송파구 100리터 규격봉투의 용도가 생활폐기물용과 공공용으로 제시되어 있습니다.,,gpt-6-luna
+6fc9563db77f41158829882879422c6a,test-d05-sp-bag-100l-use,C,false,answered,1,1,,100리터 봉투가 생활폐기물용 또는 공공용이라고 답해 필수 사실을 포함합니다.,근거에 100리터 봉투의 용도가 생활폐기물용·공공용으로 명시되어 있고 각 용도에 담는 폐기물 설명도 조례 내용과 일치합니다.,,gpt-6-luna
+ac56d91b42334b11b5778572d198b366,test-d06-sp-business-bag-20l,A,false,answered,1,1,,사업장용 일반규격봉투 20리터 가격이 800원이라고 답해 필수 사실과 일치합니다.,근거 표에 송파구 사업장용 일반규격봉투 20ℓ의 판매가격이 800원으로 기재되어 있습니다.,,gpt-6-luna
+a3696821f9d944a7be253a5a5605130f,test-d06-sp-business-bag-20l,B,false,answered,1,1,,사업장용 일반규격봉투 20리터가 800원이라고 답했습니다.,근거 표에서 송파구 일반규격봉투의 사업장용 20ℓ 가격이 800원으로 기재되어 있습니다.,,gpt-6-luna
+9c2e0cc884654a7491a7058d1b0d6ab6,test-d06-sp-business-bag-20l,C,false,answered,1,1,,사업장용 일반규격봉투 20리터가 800원이라고 답해 필수 사실과 일치합니다.,근거 표에 송파구 사업장용 일반규격봉투 20ℓ의 판매가격이 800원으로 기재되어 있습니다.,,gpt-6-luna
+2a726625c50a4f488c235f6d9afb5e98,test-d07-sd-bag-50l,A,false,answered,1,1,,"서대문구 생활폐기물용 50리터 봉투 가격이 1,250원이라고 답했습니다.","근거 표에서 생활폐기물용 50ℓ 규격봉투 가격이 1,250원으로 제시되어 있습니다.",,gpt-6-luna
+ce923f5cd49c487abbdd5ee04fded76d,test-d07-sd-bag-50l,B,false,answered,1,1,,"서대문구 50리터 생활폐기물용 종량제 봉투 가격을 1,250원이라고 정확히 답했습니다.","근거 표에서 50ℓ 생활폐기물용 봉투의 가격이 1,250원으로 제시되어 있습니다.",,gpt-6-luna
+bee400cd14404911b3ee7ed7e30643cf,test-d07-sd-bag-50l,C,false,answered,1,1,,"50리터 생활폐기물용 봉투 가격이 1,250원이라고 답했습니다.","근거에서 서대문구 50ℓ 생활폐기물용 규격봉투 가격을 1,250원으로 제시합니다.",,gpt-6-luna
+c69411885b8b4671942c25484a1b2cd0,test-d08-sd-bag-exchange,A,false,answered,1,1,,전출 시 판매가격으로 교환할 수 있고 동일한 규격봉투를 판매하는 봉투판매소에서 교환한다고 밝혔습니다.,근거는 다른 지역으로 전출할 때 동일 규격봉투를 판매하는 봉투판매소에서 판매가격으로 현금교환한다고 규정합니다.,,gpt-6-luna
+99f83ddea5b64d7faa9225835c8cf9a3,test-d08-sd-bag-exchange,B,false,answered,1,1,,"이사로 인한 교환 문의에 대해 판매가격으로 현금 교환된다고 했고, 동일 규격 봉투를 판매하는 봉투판매소도 안내했습니다.",전출 등으로 현금교환을 요청하면 같은 규격봉투를 판매하는 봉투판매소에서 판매가격으로 교환한다는 근거와 일치합니다.,,gpt-6-luna
+8fc5da9da2c44483a39e1f84de502701,test-d08-sd-bag-exchange,C,false,answered,1,1,,전출 시 판매가격으로 교환할 수 있고 동일 규격 종량제봉투를 판매하는 봉투판매소에서 교환한다고 했습니다.,전출 시 판매가격으로 현금 교환하며 동일 규격 봉투를 판매하는 봉투판매소에서 교환한다는 근거와 일치합니다.,,gpt-6-luna
+f6cf2163ce7b4e5b999f217d07052c8f,test-d09-sp-bag-where-to-buy,A,false,answered,1,1,,구청장이 지정한 판매소에서 종량제봉투를 직접 구입한다고 답했습니다.,근거는 종량제 폐기물 배출자가 구청장 지정 판매소에서 규격봉투를 직접 구입하고 사업장생활폐기물 배출자는 폐기물처리업자로부터 직접 공급받을 수 있다고 규정합니다.,,gpt-6-luna
+bbbf445e331e4bf58494f6937a13ef11,test-d09-sp-bag-where-to-buy,B,false,answered,1,1,,구청장이 지정한 판매소에서 구입한다고 했으므로 필수 사실을 담고 있습니다.,"근거는 종량제 폐기물 배출자가 구청장 지정 봉투판매소에서 규격봉투를 구입하고, 사업장생활폐기물 배출자는 폐기물처리업자로부터 직접 공급받을 수 있다고 명시합니다.",,gpt-6-luna
+a1a3198429114e8098194c3022d337e7,test-d09-sp-bag-where-to-buy,C,false,answered,1,1,,송파구청장이 지정한 봉투판매소에서 직접 구입한다고 답해 필수 사실을 포함합니다.,종량제 폐기물 배출자는 구청장이 지정한 봉투판매소에서 규격봉투를 직접 구입해야 한다고 근거에 명시되어 있습니다.,,gpt-6-luna
+5b7eedfdd7b7451d9df346c4ea2e8513,test-d10-sp-reusable-bag,A,false,answered,0,1,,"필수 사실은 모두 담았지만, 처음에는 실제로 판매한다고 답하고 뒤에서는 현재 판매 여부를 확인할 수 없다고 해 모순됩니다.","근거는 재사용 종량제봉투 제작 가능 및 판매방법 개선·고객홍보 추진 의무를 규정하고, 현재 실제 판매 여부는 밝히지 않습니다.",,gpt-6-luna
+500aff0d3a41431abd95210b565312b9,test-d10-sp-reusable-bag,B,false,answered,0,0,,제작 가능성은 담았지만 유통매장에서 구입이 편리하도록 판매방법을 개선하고 고객 홍보를 추진한다는 내용이 빠졌습니다.,"근거는 구매 편의를 위한 판매방법 개선·고객홍보를 의무화하고 판매 확대를 위한 광고 게재는 허용할 뿐, 판매 확대 자체를 추진하도록 의무화하지는 않습니다.",,gpt-6-luna
+6f7f2416cfdb40f5a7f641f7eff0f528,test-d10-sp-reusable-bag,C,false,answered,1,1,,구청장의 재사용 종량제봉투 제작 가능성과 유통매장 판매방법 개선·홍보 추진을 모두 언급했습니다.,"근거는 제작 가능 규정과 판매방법 개선·고객홍보 의무를 뒷받침하며, 실제 제작·판매 여부를 확인해 주지는 않습니다.",,gpt-6-luna
+065856d1ad6748bea647cfb03a6b3c4d,test-n01-sd-bulky-call-center,A,false,insufficient_evidence,,,1,,,표준 정보 부족 안내문(상태 insufficient_evidence),gpt-6-luna
+d591876020c147c0b6e02339ff94bf48,test-n01-sd-bulky-call-center,B,false,insufficient_evidence,,,1,,,표준 정보 부족 안내문(상태 insufficient_evidence),gpt-6-luna
+cb45aba018f840a0853907ce435c9905,test-n01-sd-bulky-call-center,C,false,insufficient_evidence,,,1,,,표준 정보 부족 안내문(상태 insufficient_evidence),gpt-6-luna
+f01230910731420dbac55d911d528856,test-n02-sp-bulky-app,A,false,insufficient_evidence,,,1,,,표준 정보 부족 안내문(상태 insufficient_evidence),gpt-6-luna
+faaaf77107f7480e93eb1d71832b163e,test-n02-sp-bulky-app,B,false,insufficient_evidence,,,1,,,표준 정보 부족 안내문(상태 insufficient_evidence),gpt-6-luna
+5270bdb9a54440b79879cf4b6efc4fd3,test-n02-sp-bulky-app,C,false,insufficient_evidence,,,1,,,표준 정보 부족 안내문(상태 insufficient_evidence),gpt-6-luna
+2d88263bd0794be1aa65cbc104faaea2,test-n03-sp-bag-price-rise,A,false,insufficient_evidence,,,1,,,표준 정보 부족 안내문(상태 insufficient_evidence),gpt-6-luna
+35c203d8b05443a3974fee7561731e3b,test-n03-sp-bag-price-rise,B,false,insufficient_evidence,,,1,,,표준 정보 부족 안내문(상태 insufficient_evidence),gpt-6-luna
+6a36e9b762344d0ab996bfb07dcd7c49,test-n03-sp-bag-price-rise,C,false,insufficient_evidence,,,1,,,표준 정보 부족 안내문(상태 insufficient_evidence),gpt-6-luna
+7e9cf79fcdaf4e748f57ba83d31d9f1b,test-v01-sp-washer-10kg,A,false,insufficient_evidence,0,0,,답변하지 못함(상태 insufficient_evidence),답변하지 못함(상태 insufficient_evidence),,gpt-6-luna
+a711a6c5f47e4b87b5ff8ee8bc77ef98,test-v01-sp-washer-10kg,B,false,answered,1,1,,"송파구에서 10kg 이상 세탁기 수수료가 4,000원이라고 답해 필수 사실과 일치합니다.","근거에 송파구 세탁기 10kg 이상 부과금액이 4,000원으로 명시되어 있습니다.",,gpt-6-luna
+53f68b3d409f4a8eb63129d72031175f,test-v01-sp-washer-10kg,C,false,answered,1,1,,"송파구에서 10kg 이상 세탁기 수수료가 4,000원이라고 답해 필수 사실과 일치합니다.","근거에 세탁기 10kg 이상 품목의 부과금액이 4,000원으로 명시되어 있습니다.",,gpt-6-luna
+a38d8c48ac93404e97a9356913f7a222,test-v02-sd-washer-10kg,A,false,insufficient_evidence,0,0,,답변하지 못함(상태 insufficient_evidence),답변하지 못함(상태 insufficient_evidence),,gpt-6-luna
+8a790c2a07904bca91cd82edd0344860,test-v02-sd-washer-10kg,B,false,answered,1,1,,"10kg 이상 세탁기의 수수료가 5,000원이라고 답해 필수 사실을 담았습니다.","근거 표에 서대문구 세탁기 10kg 이상 수수료가 5,000원으로 기재되어 있습니다.",,gpt-6-luna
+af9a3bf6959d4e2d923fe927db436cba,test-v02-sd-washer-10kg,C,false,answered,1,1,,"10kg 이상 세탁기의 수수료가 5,000원이라고 답해 필수 사실과 일치합니다.","근거 표에 세탁기 10kg 이상 부과금액이 5,000원으로 명시되어 있습니다.",,gpt-6-luna
+ef6ec1541e294fb7b5a908dc036510d8,test-v03-sd-fridge-400l,A,false,answered,1,1,,"400리터 냉장고의 수수료가 10,000원이라고 답해 필수 사실과 일치합니다.","근거에 냉장고 300ℓ 이상 500ℓ 미만의 수수료가 10,000원으로 명시되어 있어 400리터에 해당합니다.",,gpt-6-luna
+4a3e40b965b94ff5bf8657b193c37acf,test-v03-sd-fridge-400l,B,false,answered,1,1,,"400리터 냉장고가 300ℓ 이상 500ℓ 미만에 해당하며 수수료가 10,000원이라고 답했습니다.","근거에 냉장고 300ℓ 이상 500ℓ 미만의 부과금액이 10,000원으로 제시되어 있어 400리터 냉장고에 대한 답변이 뒷받침됩니다.",,gpt-6-luna
+d9c7bcec2ac04bbbbcc5a937482b86c2,test-v03-sd-fridge-400l,C,false,answered,1,1,,"400리터 냉장고가 300ℓ 이상 500ℓ 미만에 해당하며 수수료가 10,000원이라고 답했습니다.","근거에 냉장고 300ℓ 이상 500ℓ 미만의 부과금액이 10,000원으로 제시되어 있어 400리터 냉장고에 대한 답변이 뒷받침됩니다.",,gpt-6-luna
+5d0f97d346c744d782209ad332f25eb4,test-v04-sp-fridge-400l,A,false,insufficient_evidence,0,0,,답변하지 못함(상태 insufficient_evidence),답변하지 못함(상태 insufficient_evidence),,gpt-6-luna
+4f7a3d65752e4bcd8237bda2056f35b0,test-v04-sp-fridge-400l,B,false,insufficient_evidence,0,0,,답변하지 못함(상태 insufficient_evidence),답변하지 못함(상태 insufficient_evidence),,gpt-6-luna
+78df027f847847b2984aa8a62b768ef0,test-v04-sp-fridge-400l,C,false,answered,1,1,,"400리터 냉장고가 300L 이상에 해당하며 수수료가 7,000원이라고 답했습니다.","근거에 냉장고 300L 이상은 7,000원으로 명시되어 있어 400리터 냉장고에도 해당합니다.",,gpt-6-luna
+62d436fe88df4eb3ad5bf939eababc0c,test-v05-sd-delivery-box,A,false,insufficient_evidence,0,0,,답변하지 못함(상태 insufficient_evidence),답변하지 못함(상태 insufficient_evidence),,gpt-6-luna
+ce5932cfb86b4b3aaf2e2f9772fe3b82,test-v05-sd-delivery-box,B,false,insufficient_evidence,0,0,,답변하지 못함(상태 insufficient_evidence),답변하지 못함(상태 insufficient_evidence),,gpt-6-luna
+1b2f3bb39c3b43b499485fd6a9bd9378,test-v05-sd-delivery-box,C,false,answered,0,1,,"비닐 코팅과 테이프·철핀 제거 및 분리되지 않는 보냉 상자 제외는 말했지만, 알루미늄박을 제거하라는 필수 사실이 빠졌습니다.","근거는 골판지의 비닐 코팅·테이프·철핀 등을 제거해 접고 다른 종이류와 섞이지 않게 배출하며, 종이와 분리되지 않는 보냉 상자류는 비해당 품목이라고 명시합니다.",,gpt-6-luna
+bbd8d48c18144639962235905996cbf8,test-v06-sp-ogeum-weekday,A,false,insufficient_evidence,0,0,,답변하지 못함(상태 insufficient_evidence),답변하지 못함(상태 insufficient_evidence),,gpt-6-luna
+bc30e59ec71f4c8c87a3a7918048619c,test-v06-sp-ogeum-weekday,B,false,insufficient_evidence,0,0,,답변하지 못함(상태 insufficient_evidence),답변하지 못함(상태 insufficient_evidence),,gpt-6-luna
+1d2aa1b0b2634ee7ba3b40841fefeba0,test-v06-sp-ogeum-weekday,C,false,insufficient_evidence,0,0,,답변하지 못함(상태 insufficient_evidence),답변하지 못함(상태 insufficient_evidence),,gpt-6-luna
+4d1d89f9cf6248b9932e6ea6c8da67eb,test-v07-sd-food-container-apartment,A,false,insufficient_evidence,0,0,,답변하지 못함(상태 insufficient_evidence),답변하지 못함(상태 insufficient_evidence),,gpt-6-luna
+117021c680d84d67ba093b99b65ea09d,test-v07-sd-food-container-apartment,B,false,insufficient_evidence,0,0,,답변하지 못함(상태 insufficient_evidence),답변하지 못함(상태 insufficient_evidence),,gpt-6-luna
+8aea1a08463542b882aa2f33d19fe9f2,test-v07-sd-food-container-apartment,C,false,insufficient_evidence,0,0,,답변하지 못함(상태 insufficient_evidence),답변하지 못함(상태 insufficient_evidence),,gpt-6-luna

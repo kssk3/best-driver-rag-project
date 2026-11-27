@@ -1,0 +1,2 @@
+dataset_id,case_id,question,district,dong,conditions_json,expected_status,reference_answer,allowed_chunk_ids_json
+b65c5d0fd6008976ed13a350c89bdded010a5e85ab4521ad92567ec9ce3cba77,test-v07-sd-food-container-apartment-corrected,서대문구 아파트에서 쓰는 120리터 음식물류 전용용기 납부필증의 판매이윤은 얼마인가요?,서대문구,,{},answered,"서대문구 시행규칙 별표 4에서 음식물류 전용용기 납부필증 중 공동주택 120ℓ의 판매이윤은 1,080원입니다(음식점 120ℓ는 1,512원). 이 값은 봉투·용기 가격의 한 구성 요소이며 가격 전체가 아닙니다.","[""chunk-d6af842fbae0acb15a74f665bc85c069ee628b84c7fab4dab4e8292e79e13f3f""]"

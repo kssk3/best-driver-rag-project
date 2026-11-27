@@ -1,7 +1,7 @@
 # 폐기물 질문 리라이트 초안
 
 이 문안은 `catalog-context-v2` 입력을 검토하기 위한 초안이다.
-팀 B 분리배출 프로젝트에서 [채팅 실행 설정](../../configs/team-a-rewrite-chat.json)의
+이 분리배출 프로젝트에서 [채팅 실행 설정](../../configs/team-a-rewrite-chat.json)의
 `pipeline.rewrite_enabled`를 켜면 규칙 기반 사전 리라이트를 사용한다.
 [모델 리라이트 프롬프트](../../prompts/query/rewrite.md)는 원질문과 기본 별칭 사전을 입력으로 받는다.
 

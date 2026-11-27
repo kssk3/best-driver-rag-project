@@ -1,0 +1,13 @@
+{
+  "is_synthetic": false,
+  "cases": [
+    {
+      "case_id": "test-v06-sp-ogeum-weekday-reclassified",
+      "question": "송파구 오금동에서는 쓰레기를 무슨 요일 몇 시에 내놓나요?",
+      "district": "송파구",
+      "expected_status": "insufficient_evidence",
+      "reference_answer": "제공된 송파구 자료에는 확인된 동별 배출 요일이 없어 알 수 없습니다. 동별 요일표는 현재 일정으로 확인되지 않아 검색에서 제외돼 있습니다. 구청 안내를 확인하세요.",
+      "allowed_chunk_ids": []
+    }
+  ]
+}
