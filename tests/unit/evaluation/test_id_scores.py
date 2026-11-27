@@ -174,18 +174,6 @@ def test_run_scores_rejects_duplicate_case_keys_and_blank_chunk_ids(tmp_path) ->
         run_scores(archive)
 
 
-def test_recordless_failure_rows_stay_undefined_in_a_retrieval_archive(
-    tmp_path,
-) -> None:
-    from src.evaluation.comparison import run_scores
-
-    archive = _archive(tmp_path, status="", count=0, ranks=())
-    text = (archive / "runs.csv").read_text(encoding="utf-8").replace(",rag,", ",,")
-    (archive / "runs.csv").write_text(text, encoding="utf-8")
-    (row,) = run_scores(archive)
-    assert (row["precision"], row["recall"]) == (None, None)
-
-
 def test_several_recordless_failures_with_blank_run_ids_are_allowed(tmp_path) -> None:
     from src.evaluation.comparison import run_scores
 
@@ -196,3 +184,17 @@ def test_several_recordless_failures_with_blank_run_ids_are_allowed(tmp_path) ->
     (archive / "runs.csv").write_text(text, encoding="utf-8")
     rows = run_scores(archive)
     assert len(rows) == 3 and rows[1]["precision"] is None
+
+
+def test_blank_run_kind_is_only_for_the_recordless_failure_shape(tmp_path) -> None:
+    import pytest
+
+    from src.evaluation.comparison import run_scores
+
+    archive = _archive(tmp_path)
+    text = (archive / "runs.csv").read_text(encoding="utf-8").replace(",rag,", ",,")
+    (archive / "runs.csv").write_text(
+        text, encoding="utf-8"
+    )  # run_id·검색 상태가 있는데 유형만 빔
+    with pytest.raises(ValueError, match="run_kind"):
+        run_scores(archive)

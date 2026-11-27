@@ -32,6 +32,15 @@ def id_scores(
     return (hit / len(found) if found else None), hit / len(wanted)
 
 
+def _recordless(run: dict[str, str]) -> bool:
+    """실행 기록 없이 실패한 행의 모양: 유형·실행 ID·검색 상태가 모두 비어 있다."""
+    return not (
+        run["run_kind"].strip()
+        or run["run_id"].strip()
+        or run["retrieval_status"].strip()
+    )
+
+
 def _check_candidates(run: dict[str, str], ranked: dict[int, str], k: int) -> None:
     """정상 검색의 후보 파일이 원본 건수·순위와 맞고 k가 저장 깊이 이내인지 확인한다."""
     if k > int(run["top_k"]):
@@ -60,7 +69,7 @@ def run_scores(archive: Path, k: int = 5) -> list[dict]:
     if len(set(ids)) != len(ids):
         raise ValueError("runs.csv에 같은 run_id가 두 번 이상 있습니다.")
     # run_kind가 빈 행은 실행 기록 없이 실패한 행이라 미정의로 남기고, 실제 기록이 rag가 아니면 막는다.
-    if any(r["run_kind"] not in ("rag", "") for r in runs):
+    if any(r["run_kind"] != "rag" and not _recordless(r) for r in runs):
         raise ValueError("실제 검색(run_kind=rag)이 아닌 실행은 검색 지표에서 뺍니다.")
     owner = {r["run_id"]: (r["dataset_id"], r["case_id"]) for r in runs}
     ranked: dict[str, dict[int, str]] = defaultdict(dict)

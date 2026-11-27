@@ -384,3 +384,13 @@ def test_followup_with_two_districts_is_rejected_instead_of_confirming_one() -> 
         build_followup_request(
             "가상 질문", "서대문구", {"district": "서대문구 말고 송파구요"}
         )
+
+
+@pytest.mark.parametrize(
+    "typed", ["송파구 아니고요", "송파구 말고요", "송파구는 싫어요"]
+)
+def test_followup_that_denies_a_district_is_not_confirmed(typed: str) -> None:
+    from src.interface.chat import AmbiguousDistrictError
+
+    with pytest.raises(AmbiguousDistrictError):
+        build_followup_request("가상 질문", "서대문구", {"district": typed})

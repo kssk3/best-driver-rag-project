@@ -94,6 +94,11 @@ def main(argv: list[str] | None = None) -> None:
     with (args.archive / "runs.csv").open(encoding="utf-8-sig", newline="") as file:
         rows = list(csv.DictReader(file))
     # 기록 없이 실패한 행은 run_id가 비어 있으므로(채점 대상 아님) 중복 검사에서 뺀다.
+    if any(
+        not r["run_id"].strip() and r["status"] in SCORED_STATUSES and r["answer"]
+        for r in rows
+    ):  # 실행 ID가 없으면 점수를 원본 실행에 연결할 수 없으므로 유료 호출 전에 막는다.
+        raise SystemExit("채점할 답변 행에 run_id가 없습니다.")
     ids = [r["run_id"].strip() for r in rows if r["run_id"].strip()]
     if len(set(ids)) != len(ids):
         raise SystemExit("runs.csv의 run_id가 중복됩니다.")

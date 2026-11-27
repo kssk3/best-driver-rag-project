@@ -16,8 +16,12 @@ REQUIRED_FIELD_LABELS = {
 }
 
 
+# "송파구 아니고요"처럼 구 이름을 부정하는 말. 구 이름만 뽑으면 반대로 확정하게 된다.
+NEGATIONS = ("아니", "말고", "빼고", "제외", "않", "싫", "틀")
+
+
 class AmbiguousDistrictError(ValueError):
-    """되묻기 답에 구 이름이 둘 이상 들어 있어 어느 구인지 정할 수 없다."""
+    """되묻기 답에 구 이름이 둘 이상이거나 구 이름을 부정하는 말이 있어 어느 구인지 정할 수 없다."""
 
 
 def build_followup_request(
@@ -41,8 +45,8 @@ def build_followup_request(
         # 않고 화면에서 다시 입력받는다(확정 표시를 붙여 보내면 해석기가 문구 전체를 지원 밖 구로 본다).
         typed = conditions.pop("district")
         named = [d for d in SEOUL_DISTRICTS if d in typed]
-        if len(named) > 1:
-            raise AmbiguousDistrictError(f"구 이름이 둘 이상입니다: {', '.join(named)}")
+        if len(named) > 1 or (named and any(w in typed for w in NEGATIONS)):
+            raise AmbiguousDistrictError(f"어느 구인지 정할 수 없습니다: {typed}")
         request["district"] = named[0] if named else typed
         request["district_confirmed"] = True
     request["conditions"] = conditions
