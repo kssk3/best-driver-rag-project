@@ -50,6 +50,10 @@ def run_scores(archive: Path, k: int = 5) -> list[dict]:
         for c in _rows(archive / "cases.csv")
     }
     runs = _rows(archive / "runs.csv")
+    if len({r["run_id"] for r in runs}) != len(runs):
+        raise ValueError("runs.csv에 같은 run_id가 두 번 이상 있습니다.")
+    if any(r["run_kind"] != "rag" for r in runs):
+        raise ValueError("실제 검색(run_kind=rag)이 아닌 실행은 검색 지표에서 뺍니다.")
     owner = {r["run_id"]: (r["dataset_id"], r["case_id"]) for r in runs}
     ranked: dict[str, dict[int, str]] = defaultdict(dict)
     for c in _rows(archive / "candidates.csv"):

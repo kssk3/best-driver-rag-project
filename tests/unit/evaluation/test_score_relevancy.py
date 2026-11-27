@@ -56,3 +56,10 @@ def test_score_row_has_a_utc_timestamp_only_when_scored() -> None:
 
 def test_clarification_responses_are_scored_not_marked_absent() -> None:
     assert "needs_clarification" in score_relevancy.SCORED_STATUSES
+
+
+def test_scores_outside_zero_to_one_are_errors_not_successes() -> None:
+    assert score_relevancy.checked_score(0.5) == ("0.5000", "")
+    for bad in (-0.03, 1.2, float("nan")):
+        assert score_relevancy.checked_score(bad) == ("", "score_out_of_range")
+    assert "variant" in score_relevancy.FIELDS

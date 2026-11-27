@@ -9,6 +9,7 @@
 import argparse
 import asyncio
 import csv
+import math
 import os
 from datetime import UTC, datetime
 from pathlib import Path
@@ -21,12 +22,20 @@ FIELDS = [
     "run_id",
     "case_id",
     "configuration",
+    "variant",
     "rewrite_enabled",
     "status",
     "score",
     "error",
     "timestamp",
 ]
+
+
+def checked_score(value: float) -> tuple[str, str]:
+    """(점수 문자열, 오류). 업로드 검증은 0~1만 받으므로 범위 밖 값은 성공으로 내보내지 않는다."""
+    if math.isfinite(value) and 0 <= value <= 1:
+        return f"{value:.4f}", ""
+    return "", "score_out_of_range"
 
 
 async def _score(rows: list[dict]) -> list[dict]:
@@ -49,8 +58,9 @@ async def _score(rows: list[dict]) -> list[dict]:
                 result = await metric.ascore(
                     user_input=row["original_question"], response=row["answer"]
                 )
-                score = f"{float(result.value):.4f}"
-                stamp = datetime.now(UTC).isoformat(timespec="milliseconds")
+                score, error = checked_score(float(result.value))
+                if score:
+                    stamp = datetime.now(UTC).isoformat(timespec="milliseconds")
             except Exception as exc:  # 한 행의 실패가 전체를 멈추지 않게 한다.
                 error = type(exc).__name__
         else:
@@ -60,6 +70,7 @@ async def _score(rows: list[dict]) -> list[dict]:
                 "run_id": row["run_id"],
                 "case_id": row["case_id"],
                 "configuration": row["configuration"],
+                "variant": row.get("variant") or row["configuration"],
                 "rewrite_enabled": row["rewrite_enabled"],
                 "status": row["status"],
                 "score": score,

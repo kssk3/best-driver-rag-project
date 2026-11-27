@@ -62,10 +62,11 @@ def _archive(tmp_path, status="ok", count=2, top_k=5, ranks=(1, 2)):
             "rewrite_enabled",
             "status",
             "retrieval_status",
+            "run_kind",
             "top_k",
             "candidate_count",
         ],
-        [["r1", "d", "c1", "A", "False", "answered", status, top_k, count]],
+        [["r1", "d", "c1", "A", "False", "answered", status, "rag", top_k, count]],
     )
     write(
         "candidates.csv",
@@ -132,3 +133,23 @@ def test_run_scores_label_uses_the_recorded_variant(tmp_path) -> None:
     (archive / "runs.csv").write_text(text, encoding="utf-8")
     (row,) = run_scores(archive)
     assert row["configuration"] == "C"
+
+
+def test_run_scores_rejects_duplicate_run_ids_and_non_rag_runs(tmp_path) -> None:
+    import pytest
+
+    from src.evaluation.comparison import run_scores
+
+    archive = _archive(tmp_path)
+    runs = (archive / "runs.csv").read_text(encoding="utf-8").splitlines()
+    duplicated = [*runs, runs[1]]
+    (archive / "runs.csv").write_text(
+        chr(10).join(duplicated) + chr(10), encoding="utf-8"
+    )
+    with pytest.raises(ValueError, match="run_id"):
+        run_scores(archive)
+    archive = _archive(tmp_path)
+    text = (archive / "runs.csv").read_text(encoding="utf-8").replace(",rag,", ",demo,")
+    (archive / "runs.csv").write_text(text, encoding="utf-8")
+    with pytest.raises(ValueError, match="run_kind"):
+        run_scores(archive)
