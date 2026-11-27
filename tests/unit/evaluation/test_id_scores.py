@@ -119,3 +119,16 @@ def test_run_scores_rejects_candidates_owned_by_another_case(tmp_path) -> None:
     )
     with pytest.raises(ValueError, match="다릅니다"):
         run_scores(archive)
+
+
+def test_run_scores_label_uses_the_recorded_variant(tmp_path) -> None:
+    from src.evaluation.comparison import run_scores
+
+    archive = _archive(tmp_path)
+    text = (archive / "runs.csv").read_text(encoding="utf-8")
+    text = text.replace("configuration,", "variant,configuration,").replace(
+        ",A,False,", ",C,configured,False,"
+    )
+    (archive / "runs.csv").write_text(text, encoding="utf-8")
+    (row,) = run_scores(archive)
+    assert row["configuration"] == "C"

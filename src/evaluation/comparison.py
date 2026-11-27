@@ -75,7 +75,7 @@ def run_scores(archive: Path, k: int = 5) -> list[dict]:
         result.append(
             {
                 "case_id": run["case_id"],
-                "configuration": run["configuration"],
+                "configuration": run.get("variant") or run["configuration"],
                 "rewrite_enabled": run["rewrite_enabled"],
                 "status": run["status"],
                 "precision": precision,
