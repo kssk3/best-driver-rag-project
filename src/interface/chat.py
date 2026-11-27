@@ -46,6 +46,15 @@ def is_safe_url(url: str | None) -> bool:
     return bool(url) and url.startswith(("https://", "http://"))
 
 
+# shortcut: 조례 이름을 색인에서 읽지 않고 고정 표로 둔다. 지역이나 문서가 늘면 여기에 추가한다.
+PARENT_TITLES = {
+    "seodaemun-ordinance": "서대문구 폐기물 관리 조례",
+    "seodaemun-rules": "서대문구 폐기물 관리 조례 시행규칙",
+    "songpa-ordinance": "송파구 폐기물 관리 조례",
+    "songpa-rules": "송파구 폐기물 관리 조례 시행규칙",
+}
+
+
 def _followup_placeholder(field: str) -> str:
     if field == "district":
         return "답변의 기준이 될 지역(구)를 기재해 주세요."
@@ -54,7 +63,11 @@ def _followup_placeholder(field: str) -> str:
 
 def _citation_card(citation: Citation, number: int) -> None:
     """말풍선 안의 인용 한 건. 번호 말머리가 붙은 칩 하나에 제목(링크)만 보인다."""
-    label = escape(citation.title or citation.chunk_id)
+    label = escape(" ".join((citation.title or citation.chunk_id).split()))
+    # 별표는 어느 조례의 것인지 앞에 붙인다(송파구 별표는 제목이 "별표"뿐이다).
+    parent = PARENT_TITLES.get((citation.document_id or "").partition(":attachment:")[0])
+    if parent and ":attachment:" in (citation.document_id or ""):
+        label = f"{escape(parent)} › {label}"
     title = (
         f'<a href="{escape(citation.source_url)}" target="_blank" rel="noopener noreferrer">{label}</a>'
         if is_safe_url(citation.source_url)

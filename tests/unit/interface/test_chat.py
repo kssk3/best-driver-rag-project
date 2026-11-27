@@ -6,6 +6,7 @@ import pytest
 from screen_helpers import FIXTURES, button, fixture_app
 from streamlit.testing.v1 import AppTest
 
+from src.interface.adapter import Citation
 from src.interface.chat import build_followup_request, is_safe_url
 
 
@@ -355,3 +356,25 @@ def test_standard_refusal_line_is_not_repeated_under_the_fixed_notice() -> None:
     )  # 고정 안내와 같은 뜻이라 되풀이하지 않는다.
     assert "월요일" in shown  # 정보가 더해지는 줄은 그대로 보인다.
     assert len(app.info) == 1
+
+
+def test_attachment_citation_shows_parent_ordinance(monkeypatch) -> None:
+    from src.interface import chat
+
+    shown: list[str] = []
+    monkeypatch.setattr(chat.st, "html", shown.append)
+    chat._citation_card(
+        Citation(
+            "c1",
+            "https://example.invalid/a",
+            "별표",
+            document_id="songpa-ordinance:attachment:1",
+        ),
+        1,
+    )
+    chat._citation_card(
+        Citation("c2", None, "조례 본문", document_id="songpa-ordinance"), 2
+    )
+
+    assert "송파구 폐기물 관리 조례 › 별표" in shown[0]
+    assert "›" not in shown[1]

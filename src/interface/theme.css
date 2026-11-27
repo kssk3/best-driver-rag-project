@@ -755,6 +755,8 @@ input::placeholder {
 .cite a {
   color: inherit;
   font-weight: 400;
+  text-decoration: none;
+}
+.cite a:hover {
   text-decoration: underline;
-  text-underline-offset: 2px;
 }
