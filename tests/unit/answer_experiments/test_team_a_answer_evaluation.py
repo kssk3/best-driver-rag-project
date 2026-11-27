@@ -182,7 +182,7 @@ def test_a_evaluation_retrieves_and_cites_for_each_question(
         )
         assert versions["dataset"] == "synthetic-v1"
         if enabled:
-            assert versions["rewrite"] == "catalog-rules-v1"
+            assert versions["rewrite"] == "catalog-rules-v2"
             assert (
                 versions["rewrite_catalog"]
                 == sha256(CATALOG_PATH.read_bytes()).hexdigest()
