@@ -273,6 +273,11 @@ def resolve_request(request: PipelineRequest) -> ResolvedQuery:
     if region["status"] == "no_dong":
         named = find_district(request.question)
 
+        # 질문 속 구가 지원 밖이면 되묻지 않고 바로 안내한다. 되물어도 어느 구를 고르든
+        # 아래 확정 경로가 같은 안내로 거절하므로, 고를 수 있는 선택지가 없는 질문이 된다.
+        if named is not None and named not in SUPPORTED_DISTRICTS:
+            return _ask_unsupported(request, named, None)
+
         # 질문 속 구와 고른 구가 다르면 어느 쪽으로도 덮어쓰지 않고 되묻는다.
         if (
             named is not None

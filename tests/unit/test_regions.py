@@ -452,3 +452,16 @@ def test_resolve_request_keeps_asking_when_the_picked_district_is_not_a_candidat
     )
 
     assert result.region_status == "ambiguous"
+
+
+def test_unsupported_district_in_question_is_answered_without_asking_which_district():
+    # 되물어도 서대문구·송파구 어느 쪽을 고르든 거절되므로 처음부터 안내한다.
+    result = resolve_request(
+        PipelineRequest(
+            question="강남구에서 페트병 라벨은 어떻게 버려요?", district="서대문구"
+        )
+    )
+    assert result.status == "needs_clarification"
+    assert result.region_status == "unsupported"
+    assert result.district == "강남구"
+    assert "아직 지원하지 않아요" in (result.clarification_question or "")
