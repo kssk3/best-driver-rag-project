@@ -22,7 +22,10 @@ from src.retrieval.rerankers import (
 )
 from src.retrieval.search import HYBRID_DEPTH, RRF_K, make_vector_retriever
 from src.rewrite_dictionary import catalog
-from src.rewrite_dictionary.runtime import make_catalog_rewriter
+from src.rewrite_dictionary.runtime import (
+    CATALOG_REWRITE_VERSION,
+    make_catalog_rewriter,
+)
 from src.runtime import create_runtime
 
 
@@ -137,7 +140,7 @@ def _a_runtime_factory(
         rewriter = None
         if rewrite_enabled:
             rewriter = make_catalog_rewriter(catalog.CATALOG_PATH)
-            pipeline.versions["rewrite"] = "catalog-rules-v1"
+            pipeline.versions["rewrite"] = CATALOG_REWRITE_VERSION
             pipeline.versions["rewrite_catalog"] = sha256(
                 catalog.CATALOG_PATH.read_bytes()
             ).hexdigest()

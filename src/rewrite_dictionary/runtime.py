@@ -15,6 +15,8 @@ from .matching import (
     selection_spelling_aliases,
 )
 
+CATALOG_REWRITE_VERSION = "catalog-rules-v2"
+
 
 class SearchQuery(Protocol):
     @property

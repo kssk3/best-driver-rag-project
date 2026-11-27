@@ -5,7 +5,7 @@ import csv
 import json
 from pathlib import Path
 
-from src.query.rewrite import normalize_question
+from src.query.rewrite import expected_prompt_query
 from src.rewrite_dictionary.runtime import make_question_rewriter
 
 DEFAULT_CASES = Path("docs/jungeun/rewrite_condition_cases.json")
@@ -29,7 +29,7 @@ def review_rows(cases: list[dict]) -> list[dict]:
     for case in cases:
         for route, rewrite in (
             ("catalog-rules", catalog),
-            ("prompt-rule-expected", normalize_question),
+            ("prompt-rule-expected", expected_prompt_query),
         ):
             rewritten = rewrite(case["question"])
             rows.append(
