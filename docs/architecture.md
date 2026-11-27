@@ -115,6 +115,9 @@ The [Streamlit app](../app.py) calls `pipeline.run(request)` and converts its `R
 | `src/infrastructure/embeddings.py` | 교체 가능한 provider, 데모 해시 벡터, LangChain/OpenAI 어댑터, 입력 한도 검사와 명시적 키 파일 설정 |
 | `src/infrastructure/stores.py` | 로컬 JSON 색인의 검증/저장/읽기, 실제 DB 연결 없음 |
 | `src/evaluation/runner.py` | 명시한 문항을 구성별로 실행하고 결과 반환, 자동 품질 지표 없음 |
+| `src/evaluation/answer_quality.py`, `scripts/score_quality.py` | 정답 충족·근거 적합(판정 모델)과 근거 없음 대응(표준 안내문은 모델 없이)을 0/1로 채점해 `quality.csv` 작성 |
+| `scripts/score_relevancy.py` | 저장 답변의 Answer Relevancy 사후 계산(보고서 7.6) |
+| `src/ingestion/embedding_text.py`, `scripts/exp_embed_input.py`, `scripts/exp_posthoc_final.py` | 표 행 임베딩·BM25 입력 정리 실험(8장·8.1). 청크 ID·본문은 바꾸지 않고 서비스에는 적용되지 않음 |
 | `src/observability/records.py` | 요청별 원본 JSON을 새 실행 ID로 보존, Langfuse 연결 없음 |
 | `src/demo.py` | 합성 자료용 해시 검색, 명시된 구 확인과 본문 인용 생성기 |
 | `scripts/demo.py` | 외부 API 없이 합성 자료의 상태별 응답을 자동 확인 |

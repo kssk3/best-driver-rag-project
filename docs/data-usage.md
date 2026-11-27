@@ -6,7 +6,7 @@
 
 | 항목 | 내용 | 근거 |
 | --- | --- | --- |
-| 자료 | 서울특별시 서대문구·송파구의 폐기물 관리 조례, 시행규칙과 별표·별지(23건) | [문서 목록](documents.md) |
+| 자료 | 서울특별시 서대문구·송파구의 폐기물 관리 조례, 시행규칙과 별표·별지(본문 4건, 별표·별지 19건) | [문서 목록](documents.md) |
 | 출처 | 국가법령정보센터(법제처) 자치법규. 승인된 Open API로 본문·첨부 XML을 수집했다 | `raw/manifest.json`의 `api_access_review` |
 | 저작권 | 조례와 규칙은 저작권법 제7조제1호가 정한 보호받지 못하는 저작물에 해당한다 | 번들 `raw/manifest.json`의 본문 4건 검토 기록(이정은, 2026-11-24) |
 | API 이용 조건 | 출처 표시, 원문 위조·변조 금지, 제3자 권리 준수, 과도한 호출 금지, 이용조건 변경 확인 | `api_access_review.conditions` |
@@ -28,7 +28,7 @@
 ## 3. 비밀정보와 키
 
 - API 키(`OPENAI_API_KEY`, `LANGFUSE_*`)는 로컬 `.env`에만 두고 저장소에 올리지 않는다. `.env`와 `data/processed/`는 `.gitignore`에 있고 [.env.example](../.env.example)은 값 없는 예시다.
-- PR마다 Gitleaks 검사가 돈다. `dev` 푸시만으로는 돌지 않는다([CI 설명](CI-AND-DEPENDENCIES.md)). 평가 결과를 저장소에 올리기 전에 키 형식(`sk-`)과 개인 경로·이메일이 없는지 확인했다(`results/dev10-abc-2026-11-26/`, `results/final-*/`).
+- PR마다 Gitleaks 검사가 돈다. `dev` 푸시만으로는 돌지 않는다([CI 설명](CI-AND-DEPENDENCIES.md)). 평가 결과를 저장소에 올리기 전에 키 형식(`sk-`)과 개인 경로·이메일이 없는지 확인했다(`results/dev10-abc-2026-11-26/`, `results/final-*/`, 이후 추가한 `results/errata-*/`, `results/posthoc-*/`, `results/embed-input-exp-*/`, `results/faithfulness-final-*/`도 같은 방식으로 `sk-`·개인 경로·이메일 문자열이 없음을 확인했다).
 - Open API 응답은 인증값(OC)을 제거한 공유본만 번들에 있다(`sharing_metadata`, `review/search_response_redactions.json`).
 
 ## 4. 로그와 추적

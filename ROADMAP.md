@@ -12,7 +12,7 @@
 
 팀 기능이 병합되면 아래 표의 해당 항목과 기준 커밋을 갱신한다. 문항과 실행 명령은 [평가셋 안내](eval/README.md), 당시 검증 수치와 결과 해석은 [실행 기록 안내](results/README.md)에서 관리한다.
 
-Implementation snapshot for November 26, 2026, at local `dev` commit [`a2b3db93`](https://github.com/kssk3/best-driver-rag-project/commit/a2b3db93c0b6621c18fef6353615137de52436a5).
+Implementation snapshot for November 27, 2026, at `dev` commit [`f2ace36`](https://github.com/kssk3/best-driver-rag-project/commit/f2ace36) (PR #48 merged).
 
 | Area | Available on this revision | Remaining work |
 | --- | --- | --- |
@@ -20,7 +20,7 @@ Implementation snapshot for November 26, 2026, at local `dev` commit [`a2b3db93`
 | Chat | Streamlit runs A or C with a model answer and optional catalog rewriting. The resolver uses the Seoul dong table and handles district conflicts through clarification. | - |
 | Evaluation | The [development set](eval/dev.json) has 10 cases and the [final set](eval/test.json) has 20 (AI drafts, confirmed by the team before the run). A/B/C with rewriting off (60 runs) and C with rewriting (20 runs) were each run once; the [report](report.md) gives Hit@5, answer correctness, citation validity, timing and a failure analysis. Saved runs also support Faithfulness scoring and [Langfuse score uploads](results/README.md). | Per-case source-evidence review record, an optional table-row search improvement (kept as an experiment, see the report), and the submission tag. |
 
-**답변 담당 작업 브랜치**에서 두 개발 문항을 팀 A 검색기와 답변 모델로 각각 실행했다. 서대문구 색상표의 허용 근거는 검색 1위였고 모델은 1위를 인용했다. 송파구 대형폐기물 문항의 허용 근거는 3위였고 모델은 3위와 1위를 인용했다. 송파구 정답표의 다음 작업은 공식 원문 대조다. 당시 `git_base`는 `49db656`이었고 실행에는 로컬 변경이 포함됐다. [커밋 `e0a31d2`](https://github.com/kssk3/best-driver-rag-project/commit/e0a31d2a6a4ddeef36f493b5eed853838a4c6bb2)의 개발 문항 파일과 팀 A 런타임 생성 코드의 SHA-256은 실행 기록에 저장된 값과 각각 일치한다. [개발셋과 재현 방법](eval/README.md) · [두 문항의 실행 기록](results/team-a/2026-11-25T064832Z/runs.csv)
+**(병합 전 기록, 이후 `dev`에 병합됨; 최종 평가는 `report.md`)** 답변 담당 작업 브랜치에서 두 개발 문항을 팀 A 검색기와 답변 모델로 각각 실행했다. 서대문구 색상표의 허용 근거는 검색 1위였고 모델은 1위를 인용했다. 송파구 대형폐기물 문항의 허용 근거는 3위였고 모델은 3위와 1위를 인용했다. 송파구 정답표의 다음 작업은 공식 원문 대조다. 당시 `git_base`는 `49db656`이었고 실행에는 로컬 변경이 포함됐다. [커밋 `e0a31d2`](https://github.com/kssk3/best-driver-rag-project/commit/e0a31d2a6a4ddeef36f493b5eed853838a4c6bb2)의 개발 문항 파일과 팀 A 런타임 생성 코드의 SHA-256은 실행 기록에 저장된 값과 각각 일치한다. [개발셋과 재현 방법](eval/README.md) · [두 문항의 실행 기록](results/team-a/2026-11-25T064832Z/runs.csv)
 
 HTML·JSON 형식 비교는 같은 원문 `text`를 사용한다. JSON의 `search_text` 정규화 효과, 두 형식의 검색 품질 우열, bge-m3와의 비교는 아직 측정하지 않았다.
 

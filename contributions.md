@@ -1,6 +1,6 @@
 # 팀 기여 기록
 
-팀 저장소 `kssk3/best-driver-rag-project`의 이력에서 뽑은 기여 근거다. 수치는 2026-11-26 `dev`(PR #44 병합 시점) 기준이며 GitHub PR 목록과 `git shortlog`로 센다. 문서 작성만으로 기술 기여를 대신하지 않도록 코드 PR, 검증, 리뷰를 따로 적는다. 담당과 인계 기준은 [ROADMAP](ROADMAP.md)을 따른다.
+팀 저장소 `kssk3/best-driver-rag-project`의 이력에서 뽑은 기여 근거다. 수치는 2026-11-27 `dev`(PR #48 병합 시점) 기준이며 GitHub PR 목록과 `git shortlog`로 센다. 문서 작성만으로 기술 기여를 대신하지 않도록 코드 PR, 검증, 리뷰를 따로 적는다. 담당과 인계 기준은 [ROADMAP](ROADMAP.md)을 따른다.
 
 > 계정과 이름의 대응은 PR 내용과 로드맵의 담당 구분으로 맞춘 것이다. 잘못 연결된 곳이 있으면 각자 고친다. 개인별 소개 문장과 설명 가능한 설계·한계는 각자 아래 "본인 보충" 칸에 적는다.
 
@@ -41,10 +41,11 @@
 - 병합한 PR:
   - #25 Streamlit 화면, 검증 패널, 테스트용 문항 점검 도구(`src/interface/`, `src/validation.py`, `src/evaluation/case_set.py`).
   - #28 청킹 결과 현황을 CSV에 기록하는 스크립트와 기준선(`scripts/chunk_stats.py`, `results/chunking/`).
+  - #48 최종 평가셋 정오표(v06·v07·d10), 사후 평가 지표(Ragas 계열 정밀도·재현율), 표 행 임베딩 입력 실험(v1·v2)과 보고서 갱신.
   - #44 구 확정 되묻기(`PipelineRequest.district_confirmed`와 `regions.py` 보강), 실행 모드 다시 질문하기, 청킹 기준선 지문, C 재정렬+질문 다듬기 연결(`create_a_catalog_runtime`)과 `scripts/run_chat.py`.
 - 평가셋: 개발셋 10문항 보강, 최종셋 20문항 초안과 구성·겹침 점검(`eval/`, `tests/unit/evaluation/test_eval_sets.py`). 사람의 원문 대조는 아직이다.
 - 평가 보조 도구: 실행 표 집계(`scripts/summarize_runs.py`).
-- 실험: 2026-11-26 청킹·검색 방식·질문 다듬기 비교 실험(재현 스크립트와 결과는 보고서 부록 참조).
+- 실험: 2026-11-26 청킹·검색 방식·질문 다듬기 비교 실험(재현 스크립트와 결과는 `report.md`와 `docs/reproduction.md` 참조).
 - 리뷰한 PR: #7, #12, #15, #17, #19, #23, #27, #29, #30, #35, #36, #38.
 - PR #44는 사람 리뷰 4건(색인 확인, W6 오탐, 중간 실패 재시도, 새 색인 지문 확인)을 고쳐 병합했다.
 - 본인 보충: (직접 작성)
