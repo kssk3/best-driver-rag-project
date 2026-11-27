@@ -93,3 +93,15 @@ def test_run_scores_rejects_missing_candidate_rows_and_too_deep_k(tmp_path) -> N
         run_scores(_archive(tmp_path, count=2, ranks=(1,)))
     with pytest.raises(ValueError, match="top_k"):
         run_scores(_archive(tmp_path), k=10)
+
+
+def test_run_scores_rejects_non_positive_k_and_duplicate_ranks(tmp_path) -> None:
+    import pytest
+
+    from src.evaluation.comparison import run_scores
+
+    with pytest.raises(ValueError, match="1 이상"):
+        run_scores(_archive(tmp_path), k=0)
+    archive = _archive(tmp_path, count=2, ranks=(1, 1, 2))
+    with pytest.raises(ValueError, match="두 번"):
+        run_scores(archive)

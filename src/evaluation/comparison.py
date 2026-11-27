@@ -43,13 +43,20 @@ def _check_candidates(run: dict[str, str], ranked: dict[int, str], k: int) -> No
 
 
 def run_scores(archive: Path, k: int = 5) -> list[dict]:
+    if k < 1:
+        raise ValueError("--k는 1 이상이어야 합니다.")
     cases = {
         (c["dataset_id"], c["case_id"]): json.loads(c["allowed_chunk_ids_json"] or "[]")
         for c in _rows(archive / "cases.csv")
     }
     ranked: dict[str, dict[int, str]] = defaultdict(dict)
     for c in _rows(archive / "candidates.csv"):
-        ranked[c["run_id"]][int(c["rank"])] = c["chunk_id"]
+        rank = int(c["rank"])
+        if rank in ranked[c["run_id"]]:
+            raise ValueError(
+                f"실행 {c['run_id']}의 순위 {rank}가 후보 파일에 두 번 있습니다."
+            )
+        ranked[c["run_id"]][rank] = c["chunk_id"]
     result = []
     for run in _rows(archive / "runs.csv"):
         precision = recall = None  # 검색이 실패한 실행은 0점이 아니라 미정의다.

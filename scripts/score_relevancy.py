@@ -10,10 +10,21 @@ import argparse
 import asyncio
 import csv
 import os
+from datetime import UTC, datetime
 from pathlib import Path
 
 JUDGE_MODEL = "gpt-6-luna"
 EMBEDDING_MODEL = "text-embedding-3-small"
+FIELDS = [
+    "run_id",
+    "case_id",
+    "configuration",
+    "rewrite_enabled",
+    "status",
+    "score",
+    "error",
+    "timestamp",
+]
 
 
 async def _score(rows: list[dict]) -> list[dict]:
@@ -30,13 +41,14 @@ async def _score(rows: list[dict]) -> list[dict]:
     )
     out = []
     for row in rows:
-        score, error = "", ""
+        score, error, stamp = "", "", ""
         if row["status"] in ("answered", "insufficient_evidence") and row["answer"]:
             try:
                 result = await metric.ascore(
                     user_input=row["original_question"], response=row["answer"]
                 )
                 score = f"{float(result.value):.4f}"
+                stamp = datetime.now(UTC).isoformat(timespec="milliseconds")
             except Exception as exc:  # 한 행의 실패가 전체를 멈추지 않게 한다.
                 error = type(exc).__name__
         else:
@@ -50,6 +62,7 @@ async def _score(rows: list[dict]) -> list[dict]:
                 "status": row["status"],
                 "score": score,
                 "error": error,
+                "timestamp": stamp,  # 점수를 얻은 UTC 시각. 업로드 시 원래 채점 시각으로 쓴다.
             }
         )
     return out
@@ -67,9 +80,15 @@ def main(argv: list[str] | None = None) -> None:
         raise SystemExit(f"{path}가 이미 있습니다. --output으로 새 경로를 지정하세요.")
     with (args.archive / "runs.csv").open(encoding="utf-8-sig", newline="") as file:
         rows = list(csv.DictReader(file))
-    scored = asyncio.run(_score(rows))
+    # 유료 호출이 끝난 뒤 쓰기에 실패하지 않도록 출력 파일을 먼저 만든다.
     with path.open("x", encoding="utf-8", newline="") as file:
-        writer = csv.DictWriter(file, fieldnames=list(scored[0]))
+        try:
+            scored = asyncio.run(_score(rows))
+        except BaseException:
+            file.close()
+            path.unlink()
+            raise
+        writer = csv.DictWriter(file, fieldnames=FIELDS)
         writer.writeheader()
         writer.writerows(scored)
     failed = sum(1 for r in scored if r["error"])
