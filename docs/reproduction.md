@@ -36,6 +36,8 @@ uv run --locked --env-file .env python -m scripts.score_quality --runs results/l
 ```sh
 uv run --locked --env-file .env python -m scripts.evaluate --cases eval/test.json --settings configs/team-c-rewrite-chat.json --factory src.evaluation.answer_experiments.answer_evaluation_runtimes:create_a_catalog_runtime --output-dir results/local/<C 질문 다듬기 폴더>
 uv run --locked python -m scripts.summarize_runs results/local/<C 질문 다듬기 폴더>/runs.csv
+uv run --locked --env-file .env python -m scripts.score_relevancy results/local/<C 질문 다듬기 폴더>
+uv run --locked python -m src.evaluation.comparison results/local/<C 질문 다듬기 폴더>
 uv run --locked --env-file .env python -m scripts.score_quality --runs results/local/<C 질문 다듬기 폴더>/runs.csv --candidates results/local/<C 질문 다듬기 폴더>/candidates.csv --cases eval/test.json --grading eval/test-grading.json --output-dir results/local/<C 질문 다듬기 품질 폴더>
 ```
 

@@ -45,14 +45,20 @@ def _check_candidates(run: dict[str, str], ranked: dict[int, str], k: int) -> No
 def run_scores(archive: Path, k: int = 5) -> list[dict]:
     if k < 1:
         raise ValueError("--k는 1 이상이어야 합니다.")
+    case_rows = _rows(archive / "cases.csv")
+    if len({(c["dataset_id"], c["case_id"]) for c in case_rows}) != len(case_rows):
+        raise ValueError(
+            "cases.csv에 같은 (dataset_id, case_id)가 두 번 이상 있습니다."
+        )
     cases = {
         (c["dataset_id"], c["case_id"]): json.loads(c["allowed_chunk_ids_json"] or "[]")
-        for c in _rows(archive / "cases.csv")
+        for c in case_rows
     }
     runs = _rows(archive / "runs.csv")
     if len({r["run_id"] for r in runs}) != len(runs):
         raise ValueError("runs.csv에 같은 run_id가 두 번 이상 있습니다.")
-    if any(r["run_kind"] != "rag" for r in runs):
+    # run_kind가 빈 행은 실행 기록 없이 실패한 행이라 미정의로 남기고, 실제 기록이 rag가 아니면 막는다.
+    if any(r["run_kind"] not in ("rag", "") for r in runs):
         raise ValueError("실제 검색(run_kind=rag)이 아닌 실행은 검색 지표에서 뺍니다.")
     owner = {r["run_id"]: (r["dataset_id"], r["case_id"]) for r in runs}
     ranked: dict[str, dict[int, str]] = defaultdict(dict)
@@ -61,6 +67,8 @@ def run_scores(archive: Path, k: int = 5) -> list[dict]:
             raise ValueError(
                 f"후보 행의 실행 {c['run_id']}이 runs.csv의 문항·데이터셋과 다릅니다."
             )
+        if not c["chunk_id"].strip():
+            raise ValueError(f"실행 {c['run_id']}의 후보에 빈 chunk_id가 있습니다.")
         rank = int(c["rank"])
         if rank in ranked[c["run_id"]]:
             raise ValueError(

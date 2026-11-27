@@ -3,7 +3,7 @@ from collections.abc import Callable
 import streamlit as st
 
 from src.interface.adapter import Citation, ViewResponse
-from src.retrieval.regions import find_district
+from src.retrieval.regions import SEOUL_DISTRICTS
 
 # 실패해도 응답 상태와 answer를 바꾸지 않고 문서 답변을 이어 가는 단계(docs/ERRORS.md)
 RECOVERABLE_STAGES = {"rewrite", "place_lookup"}
@@ -33,8 +33,11 @@ def build_followup_request(
         # 확정 표시를 전용 필드로 보낸다(조건에 섞으면 생성기 입력과 W5 검증에 샌다).
         # "강남구요"처럼 쓴 말에서 구 이름만 뽑는다. 그대로 보내면 해석기가 "강남구요"라는 구를
         # 골랐다고 보고 같은 되묻기를 되풀이한다. 구 이름이 없으면 입력 그대로 보낸다.
+        # 구 이름이 둘 이상이면("서대문구 말고 송파구요") 어느 쪽인지 알 수 없으므로 고르지 않고
+        # 입력 그대로 보내 해석기가 다시 되묻게 한다.
         typed = conditions.pop("district")
-        request["district"] = find_district(typed) or typed
+        named = [d for d in SEOUL_DISTRICTS if d in typed]
+        request["district"] = named[0] if len(named) == 1 else typed
         request["district_confirmed"] = True
     request["conditions"] = conditions
     return request

@@ -93,6 +93,9 @@ def main(argv: list[str] | None = None) -> None:
         raise SystemExit(f"{path}가 이미 있습니다. --output으로 새 경로를 지정하세요.")
     with (args.archive / "runs.csv").open(encoding="utf-8-sig", newline="") as file:
         rows = list(csv.DictReader(file))
+    ids = [r["run_id"].strip() for r in rows]
+    if not all(ids) or len(set(ids)) != len(ids):
+        raise SystemExit("runs.csv의 run_id가 비어 있거나 중복됩니다.")
     # 유료 호출이 끝난 뒤 쓰기에 실패하지 않도록 출력 파일을 먼저 만든다.
     with path.open("x", encoding="utf-8", newline="") as file:
         try:

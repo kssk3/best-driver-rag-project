@@ -63,3 +63,21 @@ def test_scores_outside_zero_to_one_are_errors_not_successes() -> None:
     for bad in (-0.03, 1.2, float("nan")):
         assert score_relevancy.checked_score(bad) == ("", "score_out_of_range")
     assert "variant" in score_relevancy.FIELDS
+
+
+def test_duplicate_or_blank_run_ids_stop_before_paid_scoring(
+    tmp_path, monkeypatch
+) -> None:
+    called = []
+
+    async def fake(rows):
+        called.append(rows)
+        return []
+
+    monkeypatch.setattr(score_relevancy, "_score", fake)
+    for ids in (["r1", "r1"], ["r1", ""]):
+        with (tmp_path / "runs.csv").open("w", encoding="utf-8", newline="") as file:
+            csv.writer(file).writerows([["run_id"], *[[i] for i in ids]])
+        with pytest.raises(SystemExit):
+            score_relevancy.main([str(tmp_path), "--output", str(tmp_path / "o.csv")])
+    assert called == [] and not (tmp_path / "o.csv").exists()

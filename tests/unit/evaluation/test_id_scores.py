@@ -153,3 +153,34 @@ def test_run_scores_rejects_duplicate_run_ids_and_non_rag_runs(tmp_path) -> None
     (archive / "runs.csv").write_text(text, encoding="utf-8")
     with pytest.raises(ValueError, match="run_kind"):
         run_scores(archive)
+
+
+def test_run_scores_rejects_duplicate_case_keys_and_blank_chunk_ids(tmp_path) -> None:
+    import pytest
+
+    from src.evaluation.comparison import run_scores
+
+    archive = _archive(tmp_path)
+    lines = (archive / "cases.csv").read_text(encoding="utf-8").splitlines()
+    (archive / "cases.csv").write_text(
+        chr(10).join([*lines, lines[1]]) + chr(10), encoding="utf-8"
+    )
+    with pytest.raises(ValueError, match="cases.csv"):
+        run_scores(archive)
+    archive = _archive(tmp_path)
+    text = (archive / "candidates.csv").read_text(encoding="utf-8").replace("x2", "")
+    (archive / "candidates.csv").write_text(text, encoding="utf-8")
+    with pytest.raises(ValueError, match="chunk_id"):
+        run_scores(archive)
+
+
+def test_recordless_failure_rows_stay_undefined_in_a_retrieval_archive(
+    tmp_path,
+) -> None:
+    from src.evaluation.comparison import run_scores
+
+    archive = _archive(tmp_path, status="", count=0, ranks=())
+    text = (archive / "runs.csv").read_text(encoding="utf-8").replace(",rag,", ",,")
+    (archive / "runs.csv").write_text(text, encoding="utf-8")
+    (row,) = run_scores(archive)
+    assert (row["precision"], row["recall"]) == (None, None)

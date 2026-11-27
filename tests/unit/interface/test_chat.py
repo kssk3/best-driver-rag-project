@@ -375,3 +375,12 @@ def test_typed_district_with_a_suffix_no_longer_repeats_the_clarification() -> N
     resolved = resolve_request(PipelineRequest(**request))
     assert resolved.region_status == "unsupported"  # "강남구요를 선택하셨는데"가 아니다
     assert "강남구는 아직 지원하지 않아요" in (resolved.clarification_question or "")
+
+
+def test_followup_with_two_districts_is_not_resolved_to_the_first_one() -> None:
+    request = build_followup_request(
+        "가상 질문", "서대문구", {"district": "서대문구 말고 송파구요"}
+    )
+    assert (
+        request["district"] == "서대문구 말고 송파구요"
+    )  # 고르지 않고 다시 되묻게 한다
