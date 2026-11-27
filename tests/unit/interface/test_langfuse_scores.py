@@ -854,3 +854,38 @@ def test_panel_explains_a_slow_server_and_remembers_the_failure(monkeypatch) -> 
     assert "응답하지 않습니다" in error.value
     assert len(calls) == 1
     assert any(b.label == "새로고침" for b in app.button)
+
+
+def test_uploaded_score_metadata_lets_a_rerun_count_once_without_local_csv() -> None:
+    from src.observability import tracing
+
+    def uploaded(run_id: str, value: float, scored_at: str) -> tuple[str, dict]:
+        row = {
+            "evaluation_id": f"evaluation-{run_id}",
+            "dataset_id": "d1",
+            "case_id": "c1",
+            "rewrite_enabled": "false",
+            "comparison_eligible": "true",
+            "run_id": run_id,
+            "run_kind": "rag",
+            "metric": "faithfulness",
+            "score": str(value),
+            "scored_at_utc": scored_at,
+            "run_started_at_utc": "2026-11-26T00:00:00+00:00",
+        }
+        _, payload = tracing._payloads(row)  # 업로드하는 점수 형식 그대로
+        trace = payload["traceId"]
+        return trace, score(trace, value) | {
+            "metadata": payload["metadata"],
+            "timestamp": payload["timestamp"],
+        }
+
+    first_trace, first = uploaded("run-a", 0.0, "2026-11-26T01:00:00+00:00")
+    second_trace, second = uploaded("run-b", 1.0, "2026-11-27T01:00:00+00:00")
+    bare_root = {"variant": "B", "start": "2026-11-27T00:00:00Z"}  # 보관본 루트
+
+    [group] = build_scores(
+        [first, second], {first_trace: bare_root, second_trace: bare_root}
+    ).groups
+
+    assert faithfulness(group)["B"].count == 1 and faithfulness(group)["B"].mean == 1.0
