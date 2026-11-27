@@ -235,7 +235,7 @@ def test_panel_shows_four_metric_cards_per_variant_and_unlinked(monkeypatch) -> 
     html = html_of(app)
 
     assert not app.exception
-    for title in ("답변 근거 충실도", "답변 관련성", "근거 정밀도", "근거 재현율"):
+    for title in ("근거 충실도", "답변 관련성", "근거 정밀도", "근거 재현율"):
         assert title in html
     assert "abcdef12" in html
     assert "0.500" in html and "1.000" in html  # 충실도 A 평균, B 평균

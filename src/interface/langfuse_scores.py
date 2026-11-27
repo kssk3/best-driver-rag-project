@@ -22,7 +22,7 @@ MAX_PAGES = 20
 UNKNOWN_DATASET = "알 수 없음"
 # (Langfuse 점수 이름, 화면 이름, 영문 이름). 근거 정밀도·재현율은 정답 근거 ID 기준 상위 5개 값이다.
 METRICS = (
-    ("faithfulness", "답변 근거 충실도", "Faithfulness"),
+    ("faithfulness", "근거 충실도", "Faithfulness"),
     ("answer_relevancy", "답변 관련성", "Answer Relevancy"),
     ("context_precision_id_at_5", "근거 정밀도", "Context Precision@5"),
     ("context_recall_id_at_5", "근거 재현율", "Context Recall@5"),

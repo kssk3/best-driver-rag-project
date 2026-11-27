@@ -731,9 +731,7 @@ input::placeholder {
   display: flex;
   align-items: baseline;
   gap: 8px;
-  width: fit-content;
-  max-width: 100%;
-  margin-top: 6px;
+  margin: 6px 0 0;
   padding: 5px 12px 5px 6px;
   border-radius: 999px;
   background: #e3d6f3;
@@ -747,7 +745,7 @@ input::placeholder {
   min-width: 20px;
   height: 20px;
   border-radius: 999px;
-  background: var(--lav);
+  background: #b9a2da;
   color: #fff;
   font-size: 0.75rem;
   font-weight: 700;
@@ -759,9 +757,4 @@ input::placeholder {
   font-weight: 400;
   text-decoration: underline;
   text-underline-offset: 2px;
-}
-.cite-meta {
-  margin-left: 8px;
-  font-size: 0.75rem;
-  opacity: 0.85;
 }

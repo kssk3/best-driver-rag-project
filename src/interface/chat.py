@@ -71,27 +71,16 @@ def _followup_placeholder(field: str) -> str:
 
 
 def _citation_card(citation: Citation, number: int) -> None:
-    """말풍선 안의 인용 한 건. 번호 말머리가 붙은 칩 하나에 제목(링크)과 위치·문서 버전이 들어간다."""
+    """말풍선 안의 인용 한 건. 번호 말머리가 붙은 칩 하나에 제목(링크)만 보인다."""
     label = escape(citation.title or citation.chunk_id)
     title = (
         f'<a href="{escape(citation.source_url)}" target="_blank" rel="noopener noreferrer">{label}</a>'
         if is_safe_url(citation.source_url)
         else f"{label} (원문 링크 없음)"
     )
-    meta = " · ".join(
-        text
-        for text in (
-            f"위치: {citation.source_location}" if citation.source_location else "",
-            f"문서 버전: {citation.document_version}"
-            if citation.document_version
-            else "",
-        )
-        if text
-    )
-    meta_html = f'<span class="cite-meta">{escape(meta)}</span>' if meta else ""
     st.html(
         f'<div class="cite"><b class="cite-no">{number}</b>'
-        f'<span class="cite-body">{title}{meta_html}</span></div>'
+        f'<span class="cite-body">{title}</span></div>'
     )
 
 
@@ -143,7 +132,7 @@ def _render_answered(view: ViewResponse) -> None:
 
     with _bubble("근거 확인됨", "ok"):
         st.success(view.answer or "(답변 내용 없음)")
-        st.html('<div class="ev-label">인용</div>')
+        st.html('<div class="ev-label"></div>')  # 답변과 인용 사이 실선
 
         if not view.citations:
             st.warning("인용된 근거가 없습니다.")
