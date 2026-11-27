@@ -174,7 +174,7 @@ def prepare_scores(preview: Path, archive: Path, expected_traces: int):
             # 이 지표들은 Faithfulness의 comparison_eligible과 따로 평가하므로 그 값은 넣지 않는다.
             grouping = {
                 key: run[key]
-                for key in ("dataset_id", "rewrite_enabled")
+                for key in ("dataset_id", "case_id", "rewrite_enabled")
                 if run.get(key) not in (None, "")
             }
             if grouping:

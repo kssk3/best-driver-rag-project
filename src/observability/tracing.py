@@ -249,6 +249,7 @@ def _utc(value):
 # 점수 CSV 행에 있는 값만 점수와 새로 만드는 루트의 메타데이터에 남긴다(없으면 만들어 내지 않는다).
 COMPARISON_METADATA = (
     "dataset_id",
+    "case_id",
     "evaluation_id",
     "rewrite_enabled",
     "comparison_eligible",

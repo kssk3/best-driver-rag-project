@@ -916,6 +916,7 @@ def test_comparison_metadata_goes_on_the_score_and_the_new_root(
         scores,
         run_kind="rag",
         dataset_id="test",
+        case_id="case-1",
         rewrite_enabled="true",
         comparison_eligible="false",
     )
@@ -928,6 +929,7 @@ def test_comparison_metadata_goes_on_the_score_and_the_new_root(
     (root,) = json.loads(trace.args[2])["resourceSpans"][0]["scopeSpans"][0]["spans"]
     expected = {
         "dataset_id": "test",
+        "case_id": "case-1",
         "evaluation_id": "evaluation1",
         "rewrite_enabled": "true",
         "comparison_eligible": "false",

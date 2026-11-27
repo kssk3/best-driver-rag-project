@@ -579,5 +579,6 @@ def test_extra_scores_carry_the_archive_grouping_metadata(sample) -> None:
     for score in scores:
         assert score["metadata"] == {
             "dataset_id": runs[0]["dataset_id"],
+            "case_id": runs[0]["case_id"],
             "rewrite_enabled": "true",
         }
