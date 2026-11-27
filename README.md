@@ -42,11 +42,11 @@
 
 <table width="100%">
   <tr>
-    <td align="center" width="20%"><a href="https://github.com/Cocode96"><img src="docs/readme/team/ysh.png" width="96" alt="양석호 프로필"><br><b>양석호</b></a><br><sub>공통 기반 및 규격 인계<br>런타임 · 실행 기록</sub></td>
-    <td align="center" width="20%"><a href="https://github.com/kssk3"><img src="docs/readme/team/kss.png" width="96" alt="강성수 프로필"><br><b>강성수</b></a><br><sub>답변 · 품질 추적<br>재질문 · Ragas · Langfuse</sub></td>
-    <td align="center" width="20%"><a href="https://github.com/axfehlerlee"><img src="docs/readme/team/ljw.png" width="96" alt="이정은 프로필"><br><b>이정은</b></a><br><sub>자료 검수 · 질문 다듬기<br>별칭 · 프롬프트 개선</sub></td>
-    <td align="center" width="20%"><a href="https://github.com/mjlee0914"><img src="docs/readme/team/lmj.png" width="96" alt="이명지 프로필"><br><b>이명지</b></a><br><sub>검색 · 지역 구분<br>A/B/C 검색 · 검색 지표</sub></td>
-    <td align="center" width="20%"><a href="https://github.com/eeseuju"><img src="docs/readme/team/lsj.png" width="96" alt="이승주 프로필"><br><b>이승주</b></a><br><sub>청킹 · 평가셋<br>챗봇 · 관찰 패널</sub></td>
+    <td align="center" width="20%"><a href="https://github.com/Cocode96"><img src="docs/readme/team/ysh.png" width="150" alt="양석호 프로필"><br><b>양석호</b></a><br><sub>공통 기반 및 규격 인계<br>런타임 · 실행 기록</sub></td>
+    <td align="center" width="20%"><a href="https://github.com/kssk3"><img src="docs/readme/team/kss.png" width="150" alt="강성수 프로필"><br><b>강성수</b></a><br><sub>답변 · 품질 추적<br>재질문 · Ragas · Langfuse</sub></td>
+    <td align="center" width="20%"><a href="https://github.com/axfehlerlee"><img src="docs/readme/team/ljw.png" width="150" alt="이정은 프로필"><br><b>이정은</b></a><br><sub>자료 검수 · 질문 다듬기<br>별칭 · 프롬프트 개선</sub></td>
+    <td align="center" width="20%"><a href="https://github.com/mjlee0914"><img src="docs/readme/team/lmj.png" width="150" alt="이명지 프로필"><br><b>이명지</b></a><br><sub>검색 · 지역 구분<br>A/B/C 검색 · 검색 지표</sub></td>
+    <td align="center" width="20%"><a href="https://github.com/eeseuju"><img src="docs/readme/team/lsj.png" width="150" alt="이승주 프로필"><br><b>이승주</b></a><br><sub>청킹 · 평가셋<br>챗봇 · 관찰 패널</sub></td>
   </tr>
 </table>
 
