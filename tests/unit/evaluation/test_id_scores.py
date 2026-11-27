@@ -69,8 +69,8 @@ def _archive(tmp_path, status="ok", count=2, top_k=5, ranks=(1, 2)):
     )
     write(
         "candidates.csv",
-        ["run_id", "rank", "chunk_id"],
-        [["r1", r, f"x{r}"] for r in ranks],
+        ["run_id", "dataset_id", "case_id", "rank", "chunk_id"],
+        [["r1", "d", "c1", r, f"x{r}"] for r in ranks],
     )
     return tmp_path
 
@@ -104,4 +104,18 @@ def test_run_scores_rejects_non_positive_k_and_duplicate_ranks(tmp_path) -> None
         run_scores(_archive(tmp_path), k=0)
     archive = _archive(tmp_path, count=2, ranks=(1, 1, 2))
     with pytest.raises(ValueError, match="두 번"):
+        run_scores(archive)
+
+
+def test_run_scores_rejects_candidates_owned_by_another_case(tmp_path) -> None:
+    import pytest
+
+    from src.evaluation.comparison import run_scores
+
+    archive = _archive(tmp_path)
+    text = (archive / "candidates.csv").read_text(encoding="utf-8")
+    (archive / "candidates.csv").write_text(
+        text.replace(",d,c1,2,", ",d,other,2,"), encoding="utf-8"
+    )
+    with pytest.raises(ValueError, match="다릅니다"):
         run_scores(archive)

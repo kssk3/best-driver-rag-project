@@ -49,8 +49,14 @@ def run_scores(archive: Path, k: int = 5) -> list[dict]:
         (c["dataset_id"], c["case_id"]): json.loads(c["allowed_chunk_ids_json"] or "[]")
         for c in _rows(archive / "cases.csv")
     }
+    runs = _rows(archive / "runs.csv")
+    owner = {r["run_id"]: (r["dataset_id"], r["case_id"]) for r in runs}
     ranked: dict[str, dict[int, str]] = defaultdict(dict)
     for c in _rows(archive / "candidates.csv"):
+        if owner.get(c["run_id"]) != (c["dataset_id"], c["case_id"]):
+            raise ValueError(
+                f"후보 행의 실행 {c['run_id']}이 runs.csv의 문항·데이터셋과 다릅니다."
+            )
         rank = int(c["rank"])
         if rank in ranked[c["run_id"]]:
             raise ValueError(
@@ -58,7 +64,7 @@ def run_scores(archive: Path, k: int = 5) -> list[dict]:
             )
         ranked[c["run_id"]][rank] = c["chunk_id"]
     result = []
-    for run in _rows(archive / "runs.csv"):
+    for run in runs:
         precision = recall = None  # 검색이 실패한 실행은 0점이 아니라 미정의다.
         if run["retrieval_status"] == "ok":
             _check_candidates(run, ranked[run["run_id"]], k)

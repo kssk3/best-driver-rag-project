@@ -52,3 +52,7 @@ def test_output_is_reserved_before_paid_scoring_and_cleaned_up_on_failure(
 
 def test_score_row_has_a_utc_timestamp_only_when_scored() -> None:
     assert "timestamp" in score_relevancy.FIELDS
+
+
+def test_clarification_responses_are_scored_not_marked_absent() -> None:
+    assert "needs_clarification" in score_relevancy.SCORED_STATUSES

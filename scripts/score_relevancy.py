@@ -2,7 +2,7 @@
 이미 있는 파일은 덮어쓰지 않고 호출 전에 중단한다(--output으로 새 경로를 지정).
 
 사용: uv run --locked --env-file .env python -m scripts.score_relevancy results/<실행 폴더>
-정보 부족 안내(insufficient_evidence)도 채점하되 status 열로 구분한다. 평균에 넣을지는 보고서에서 정한다.
+되묻기(needs_clarification)와 정보 부족 안내(insufficient_evidence)도 채점하되 status 열로 구분한다. 평균에 넣을지는 보고서에서 정한다.
 한 행의 호출이 실패하면 score를 비우고 error에 오류 종류만 남긴다(답변 원문은 남기지 않는다).
 """
 
@@ -15,6 +15,8 @@ from pathlib import Path
 
 JUDGE_MODEL = "gpt-6-luna"
 EMBEDDING_MODEL = "text-embedding-3-small"
+# 보류 안내(needs_clarification, insufficient_evidence)도 채점하고 status 열로 구분한다.
+SCORED_STATUSES = ("answered", "needs_clarification", "insufficient_evidence")
 FIELDS = [
     "run_id",
     "case_id",
@@ -42,7 +44,7 @@ async def _score(rows: list[dict]) -> list[dict]:
     out = []
     for row in rows:
         score, error, stamp = "", "", ""
-        if row["status"] in ("answered", "insufficient_evidence") and row["answer"]:
+        if row["status"] in SCORED_STATUSES and row["answer"]:
             try:
                 result = await metric.ascore(
                     user_input=row["original_question"], response=row["answer"]
