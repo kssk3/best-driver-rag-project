@@ -3,7 +3,8 @@
 사용: uv run --locked python -m src.evaluation.comparison results/<실행 폴더> [--k 5]
 
 정의는 docs/problem.md의 `context_precision_id_at_5`, `context_recall_id_at_5`를 따른다.
-허용 근거가 없는 문항은 두 값 모두 미정의(None)이고, 후보가 0개면 정밀도만 미정의다.
+허용 근거가 없는 문항과 검색이 실패한 실행(retrieval_status가 ok가 아님)은 두 값 모두 미정의(None)이고,
+정상 검색의 후보가 0개면 정밀도만 미정의, 재현율은 0이다. 후보 행이 원본 건수와 다르거나 --k가 top_k보다 크면 중단한다.
 """
 
 import argparse
@@ -31,20 +32,33 @@ def id_scores(
     return (hit / len(found) if found else None), hit / len(wanted)
 
 
+def _check_candidates(run: dict[str, str], ranked: dict[int, str], k: int) -> None:
+    """정상 검색의 후보 파일이 원본 건수·순위와 맞고 k가 저장 깊이 이내인지 확인한다."""
+    if k > int(run["top_k"]):
+        raise ValueError(f"--k {k}가 저장된 검색 깊이 top_k={run['top_k']}보다 큽니다.")
+    if len(ranked) != int(run["candidate_count"]) or sorted(ranked) != list(
+        range(1, len(ranked) + 1)
+    ):
+        raise ValueError(f"실행 {run['run_id']}의 후보 행이 원본 건수·순위와 다릅니다.")
+
+
 def run_scores(archive: Path, k: int = 5) -> list[dict]:
     cases = {
         (c["dataset_id"], c["case_id"]): json.loads(c["allowed_chunk_ids_json"] or "[]")
         for c in _rows(archive / "cases.csv")
     }
-    top: dict[str, list[str]] = defaultdict(list)
+    ranked: dict[str, dict[int, str]] = defaultdict(dict)
     for c in _rows(archive / "candidates.csv"):
-        if int(c["rank"]) <= k:
-            top[c["run_id"]].append(c["chunk_id"])
+        ranked[c["run_id"]][int(c["rank"])] = c["chunk_id"]
     result = []
     for run in _rows(archive / "runs.csv"):
-        precision, recall = id_scores(
-            top[run["run_id"]], cases[(run["dataset_id"], run["case_id"])]
-        )
+        precision = recall = None  # 검색이 실패한 실행은 0점이 아니라 미정의다.
+        if run["retrieval_status"] == "ok":
+            _check_candidates(run, ranked[run["run_id"]], k)
+            top = [c for rank, c in ranked[run["run_id"]].items() if rank <= k]
+            precision, recall = id_scores(
+                top, cases[(run["dataset_id"], run["case_id"])]
+            )
         result.append(
             {
                 "case_id": run["case_id"],

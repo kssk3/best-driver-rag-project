@@ -36,3 +36,60 @@ def test_by_configuration_skips_undefined_but_counts_n():
     (row,) = by_configuration(rows)
     assert (row["precision"], row["precision_n"]) == (1.0, 1)
     assert (row["recall"], row["recall_n"]) == (0.5, 2)
+
+
+def _archive(tmp_path, status="ok", count=2, top_k=5, ranks=(1, 2)):
+    import csv
+
+    def write(name, header, rows):
+        with (tmp_path / name).open("w", encoding="utf-8", newline="") as file:
+            writer = csv.writer(file)
+            writer.writerow(header)
+            writer.writerows(rows)
+
+    write(
+        "cases.csv",
+        ["dataset_id", "case_id", "allowed_chunk_ids_json"],
+        [["d", "c1", '["a"]']],
+    )
+    write(
+        "runs.csv",
+        [
+            "run_id",
+            "dataset_id",
+            "case_id",
+            "configuration",
+            "rewrite_enabled",
+            "status",
+            "retrieval_status",
+            "top_k",
+            "candidate_count",
+        ],
+        [["r1", "d", "c1", "A", "False", "answered", status, top_k, count]],
+    )
+    write(
+        "candidates.csv",
+        ["run_id", "rank", "chunk_id"],
+        [["r1", r, f"x{r}"] for r in ranks],
+    )
+    return tmp_path
+
+
+def test_failed_retrieval_is_undefined_not_zero(tmp_path) -> None:
+    from src.evaluation.comparison import run_scores
+
+    (row,) = run_scores(_archive(tmp_path, status="error", count=0, ranks=()))
+    assert (row["precision"], row["recall"]) == (None, None)
+    (ok,) = run_scores(_archive(tmp_path, count=0, ranks=()))  # 정상 검색의 후보 0건
+    assert (ok["precision"], ok["recall"]) == (None, 0.0)
+
+
+def test_run_scores_rejects_missing_candidate_rows_and_too_deep_k(tmp_path) -> None:
+    import pytest
+
+    from src.evaluation.comparison import run_scores
+
+    with pytest.raises(ValueError, match="후보 행"):
+        run_scores(_archive(tmp_path, count=2, ranks=(1,)))
+    with pytest.raises(ValueError, match="top_k"):
+        run_scores(_archive(tmp_path), k=10)

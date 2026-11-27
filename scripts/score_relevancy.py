@@ -1,4 +1,5 @@
 """저장된 답변의 answer_relevancy를 Ragas로 채점해 <실행 폴더>/relevancy.csv에 쓴다 (유료 호출).
+이미 있는 파일은 덮어쓰지 않고 호출 전에 중단한다(--output으로 새 경로를 지정).
 
 사용: uv run --locked --env-file .env python -m scripts.score_relevancy results/<실행 폴더>
 정보 부족 안내(insufficient_evidence)도 채점하되 status 열로 구분한다. 평균에 넣을지는 보고서에서 정한다.
@@ -42,6 +43,7 @@ async def _score(rows: list[dict]) -> list[dict]:
             error = "no_answer"
         out.append(
             {
+                "run_id": row["run_id"],
                 "case_id": row["case_id"],
                 "configuration": row["configuration"],
                 "rewrite_enabled": row["rewrite_enabled"],
@@ -56,12 +58,17 @@ async def _score(rows: list[dict]) -> list[dict]:
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("archive", type=Path)
+    parser.add_argument(
+        "--output", type=Path, help="기본값은 <실행 폴더>/relevancy.csv"
+    )
     args = parser.parse_args(argv)
+    path = args.output or args.archive / "relevancy.csv"
+    if path.exists():  # 유료 호출 전에 막아 기존 점수를 지킨다.
+        raise SystemExit(f"{path}가 이미 있습니다. --output으로 새 경로를 지정하세요.")
     with (args.archive / "runs.csv").open(encoding="utf-8-sig", newline="") as file:
         rows = list(csv.DictReader(file))
     scored = asyncio.run(_score(rows))
-    path = args.archive / "relevancy.csv"
-    with path.open("w", encoding="utf-8", newline="") as file:
+    with path.open("x", encoding="utf-8", newline="") as file:
         writer = csv.DictWriter(file, fieldnames=list(scored[0]))
         writer.writeheader()
         writer.writerows(scored)

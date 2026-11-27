@@ -1,5 +1,4 @@
-"""공용 입출력 규격. 기존 문서 규격과 담당 모듈을 연결하는 최소 실행 규격. 공용 규격은 Pydantic 모델로 정의한다.
-"""
+"""공용 입출력 규격. 기존 문서 규격과 담당 모듈을 연결하는 최소 실행 규격. 공용 규격은 Pydantic 모델로 정의한다."""
 
 import math
 from datetime import date, datetime
