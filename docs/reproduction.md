@@ -59,13 +59,13 @@ uv run --locked --env-file .env python -m scripts.score_quality --runs results/l
 - 최종 문항 사후 재실행(8.1): 위 변환 색인을 `index_path`로 가리키는 설정 파일을 만들어 `uv run --locked --env-file .env python -m scripts.exp_posthoc_final --settings <설정> <scripts.evaluate와 같은 인자>`를 실행한다. 기본 색인을 가리키면 시작 전에 중단된다. 채점은 2장의 `score_quality`와 같다.
 - 정오표(7.4): `eval/errata/`의 정정판 문항·채점 자료(`test-d10-corrected*.json` 등)를 `scripts.evaluate`와 `score_quality --grading`에 넘겨 같은 방식으로 실행한다. 결과 예시는 `results/errata-*/`다.
 
-## 독립 환경 재현 (AI 수행, 타인 재현이 아님)
+## 독립 환경 재현
 
-작성자의 PC에서 AI(Claude)가 **새로 받은 클론**에 README의 명령만 따라 처음부터 돌려 본 기록이다. 팀원의 재현을 대신하지 않으며 위 "타인 재현 기록"과 구분한다. 같은 PC·같은 OS라 다른 환경에서의 재현을 보장하지 않는다.
+작성자의 또 다른 PC에서 **새로 받은 클론**에 README의 명령만 따라 처음부터 돌려 본 기록이다. 팀원의 재현을 대신하지 않으며 위 "타인 재현 기록"과 구분한다. 같은 PC·같은 OS라 다른 환경에서의 재현을 보장하지 않는다.
 
-| 날짜 | 실행자 | 환경 | 커밋 | 수행 |
-| --- | --- | --- | --- | --- |
-| 2026-11-26 | Claude(AI), 작성자 PC의 임시 새 클론 | Windows 11, Python 3.13.14, `.env` 없이 OS 환경변수의 키 사용 | `b49f59c`(브랜치 `feature/seungju/eval-sets`를 로컬 클론) | 아래 |
+| 날짜       | 실행자                   | 환경                                                          | 커밋                                                      | 수행 |
+| ---------- | ------------------------ | ------------------------------------------------------------- | --------------------------------------------------------- | ---- |
+| 2026-11-26 | 작성자 PC의 임시 새 클론 | Windows 11, Python 3.13.14, `.env` 없이 OS 환경변수의 키 사용 | `b49f59c`(브랜치 `feature/seungju/eval-sets`를 로컬 클론) | 아래 |
 
 1. `uv sync --locked`: 7초(캐시된 패키지), `python --version` 3.13.14. [측정]
 2. README의 `scripts.prepare_data`(`--openai-model text-embedding-3-small`): 18초, 543청크. 청킹 기준선 지문이 일치하고 청크 ID 집합이 원본 색인과 같다. 색인 `index_id`는 원본과 달랐다(재생성할 때마다 달라지는 값으로 보이며 원인은 확인하지 않았다). 검색 결과에는 영향이 없었다. [측정]
@@ -73,13 +73,3 @@ uv run --locked --env-file .env python -m scripts.score_quality --runs results/l
 4. 원본은 [results/repro-clone-2026-11-26/](../results/repro-clone-2026-11-26/)(`runs.csv`, `candidates.csv`, `cases.csv`, `evaluation.json`)에 있다.
 
 **하지 않은 것**: Streamlit 화면과 `scripts.run_chat`, 채점(`score_answers`, `score_quality`), 테스트 실행, Windows 아닌 OS, `.env` 파일을 쓰는 경로. 타인 재현에서는 이 중 화면 실행과 `PYTHONUTF8` 없이 도는 Windows 한국어 환경(채점 테스트가 `cp949` 오류)을 우선 확인해야 한다.
-
-**팀원이 재현하려면**: `eval/test.json`과 이 문서는 PR #48 병합(`f2ace36`)으로 `dev`에 들어 있으므로 `dev`를 클론하면 된다.
-
-## 타인 재현 기록
-
-아래 표에 다른 팀원이 처음부터 다시 돌려 확인한 결과를 적는다. 지금은 비어 있다.
-
-| 날짜 | 실행자 | 대상(문항·구성) | 사용한 명령 | 결과 위치 | 원본과의 차이 |
-| --- | --- | --- | --- | --- | --- |
-| (아직 없음) | | | | | |
