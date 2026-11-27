@@ -2,42 +2,22 @@
 
 서대문구와 송파구 주민이 공식 문서에 근거한 분리배출 안내를 확인할 수 있는 Streamlit 서비스를 만든다. 이 로드맵에서 담당자, 연결 시점, 팀 `dev`에 반영된 기능을 확인한다.
 
-## 하위 에이전트에 작업을 맡길 때
-
-1. [역할표](#업무-분담과-인계)에서 담당자와 결과를 받을 사람을 확인하고, [담당 경로](docs/architecture.md#담당-경로)에서 작업 모듈을 찾는다. 내부 구조는 담당자가 정하고, 공용 입출력·의존성·저장 방식은 사용하는 담당자와 맞춘다.
-2. 기대 결과와 [제품·평가 기준](docs/problem.md)을 함께 전달한다. 공용 인터페이스를 다룰 때는 [작업별 연결 기준](docs/TEAM-SETUP.md#작업별-연결-기준), 해당 호출부, 대상 커밋에서 이를 검증하는 테스트를 지정한다.
-3. 팀 공통 상태는 병합된 `dev`를 기준으로 확인한다. 작업 브랜치나 PR을 다룰 때는 커밋과 검증 범위를 함께 적고, 구현과 목표 사이에 남은 일은 담당자에게 전달한다.
-
-## 현재 도달지점
-
-팀 기능이 병합되면 아래 표의 해당 항목과 기준 커밋을 갱신한다. 문항과 실행 명령은 [평가셋 안내](eval/README.md), 당시 검증 수치와 결과 해석은 [실행 기록 안내](results/README.md)에서 관리한다.
-
-Implementation snapshot for November 27, 2026, at `dev` commit [`d8b0513`](https://github.com/kssk3/best-driver-rag-project/commit/d8b0513) (PR #51 merged).
-
-| Area                | Available on this revision                                                                                                                                                                                                                                                                                                                                                                   | Remaining work                                                                                                                                    |
-| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Index and retrieval | The JSON team index supports district-filtered vector retrieval (A), vector and BM25 rank fusion (B), and reranking of the fused candidates (C). The [launcher](scripts/run_chat.py) checks the default index against the [chunk baseline](results/chunking/chunk_stats.csv).                                                                                                                | Compare retrieval quality on reviewed cases. OpenSearch and the bge-m3 comparison remain project goals.                                           |
-| Chat                | The Streamlit app (landing page, chat and a verification·comparison dashboard) runs A or C with a model answer and optional catalog rewriting. The resolver uses the Seoul dong table, asks again on district conflicts and ends with guidance when the district is unsupported. The comparison panel reads Langfuse scores when requested.                                                                                                                                                                                                                       | The comparison panel counts only scores whose evaluation set, rewrite setting and eligibility can be verified (from score/root metadata or from the local result CSVs); others are excluded and counted separately. On 2026-11-27 none of the scores already on the server could be verified (see [results guide](results/README.md)). |
-| Evaluation          | The [development set](eval/dev.json) has 10 cases and the [final set](eval/test.json) has 20. A/B/C with rewriting off (60 runs) and C with rewriting (20 runs) were each run once; the [report](report.md) gives Hit@5, answer correctness, citation validity, timing and a failure analysis. Saved runs also support Faithfulness scoring and [Langfuse score uploads](results/README.md). | Per-case source-evidence review record, an optional table-row search improvement (kept as an experiment, see the report), and the submission tag. |
-
-**(병합 전 기록, 이후 `dev`에 병합됨; 최종 평가는 `report.md`)** 답변 담당 작업 브랜치에서 두 개발 문항을 팀 A 검색기와 답변 모델로 각각 실행했다. 서대문구 색상표의 허용 근거는 검색 1위였고 모델은 1위를 인용했다. 송파구 대형폐기물 문항의 허용 근거는 3위였고 모델은 3위와 1위를 인용했다. 송파구 정답표의 다음 작업은 공식 원문 대조다. 당시 `git_base`는 `49db656`이었고 실행에는 로컬 변경이 포함됐다. [커밋 `e0a31d2`](https://github.com/kssk3/best-driver-rag-project/commit/e0a31d2a6a4ddeef36f493b5eed853838a4c6bb2)의 개발 문항 파일과 팀 A 런타임 생성 코드의 SHA-256은 실행 기록에 저장된 값과 각각 일치한다. [개발셋과 재현 방법](eval/README.md) · [두 문항의 실행 기록](results/team-a/2026-11-25T064832Z/runs.csv)
-
-HTML·JSON 형식 비교는 같은 원문 `text`를 사용한다. JSON의 `search_text` 정규화 효과, 두 형식의 검색 품질 우열, bge-m3와의 비교는 아직 측정하지 않았다.
+HTML · JSON 형식 비교는 같은 원문 `text`를 사용한다. JSON의 `search_text` 정규화 효과, 두 형식의 검색 품질 우열, bge-m3와의 비교는 아직 측정하지 않았다.
 
 ## 업무 분담과 인계
 
-현재 팀은 이승주·이정은·이명지·강성수 4인으로 운영한다. 공통 기반을 변경할 때는 해당 기능 담당자가 변경을 주도하고, 그 결과를 받는 담당자와 입출력을 확인한다.
+현재 팀은 강성수 · 이정은 · 이명지 · 이승주 4인으로 운영한다. 양석호가 마련한 공통 기반을 변경할 때는 해당 기능 담당자가 변경을 주도하고, 그 결과를 받는 담당자와 입출력을 확인한다.
 
 | 담당자 | 현재 맡은 작업                                                                                                                            | 변경하면 누구에게 무엇을 전달하는가                                                                                                                                   |
 | ------ | ----------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 이승주 | 원문 데이터에 맞춰 청킹 규칙을 개선하고 Streamlit 화면과 검증·비교 대시보드를 구현한다. 최종 평가셋을 관리한다.                                      | 청킹을 바꾸면 이명지에게 재색인할 문서와 청킹 버전을, 강성수에게 개발 문항의 원문 위치와 새 `chunk_id`를 전달한다. 화면에서는 검색 후보와 최종 인용을 구분한다.       |
+| 이승주 | 원문 데이터에 맞춰 청킹 규칙을 개선하고 Streamlit 화면과 검증·비교 대시보드를 구현한다. 최종 평가셋을 관리한다.                           | 청킹을 바꾸면 이명지에게 재색인할 문서와 청킹 버전을, 강성수에게 개발 문항의 원문 위치와 새 `chunk_id`를 전달한다. 화면에서는 검색 후보와 최종 인용을 구분한다.       |
 | 이정은 | 수집·정제 자료와 원문 검수를 이어가고, 품목 별칭과 질문 다듬기 프롬프트를 개선한다.                                                       | 이명지에게 원질문·변환 질의·보존할 조건과 변경 전후 사례를 전달한다. 답변 생성용 프롬프트도 변경할 경우 강성수와 고정 근거로 응답 상태와 인용을 확인한다.             |
 | 이명지 | 검색 기반, 지역 해석, A/B/C 검색과 검색 지표를 담당한다. 검색 시스템 v2의 목표는 OpenSearch 도입이다.                                     | 이승주의 청크를 색인하고 강성수에게 지역을 적용한 후보 순위·청크 ID·원문 위치를 전달한다. 같은 질문으로 변경 전후 순위와 Hit@5를 비교한다.                            |
 | 강성수 | 근거 기반 답변, 재질문·근거 부족·오류 처리, 인용 검증, 개발 문항과 품질 추적을 담당한다. Ragas 진술 판정과 Langfuse 실행 기록을 대조한다. | 이승주에게 화면에 표시할 응답 상태와 인용을 제공한다. 개발 문항에서 근거가 검색되지 않은 경우는 이명지와, 근거가 있어도 잘못 답한 경우는 답변 초안과 인용을 확인한다. |
 
 **같이 확인할 예시.** 전처리 자료 공동주택 수거용기 색상표가 바뀌면 이승주가 표의 품목·색상·적용 조건과 원문 위치를 보존해 청크를 만든다. 이명지는 같은 질문에서 새 청크의 순위를 확인하고, 강성수는 유리병과 캔의 색을 바꿔 물어도 올바른 답변과 인용이 나오는지 확인한다. 이정은은 같은 색인을 사용해 질문 다듬기 전후를 비교한다. 튜닝에는 개발 문항을 사용하고, 위례동 일정 충돌은 별도 관찰 사례로 유지한다. [전처리 자료 비교 결과](results/testData.md) · [평가셋 관리](eval/README.md)
 
-**공통 기반 인계.** 양석호가 공용 계약, 로더, 청킹·색인, 런타임, 실행 기록과 평가 실행기를 인계했다. 당시 구현과 검증 결과는 [11월 24일 인계 기록](docs/handoff.md), 새 작업의 담당자와 연결 기준은 [작업 배정 안내](#하위-에이전트에-작업을-맡길-때)에서 확인한다.
+**공통 기반 인계.** 양석호가 공용 계약, 로더, 청킹·색인, 런타임, 실행 기록과 평가 실행기를 인계했다. 당시 구현과 검증 결과는 [11월 24일 인계 기록](docs/handoff.md), 새 작업의 담당자와 연결 기준은 [작업별 연결 기준](docs/TEAM-SETUP.md#작업별-연결-기준)에서 확인한다.
 
 개발 실험에서는 이명지가 제공한 후보·허용 청크 ID로 검색 정밀도와 재현율을 확인하고, 강성수가 저장 답변의 관련성 및 Faithfulness와 같은 실행에서 대조한다. 보류 안내를 평가한 점수는 응답 상태와 함께 해석한다. [실험 점수 연결 절차](results/README.md#기존-실행에-팀-실험-점수-연결)
 
@@ -80,8 +60,6 @@ flowchart TB
     V -->|개선 필요| X --> I
     V -->|전체 연결 확인| F --> E --> H
 ```
-
-The [evaluation runner](src/evaluation/runner.py) and the [Streamlit app](app.py) both call the configured pipeline’s `run` method. The runtime factory determines which retriever and generator handle the request.
 
 ## 제출 결과
 

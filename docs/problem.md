@@ -19,7 +19,7 @@
 
 2026-11-24 기준으로 공용 규격, 파일 로더, 제공된 XML/JSON의 문서 쌍 연결과 조문/표 행 청킹, 실제 임베딩 색인과 근거 조회를 구현했다. 공통 파이프라인의 상태별 응답과 실행 기록은 합성 자동 데모로 확인했다. 이후 A/B/C 검색 비교와 최종 20문항 평가를 실행했고 결과는 [보고서](../report.md)에 있다(2026-11-27 기준). 실행 방법과 검증 범위는 [공통 기반 최소 인계본](handoff.md)에 기록한다.
 
-The [implementation snapshot](../ROADMAP.md#현재-도달지점) covers the current team index, model-backed chat (A or C), and the A/B/C evaluation runner. The table below defines the delivery goals. The [November 24 handoff](handoff.md) records the earlier synthetic and index checks.
+The merged `dev` covers the current team index, model-backed chat (A or C), and the A/B/C evaluation runner (see the [README](../README.md) and the [report](../report.md)). The table below defines the delivery goals. The [November 24 handoff](handoff.md) records the earlier synthetic and index checks.
 
 | 구분 | 확정된 범위 |
 | --- | --- |

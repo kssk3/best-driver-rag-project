@@ -26,7 +26,7 @@
 
 팀 A 색인으로 실행할 때는 [실행 설정](../../configs/team-a-rewrite-chat.json)의 `rewrite_enabled`로 확장 사전 적용을 선택한다. ON에서는 사전의 방언·외래어·재질 규칙과 품목 별칭을 검색 질의에 적용한다. 실행 기록에 `catalog-rules-v2`과 사용한 카탈로그의 SHA-256을 남긴다. 답변 생성에는 원질문과 해석된 지역·조건을 전달한다.
 
-[팀 A 답변 평가](../evaluation/answer_experiments/answer_evaluation_runtimes.py)의 기존 OFF 구성을 유지하고, 같은 색인과 답변 모델로 두 구성을 실행하는 `create_a_rewrite_comparison`을 제공한다. Streamlit 연결과 재현 명령은 [프로젝트 README](../../README.md#팀-색인과-리라이트-비교)를 따른다.
+[팀 A 답변 평가](../evaluation/answer_experiments/answer_evaluation_runtimes.py)의 기존 OFF 구성을 유지하고, 같은 색인과 답변 모델로 두 구성을 실행하는 `create_a_rewrite_comparison`을 제공한다. Streamlit 연결과 재현 명령은 [프로젝트 README](../../README.md#실행-방법)를 따른다.
 
 [모델 리라이트](../../prompts/query/rewrite.md)는 원질문 뒤에 기본 사전의 공식 품목명을 덧붙이는 규칙을 사용한다. 확장 프롬프트 문안은 별도로 검증하고, 모델에 연결할 때 입력과 허용 출력 규칙을 같은 원본으로 관리한다. 우유팩·두유팩·소주팩의 `종이팩` 보강은 확장 사전의 회귀 테스트에서 확인한다.
 

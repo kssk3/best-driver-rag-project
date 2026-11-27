@@ -9,7 +9,7 @@
 | 변경 영역 | 구현과 함께 확인할 항목 |
 | --- | --- |
 | 공용 요청·응답·콜백 | [자료형](../src/contracts.py), [콜백 인자](../src/runtime.py), [호출 순서](../src/pipeline.py)를 확인한다. `create_runtime`에는 지역 해석기·검색기·생성기를 전달하고 필요하면 질문 다듬기 콜백을 추가한다. `run(request)`가 반환한 `RunRecord`의 `record.response`에서 최종 응답을 읽는다. [연결 테스트](../tests/integration/test_handoff_runtime.py) |
-| 자료 준비·청킹·색인 | [준비 명령](../README.md#실제-자료-준비와-근거-조회)과 [준비 코드](../scripts/prepare_data.py)에서 전처리 묶음이 형식별 청크·색인이 되는 경로를 확인한다. [검색 명령](../scripts/search_index.py)은 지정한 구의 근거를 순위순으로 출력한다. 표 행을 수정할 때는 [청킹 테스트](../tests/unit/test_preprocessed_chunking.py)에서 원문 위치와 표의 맥락이 보존되는지 확인한다. |
+| 자료 준비·청킹·색인 | [준비 명령](../README.md#실행-방법)과 [준비 코드](../scripts/prepare_data.py)에서 전처리 묶음이 형식별 청크·색인이 되는 경로를 확인한다. [검색 명령](../scripts/search_index.py)은 지정한 구의 근거를 순위순으로 출력한다. 표 행을 수정할 때는 [청킹 테스트](../tests/unit/test_preprocessed_chunking.py)에서 원문 위치와 표의 맥락이 보존되는지 확인한다. |
 | Chat and retrieval | The [chat factory](../src/evaluation/answer_experiments/answer_evaluation_runtimes.py) accepts A or C. The [evaluation factory](../src/evaluation/answer_experiments/abc_runtimes.py) builds A, B and C for the same cases with rewriting off. Both use the [team retriever](../src/retrieval/search.py). |
 | 지역·질문 다듬기 | [지역 해석기](../src/retrieval/regions.py), [질문 다듬기](../src/query/rewrite.py), [질문 다듬기와 검색 연결 테스트](../tests/unit/query/test_search_rewrite.py)에서 성공·실패 시 실제 검색 질의를 확인한다. [공용 오류 코드](ERRORS.md) |
 | 답변·인용 | [생성 모듈 안내](../src/generation/AGENTS.md), [어댑터](../src/generation/pipeline_adapter.py), [답변 정책](../src/generation/answer.py)과 [고정 근거 테스트](../tests/unit/answer_experiments/test_evidence_pipeline_answers.py)를 확인한다. 검색 후보, 생성기에 전달한 청크, 최종 인용을 차례로 대조한다. 외부 모델에 보낸 요청은 모델 호출부에서 확인한다. |

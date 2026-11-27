@@ -1,6 +1,6 @@
 # 수집 자료와 색인
 
-`raw/`에는 공식 원문과 getSpot 원자료, `processed/`에는 정제 문서와 청크 및 별도 형식의 장소 자료, `indexes/`에는 검색 색인을 둔다. 실제 조례·별표의 전처리 본문은 [인계 자료](handoff/jungeun/ordinance-handoff-2026-11-24/)에 있다. 생성한 색인은 Git에서 제외하므로 새 환경에서는 [자료 준비 명령](../README.md#실제-자료-준비와-근거-조회)으로 만든다.
+`raw/`에는 공식 원문과 getSpot 원자료, `processed/`에는 정제 문서와 청크 및 별도 형식의 장소 자료, `indexes/`에는 검색 색인을 둔다. 실제 조례·별표의 전처리 본문은 [인계 자료](handoff/jungeun/ordinance-handoff-2026-11-24/)에 있다. 생성한 색인은 Git에서 제외하므로 새 환경에서는 [자료 준비 명령](../README.md#실행-방법)으로 만든다.
 
 `tests/fixtures/source_manifest.json`은 제공된 문서 목록과 첨부 링크의 검증 표본이다. 조례 본문은 포함하지 않는다. `tests/fixtures/handoff_documents.json`은 데모용 합성 본문이다. 두 입력의 용도와 본문 로더 사용법은 [공통 기반 최소 인계본](../docs/handoff.md)을 따른다.
 
