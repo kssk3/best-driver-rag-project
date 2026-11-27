@@ -8,6 +8,7 @@
 
 import argparse
 import asyncio
+import contextlib
 import csv
 import math
 import os
@@ -130,19 +131,21 @@ def main(argv: list[str] | None = None) -> None:
     ids = [r["run_id"].strip() for r in rows if r["run_id"].strip()]
     if len(set(ids)) != len(ids):
         raise SystemExit("runs.csv의 run_id가 중복됩니다.")
-    # 유료 호출이 끝난 뒤 쓰기에 실패하지 않도록 출력 파일을 먼저 만든다.
-    with path.open("x", encoding="utf-8", newline="") as file:
-        try:
-            scored = asyncio.run(_score(rows))
-            writer = csv.DictWriter(file, fieldnames=FIELDS)
-            writer.writeheader()
-            writer.writerows(scored)
-        except (
-            BaseException
-        ):  # 쓰다 실패해도 일부만 쓴 파일을 남기지 않는다(다음 실행이 막힌다).
+    # 유료 호출이 끝난 뒤 쓰기에 실패하지 않도록 출력 파일을 먼저 만든다("x"로 이번 호출이 만든 파일만 지운다).
+    file = path.open("x", encoding="utf-8", newline="")
+    try:
+        scored = asyncio.run(_score(rows))
+        writer = csv.DictWriter(file, fieldnames=FIELDS)
+        writer.writeheader()
+        writer.writerows(scored)
+        file.close()  # 버퍼가 기록되는 이 단계의 실패도 아래에서 처리한다.
+    except (
+        BaseException
+    ):  # 일부만 쓴 파일을 남기지 않는다(다음 실행이 기존 파일 검사로 막힌다).
+        with contextlib.suppress(OSError):
             file.close()
-            path.unlink()
-            raise
+        path.unlink(missing_ok=True)
+        raise
     failed = sum(1 for r in scored if r["error"])
     print(f"{len(scored)}행 중 점수 없음 {failed}행 -> {path}")
 

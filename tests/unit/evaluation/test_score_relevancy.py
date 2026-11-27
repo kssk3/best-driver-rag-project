@@ -45,6 +45,12 @@ class Spy:
         return self.result(rows) if self.result else []
 
 
+def echo_full(rows):
+    return [
+        {f: "" for f in score_relevancy.FIELDS} | {"run_id": r["run_id"]} for r in rows
+    ]
+
+
 def echo(rows):
     return [{"run_id": r["run_id"], "error": ""} for r in rows]
 
@@ -165,3 +171,34 @@ def test_legacy_archive_with_variant_but_no_configuration_is_accepted(
     score_relevancy.main([str(tmp_path), "--output", str(tmp_path / "o.csv")])
     assert score_relevancy.label({"variant": "A"}) == "A"
     assert score_relevancy.missing_columns([{c: "" for c in columns}]) == []
+
+
+def test_partial_output_is_removed_when_closing_the_file_fails(
+    tmp_path, monkeypatch
+) -> None:
+    from pathlib import Path
+
+    write_runs(tmp_path, [answered()])
+    monkeypatch.setattr(score_relevancy, "_score", Spy(echo_full))
+    real_open = Path.open
+
+    class FailingClose:
+        def __init__(self, file):
+            self._file = file
+
+        def __getattr__(self, name):
+            return getattr(self._file, name)
+
+        def close(self):
+            self._file.close()
+            raise OSError("디스크 공간 부족")  # 마지막 쓰기가 닫을 때 실패하는 경우
+
+    def fake_open(self, *args, **kwargs):
+        file = real_open(self, *args, **kwargs)
+        return FailingClose(file) if args and args[0] == "x" else file
+
+    monkeypatch.setattr(Path, "open", fake_open)
+    out = tmp_path / "o.csv"
+    with pytest.raises(OSError):
+        score_relevancy.main([str(tmp_path), "--output", str(out)])
+    assert not out.exists()
