@@ -57,8 +57,8 @@ def render_inspection(
     with st.container(key="insp_alerts"):
         st.subheader("자동 경고")
         st.caption(
-            "답변이 근거와 어긋났는지 점검합니다. 다른 근거 사용, 인용 누락, 조건 불일치, 단계 실패 같은  \n"
-            "이상이 있을 때만 경고가 뜨고, 정상이면 '경고 없음'입니다."
+            "답변이 근거와 어긋났는지 점검합니다.  \n"
+            "다른 근거 사용, 인용 누락, 조건 불일치, 단계 실패 같은 이상이 있을 때만 경고가 뜨고, 정상이면 '경고 없음'입니다."
         )
         alerts = check_response(view, selected_district)
         unchecked = unchecked_rules(view, selected_district)
