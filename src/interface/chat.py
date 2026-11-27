@@ -16,6 +16,10 @@ REQUIRED_FIELD_LABELS = {
 }
 
 
+class AmbiguousDistrictError(ValueError):
+    """되묻기 답에 구 이름이 둘 이상 들어 있어 어느 구인지 정할 수 없다."""
+
+
 def build_followup_request(
     question: str, district: str, extra_conditions: dict[str, str]
 ) -> dict:
@@ -33,11 +37,13 @@ def build_followup_request(
         # 확정 표시를 전용 필드로 보낸다(조건에 섞으면 생성기 입력과 W5 검증에 샌다).
         # "강남구요"처럼 쓴 말에서 구 이름만 뽑는다. 그대로 보내면 해석기가 "강남구요"라는 구를
         # 골랐다고 보고 같은 되묻기를 되풀이한다. 구 이름이 없으면 입력 그대로 보낸다.
-        # 구 이름이 둘 이상이면("서대문구 말고 송파구요") 어느 쪽인지 알 수 없으므로 고르지 않고
-        # 입력 그대로 보내 해석기가 다시 되묻게 한다.
+        # 구 이름이 둘 이상이면("서대문구 말고 송파구요") 어느 쪽인지 알 수 없으므로 요청을 만들지
+        # 않고 화면에서 다시 입력받는다(확정 표시를 붙여 보내면 해석기가 문구 전체를 지원 밖 구로 본다).
         typed = conditions.pop("district")
         named = [d for d in SEOUL_DISTRICTS if d in typed]
-        request["district"] = named[0] if len(named) == 1 else typed
+        if len(named) > 1:
+            raise AmbiguousDistrictError(f"구 이름이 둘 이상입니다: {', '.join(named)}")
+        request["district"] = named[0] if named else typed
         request["district_confirmed"] = True
     request["conditions"] = conditions
     return request
@@ -141,7 +147,11 @@ def _render_clarification(
         submitted = st.form_submit_button("다시 질문하기")
 
     if submitted:
-        request = build_followup_request(question, district, extra_conditions)
+        try:
+            request = build_followup_request(question, district, extra_conditions)
+        except AmbiguousDistrictError:
+            st.warning("구를 하나만 입력해 주세요. 예: 송파구")
+            return
         if on_followup is not None:
             on_followup(request)
         else:

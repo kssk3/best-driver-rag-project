@@ -1,4 +1,4 @@
-run_id,case_id,configuration,rewrite_enabled,status,score,error
-67530b0bab074a5394960067d22b8104,test-v07-sd-food-container-apartment-corrected,A,false,answered,0.9183,
-d0a32bb368114b50b81deba15a353ac6,test-v07-sd-food-container-apartment-corrected,B,false,answered,0.9522,
-37b6d0a3a1cc4803aec37e9d9c6fb5c3,test-v07-sd-food-container-apartment-corrected,C,false,answered,0.9183,
+run_id,case_id,configuration,variant,rewrite_enabled,status,score,error
+67530b0bab074a5394960067d22b8104,test-v07-sd-food-container-apartment-corrected,A,A,false,answered,0.9183,
+d0a32bb368114b50b81deba15a353ac6,test-v07-sd-food-container-apartment-corrected,B,B,false,answered,0.9522,
+37b6d0a3a1cc4803aec37e9d9c6fb5c3,test-v07-sd-food-container-apartment-corrected,C,C,false,answered,0.9183,

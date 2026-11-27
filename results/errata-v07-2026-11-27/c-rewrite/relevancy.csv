@@ -1,2 +1,2 @@
-run_id,case_id,configuration,rewrite_enabled,status,score,error
-ae9a22a0b43540a3a80fd6d512e97a1a,test-v07-sd-food-container-apartment-corrected,configured,true,answered,0.9554,
+run_id,case_id,configuration,variant,rewrite_enabled,status,score,error
+ae9a22a0b43540a3a80fd6d512e97a1a,test-v07-sd-food-container-apartment-corrected,configured,C,true,answered,0.9554,
