@@ -302,6 +302,7 @@ LANGFUSE_MESSAGES = {
     "not_configured": "Langfuse 주소와 키(LANGFUSE_BASE_URL, LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY)를 설정하고 다시 실행하세요.",
     "unreachable": "Langfuse 서버에 연결하지 못했습니다. 주소와 네트워크를 확인하세요.",
     "timeout": "Langfuse 서버가 제때 응답하지 않습니다(서버가 바쁜 것 같습니다). 잠시 후 새로고침하세요.",
+    "too_many_pages": "Langfuse 기록이 너무 많아 일부만 읽을 수 있어 집계하지 않았습니다.",
 }
 
 
@@ -334,6 +335,13 @@ def render_comparison() -> None:
         "검색 적중률(Hit@k)은 다른 지표라 섞지 않습니다. "
         "점수는 판정 모델의 편차가 있어, 같은 답변도 다시 채점하면 달라질 수 있습니다."
     )
+    # st.tabs는 안 열린 탭도 바로 실행한다. 느린 Langfuse 요청이 화면 전체를 막지 않게 버튼을 누른 뒤에만 읽는다.
+    if not st.session_state.get("scores_requested"):
+        st.caption("Langfuse 서버가 느릴 수 있어 버튼을 누를 때만 점수를 불러옵니다.")
+        if st.button("점수 불러오기", key="load_scores"):
+            st.session_state["scores_requested"] = True
+            st.rerun()
+        return
     result = cached_scores()
     if isinstance(result, str):
         # 주소·키·응답 내용은 보이지 않고 오류 종류만 알려 준다.

@@ -64,3 +64,28 @@ def test_common_scope_candidate_is_labelled_common_not_unknown() -> None:
 
     app = AppTest.from_function(page, default_timeout=10).run()
     assert list(rank_table(app)["지역"]) == ["공통", "알 수 없음"]
+
+
+def test_candidates_without_scores_are_shown_with_a_dash() -> None:
+    # 고정 근거 런타임은 후보 점수가 전부 None이다. 표 서식이 실패하지 않아야 한다.
+    def page() -> None:
+        from dataclasses import replace
+
+        from src.interface.adapter import Candidate, ViewResponse
+        from src.interface.inspection import render_inspection
+
+        base = ViewResponse(
+            "r", "fixed_evidence", "answered", "답", [], [], None, [], None
+        )
+        view = replace(
+            base,
+            candidates=[
+                Candidate("c1", "서대문구", None, "본문"),
+                Candidate("c2", "서대문구", None, "본문"),
+            ],
+        )
+        render_inspection(view, "서대문구")
+
+    app = AppTest.from_function(page, default_timeout=10).run()
+    assert not app.exception
+    assert rank_table(app)["점수"] == ["-", "-"]

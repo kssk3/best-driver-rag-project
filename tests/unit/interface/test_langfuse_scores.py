@@ -162,6 +162,42 @@ def test_loader_joins_scores_to_root_variant(monkeypatch) -> None:
     ]
 
 
+def _load_with_root_metadata(monkeypatch, metadata):
+    def fake_pages(path, params):
+        if path == langfuse_scores.SCORES_PATH:
+            return [score("t1", 1)]
+        assert params["isRootObservation"] == "true"
+        return [{"isRootObservation": True, "traceId": "t1", "metadata": metadata}]
+
+    monkeypatch.setattr(langfuse_scores, "_pages", fake_pages)
+    return langfuse_scores.load_langfuse_scores()
+
+
+def test_root_metadata_json_string_is_decoded(monkeypatch) -> None:
+    result = _load_with_root_metadata(
+        monkeypatch, '{"variant": "B", "dataset_id": "d"}'
+    )
+    [group] = result.groups
+    assert [(s.variant, s.count) for s in group.metrics["faithfulness"]][1] == ("B", 1)
+
+
+@pytest.mark.parametrize("metadata", ["{깨진", "[1, 2]", "그냥 문자열", 3, None])
+def test_unreadable_root_metadata_counts_as_unlinked(monkeypatch, metadata) -> None:
+    result = _load_with_root_metadata(monkeypatch, metadata)
+    assert result.groups == [] and result.unlinked["faithfulness"] == 1
+
+
+def test_pages_past_the_limit_are_an_error_not_partial_data(monkeypatch) -> None:
+    monkeypatch.setattr(
+        langfuse_scores,
+        "_get",
+        lambda path, params: {"data": [{}], "meta": {"cursor": "next"}},
+    )
+    with pytest.raises(LangfuseReadError) as error:
+        langfuse_scores._pages("/x", {})
+    assert error.value.code == "too_many_pages"
+
+
 @pytest.mark.parametrize(
     "base",
     [
@@ -215,7 +251,9 @@ def _clear_cache():
 
 def open_panel(monkeypatch, loader):
     monkeypatch.setattr(langfuse_scores, "load_langfuse_scores", loader)
-    return new_app().run()
+    app = new_app().run()
+    button(app, "점수 불러오기").click().run()  # 버튼을 누른 뒤에만 읽는다
+    return app
 
 
 def html_of(app) -> str:
@@ -243,6 +281,20 @@ def test_panel_shows_four_metric_cards_per_variant_and_unlinked(monkeypatch) -> 
     assert "—" in html  # 점수 없는 방식은 0이 아니라 줄표
     assert any("답변 관련성 3건" in c.value for c in app.caption)
     assert any("Hit@k" in c.value for c in app.caption)
+
+
+def test_scores_are_not_requested_until_the_button_is_pressed(monkeypatch) -> None:
+    calls = []
+    monkeypatch.setattr(
+        langfuse_scores, "load_langfuse_scores", lambda: calls.append(1)
+    )
+    app = new_app().run()
+
+    assert not app.exception
+    assert (
+        calls == []
+    )  # 탭을 열지 않아도 실행되는 st.tabs가 느린 요청을 기다리지 않는다
+    assert any(b.label == "점수 불러오기" for b in app.button)
 
 
 def test_panel_without_scores_says_so(monkeypatch) -> None:

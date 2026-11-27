@@ -163,8 +163,19 @@ def _pages(path: str, params: dict) -> list[dict]:
         rows.extend(item for item in data["data"] if isinstance(item, dict))
         cursor = (data.get("meta") or {}).get("cursor")
         if not cursor:
-            break
-    return rows
+            return rows
+    # 상한에서 잘린 부분 데이터로 평균을 내면 틀린 값이 되므로 오류로 알린다.
+    raise LangfuseReadError("too_many_pages")
+
+
+def _metadata(raw) -> dict:
+    """루트 메타데이터는 dict이거나 JSON 문자열일 수 있다. 읽을 수 없으면 빈 dict(미연결로 센다)."""
+    if isinstance(raw, str) and raw.lstrip().startswith("{"):
+        try:
+            raw = json.loads(raw)
+        except ValueError:
+            return {}
+    return raw if isinstance(raw, dict) else {}
 
 
 def load_langfuse_scores() -> LangfuseScores:
@@ -172,12 +183,13 @@ def load_langfuse_scores() -> LangfuseScores:
         SCORES_PATH, {"environment": "rag", "fields": "subject", "limit": 100}
     )
     observations = _pages(
-        OBSERVATIONS_PATH, {"fields": "core,basic,metadata", "limit": 1000}
+        OBSERVATIONS_PATH,
+        {"fields": "core,basic,metadata", "limit": 1000, "isRootObservation": "true"},
     )
     roots = {}
     for item in observations:
         if item.get("isRootObservation") and item.get("traceId"):
-            metadata = item.get("metadata") or {}
+            metadata = _metadata(item.get("metadata"))
             roots[item["traceId"]] = {
                 "variant": metadata.get("variant"),
                 "dataset_id": metadata.get("dataset_id"),

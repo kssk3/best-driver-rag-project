@@ -119,7 +119,7 @@ def render_inspection(
             styled = (
                 table.style.hide(axis="index")
                 .map(_shift_color, subset=["순위 이동"])
-                .format({"점수": "{:g}"})
+                .format({"점수": "{:g}"}, na_rep="-")
                 .set_table_attributes('class="rank-table"')
             )
             st.html(styled.to_html())

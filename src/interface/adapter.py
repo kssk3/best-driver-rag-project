@@ -117,7 +117,9 @@ def run_record_to_view(record: RunRecord) -> ViewResponse:
     resolved = record.resolved_query
 
     required: list[str] = []
-    if response.status == "needs_clarification":
+    if response.status == "needs_clarification" and not (
+        resolved is not None and resolved.region_status == "unsupported"
+    ):  # 지원 밖 안내는 더 받을 값이 없다
         if resolved is None or resolved.district is None:
             required.append("district")
         elif resolved.dong is None and resolved.region_status in (
