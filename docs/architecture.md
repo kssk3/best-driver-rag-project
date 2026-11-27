@@ -1,6 +1,6 @@
 # 폴더 구조와 책임
 
-The [roadmap](../ROADMAP.md#현재-도달지점) tracks the merged team implementation. The [November 24 handoff](handoff.md) records the original contracts, local index and pipeline. The ownership table below identifies the contacts for changes to these interfaces.
+The [roadmap](../ROADMAP.md) lists the team roles and the shared stages; the merged implementation is tracked by `dev` and the [report](../report.md). The [November 24 handoff](handoff.md) records the original contracts, local index and pipeline. The ownership table below identifies the contacts for changes to these interfaces.
 
 ## 폴더 배치
 
@@ -34,7 +34,7 @@ The [roadmap](../ROADMAP.md#현재-도달지점) tracks the merged team implemen
 └─ docs/                     팀 공통 기준과 재현 문서
 ```
 
-The [Streamlit app](../app.py) calls `pipeline.run(request)` and converts its `RunRecord` with `run_record_to_view`. The team branch in `_build_pipeline` calls `create_a_catalog_runtime` for A or C. The synthetic branch calls `create_demo_pipeline` with the fixture index. See the [launch instructions](../README.md#팀-색인과-리라이트-비교).
+The [Streamlit app](../app.py) calls `pipeline.run(request)` and converts its `RunRecord` with `run_record_to_view`. The team branch in `_build_pipeline` calls `create_a_catalog_runtime` for A or C. The synthetic branch calls `create_demo_pipeline` with the fixture index. See the [launch instructions](../README.md#실행-방법).
 
 ## 담당 경로
 
@@ -125,7 +125,7 @@ The [Streamlit app](../app.py) calls `pipeline.run(request)` and converts its `R
 | `scripts/index.py` | 명시한 공용 문서의 색인 생성, HTML/JSON 형식 선택 |
 | `scripts/evaluate.py` | 데모 또는 팀 연결 함수로 평가 실행, 결과 파일 저장 |
 
-PR #8과 #10의 전처리 자료를 사용한다. 공용 런타임에 주입할 A 벡터 검색기와 [공용 채팅 모델 함수](../src/infrastructure/chat_models.py)가 구현됐다. 검색·생성부터 화면까지의 연결 상태는 [로드맵](../ROADMAP.md#현재-도달지점)에서 확인한다. [전처리 자료 결과표](../results/testData.md)는 별도로 수행한 로컬 비교 실험 기록이다.
+PR #8과 #10의 전처리 자료를 사용한다. 공용 런타임에 주입할 A 벡터 검색기와 [공용 채팅 모델 함수](../src/infrastructure/chat_models.py)가 구현됐다. 검색·생성부터 화면까지의 연결 상태는 [로드맵](../ROADMAP.md)에서 확인한다. [전처리 자료 결과표](../results/testData.md)는 별도로 수행한 로컬 비교 실험 기록이다.
 
 초기 파일별 구현 항목과 플로우 차트는 [Notion 구조 문서](https://app.notion.com/p/422dc8b0e1638150b62acfe703074f30?pvs=204)에 있다. 현재 구현된 규격과 동작은 저장소 코드와 최소 구현 인계 문서를 기준으로 확인한다.
 

@@ -8,7 +8,7 @@
 
 ## 전처리 자료 검색·답변 실험 결과
 
-[전처리 자료 질문별 결과표](testData.md)에서 저장소에 포함된 CSV 원본을 열 수 있다. 재현하려면 [검색 비교 명령](../README.md#dev-반영-후-답변과-지역-해석-검증)을 실행하고 `results/local/` 아래에 새 출력 폴더를 지정한다. 출력 폴더 안의 `vector/`, `ensemble/`, `answers/`에는 각각 `runs.csv`와 `candidates.csv`가 생긴다. 같은 실행의 두 파일은 `run_id`로 연결한다. `candidate_count`가 빈칸이면 후보 목록을 받지 못했고, `0`이면 검색을 마쳤지만 찾은 후보가 없다는 뜻이다.
+[전처리 자료 질문별 결과표](testData.md)에서 저장소에 포함된 CSV 원본을 열 수 있다. 재현하려면 [검색 비교 명령](../README.md#실행-방법)을 실행하고 `results/local/` 아래에 새 출력 폴더를 지정한다. 출력 폴더 안의 `vector/`, `ensemble/`, `answers/`에는 각각 `runs.csv`와 `candidates.csv`가 생긴다. 같은 실행의 두 파일은 `run_id`로 연결한다. `candidate_count`가 빈칸이면 후보 목록을 받지 못했고, `0`이면 검색을 마쳤지만 찾은 후보가 없다는 뜻이다.
 
 `vector/`와 `ensemble/`에는 검색 순위와 소요 시간이 기록된다. `answers/`에는 함정 질문 3개에 근거를 직접 제공해 얻은 답변이 기록된다. 이 CSV들은 검색 비교 명령을 실행할 때 생성된다. 공통 런타임은 실행별 기록을 JSON으로 저장한다.
 
@@ -239,7 +239,9 @@ uv run --locked python -m scripts.upload_extra_scores \
 
 **왜 한 번 보낸 점수를 바꾸지 못하게 했나**: 응답이 유실되거나 서버 수집이 늦어지면 같은 점수를 다른 값으로 다시 보내 서로 다른 실행·값이 한 트레이스에 섞일 수 있다. 그래서 점수 ID와 최초 입력을 원장에 남기고, 같은 ID에 다른 입력은 거부하며, 서버에 같은 점수가 있으면 다시 보내지 않는다(복구 절차는 PR #42·#43). 대가로 이미 올라간 점수에는 나중에 메타데이터를 더할 수 없다.
 
-**비교용 메타데이터(2026-11-27부터)**: 새로 올리는 Faithfulness 점수의 `metadata`와 새로 만드는 `archived-run` 루트에는 점수 CSV 행에 있는 `dataset_id`, `evaluation_id`, `rewrite_enabled`, `comparison_eligible`이 문자열로 들어간다(값이 비어 있으면 넣지 않는다). 비교 화면은 이 값으로 같은 평가끼리, C ON/OFF를 나눠 묶는다. 이전에 올린 점수와 이미 있던 루트에는 이 값이 없으므로 화면이 로컬 `results/*/runs.csv`와 `run_id`로 확인하고, 확인할 수 없는 점수는 평균에서 빼고 따로 센다.
+**비교용 메타데이터**: 새로 올리는 Faithfulness 점수의 `metadata`와 새로 만드는 `archived-run` 루트에는 점수 CSV 행에 있는 `dataset_id`, `evaluation_id`, `rewrite_enabled`, `comparison_eligible`이 문자열로 들어간다(값이 비어 있으면 넣지 않는다). 비교 화면은 이 값 중 `dataset_id`와 `rewrite_enabled`로 점수를 묶는다(같은 데이터셋의 C 리라이트 ON/OFF는 서로 다른 카드). `evaluation_id`는 저장만 하고 묶는 기준으로 쓰지 않는다. 그래서 카드의 평균은 한 번의 채점 회차의 평균이 아니다. 같은 데이터셋·리라이트 설정 안에서 문항 ID(`case_id`)를 알면 (문항, 검색 방식, 지표)마다 가장 최근 점수 하나만 평균에 넣는다. 예를 들어 A만 다시 채점하면 새 A 점수가 B·C의 이전 점수와 한 카드에 나온다. 문항 ID를 알 수 없는 점수는 트레이스 하나를 한 건으로 세고 따로 표시한다. 이전에 올린 점수와 이미 있던 루트에는 이 값이 없으므로 화면이 로컬 `results/*/runs.csv`와 `run_id`로 확인하고, 확인할 수 없는 점수는 평균에서 빼고 따로 센다.
+
+**비교 패널이 점수를 읽는 방식과 알려진 한계**: 패널은 점수의 평가 세트·리라이트 여부·비교 자격을 확인할 수 있을 때만 평균에 넣는다. 확인은 (1) 점수와 루트의 메타데이터, (2) 없으면 트레이스의 `run_id`(또는 `trace_id_for_run`)로 맞춘 로컬 `results/*/runs.csv`·`scores.csv` 순서이며, 이 두 가지로 끝내 확인하지 못한 점수는 "확인 불가"로 따로 세어 제외한다. 그래서 이전에 올린 점수도 원본 CSV가 있으면 새로 올리지 않고 집계된다. 원본이 `results/local`처럼 공유되지 않는 폴더에만 있으면 `RAG_RESULTS_INDEX_DIRS`로 그 폴더를 지정해 연결을 먼저 확인한다. 팀 Langfuse를 조회하면 Faithfulness 9건은 `variant`와 `dataset_id`만 있고 `rewrite_enabled`·`comparison_eligible`이 없었으며 그 `run_id`가 저장소 `results/`와 이 PC의 `results/local` 어느 CSV에도 없어 모두 확인 불가였고, 나머지 27건은 `variant`가 없는 `archived-run` 루트라 미연결이었다. 그 결과 이날 서버 데이터로는 비교 패널에 그룹이 보이지 않았다. 원장 규칙상 이미 올라간 점수에는 메타데이터를 더할 수 없으므로, 원본을 찾을 수 없는 점수는 새 업로더로 다시 채점·업로드하기 전에는 계속 제외된다. 공식 Faithfulness 점수(`results/faithfulness-final-*`)를 서버에 올리는 일은 아직 하지 않았다.
 
 기본 실행은 오프라인 검증이다. 같은 명령에서 `uv run --locked --env-file .env`를 사용하고 끝에 `--check`를 붙이면 팀 프로젝트를 읽기만 한다. 원본과 귀속을 확인한 뒤 `--upload`로 누락 점수만 전송한다. 충돌이나 누락된 실행이 있으면 전송 전에 중단한다. 접수 후 같은 입력으로 `--check`를 실행해 서버 일치 건수와 미등록 0개를 확인한다. 부분 접수 후에는 기존 파일의 시각과 내용을 유지해 재시도한다. 합성 실험 4건의 결과는 최종 평가 80건과 따로 집계한다.
 

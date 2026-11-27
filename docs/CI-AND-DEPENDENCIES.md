@@ -4,7 +4,7 @@
 
 ## 현재 구현과 검사 범위
 
-CI는 공통 기반과 팀 모듈을 저장소의 테스트로 검사한다. 팀 A 검색기와 공용 채팅 모델의 동작은 각각 [검색 테스트](../tests/unit/test_search.py)와 [모델 호출 테스트](../tests/unit/test_chat_models.py)에서 확인할 수 있다. 모델 호출 테스트는 제공자 응답을 모의한다. 서비스 연결과 실제 모델을 사용한 실험의 진행 상태는 [로드맵](../ROADMAP.md#현재-도달지점)을 따른다.
+CI는 공통 기반과 팀 모듈을 저장소의 테스트로 검사한다. 팀 A 검색기와 공용 채팅 모델의 동작은 각각 [검색 테스트](../tests/unit/test_search.py)와 [모델 호출 테스트](../tests/unit/test_chat_models.py)에서 확인할 수 있다. 모델 호출 테스트는 제공자 응답을 모의한다. 서비스 연결과 실제 모델을 사용한 실험의 진행 상태는 [로드맵](../ROADMAP.md)을 따른다.
 
 [커버리지 워크플로](../.github/workflows/coverage.yml)는 Ubuntu에서 `.python-version`의 Python을 준비하고 uv `0.13.9`를 설치한 뒤 `uv sync --locked`로 잠금 파일에 맞춰 의존성을 설치한다.
 
