@@ -102,3 +102,12 @@ def test_dashboard_title_has_no_internal_demo_chip() -> None:
 
     assert "검증·비교 대시보드" in html
     assert "<span>내부 데모</span>" not in html
+
+
+def test_example_chip_question_stays_in_the_search_box_on_the_result_screen() -> None:
+    app = _run()
+    app.pills[0].set_value("서대문구")
+    app.button(key="example_1").click().run()
+
+    assert not app.exception
+    assert app.text_input(key="question").value == "기름 묻은 피자박스는 어디에 버려요?"

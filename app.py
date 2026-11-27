@@ -209,6 +209,9 @@ def pick_district():
 
 
 def search_form(button_label):
+    if "prefill" in st.session_state:
+        # 위젯을 그리기 전에만 값을 넣을 수 있다. 예시 칩으로 넘어온 질문을 검색창에 보여 준다.
+        st.session_state["question"] = st.session_state.pop("prefill")
     with st.form("search", border=False):
         text_col, button_col = st.columns([4, 1.5])
         question = text_col.text_input(
@@ -268,6 +271,9 @@ def render_landing() -> None:
                     if not district:
                         st.warning("지역을 선택하세요.")
                     elif ask(question, district):
+                        st.session_state["prefill"] = (
+                            question  # 대화 화면 검색창에 채운다
+                        )
                         st.rerun()
     image_col.image(str(HERO_IMAGE))
 
