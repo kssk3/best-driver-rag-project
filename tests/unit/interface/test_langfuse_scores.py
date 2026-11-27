@@ -401,6 +401,60 @@ def test_panel_shows_an_error_and_refresh_when_the_body_is_cut_off(monkeypatch) 
     assert any(b.label == "새로고침" for b in app.button)
 
 
+def test_a_newer_text_annotation_does_not_hide_the_numeric_score() -> None:
+    numeric = score("t1", 1.0) | {
+        "dataType": "NUMERIC",
+        "timestamp": "2026-11-26T01:00:00Z",
+    }
+    text = score("t1", "검토 필요") | {
+        "dataType": "TEXT",
+        "timestamp": "2026-11-27T01:00:00Z",
+    }
+    boolean_like = score("t1", True) | {"timestamp": "2026-11-28T01:00:00Z"}
+
+    [group] = build_scores([numeric, text, boolean_like], {"t1": root("A")}).groups
+
+    assert faithfulness(group)["A"].count == 1
+    assert faithfulness(group)["A"].mean == 1.0
+
+
+def test_a_root_without_run_id_is_matched_through_the_trace_id() -> None:
+    from src.observability.tracing import trace_id_for_run
+
+    trace = trace_id_for_run("run-r1")
+    runs = {"run-r1": {"dataset_id": "d3", "rewrite_enabled": True, "eligible": True}}
+    repaired_root = {
+        "variant": "C",
+        "start": "2026-11-26T00:00:00Z",
+    }  # 보관본 복구 루트: variant만 있다.
+
+    result = build_scores([score(trace, 1)], {trace: repaired_root}, runs)
+
+    [group] = result.groups
+    assert (group.dataset_id, group.rewrite_enabled) == ("d3", True)
+
+
+def test_a_run_recorded_with_conflicting_datasets_is_left_out_as_unverified(
+    tmp_path,
+) -> None:
+    for folder, dataset in (("a", "d1"), ("b", "d2")):
+        (tmp_path / folder).mkdir()
+        (tmp_path / folder / "runs.csv").write_text(
+            "run_id,dataset_id,rewrite_enabled"
+            + chr(10)
+            + f"r1,{dataset},false"
+            + chr(10),
+            encoding="utf-8",
+        )
+    runs = langfuse_scores.load_run_index(tmp_path)
+
+    result = build_scores(
+        [score("t1", 1)], {"t1": {"variant": "A", "run_id": "r1"}}, runs
+    )
+
+    assert result.groups == [] and result.unverified["faithfulness"] == 1
+
+
 def test_old_scores_are_confirmed_through_the_run_id_in_local_records() -> None:
     old_root = {"variant": "B", "run_id": "r1", "start": "2026-11-26T00:00:00Z"}
     runs = {"r1": {"dataset_id": "d9", "rewrite_enabled": False, "eligible": True}}

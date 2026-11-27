@@ -20,6 +20,7 @@ from statistics import mean
 from urllib.parse import urlencode, urlsplit
 
 from src.interface.comparison import VARIANTS, VariantSummary
+from src.observability.tracing import trace_id_for_run
 
 SCORES_PATH = "/api/public/v3/scores"
 OBSERVATIONS_PATH = "/api/public/v2/observations"
@@ -95,24 +96,26 @@ def load_run_index(results_dir: Path = RESULTS_DIR) -> dict[str, dict]:
             except OSError:
                 continue
 
-    for row in read("runs.csv"):
-        runs.setdefault(
-            row.get("run_id", ""),
-            {
-                "dataset_id": row.get("dataset_id") or None,
-                "rewrite_enabled": _flag(row.get("rewrite_enabled")),
-                "eligible": None,
-            },
-        )
-    for row in read("scores.csv"):
+    def note(row: dict) -> dict:
+        """run_id 한 건의 기록. 같은 run_id가 다른 평가 세트·리라이트로 또 나오면 모호하다고 표시한다."""
+        dataset = row.get("dataset_id") or None
+        rewrite = _flag(row.get("rewrite_enabled"))
         info = runs.setdefault(
             row.get("run_id", ""),
-            {
-                "dataset_id": row.get("dataset_id") or None,
-                "rewrite_enabled": _flag(row.get("rewrite_enabled")),
-                "eligible": None,
-            },
+            {"dataset_id": dataset, "rewrite_enabled": rewrite, "eligible": None},
         )
+        if (dataset and info["dataset_id"] and dataset != info["dataset_id"]) or (
+            rewrite is not None
+            and info["rewrite_enabled"] is not None
+            and rewrite != info["rewrite_enabled"]
+        ):
+            info["ambiguous"] = True
+        return info
+
+    for row in read("runs.csv"):
+        note(row)
+    for row in read("scores.csv"):
+        info = note(row)
         eligible = _flag(row.get("comparison_eligible"))
         if eligible is not None and row.get("metric", "faithfulness") == "faithfulness":
             info["eligible"] = (
@@ -121,13 +124,28 @@ def load_run_index(results_dir: Path = RESULTS_DIR) -> dict[str, dict]:
     return runs
 
 
+def _is_numeric_score(score: dict) -> bool:
+    value = score.get("value")
+    return (
+        score.get("dataType", "NUMERIC") == "NUMERIC"
+        and isinstance(value, int | float)
+        and not isinstance(value, bool)
+        and isfinite(value)
+    )
+
+
 def _latest_per_trace_and_metric(scores: list[dict]) -> list[dict]:
     """같은 실행(trace)을 여러 번 채점하면 지표마다 가장 최근 점수 하나만 남긴다(표본이 겹쳐 가중되지 않게)."""
     best: dict[tuple[str, str], tuple[str, int, dict]] = {}
     others: list[dict] = []
     for index, score in enumerate(scores):
         subject = score.get("subject") or {}
-        if score.get("name") not in METRIC_NAMES or subject.get("kind") != "trace":
+        if (
+            score.get("name") not in METRIC_NAMES
+            or subject.get("kind") != "trace"
+            or not _is_numeric_score(score)
+        ):
+            # 같은 이름의 텍스트 주석 점수 같은 것은 후보가 아니다. 정상 숫자 점수를 가리지 않게 따로 둔다.
             others.append(score)
             continue
         key = (str(subject.get("id")), score["name"])
@@ -137,12 +155,32 @@ def _latest_per_trace_and_metric(scores: list[dict]) -> list[dict]:
     return others + [item[2] for item in best.values()]
 
 
+def _runs_by_trace(runs: dict[str, dict]) -> dict[str, list[str]]:
+    """trace ID → run_id 목록. 보관본 업로더의 복구 루트에는 run_id가 없어 trace ID로 대조한다."""
+    by_trace: dict[str, list[str]] = {}
+    for run_id in runs:
+        if run_id:
+            by_trace.setdefault(trace_id_for_run(run_id), []).append(run_id)
+    return by_trace
+
+
 def _resolve(
-    root: dict, runs: dict[str, dict], meta: dict, metric: str
+    root: dict,
+    runs: dict[str, dict],
+    meta: dict,
+    metric: str,
+    trace_id: str = "",
+    by_trace: dict[str, list[str]] | None = None,
 ) -> tuple[str | None, bool | None, bool | None]:
     """(평가 세트, 리라이트 여부, 비교 자격). 점수 자체의 메타데이터를 먼저, 없는 값은 루트 메타데이터,
     그다음 루트의 run_id로 맞춘 로컬 기록으로 채운다."""
     info = runs.get(str(root.get("run_id"))) or {}
+    if not info:
+        # 루트 메타데이터에 run_id가 없으면 trace ID로 맞춘다. 일치하는 run이 하나일 때만 쓴다.
+        matches = (by_trace or {}).get(trace_id, [])
+        info = runs[matches[0]] if len(matches) == 1 else {}
+    if info.get("ambiguous"):
+        info = {}  # 같은 run_id가 서로 다른 평가로 기록돼 있어 어느 쪽인지 모른다.
     dataset = meta.get("dataset_id") or root.get("dataset_id") or info.get("dataset_id")
     rewrite = _flag(meta.get("rewrite_enabled"))
     if rewrite is None:
@@ -174,6 +212,7 @@ def build_scores(
     """순수 집계. roots는 traceId → {"variant", "dataset_id", "run_id", "rewrite_enabled",
     "comparison_eligible", "start"}, runs는 run_id → load_run_index() 항목이다."""
     runs = runs or {}
+    by_trace = _runs_by_trace(runs)
     values: dict[tuple[str, bool], dict[str, dict[str, list[float]]]] = {}
     latest: dict[tuple[str, bool], str] = {}
     unlinked, unverified, ineligible = _zero(), _zero(), _zero()
@@ -194,12 +233,13 @@ def build_scores(
         if (
             root is None
             or root.get("variant") not in VARIANTS
-            or not isinstance(value, int | float)
-            or not isfinite(value)
+            or not _is_numeric_score(score)
         ):
             unlinked[name] += 1
             continue
-        dataset, rewrite, eligible = _resolve(root, runs, _score_metadata(score), name)
+        dataset, rewrite, eligible = _resolve(
+            root, runs, _score_metadata(score), name, str(subject.get("id")), by_trace
+        )
         if dataset is None or rewrite is None or eligible is None:
             unverified[name] += 1
             continue
