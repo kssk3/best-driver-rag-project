@@ -41,7 +41,9 @@ class Citation:
     title: str | None = None
     source_location: str | None = None
     document_version: str | None = None
-    document_id: str | None = None  # 별표는 '<조례 문서>:attachment:<번호>' 꼴이라 소속 조례를 알 수 있다
+    document_id: str | None = (
+        None  # 별표는 '<조례 문서>:attachment:<번호>' 꼴이라 소속 조례를 알 수 있다
+    )
 
 
 @dataclass(frozen=True)
