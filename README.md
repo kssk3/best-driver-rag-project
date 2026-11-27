@@ -113,19 +113,25 @@ _※ 상세 파일 목록과 연결 원칙은 [구조와 책임](docs/architectu
 
 ```sh
 uv sync --locked
-uv run --locked python -m scripts.index --documents tests/fixtures/handoff_documents.json --output data/indexes/demo.json --demo --dimensions 128
-uv run --locked streamlit run app.py
 ```
 
-데모 색인은 합성 문서만 쓰고 외부 호출이 없다. API 키 없이 색인부터 답변, 지역 재질문, 근거 부족, 실행 기록 저장까지 확인하려면 `uv run --locked python -m scripts.demo`를 실행한다. 해시 임베딩을 쓰는 연결 검사이며 실제 안내나 검색 품질 결과가 아니다.
-
-### 권장 실행 설정: C 검색기
+### 화면 실행: C 검색기 (권장)
 
 로컬 `.env`에 `OPENAI_API_KEY`를 두고 런처를 실행한다. 기본 팀 색인이 없으면 OpenAI 임베딩으로 만들고, 시작 전에 청크 지문을 [JSON 기준선](results/chunking/chunk_stats.csv)과 대조한다.
 
 ```sh
 uv run --locked --env-file .env python -m scripts.run_chat
 ```
+
+화면은 실제 팀 색인과 OpenAI 키가 있어야 답한다. 실행 설정(`RAG_CHAT_SETTINGS`) 없이 `streamlit run app.py`만 실행하면 안내 오류가 나오고 질문은 받지 않는다. 합성 데모는 화면에서 제거했다.
+
+### API 키 없이 연결 검사
+
+```sh
+uv run --locked python -m scripts.demo
+```
+
+합성 문서만 쓰고 외부 호출이 없다. 색인부터 답변, 지역 재질문, 근거 부족, 실행 기록 저장까지 확인한다. 해시 임베딩을 쓰는 연결 검사이며 실제 안내나 검색 품질 결과가 아니다.
 
 <details>
 <summary>&nbsp;&nbsp;📦&nbsp;uv 환경 준비 · 전처리 자료로 청크 & 색인 만들기 · 색인에서 근거 조회하기</summary>
