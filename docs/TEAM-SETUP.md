@@ -19,7 +19,7 @@
 
 설치는 [README](../README.md)의 루트 uv 환경을 사용한다. `.python-version`, `pyproject.toml`과 `uv.lock`을 함께 확인한다. 공용 의존성을 추가할 때 관련 담당자와 실행 가능성을 확인하고 의존성 파일과 잠금 파일을 함께 갱신한다.
 
-Start team chat with `uv run --locked --env-file .env python -m scripts.run_chat` from the repository root. The launcher selects C with catalog rewriting. To select A, pass `--settings configs/team-a-rewrite-chat.json`. With either configuration, the app defaults to team execution. Starting `app.py` without `RAG_CHAT_SETTINGS` offers only the synthetic demo and requires its fixture index to answer a question. See the [setup and index commands](../README.md).
+Start team chat with `uv run --locked --env-file .env python -m scripts.run_chat` from the repository root. The launcher selects C with catalog rewriting. To select A, pass `--settings configs/team-a-rewrite-chat.json`. With either configuration, the app defaults to team execution. Starting `app.py` without `RAG_CHAT_SETTINGS` shows a setup-guide error; the synthetic demo is no longer offered in the screen. See the [setup and index commands](../README.md).
 
 합성 데모는 로컬 JSON 색인과 해시 임베딩을 사용한다. 조례·별표 인계 자료로 실제 색인을 만들 때는 `text-embedding-3-small`을 지정한다. 검색 CLI는 순위와 근거를 출력하고, 파이프라인 답변은 `create_runtime`에 전달한 생성기가 만든다. [환경변수 예시](../.env.example)
 
@@ -96,4 +96,4 @@ The [Seoul reference table](../data/reference/README.md) covers administrative a
 
 각 담당자는 공통 예시로 독립 구현하고 준비된 작은 기능부터 통합한다. 화면용 예시, 고정 근거 생성 시험과 실제 RAG 실행은 기록에서 구분한다. 예시 응답만 표시한 상태를 실제 검색 연결로 보고하지 않는다.
 
-The [inspection panel](../src/interface/inspection.py) calls [`check_response`](../src/validation.py) and shows warnings, rules it could not check, and candidate ranks. To display Faithfulness by configuration in the separate comparison panel, set `RAG_SCORES_CSV` to a scored run’s `scores.csv`. The panel summarizes eligible rows. For a reported result, cite the run or test output and its revision.
+The [inspection panel](../src/interface/inspection.py) calls [`check_response`](../src/validation.py) and shows warnings, rules it could not check, and candidate ranks. The separate comparison panel reads the RAGAS scores from Langfuse (`LANGFUSE_BASE_URL`, `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`), and only after the “점수 불러오기” (load scores) button is pressed. It groups scores by dataset and rewrite on/off, then by A/B/C, and averages only scores marked comparison-eligible; scores it cannot attribute are counted separately and left out. The panel links old scores to local run records by `run_id` (or the trace ID); to link scores whose source run only exists in an unshared folder such as `results/local`, set `RAG_RESULTS_INDEX_DIRS` to a comma-separated list of extra result folders (default: none). For a reported result, cite the run or test output and its revision.

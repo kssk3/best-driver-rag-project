@@ -561,3 +561,24 @@ def test_empty_csv_variant_and_absent_server_variant(sample, missing_accepted, c
     server, score = missing_accepted
     assert confirmation(sample, score, capsys)
     assert len(server.sent) == 12
+
+
+def test_extra_scores_carry_the_archive_grouping_metadata(sample) -> None:
+    from src.observability.extra_scores import prepare_scores
+
+    path, rows = sample
+    with (path / "runs.csv").open() as f:
+        runs = list(csv.DictReader(f))
+    for run in runs:
+        run["rewrite_enabled"] = "true"
+    table(path, "runs.csv", runs)
+    preview = path / "batch.json"
+    preview.write_text(json.dumps(rows))
+    scores = prepare_scores(preview, path, 4)
+    assert scores
+    for score in scores:
+        assert score["metadata"] == {
+            "dataset_id": runs[0]["dataset_id"],
+            "case_id": runs[0]["case_id"],
+            "rewrite_enabled": "true",
+        }

@@ -2,10 +2,10 @@
 
 import importlib
 from datetime import datetime, timezone
-from pathlib import Path
 
 import pytest
 import streamlit as st
+from screen_helpers import button, new_app
 from streamlit.testing.v1 import AppTest
 
 from src.common.env import MissingEnvironmentError
@@ -20,7 +20,6 @@ from src.contracts import (
     SearchCandidate,
 )
 
-APP_PATH = Path(__file__).parent.parent.parent.parent / "app.py"
 RUNTIMES = "src.evaluation.answer_experiments.answer_evaluation_runtimes"
 TEAM_MODE = "실행"
 
@@ -77,10 +76,10 @@ def _real_record() -> RunRecord:
 
 
 def _ask_in_team_mode(question: str) -> AppTest:
-    app = AppTest.from_file(str(APP_PATH), default_timeout=10).run()
-    app.radio[0].set_value(TEAM_MODE).run()
+    app = new_app().run()
+    app.pills[0].set_value("서대문구")
     app.text_input[0].set_value(question)
-    return app.button[0].click().run()
+    return button(app, "물어보기").click().run()
 
 
 class _AskThenAnswer:
@@ -123,8 +122,8 @@ def test_followup_in_team_mode_is_actually_sent_with_the_confirmed_district(
     pipeline = _AskThenAnswer()
     app = _ask_clarification(monkeypatch, pipeline)
 
-    app.text_input[1].set_value("송파구")
-    app.button[1].click().run()
+    app.selectbox[1].select("송파구")
+    button(app, "다시 질문하기").click().run()
 
     assert not app.exception
     second = pipeline.requests[1]
@@ -135,6 +134,8 @@ def test_followup_in_team_mode_is_actually_sent_with_the_confirmed_district(
     assert (
         app.session_state["asked_district"] == "송파구"
     )  # 이어지는 되묻기도 이 구를 기준으로 한다
+    # 검색창 옆 드롭다운도 확정한 구로 바뀌어야 다음 질문이 옛 구로 가지 않는다.
+    assert app.selectbox(key="district_compact").value == "송파구"
 
 
 def test_followup_failure_shows_the_modes_message_and_keeps_the_form(
@@ -143,8 +144,8 @@ def test_followup_failure_shows_the_modes_message_and_keeps_the_form(
     pipeline = _AskThenAnswer(fail_on_followup=True)
     app = _ask_clarification(monkeypatch, pipeline)
 
-    app.text_input[1].set_value("송파구")
-    app.button[1].click().run()
+    app.selectbox[1].select("송파구")
+    button(app, "다시 질문하기").click().run()
 
     assert not app.exception
     assert any("OPENAI_API_KEY" in error.value for error in app.error)
@@ -188,6 +189,7 @@ def test_unsupported_guidance_has_no_resend_form_and_points_back_to_the_inputs(
     # 검증 패널이 정상 안내를 고장 난 되묻기(W6)로 오해하지 않는다.
     assert not any("물어볼 항목이 없습니다" in w.value for w in app.warning)
     assert [b.label for b in app.button] == [
-        "질문하기"
+        "다시 묻기",
+        "점수 불러오기",  # 대시보드 버튼
     ]  # 같은 요청을 다시 보내는 버튼이 없다
-    assert any("바꿔서 다시 질문" in c.value for c in app.caption)
+    assert any("바꿔서 다시 질문" in w.value for w in app.warning)  # 안내와 한 덩어리

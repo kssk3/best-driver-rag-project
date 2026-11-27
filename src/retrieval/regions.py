@@ -250,6 +250,22 @@ def resolve_request(request: PipelineRequest) -> ResolvedQuery:
                 district=selected,
                 dong=region["dong"],
             )
+        # 후보 구가 모두 지원 밖이면(신사동: 강남구·관악구·은평구) 되묻지 않고 바로 안내한다.
+        # 되물어도 서대문구·송파구는 후보에 없어 같은 되묻기만 끝없이 반복된다.
+        if region["status"] == "ambiguous" and not (
+            set(region["candidate_districts"]) & SUPPORTED_DISTRICTS
+        ):
+            return ResolvedQuery(
+                search_query=request.question,
+                status="needs_clarification",
+                region_status="unsupported",
+                dong=region["dong"],
+                clarification_question=(
+                    f"{region['dong']}은 {', '.join(region['candidate_districts'])}에 있어요. "
+                    "모두 아직 지원하지 않아요. 서대문구·송파구의 동이나 구를 알려 주세요."
+                ),
+            )
+
         return ResolvedQuery(
             search_query=request.question,
             status="needs_clarification",
@@ -272,6 +288,11 @@ def resolve_request(request: PipelineRequest) -> ResolvedQuery:
     # 동은 확인하지 못했으므로 추측해서 채우지 않는다 (dong=None).
     if region["status"] == "no_dong":
         named = find_district(request.question)
+
+        # 질문 속 구가 지원 밖이면 되묻지 않고 바로 안내한다. 되물어도 어느 구를 고르든
+        # 아래 확정 경로가 같은 안내로 거절하므로, 고를 수 있는 선택지가 없는 질문이 된다.
+        if named is not None and named not in SUPPORTED_DISTRICTS:
+            return _ask_unsupported(request, named, None)
 
         # 질문 속 구와 고른 구가 다르면 어느 쪽으로도 덮어쓰지 않고 되묻는다.
         if (

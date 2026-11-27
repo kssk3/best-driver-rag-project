@@ -76,6 +76,7 @@ class RAGPipeline:
         retriever: Retriever,
         generator: Callable[[PipelineRequest, list[Chunk]], GenerationResult],
         rewriter: Callable[[ResolvedQuery], str] | None = None,
+        # place_lookup은 폐기 예정(2026-11-26 팀 합의)이다. 새로 연결하지 않는다.
         place_lookup: Callable[[PipelineRequest, ResolvedQuery], PlaceLookupResult]
         | None = None,
         recorder: RunRecorder | None = None,
@@ -336,7 +337,7 @@ class RAGPipeline:
                 stages.append(StageRecord(name=name, status="skipped", duration_ms=0))
         stages.sort(key=lambda item: _CORE_STAGES.index(item.name))
 
-        # 장소 조회 실패는 문서 검색/생성 결과와 별도로 표시한다.
+        # 장소 조회 실패는 문서 검색/생성 결과와 별도로 표시한다. (폐기 예정: 2026-11-26 팀 합의)
         if (
             self.place_lookup is not None
             and resolved is not None

@@ -1,32 +1,15 @@
-"""검증 패널 화면 테스트. 합성 예시 응답을 세션에 넣어 그린다."""
+"""검증 패널 화면 테스트. 합성 예시 응답만 사용한다."""
 
-import json
-from pathlib import Path
-
+from screen_helpers import fixture_app, new_app, rank_table
 from streamlit.testing.v1 import AppTest
-
-from src.interface.adapter import to_view_response
-
-APP_PATH = Path(__file__).parent.parent.parent.parent / "app.py"
-
-
-SAMPLES = json.loads(
-    (APP_PATH.parent / "tests/fixtures/interface/sample_responses.json").read_text(
-        encoding="utf-8"
-    )
-)
 
 
 def ask(sample_name: str, district: str = "서대문구") -> AppTest:
-    app = AppTest.from_file(str(APP_PATH), default_timeout=10)
-    app.session_state["view"] = to_view_response(SAMPLES[sample_name], kind="fixture")
-    app.session_state["asked_district"] = district
-    app.session_state["asked_mode"] = "합성 데모"
-    return app.run()
+    return fixture_app(sample_name, district=district)
 
 
 def test_panel_asks_for_question_first() -> None:
-    app = AppTest.from_file(str(APP_PATH), default_timeout=10).run()
+    app = new_app().run()
     assert not app.exception
     assert any("먼저 질문" in item.value for item in app.info)
 
@@ -35,7 +18,7 @@ def test_clean_answer_shows_no_alert_and_candidate_table() -> None:
     app = ask("answered")
     assert not app.exception
     assert any("경고 없음" in item.value for item in app.success)
-    table = app.dataframe[0].value
+    table = rank_table(app)
     assert list(table["chunk_id"]) == ["fx-chunk-001", "fx-chunk-002", "fx-chunk-003"]
     assert list(table["모델"]) == ["예", "예", "아니오"]
     assert list(table["인용"]) == ["예", "아니오", "아니오"]
@@ -55,8 +38,7 @@ def test_error_is_shown_as_error_in_panel() -> None:
 
 def test_unknown_model_input_is_not_shown_as_empty() -> None:
     app = ask("insufficient_evidence")
-    assert any("알 수 없습니다" in item.value for item in app.info)
-    assert list(app.dataframe[0].value["모델"]) == ["알 수 없음"]
+    assert list(rank_table(app)["모델"]) == ["알 수 없음"]
 
 
 def test_common_scope_candidate_is_labelled_common_not_unknown() -> None:
@@ -81,4 +63,29 @@ def test_common_scope_candidate_is_labelled_common_not_unknown() -> None:
         render_inspection(view, "서대문구")
 
     app = AppTest.from_function(page, default_timeout=10).run()
-    assert list(app.dataframe[0].value["지역"]) == ["공통", "알 수 없음"]
+    assert list(rank_table(app)["지역"]) == ["공통", "알 수 없음"]
+
+
+def test_candidates_without_scores_are_shown_with_a_dash() -> None:
+    # 고정 근거 런타임은 후보 점수가 전부 None이다. 표 서식이 실패하지 않아야 한다.
+    def page() -> None:
+        from dataclasses import replace
+
+        from src.interface.adapter import Candidate, ViewResponse
+        from src.interface.inspection import render_inspection
+
+        base = ViewResponse(
+            "r", "fixed_evidence", "answered", "답", [], [], None, [], None
+        )
+        view = replace(
+            base,
+            candidates=[
+                Candidate("c1", "서대문구", None, "본문"),
+                Candidate("c2", "서대문구", None, "본문"),
+            ],
+        )
+        render_inspection(view, "서대문구")
+
+    app = AppTest.from_function(page, default_timeout=10).run()
+    assert not app.exception
+    assert rank_table(app)["점수"] == ["-", "-"]

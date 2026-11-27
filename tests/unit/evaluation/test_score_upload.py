@@ -150,6 +150,7 @@ def test_upload_cli_retry_across_midnight(tmp_path, monkeypatch, transport):
             "dataType": "NUMERIC",
             "environment": "fixed_evidence",
             "timestamp": sample["scored_at_utc"],
+            "metadata": {"evaluation_id": "evaluation1"},
         }
         assert {
             "key": "langfuse.environment",
@@ -905,3 +906,41 @@ def test_recovery_waits_for_visibility_after_new_root_ack(tmp_path, transport):
         )
     assert [c.args[1] for c in posts(conn)] == [tracing.TRACES]
     assert receipt(report)[0]["reason"] == "trace_unconfirmed"
+
+
+def test_comparison_metadata_goes_on_the_score_and_the_new_root(
+    tmp_path, transport
+) -> None:
+    scores = tmp_path / "scores.csv"
+    write_scores(
+        scores,
+        run_kind="rag",
+        dataset_id="test",
+        case_id="case-1",
+        rewrite_enabled="true",
+        comparison_eligible="false",
+    )
+    conn = transport.return_value
+    serve(conn, [response(200, {}), response(202, {"message": "Accepted"})])
+    main(
+        ["--scores", str(scores), "--report", str(tmp_path / "upload.csv"), "--upload"]
+    )
+    trace, score = posts(conn)
+    (root,) = json.loads(trace.args[2])["resourceSpans"][0]["scopeSpans"][0]["spans"]
+    expected = {
+        "dataset_id": "test",
+        "case_id": "case-1",
+        "evaluation_id": "evaluation1",
+        "rewrite_enabled": "true",
+        "comparison_eligible": "false",
+    }
+    assert json.loads(score.args[2])[0]["metadata"] == expected
+    attrs = {a["key"]: a["value"]["stringValue"] for a in root["attributes"]}
+    for key, value in expected.items():
+        assert attrs[f"langfuse.observation.metadata.{key}"] == value
+
+
+def test_blank_comparison_fields_are_not_invented(tmp_path) -> None:
+    sample = write_scores(tmp_path / "scores.csv", run_kind="rag")
+    _, score = tracing._payloads(dict(sample, dataset_id="", rewrite_enabled=""))
+    assert score["metadata"] == {"evaluation_id": "evaluation1"}

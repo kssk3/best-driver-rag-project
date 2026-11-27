@@ -41,6 +41,9 @@ class Citation:
     title: str | None = None
     source_location: str | None = None
     document_version: str | None = None
+    document_id: str | None = (
+        None  # 별표는 '<조례 문서>:attachment:<번호>' 꼴이라 소속 조례를 알 수 있다
+    )
 
 
 @dataclass(frozen=True)
@@ -94,6 +97,7 @@ def to_view_response(raw: dict, kind: ViewKind) -> ViewResponse:
                 s.get("title"),
                 s.get("source_location"),
                 s.get("document_version"),
+                s.get("document_id"),
             )
             for s in raw.get("sources", [])
         ],
@@ -113,7 +117,9 @@ def run_record_to_view(record: RunRecord) -> ViewResponse:
     resolved = record.resolved_query
 
     required: list[str] = []
-    if response.status == "needs_clarification":
+    if response.status == "needs_clarification" and not (
+        resolved is not None and resolved.region_status == "unsupported"
+    ):  # 지원 밖 안내는 더 받을 값이 없다
         if resolved is None or resolved.district is None:
             required.append("district")
         elif resolved.dong is None and resolved.region_status in (
@@ -145,7 +151,12 @@ def run_record_to_view(record: RunRecord) -> ViewResponse:
         model_inputs=list(record.model_input_chunk_ids),
         citations=[
             Citation(
-                c.chunk_id, c.source_url, c.title, c.source_location, c.document_version
+                c.chunk_id,
+                c.source_url,
+                c.title,
+                c.source_location,
+                c.document_version,
+                c.document_id,
             )
             for c in response.citations
         ],

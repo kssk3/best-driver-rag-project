@@ -1,14 +1,13 @@
-"""app.py가 오류 없이 실행되고 응답 방식을 알맞게 보여 주는지 확인한다."""
+"""app.py가 오류 없이 실행되고 예시 응답임을 알리는지 확인한다."""
 
 import json
 from hashlib import sha256
 from os import utime
-from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock
 
 import pytest
-from streamlit.testing.v1 import AppTest
+from screen_helpers import APP_PATH, new_app, press_submit
 
 from src.contracts import Chunk, GenerationResult
 from src.evaluation.answer_experiments import answer_evaluation_runtimes
@@ -18,15 +17,6 @@ from src.retrieval.regions import resolve_request
 from src.rewrite_dictionary import catalog
 from src.rewrite_dictionary.runtime import make_catalog_rewriter
 from src.runtime import create_runtime
-
-APP_PATH = Path(__file__).parent.parent.parent.parent / "app.py"
-
-
-def test_app_without_settings_offers_only_synthetic_demo(monkeypatch) -> None:
-    monkeypatch.delenv("RAG_CHAT_SETTINGS", raising=False)
-    app = AppTest.from_file(str(APP_PATH), default_timeout=10).run()
-    assert not app.exception
-    assert app.radio[0].options == ["합성 데모"]
 
 
 @pytest.mark.parametrize("use_relative_path", [False, True])
@@ -78,12 +68,11 @@ def test_app_uses_explicit_team_runtime_settings(
     monkeypatch.setattr(
         answer_evaluation_runtimes, "create_a_catalog_runtime", make_runtime
     )
-    app = AppTest.from_file(str(APP_PATH), default_timeout=10).run()
-    app.radio[0].set_value("실행").run()
-    app.selectbox[0].set_value("송파구")
+    app = new_app().run()
+    app.pills[0].set_value("송파구")
     question = "잠실동에서 안 씻은 우유펙은요?"
     app.text_input[0].set_value(question)
-    app.button[0].click().run()
+    press_submit(app)
 
     assert not app.exception
     query = retrieve.call_args.args[0]
@@ -122,10 +111,9 @@ def test_app_distinguishes_team_settings_from_index_errors(
         index.write_text("{}", encoding="utf-8")
     monkeypatch.setenv("RAG_CHAT_SETTINGS", str(config))
 
-    app = AppTest.from_file(str(APP_PATH), default_timeout=10).run()
-    app.radio[0].set_value("실행").run()
+    app = new_app().run()
     app.text_input[0].set_value("우유팩은 어떻게 버려요?")
-    app.button[0].click().run()
+    press_submit(app)
 
     assert not app.exception
     assert len(app.error) == 1
@@ -161,10 +149,9 @@ def test_app_reports_missing_key_before_creating_embedding_provider(
         answer_evaluation_runtimes, "create_openai_embeddings", embedder
     )
 
-    app = AppTest.from_file(str(APP_PATH), default_timeout=10).run()
-    app.radio[0].set_value("실행").run()
+    app = new_app().run()
     app.text_input[0].set_value("우유팩은 어떻게 버려요?")
-    app.button[0].click().run()
+    press_submit(app)
 
     load.assert_called_once_with(index_path)
     embedder.assert_not_called()
@@ -194,10 +181,9 @@ def test_app_reports_team_configuration_field_before_opening_index(
     load_index = Mock()
     monkeypatch.setattr(answer_evaluation_runtimes, "load_index", load_index)
 
-    app = AppTest.from_file(str(APP_PATH), default_timeout=10).run()
-    app.radio[0].set_value("실행").run()
+    app = new_app().run()
     app.text_input[0].set_value("우유팩은 어떻게 버려요?")
-    app.button[0].click().run()
+    press_submit(app)
 
     load_index.assert_not_called()
     assert not app.exception
@@ -234,23 +220,22 @@ def test_app_reloads_team_runtime_when_same_settings_file_changes(
 
     factory = Mock(side_effect=make_runtime)
     monkeypatch.setattr(answer_evaluation_runtimes, "create_a_catalog_runtime", factory)
-    app = AppTest.from_file(str(APP_PATH), default_timeout=10).run()
-    app.radio[0].set_value("실행").run()
+    app = new_app().run()
     question = "우유팩은 어떻게 버려요?"
     app.text_input[0].set_value(question)
-    app.button[0].click().run()
+    press_submit(app)
     assert not app.exception
     assert not app.error
     assert retrieve.call_args.args[0].search_query == f"{question} (종이팩)"
 
     settings_payload["pipeline"]["rewrite_enabled"] = False
     config.write_text(json.dumps(settings_payload), encoding="utf-8")
-    app.button[0].click().run()
+    press_submit(app)
     assert not app.exception
     assert not app.error
     assert retrieve.call_args.args[0].search_query == question
 
-    app.button[0].click().run()
+    press_submit(app)
     assert not app.exception
     assert not app.error
     assert factory.call_count == 2
@@ -323,14 +308,13 @@ def test_app_refreshes_same_path_index_and_active_catalog(
     first = synthetic_index("이전 합성 근거")
     second = synthetic_index("최신 합성 근거")
     save_index(first, index_path)
-    app = AppTest.from_file(str(APP_PATH), default_timeout=10).run()
-    app.radio[0].set_value("실행").run()
+    app = new_app().run()
     question = "우유팩은 어떻게 버려요?"
     app.text_input[0].set_value(question)
 
     def submit(expected_evidence):
         old_runs = set(runs_path.glob("*.json"))
-        app.button[0].click().run()
+        press_submit(app)
         assert not app.exception
         assert not app.error
         assert any(message.value == expected_evidence for message in app.success)

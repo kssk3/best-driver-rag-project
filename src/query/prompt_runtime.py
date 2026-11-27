@@ -23,6 +23,7 @@ def create_prompt_rewrite_runtime(
     retriever: Retriever,
     generator: Callable[[PipelineRequest, list[Chunk]], GenerationResult],
     invoke: Callable[[str, str], str] | None = None,
+    # 폐기 예정(2026-11-26 팀 합의)
     place_lookup: Callable[[PipelineRequest, ResolvedQuery], PlaceLookupResult]
     | None = None,
 ) -> RAGPipeline:

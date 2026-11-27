@@ -1,13 +1,10 @@
 """W5(조건 불일치)와 순위 이동 계산 테스트. 합성 값만 사용한다."""
 
-from pathlib import Path
-
+from screen_helpers import new_app, rank_table
 from streamlit.testing.v1 import AppTest
 
 from src.interface.adapter import Candidate, Citation, ViewResponse
 from src.validation import check_response, rank_shifts, stage_names, unchecked_rules
-
-APP_PATH = Path(__file__).parent.parent.parent.parent / "app.py"
 
 
 def make_view(**changes) -> ViewResponse:
@@ -132,10 +129,9 @@ def test_rank_shift_skips_candidates_without_that_stage() -> None:
 
 
 def open_panel(view: ViewResponse) -> AppTest:
-    app = AppTest.from_file(str(APP_PATH), default_timeout=10)
+    app = new_app()
     app.session_state["view"] = view
     app.session_state["asked_district"] = "서대문구"
-    app.session_state["asked_mode"] = "합성 데모"  # 설정이 없을 때의 기본 응답 방식
     return app.run()
 
 
@@ -165,7 +161,7 @@ def test_panel_shows_w5_and_rank_shift_column() -> None:
     app = open_panel(view)
     assert not app.exception
     assert any("[W5]" in w.value for w in app.warning)
-    table = app.dataframe[0].value
+    table = rank_table(app)
     assert list(table["순위 이동"]) == ["+1", "-1"]
 
 
@@ -173,7 +169,7 @@ def test_panel_says_rank_shift_cannot_be_computed_with_one_stage() -> None:
     app = open_panel(make_view())
     assert not app.exception
     assert any("순위 이동을 계산할 수 없습니다" in c.value for c in app.caption)
-    assert list(app.dataframe[0].value["순위 이동"]) == ["-", "-"]
+    assert list(rank_table(app)["순위 이동"]) == ["-", "-"]
 
 
 def test_panel_reports_rules_it_could_not_check() -> None:
@@ -255,6 +251,6 @@ def test_panel_computes_rank_shift_with_a_single_stage_score() -> None:
     )
     app = open_panel(view)
     assert not app.exception
-    assert list(app.dataframe[0].value["순위 이동"]) == ["+1", "-1"]
+    assert list(rank_table(app)["순위 이동"]) == ["+1", "-1"]
     # 단계가 하나라 고르는 칸이 없다
     assert not any(b.label == "순위 이동 비교" for b in app.selectbox)

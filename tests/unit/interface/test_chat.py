@@ -1,31 +1,32 @@
-"""질문·답변 화면 테스트. 합성 예시 응답을 세션에 넣어 그린다."""
+"""질문·답변 화면 테스트. 합성 예시 응답만 사용한다."""
 
 import json
-from pathlib import Path
 
 import pytest
+from screen_helpers import FIXTURES, button, fixture_app
 from streamlit.testing.v1 import AppTest
 
-from src.interface.adapter import Citation, to_view_response
-from src.interface.chat import build_followup_request, format_citation, is_safe_url
-
-APP_PATH = Path(__file__).parent.parent.parent.parent / "app.py"
-
-
-SAMPLES = json.loads(
-    (APP_PATH.parent / "tests/fixtures/interface/sample_responses.json").read_text(
-        encoding="utf-8"
-    )
-)
+from src.interface.adapter import Citation
+from src.interface.chat import build_followup_request, is_safe_url
 
 
 def ask(sample_name: str, question: str = "") -> AppTest:
-    app = AppTest.from_file(str(APP_PATH), default_timeout=10)
-    app.session_state["view"] = to_view_response(SAMPLES[sample_name], kind="fixture")
-    app.session_state["asked_question"] = question
-    app.session_state["asked_district"] = "서대문구"
-    app.session_state["asked_mode"] = "합성 데모"
-    return app.run()
+    return fixture_app(sample_name, question=question)
+
+
+def clarification_page(fixtures: str) -> None:
+    # 예시 응답은 실행 모드가 아니라서 되묻기가 요청을 보내지 않고 보여 주기만 한다.
+    import json  # noqa: F811  (from_function은 함수 본문만 복사한다)
+    from pathlib import Path
+
+    from src.interface.adapter import to_view_response
+    from src.interface.chat import render_response
+
+    path = Path(fixtures) / "sample_responses.json"
+    raw = json.loads(path.read_text(encoding="utf-8"))["needs_clarification"]
+    render_response(
+        to_view_response(raw, kind="fixture"), question="가상 질문", district="서대문구"
+    )
 
 
 def test_followup_request_keeps_question_and_district() -> None:
@@ -81,29 +82,17 @@ def test_error_is_not_shown_as_normal_refusal() -> None:
 
 
 def test_followup_form_keeps_original_question_and_district() -> None:
-    app = ask("needs_clarification", question="가상 질문")
-    app.text_input[1].set_value("아파트")
-    app.button[1].click().run()
+    app = AppTest.from_function(
+        clarification_page, args=(str(FIXTURES),), default_timeout=10
+    ).run()
+    app.text_input[0].set_value("아파트")
+    app.button[0].click().run()
     assert not app.exception
     assert json.loads(app.json[0].value) == {
         "question": "가상 질문",
         "district": "서대문구",
         "conditions": {"housing_type": "아파트"},
     }
-
-
-def test_format_citation_escapes_brackets_and_shows_details() -> None:
-    citation = Citation(
-        "c1", "https://example.invalid/a", "[가상] 안내", "표 > 행", "v1"
-    )
-    assert format_citation(citation) == (
-        "- [\\[가상\\] 안내](https://example.invalid/a) · 위치: 표 > 행 · 문서 버전: v1"
-    )
-
-
-@pytest.mark.parametrize("url", ["", None, "javascript:alert(1)"])
-def test_format_citation_without_safe_link(url: str | None) -> None:
-    assert format_citation(Citation("c1", url)) == "- c1 (원문 링크 없음)"
 
 
 def test_conflicting_sources_are_both_shown_for_insufficient_evidence() -> None:
@@ -114,11 +103,9 @@ def test_conflicting_sources_are_both_shown_for_insufficient_evidence() -> None:
     shown = " ".join(item.value for item in app.markdown)
     assert "월·수·금" in shown
     assert "화·목·일" in shown
-    assert "예시 안내 웹페이지(가상)" in shown
-    assert "예시 안내 PDF(가상)" in shown
-    assert "PDF 3쪽 > 마지막 예시동 행" in shown
-    assert "문서 버전: fx-v1" in shown
-    assert "문서 버전: fx-v2" in shown
+    chips = " ".join(item.value for item in app.get("html"))
+    assert "예시 안내 웹페이지(가상)" in chips
+    assert "예시 안내 PDF(가상)" in chips
 
 
 def test_plain_insufficient_evidence_shows_no_source_list() -> None:
@@ -126,21 +113,11 @@ def test_plain_insufficient_evidence_shows_no_source_list() -> None:
     assert not any("확인한 출처" in item.value for item in app.markdown)
 
 
-def test_followup_uses_submitted_request_not_current_inputs() -> None:
-    app = ask("needs_clarification", question="가상 질문")
-    app.text_input[0].set_value("바뀐 질문")
-    app.selectbox[0].select("송파구")
-    app.text_input[1].set_value("아파트")
-    app.button[1].click().run()
-    assert json.loads(app.json[0].value)["question"] == "가상 질문"
-    assert json.loads(app.json[0].value)["district"] == "서대문구"
-
-
 def test_blank_question_clears_previous_response() -> None:
     app = ask("answered", question="가상 질문")
     assert app.success
     app.text_input[0].set_value("")
-    app.button[0].click().run()
+    button(app, "다시 묻기").click().run()
     assert not app.success
 
 
@@ -208,11 +185,11 @@ def test_followup_request_sends_district_and_dong_at_top_level_and_confirms_dist
 
 def test_followup_inputs_are_cleared_for_a_new_request() -> None:
     app = ask("needs_clarification", question="가상 질문")
-    app.text_input[1].set_value("아파트")
-    app.button[1].click().run()
-    assert any(k.startswith("followup:") for k in list(app.session_state))
-    app.button[0].click().run()
-    assert not any(k.startswith("followup:") for k in list(app.session_state))
+    app.text_input[1].set_value("아파트").run()
+    assert "followup:housing_type" in app.session_state
+    app.text_input[0].set_value("")
+    button(app, "다시 묻기").click().run()
+    assert not any(key.startswith("followup:") for key in app.session_state)
 
 
 def test_error_shows_pipeline_safe_message_but_not_internal_detail() -> None:
@@ -353,59 +330,91 @@ def test_primary_failure_keeps_message_even_when_error_codes_collide() -> None:
     assert any("답변 모델에 연결하지 못했습니다" in e.value for e in app.error)
 
 
-@pytest.mark.parametrize(
-    ("typed", "expected"),
-    [
-        ("강남구요", "강남구"),
-        (" 송파구 입니다 ", "송파구"),
-        ("서대문구", "서대문구"),
-        ("송파구이에요.", "송파구"),
-    ],
-)
-def test_followup_district_is_cut_to_the_district_name(
-    typed: str, expected: str
-) -> None:
-    request = build_followup_request("가상 질문", "서대문구", {"district": typed})
-    assert request["district"] == expected
-    assert request["district_confirmed"] is True
+def test_standard_refusal_line_is_not_repeated_under_the_fixed_notice() -> None:
+    def page() -> None:
+        from src.interface.adapter import ViewResponse
+        from src.interface.chat import render_response
 
-
-def test_typed_district_with_a_suffix_no_longer_repeats_the_clarification() -> None:
-    from src.contracts import PipelineRequest
-    from src.retrieval.regions import resolve_request
-
-    request = build_followup_request(
-        "강남구 종량제봉투 어떻게 버려?", "서대문구", {"district": "강남구요"}
-    )
-    resolved = resolve_request(PipelineRequest(**request))
-    assert resolved.region_status == "unsupported"  # "강남구요를 선택하셨는데"가 아니다
-    assert "강남구는 아직 지원하지 않아요" in (resolved.clarification_question or "")
-
-
-def test_followup_with_two_districts_is_rejected_instead_of_confirming_one() -> None:
-    from src.interface.chat import AmbiguousDistrictError
-
-    with pytest.raises(AmbiguousDistrictError):
-        build_followup_request(
-            "가상 질문", "서대문구", {"district": "서대문구 말고 송파구요"}
+        render_response(
+            ViewResponse(
+                "r",
+                "fixture",
+                "insufficient_evidence",
+                "현재 확인한 자료로는 답변하기 어렵습니다.\n서울시 안내는 월요일입니다.",
+                [],
+                [],
+                None,
+                [],
+                None,
+            )
         )
 
+    app = AppTest.from_function(page, default_timeout=10).run()
+    shown = " ".join(m.value for m in app.markdown)
+    assert (
+        "답변하기 어렵습니다" not in shown
+    )  # 고정 안내와 같은 뜻이라 되풀이하지 않는다.
+    assert "월요일" in shown  # 정보가 더해지는 줄은 그대로 보인다.
+    assert len(app.info) == 1
 
-@pytest.mark.parametrize(
-    "typed",
-    [
-        "송파구 아니고요",
-        "서대문구는 아니에요",
-        "서대문구는 안 돼요",  # 부정 목록에 없던 표현
-        "송파구 말고요",
-        "송파구는 싫어요",
-        "여기요",
-    ],
-)
-def test_followup_reply_that_is_not_just_a_district_is_not_confirmed(
-    typed: str,
-) -> None:
-    from src.interface.chat import AmbiguousDistrictError
 
-    with pytest.raises(AmbiguousDistrictError):
-        build_followup_request("가상 질문", "서대문구", {"district": typed})
+def test_attachment_citation_shows_parent_ordinance(monkeypatch) -> None:
+    from src.interface import chat
+
+    shown: list[str] = []
+    monkeypatch.setattr(chat.st, "html", shown.append)
+    chat._citation_card(
+        Citation(
+            "c1",
+            "https://example.invalid/a",
+            "별표",
+            document_id="songpa-ordinance:attachment:1",
+        ),
+        1,
+    )
+    chat._citation_card(
+        Citation("c2", None, "조례 본문", document_id="songpa-ordinance"), 2
+    )
+
+    assert "송파구 폐기물 관리 조례 › 별표" in shown[0]
+    assert "›" not in shown[1]
+
+
+def test_followup_district_from_the_select_box_is_confirmed() -> None:
+    request = build_followup_request("가상 질문", "서대문구", {"district": "송파구"})
+    assert request["district"] == "송파구"
+    assert request["district_confirmed"] is True
+    assert "district" not in request["conditions"]
+
+
+def district_page(fixtures: str) -> None:
+    import json  # noqa: F811
+    from dataclasses import replace
+    from pathlib import Path
+
+    from src.interface.adapter import to_view_response
+    from src.interface.chat import render_response
+
+    raw = json.loads(
+        (Path(fixtures) / "sample_responses.json").read_text(encoding="utf-8")
+    )
+    view = replace(
+        to_view_response(raw["needs_clarification"], kind="fixture"),
+        required_fields=["district"],
+    )
+    render_response(view, question="가상 질문", district="서대문구")
+
+
+def test_followup_district_is_chosen_from_supported_districts_only() -> None:
+    app = AppTest.from_function(
+        district_page, args=(str(FIXTURES),), default_timeout=10
+    ).run()
+    assert not app.exception
+    assert not app.text_input  # 자유 입력칸이 아니다
+    assert app.selectbox[0].options == ["서대문구", "송파구"]
+    assert app.selectbox[0].value is None  # 고르기 전에는 비어 있다
+
+    app.selectbox[0].select("송파구")
+    app.button[0].click().run()
+    request = json.loads(app.json[0].value)
+    assert request["district"] == "송파구" and request["district_confirmed"] is True
