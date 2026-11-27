@@ -19,6 +19,11 @@ REQUIRED_FIELD_LABELS = {
 }
 
 
+def _plain(text: str) -> str:
+    # 답변의 "12~25인치" 같은 물결표를 마크다운 취소선으로 읽지 않게 한다.
+    return text.replace("~", r"\~")
+
+
 def build_followup_request(
     question: str, district: str, extra_conditions: dict[str, str]
 ) -> dict:
@@ -153,7 +158,7 @@ def render_response(
 def _render_answered(view: ViewResponse) -> None:
 
     with _bubble("근거 확인됨", "ok"):
-        st.success(view.answer or "(답변 내용 없음)")
+        st.success(_plain(view.answer or "(답변 내용 없음)"))
         st.html('<div class="ev-label"></div>')  # 답변과 인용 사이 실선
 
         if not view.citations:
@@ -176,11 +181,13 @@ def _render_clarification(
         # 더 채울 값이 없다(지원 밖 안내 등). 같은 요청을 다시 보내면 같은 안내만 나오므로
         # 입력칸 없이 안내 한 덩어리로 보여 주고, 처음 입력칸에서 지역이나 질문을 바꾸게 한다.
         with _bubble("안내드려요", "warn"):
-            st.warning(f"{message}  \n위의 지역이나 질문을 바꿔서 다시 질문해 주세요.")
+            st.warning(
+                f"{_plain(message)}  \n위의 지역이나 질문을 바꿔서 다시 질문해 주세요."
+            )
         return
 
     with _bubble("조금만 더 알려주세요", "warn"):
-        st.warning(message)
+        st.warning(_plain(message))
 
         with st.form("followup"):
             # 라벨은 숨기고 입력칸 안내 문구(placeholder)로 대신한다. 입력칸이 하나면 버튼을 옆에 둔다.
@@ -215,7 +222,7 @@ def _render_insufficient_evidence(view: ViewResponse) -> None:
         for line in (view.answer or "").splitlines():
             # 위의 고정 안내와 같은 뜻의 거절 문장은 되풀이하지 않는다.
             if line.strip() and "답변하기 어렵" not in line:
-                st.write(line)
+                st.write(_plain(line))
         if view.citations:
             st.html('<div class="ev-label"></div>')  # 답변과 출처 사이 실선
             for number, citation in enumerate(view.citations, 1):
@@ -237,6 +244,6 @@ def _render_error(view: ViewResponse) -> None:
         any(e.name == "record" for e in view.stage_errors) and not primary_failed
     )
     st.error(
-        (None if only_record_failed else view.answer)
+        _plain((None if only_record_failed else view.answer) or "")
         or "처리 중 오류가 발생했습니다. 다시 시도해주세요."
     )

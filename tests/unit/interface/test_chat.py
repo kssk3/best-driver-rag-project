@@ -7,7 +7,7 @@ from screen_helpers import FIXTURES, button, fixture_app
 from streamlit.testing.v1 import AppTest
 
 from src.interface.adapter import Citation
-from src.interface.chat import build_followup_request, is_safe_url
+from src.interface.chat import _plain, build_followup_request, is_safe_url
 
 
 def ask(sample_name: str, question: str = "") -> AppTest:
@@ -418,3 +418,7 @@ def test_followup_district_is_chosen_from_supported_districts_only() -> None:
     app.button[0].click().run()
     request = json.loads(app.json[0].value)
     assert request["district"] == "송파구" and request["district_confirmed"] is True
+
+
+def test_tilde_in_answer_is_not_a_strikethrough() -> None:
+    assert _plain("12~25인치 미만, 25~42인치") == r"12\~25인치 미만, 25\~42인치"
