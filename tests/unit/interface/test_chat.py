@@ -422,3 +422,33 @@ def test_followup_district_is_chosen_from_supported_districts_only() -> None:
 
 def test_tilde_in_answer_is_not_a_strikethrough() -> None:
     assert _plain("12~25인치 미만, 25~42인치") == r"12\~25인치 미만, 25\~42인치"
+
+
+def test_tilde_inside_code_is_left_alone() -> None:
+    assert _plain("`18~23시`와 12~25") == r"`18~23시`와 12\~25"
+    block = "```\n1~2\n```\n"
+    assert _plain(block + "3~4") == block + r"3\~4"
+    assert _plain("닫히지 않은 ` 5~6") == r"닫히지 않은 ` 5\~6"
+
+
+def test_the_answer_shown_on_screen_has_its_tildes_escaped() -> None:
+    def page() -> None:
+        from src.interface.adapter import ViewResponse
+        from src.interface.chat import render_response
+
+        render_response(
+            ViewResponse(
+                "r",
+                "fixture",
+                "answered",
+                "12~25인치 미만, 25~42인치",
+                [],
+                [],
+                None,
+                [],
+                None,
+            )
+        )
+
+    app = AppTest.from_function(page, default_timeout=10).run()
+    assert app.success[0].value == r"12\~25인치 미만, 25\~42인치"

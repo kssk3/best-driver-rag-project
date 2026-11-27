@@ -1,3 +1,4 @@
+import re
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from html import escape
@@ -19,9 +20,16 @@ REQUIRED_FIELD_LABELS = {
 }
 
 
+# 코드 구간 안에서는 마크다운이 백슬래시 이스케이프를 처리하지 않으므로 거기의 물결표는 그대로 둔다.
+_CODE_SPAN = re.compile(r"(```.*?```|`[^`\n]*`)", re.DOTALL)
+
+
 def _plain(text: str) -> str:
     # 답변의 "12~25인치" 같은 물결표를 마크다운 취소선으로 읽지 않게 한다.
-    return text.replace("~", r"\~")
+    parts = _CODE_SPAN.split(text)  # 홀수 번째 조각이 코드 구간이다.
+    return "".join(
+        part if i % 2 else part.replace("~", r"\~") for i, part in enumerate(parts)
+    )
 
 
 def build_followup_request(
