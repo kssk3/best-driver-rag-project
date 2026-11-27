@@ -157,10 +157,9 @@ save_index(index, "data/indexes/example.json")
 | 문서와 검색 근거 | `SourceDocument`, `Chunk`, `SearchCandidate` |
 | 사용자 요청과 해석된 검색 질의 | `PipelineRequest`, `ResolvedQuery`, `PipelineOptions` |
 | 생성 결과와 최종 응답 | `GenerationResult`, `Citation`, `PipelineResponse` |
-| 별도 장소 조회 | `PlaceResult`, `PlaceLookupResult` |
 | 실행과 평가 입력 | `StageRecord`, `RunRecord`, `EvaluationCase` |
 
-`PipelineOptions.variant`의 A/B/C는 연결할 검색 방식의 선택값이다. 공용 타입이 이 값을 받는다는 사실만으로 팀의 Vector, Hybrid, reranker가 구현된 것은 아니다. 응답 상태는 `answered`, `needs_clarification`, `insufficient_evidence`, `error`를 구분한다. 장소는 문서 청크와 별도 결과로 전달하며, 좌표나 수거 가능한 품목을 추정해서 채우지 않는다.
+`PipelineOptions.variant`의 A/B/C는 연결할 검색 방식의 선택값이다. 공용 타입이 이 값을 받는다는 사실만으로 팀의 Vector, Hybrid, reranker가 구현된 것은 아니다. 응답 상태는 `answered`, `needs_clarification`, `insufficient_evidence`, `error`를 구분한다.
 
 평가의 `reference_answer`와 `allowed_chunk_ids`는 사후 비교용이다. 검색/질문 변환/생성 입력에 넣지 않는다. 검색 후보, 실제 생성 입력 청크와 실제 인용 근거도 각각 구분해 기록한다.
 
@@ -172,7 +171,6 @@ save_index(index, "data/indexes/example.json")
 | `rewriter` | `(ResolvedQuery) -> str` | 해석된 검색 질의 변환. 원래 요청의 `conditions`는 아직 전달되지 않음 |
 | `retriever` | `(ResolvedQuery, *, variant, top_k) -> list[SearchCandidate]` | A/B/C 검색 구현 |
 | `generator` | `(PipelineRequest, list[Chunk]) -> GenerationResult` | 원질문과 실제 입력 근거를 사용한 답변/인용 ID |
-| `place_lookup` | `(PipelineRequest, ResolvedQuery) -> PlaceLookupResult` | 장소 조회, 생략 가능 |
 
 다음은 준비된 팀 함수를 받는 연결 함수 예시다. 실제 모델이나 DB는 콜백을 만드는 담당 코드에서 준비한다.
 
@@ -181,7 +179,7 @@ from src.config import load_settings
 from src.runtime import create_runtime
 
 def connect_team_modules(*, resolver, retriever, generator,
-                         rewriter=None, place_lookup=None):
+                         rewriter=None):
     settings = load_settings()
     # 실제 실행에 사용한 데이터/색인/모델/프롬프트 버전은
     # settings.pipeline.versions에 넣는다. API 키는 넣지 않는다.
@@ -191,7 +189,6 @@ def connect_team_modules(*, resolver, retriever, generator,
         retriever=retriever,
         generator=generator,
         rewriter=rewriter,
-        place_lookup=place_lookup,
     )
 ```
 
@@ -211,7 +208,7 @@ print(response.status, response.answer)
 
 `validation.py`와 `tracing.py`를 주입하는 전용 인자는 없다. 생성 콜백 내부에서 공용 검증 함수를 호출하고 재생성/보류할 수는 있으나, 그 시도별 결과를 공용 단계 기록으로 받는 계약은 없다. 파이프라인의 마지막 인용 검사는 실제 입력에 없는 인용을 오류로 처리하는 최종 확인이다. 생성 담당의 복구 정책, 공용 검증 결과 형식과 추적 연결 위치는 담당자와 별도 확정해야 한다. `RunRecorder`는 호출마다 실패를 포함한 실행을 별도 파일에 저장하며, 재시도 번호나 이전 시도 연결을 제공하지 않는다.
 
-`answered`에는 실제 생성 입력에 포함된 청크의 인용 ID가 필요하다. 검색 후보에만 있던 ID를 인용하면 `error`로 기록한다. 장소 조회 실패는 `response.places`의 상태로 별도 표시한다. 지역/품목 조건의 의미 판단과 근거 부족 응답 정책은 주입한 콜백의 책임도 포함하므로, 이 흐름만으로 답변 정확성을 보장하지 않는다.
+`answered`에는 실제 생성 입력에 포함된 청크의 인용 ID가 필요하다. 검색 후보에만 있던 ID를 인용하면 `error`로 기록한다. 지역/품목 조건의 의미 판단과 근거 부족 응답 정책은 주입한 콜백의 책임도 포함하므로, 이 흐름만으로 답변 정확성을 보장하지 않는다.
 
 ## 설정, 실행 기록과 평가
 
@@ -246,7 +243,7 @@ print(response.status, response.answer)
 | `src/ingestion/indexing.py` | provider 기반 색인 스냅샷 생성과 메모리 캐시 | 실제 임베딩 provider와 갱신 정책 |
 | `src/infrastructure/embeddings.py` | provider 경계, 데모 해시 임베딩, LangChain 연결, 입력 한도 검사와 명시적 키 파일 설정 | 사용할 모델과 설정 |
 | `src/infrastructure/stores.py` | 검증 가능한 로컬 JSON 색인 저장/읽기 | 실제 DB/벡터 저장소 |
-| `src/pipeline.py` | 주입받은 팀 함수를 연결하는 공통 호출 흐름 | 지역 해석, 질문 변환, 검색, 답변 생성과 장소 조회 |
+| `src/pipeline.py` | 주입받은 팀 함수를 연결하는 공통 호출 흐름 | 지역 해석, 질문 변환, 검색, 답변 생성 |
 | `src/observability/records.py` | 실행 원본 기록 | 운영 저장 위치와 보존 정책, Langfuse 연결 |
 | `src/evaluation/runner.py` | 같은 공통 흐름으로 평가 사례 실행 | Ragas, Hit@5, 사람 채점과 최종 비교 |
 | `src/config.py`, `src/runtime.py` | 설정 읽기와 함수 연결 | 실제 서비스의 설정 및 자원 생성 |
@@ -256,7 +253,7 @@ print(response.status, response.answer)
 
 ## 구현 경계와 검증
 
-이 인계본에는 실제 팀 A/B/C 검색, 질문 변환 모델, 답변 LLM, 지도 UI, 장소 DB, Ragas와 Langfuse 연동이 포함되지 않는다. Streamlit이나 HTTP 서버도 이 공통 기반의 실행 조건이 아니다. 데모의 해시 임베딩과 원문 인용 생성기는 연결 확인용이며 최종 20문항 평가나 HTML/JSON 성능 비교 결과로 사용하지 않는다.
+이 인계본에는 실제 팀 A/B/C 검색, 질문 변환 모델, 답변 LLM, Ragas와 Langfuse 연동이 포함되지 않는다. Streamlit이나 HTTP 서버도 이 공통 기반의 실행 조건이 아니다. 데모의 해시 임베딩과 원문 인용 생성기는 연결 확인용이며 최종 20문항 평가나 HTML/JSON 성능 비교 결과로 사용하지 않는다.
 
 2026-11-24, Python 3.13.14 환경에서 확인한 결과는 다음과 같다. 테스트 명령과 CI 설정은 [검사와 의존성 관리](CI-AND-DEPENDENCIES.md)를 따른다.
 
@@ -270,6 +267,6 @@ print(response.status, response.answer)
 - 실제 데모 CLI에서 출처 목록 4건과 첨부 21건을 읽고, 합성 문서 3개의 청크와 실행 JSON 3개를 생성했다. 결과는 `answered`, `needs_clarification`, `insufficient_evidence`로 구분됐다.
 - 색인 CLI의 기본 64차원 결과를 평가 CLI가 읽는 흐름, 연결 함수 오류의 기록과 종료 코드 1, 재실행 시 기존 결과를 덮어쓰지 않는 동작을 통합 테스트로 확인했다.
 
-실제 임베딩 API와 로컬 근거 조회까지 검증했다. DB, 팀 A/B/C 검색, 답변 LLM, 지도/UI와 최종 품질 평가는 연결 전이며 bge-m3 비교도 미실행이다. 합성 데모와 실제 색인 성공을 분리배출 답변 정확도나 최종 HTML/JSON 품질 비교 완료로 해석하지 않는다.
+실제 임베딩 API와 로컬 근거 조회까지 검증했다. DB, 팀 A/B/C 검색, 답변 LLM, UI와 최종 품질 평가는 연결 전이며 bge-m3 비교도 미실행이다. 합성 데모와 실제 색인 성공을 분리배출 답변 정확도나 최종 HTML/JSON 품질 비교 완료로 해석하지 않는다.
 
 코드 변경과 로컬 실행 결과를 원격 배포나 원격 PR 완료로 해석하지 않는다. 팀 저장소로 공유할 때는 실제 변경과 검증 결과를 기준으로 별도 PR을 작성한다.

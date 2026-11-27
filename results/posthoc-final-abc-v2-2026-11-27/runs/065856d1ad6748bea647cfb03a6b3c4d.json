@@ -1,0 +1,231 @@
+{
+  "langfuse_project": "project:cmwx4ub9u0006ps1syc3peguq",
+  "run_id": "065856d1ad6748bea647cfb03a6b3c4d",
+  "request_id": "512ef3fd93094122ac28430125cec74d",
+  "run_kind": "rag",
+  "started_at": "2026-11-26T18:51:13.344686Z",
+  "request": {
+    "request_id": "512ef3fd93094122ac28430125cec74d",
+    "question": "서대문구 대형폐기물 수거를 신청하려면 콜센터 전화번호가 뭐예요?",
+    "district": "서대문구",
+    "dong": null,
+    "conditions": {},
+    "district_confirmed": false
+  },
+  "options": {
+    "variant": "A",
+    "rewrite_enabled": false,
+    "top_k": 5,
+    "max_context_chars": 12000,
+    "run_kind": "rag",
+    "versions": {
+      "model": "gpt-6-luna",
+      "index": "index-1c25b630ae0878a2c496716730e6c0622ba6995203d7ac0293759bdcb1bf5bef-embed-input-table-text-v2-7a9cfb43ffc4fa0f",
+      "chunking": "preprocessed-v2-row-v1",
+      "embedding": "text-embedding-3-small",
+      "prompt": "b0ec828702879ac2fbcdaabfbb0df5841beb2c8d6ff103472f0f5a03ff636305",
+      "candidate_policy": "vector-v1"
+    }
+  },
+  "resolved_query": {
+    "search_query": "서대문구 대형폐기물 수거를 신청하려면 콜센터 전화번호가 뭐예요?",
+    "district": "서대문구",
+    "dong": null,
+    "status": "resolved",
+    "clarification_question": null,
+    "region_status": "no_dong",
+    "candidate_districts": []
+  },
+  "search_query": "서대문구 대형폐기물 수거를 신청하려면 콜센터 전화번호가 뭐예요?",
+  "candidates": [
+    {
+      "chunk": {
+        "chunk_id": "chunk-ed3a5df76c77e57758b504f01e8e485e591a4397d250a05f434c771208c730a3",
+        "source_document_id": "seodaemun-ordinance:attachment:160319451",
+        "source_document_version": "v1",
+        "title": "[별표 1] 대형폐기물 수집 운반수수료 품목별 부과기준",
+        "content_format": "json",
+        "content": "{\"header_rows\":[{\"cells\":[{\"cell_id\":\"table-1-r0-c0\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":0,\"rowspan\":1,\"text\":\"품목별\"},{\"cell_id\":\"table-1-r0-c1\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":1,\"origin_row\":0,\"rowspan\":1,\"text\":\"규격\"},{\"cell_id\":\"table-1-r0-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":0,\"rowspan\":1,\"text\":\"부과금액\"},{\"cell_id\":\"table-1-r0-c3\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":3,\"origin_row\":0,\"rowspan\":1,\"text\":\"품목별\"},{\"cell_id\":\"table-1-r0-c4\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":4,\"origin_row\":0,\"rowspan\":1,\"text\":\"규격\"},{\"cell_id\":\"table-1-r0-c5\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":5,\"origin_row\":0,\"rowspan\":1,\"text\":\"부과금액\"}],\"row\":0}],\"paragraphs\":[\"〔별표 1〕<개정 2018. 11. 7.)\\n\",\"\",\"대형폐기물 수집․운반수수료 품목별 부과기준\\n\",\"               (제2조제7호, 제35조제1항제2호 관련)             (단위 : 원)\\n\",\"\\n\",\"                                                                             \\n\",\"(주) 열거되지 아니한 물품은 표에 열거된 품목 중 유사한 품목수수료에 준함\\n\"],\"row\":{\"cells\":[{\"cell_id\":\"table-1-r66-c0\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":66,\"rowspan\":1,\"text\":\"장식장\"},{\"cell_id\":\"table-1-r66-c1\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":1,\"origin_row\":66,\"rowspan\":1,\"text\":\"\"},{\"cell_id\":\"table-1-r66-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":66,\"rowspan\":1,\"text\":\"4,000\"},{\"cell_id\":\"table-1-r62-c3\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":3,\"origin_row\":62,\"rowspan\":5,\"text\":\"타이어\"},{\"cell_id\":\"table-1-r65-c4\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":4,\"origin_row\":65,\"rowspan\":2,\"text\":\"대형 1,100㎜ 이상\"},{\"cell_id\":\"table-1-r65-c5\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":5,\"origin_row\":65,\"rowspan\":2,\"text\":\"13,000\"}],\"row\":66},\"section_title\":\"〔별표 1〕<개정 2018. 11. 7.)\",\"table_id\":\"table-1\"}",
+        "source_url": "http://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=160319451&flNm=%5B%EB%B3%84%ED%91%9C+1%5D+%EB%8C%80%ED%98%95%ED%8F%90%EA%B8%B0%EB%AC%BC+%EC%88%98%EC%A7%91+%EC%9A%B4%EB%B0%98%EC%88%98%EC%88%98%EB%A3%8C+%ED%92%88%EB%AA%A9%EB%B3%84+%EB%B6%80%EA%B3%BC%EA%B8%B0%EC%A4%80",
+        "source_location": "table-1/row[66]",
+        "scope_type": "district",
+        "districts": [
+          "서대문구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 1,
+      "score": 0.5194566984615854,
+      "stage_scores": {
+        "vector": 0.5194566984615854
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-1f9def4b82c044470b421022441b5734842bef55ff027debeeeac2f6293a4b86",
+        "source_document_id": "seodaemun-ordinance:attachment:160319451",
+        "source_document_version": "v1",
+        "title": "[별표 1] 대형폐기물 수집 운반수수료 품목별 부과기준",
+        "content_format": "json",
+        "content": "{\"header_rows\":[{\"cells\":[{\"cell_id\":\"table-1-r0-c0\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":0,\"rowspan\":1,\"text\":\"품목별\"},{\"cell_id\":\"table-1-r0-c1\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":1,\"origin_row\":0,\"rowspan\":1,\"text\":\"규격\"},{\"cell_id\":\"table-1-r0-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":0,\"rowspan\":1,\"text\":\"부과금액\"},{\"cell_id\":\"table-1-r0-c3\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":3,\"origin_row\":0,\"rowspan\":1,\"text\":\"품목별\"},{\"cell_id\":\"table-1-r0-c4\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":4,\"origin_row\":0,\"rowspan\":1,\"text\":\"규격\"},{\"cell_id\":\"table-1-r0-c5\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":5,\"origin_row\":0,\"rowspan\":1,\"text\":\"부과금액\"}],\"row\":0}],\"paragraphs\":[\"〔별표 1〕<개정 2018. 11. 7.)\\n\",\"\",\"대형폐기물 수집․운반수수료 품목별 부과기준\\n\",\"               (제2조제7호, 제35조제1항제2호 관련)             (단위 : 원)\\n\",\"\\n\",\"                                                                             \\n\",\"(주) 열거되지 아니한 물품은 표에 열거된 품목 중 유사한 품목수수료에 준함\\n\"],\"row\":{\"cells\":[{\"cell_id\":\"table-1-r62-c0\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":0,\"origin_row\":62,\"rowspan\":4,\"text\":\"장롱\"},{\"cell_id\":\"table-1-r64-c1\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":1,\"origin_row\":64,\"rowspan\":2,\"text\":\"30cm(자)당\"},{\"cell_id\":\"table-1-r64-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":64,\"rowspan\":2,\"text\":\"3,000\"},{\"cell_id\":\"table-1-r62-c3\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":3,\"origin_row\":62,\"rowspan\":5,\"text\":\"타이어\"},{\"cell_id\":\"table-1-r63-c4\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":4,\"origin_row\":63,\"rowspan\":2,\"text\":\"중형 600～1,100㎜ 미만\"},{\"cell_id\":\"table-1-r63-c5\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":5,\"origin_row\":63,\"rowspan\":2,\"text\":\"6,000\"}],\"row\":64},\"section_title\":\"〔별표 1〕<개정 2018. 11. 7.)\",\"table_id\":\"table-1\"}",
+        "source_url": "http://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=160319451&flNm=%5B%EB%B3%84%ED%91%9C+1%5D+%EB%8C%80%ED%98%95%ED%8F%90%EA%B8%B0%EB%AC%BC+%EC%88%98%EC%A7%91+%EC%9A%B4%EB%B0%98%EC%88%98%EC%88%98%EB%A3%8C+%ED%92%88%EB%AA%A9%EB%B3%84+%EB%B6%80%EA%B3%BC%EA%B8%B0%EC%A4%80",
+        "source_location": "table-1/row[64]",
+        "scope_type": "district",
+        "districts": [
+          "서대문구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 2,
+      "score": 0.5126045108569671,
+      "stage_scores": {
+        "vector": 0.5126045108569671
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-be2d7569a1ba038a6245aceaf1d4751411c7a3e05eb4efd5530bed5ef487ac72",
+        "source_document_id": "seodaemun-ordinance:attachment:160319451",
+        "source_document_version": "v1",
+        "title": "[별표 1] 대형폐기물 수집 운반수수료 품목별 부과기준",
+        "content_format": "json",
+        "content": "{\"header_rows\":[{\"cells\":[{\"cell_id\":\"table-1-r0-c0\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":0,\"rowspan\":1,\"text\":\"품목별\"},{\"cell_id\":\"table-1-r0-c1\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":1,\"origin_row\":0,\"rowspan\":1,\"text\":\"규격\"},{\"cell_id\":\"table-1-r0-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":0,\"rowspan\":1,\"text\":\"부과금액\"},{\"cell_id\":\"table-1-r0-c3\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":3,\"origin_row\":0,\"rowspan\":1,\"text\":\"품목별\"},{\"cell_id\":\"table-1-r0-c4\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":4,\"origin_row\":0,\"rowspan\":1,\"text\":\"규격\"},{\"cell_id\":\"table-1-r0-c5\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":5,\"origin_row\":0,\"rowspan\":1,\"text\":\"부과금액\"}],\"row\":0}],\"paragraphs\":[\"〔별표 1〕<개정 2018. 11. 7.)\\n\",\"\",\"대형폐기물 수집․운반수수료 품목별 부과기준\\n\",\"               (제2조제7호, 제35조제1항제2호 관련)             (단위 : 원)\\n\",\"\\n\",\"                                                                             \\n\",\"(주) 열거되지 아니한 물품은 표에 열거된 품목 중 유사한 품목수수료에 준함\\n\"],\"row\":{\"cells\":[{\"cell_id\":\"table-1-r62-c0\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":0,\"origin_row\":62,\"rowspan\":4,\"text\":\"장롱\"},{\"cell_id\":\"table-1-r64-c1\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":1,\"origin_row\":64,\"rowspan\":2,\"text\":\"30cm(자)당\"},{\"cell_id\":\"table-1-r64-c2\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":2,\"origin_row\":64,\"rowspan\":2,\"text\":\"3,000\"},{\"cell_id\":\"table-1-r62-c3\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":3,\"origin_row\":62,\"rowspan\":5,\"text\":\"타이어\"},{\"cell_id\":\"table-1-r65-c4\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":4,\"origin_row\":65,\"rowspan\":2,\"text\":\"대형 1,100㎜ 이상\"},{\"cell_id\":\"table-1-r65-c5\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":5,\"origin_row\":65,\"rowspan\":2,\"text\":\"13,000\"}],\"row\":65},\"section_title\":\"〔별표 1〕<개정 2018. 11. 7.)\",\"table_id\":\"table-1\"}",
+        "source_url": "http://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=160319451&flNm=%5B%EB%B3%84%ED%91%9C+1%5D+%EB%8C%80%ED%98%95%ED%8F%90%EA%B8%B0%EB%AC%BC+%EC%88%98%EC%A7%91+%EC%9A%B4%EB%B0%98%EC%88%98%EC%88%98%EB%A3%8C+%ED%92%88%EB%AA%A9%EB%B3%84+%EB%B6%80%EA%B3%BC%EA%B8%B0%EC%A4%80",
+        "source_location": "table-1/row[65]",
+        "scope_type": "district",
+        "districts": [
+          "서대문구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 3,
+      "score": 0.5085669939803347,
+      "stage_scores": {
+        "vector": 0.5085669939803347
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-ea6ecbecbcbf6248c85a1b3d9f09d26a0e8a95240a7a9a64ac787dc05c736b45",
+        "source_document_id": "seodaemun-ordinance:attachment:160319451",
+        "source_document_version": "v1",
+        "title": "[별표 1] 대형폐기물 수집 운반수수료 품목별 부과기준",
+        "content_format": "json",
+        "content": "{\"header_rows\":[{\"cells\":[{\"cell_id\":\"table-1-r0-c0\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":0,\"rowspan\":1,\"text\":\"품목별\"},{\"cell_id\":\"table-1-r0-c1\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":1,\"origin_row\":0,\"rowspan\":1,\"text\":\"규격\"},{\"cell_id\":\"table-1-r0-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":0,\"rowspan\":1,\"text\":\"부과금액\"},{\"cell_id\":\"table-1-r0-c3\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":3,\"origin_row\":0,\"rowspan\":1,\"text\":\"품목별\"},{\"cell_id\":\"table-1-r0-c4\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":4,\"origin_row\":0,\"rowspan\":1,\"text\":\"규격\"},{\"cell_id\":\"table-1-r0-c5\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":5,\"origin_row\":0,\"rowspan\":1,\"text\":\"부과금액\"}],\"row\":0}],\"paragraphs\":[\"〔별표 1〕<개정 2018. 11. 7.)\\n\",\"\",\"대형폐기물 수집․운반수수료 품목별 부과기준\\n\",\"               (제2조제7호, 제35조제1항제2호 관련)             (단위 : 원)\\n\",\"\\n\",\"                                                                             \\n\",\"(주) 열거되지 아니한 물품은 표에 열거된 품목 중 유사한 품목수수료에 준함\\n\"],\"row\":{\"cells\":[{\"cell_id\":\"table-1-r62-c0\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":0,\"origin_row\":62,\"rowspan\":4,\"text\":\"장롱\"},{\"cell_id\":\"table-1-r62-c1\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":1,\"origin_row\":62,\"rowspan\":2,\"text\":\"120cm 이하\"},{\"cell_id\":\"table-1-r62-c2\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":2,\"origin_row\":62,\"rowspan\":2,\"text\":\"10,000\"},{\"cell_id\":\"table-1-r62-c3\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":3,\"origin_row\":62,\"rowspan\":5,\"text\":\"타이어\"},{\"cell_id\":\"table-1-r63-c4\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":4,\"origin_row\":63,\"rowspan\":2,\"text\":\"중형 600～1,100㎜ 미만\"},{\"cell_id\":\"table-1-r63-c5\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":5,\"origin_row\":63,\"rowspan\":2,\"text\":\"6,000\"}],\"row\":63},\"section_title\":\"〔별표 1〕<개정 2018. 11. 7.)\",\"table_id\":\"table-1\"}",
+        "source_url": "http://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=160319451&flNm=%5B%EB%B3%84%ED%91%9C+1%5D+%EB%8C%80%ED%98%95%ED%8F%90%EA%B8%B0%EB%AC%BC+%EC%88%98%EC%A7%91+%EC%9A%B4%EB%B0%98%EC%88%98%EC%88%98%EB%A3%8C+%ED%92%88%EB%AA%A9%EB%B3%84+%EB%B6%80%EA%B3%BC%EA%B8%B0%EC%A4%80",
+        "source_location": "table-1/row[63]",
+        "scope_type": "district",
+        "districts": [
+          "서대문구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 4,
+      "score": 0.5070537433957896,
+      "stage_scores": {
+        "vector": 0.5070537433957896
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-c5ed025b1463699a707ccc7ee0dee2ca00d3e5111cc460406c089d3ab0607812",
+        "source_document_id": "seodaemun-ordinance:attachment:160319451",
+        "source_document_version": "v1",
+        "title": "[별표 1] 대형폐기물 수집 운반수수료 품목별 부과기준",
+        "content_format": "json",
+        "content": "{\"header_rows\":[{\"cells\":[{\"cell_id\":\"table-1-r0-c0\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":0,\"rowspan\":1,\"text\":\"품목별\"},{\"cell_id\":\"table-1-r0-c1\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":1,\"origin_row\":0,\"rowspan\":1,\"text\":\"규격\"},{\"cell_id\":\"table-1-r0-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":0,\"rowspan\":1,\"text\":\"부과금액\"},{\"cell_id\":\"table-1-r0-c3\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":3,\"origin_row\":0,\"rowspan\":1,\"text\":\"품목별\"},{\"cell_id\":\"table-1-r0-c4\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":4,\"origin_row\":0,\"rowspan\":1,\"text\":\"규격\"},{\"cell_id\":\"table-1-r0-c5\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":5,\"origin_row\":0,\"rowspan\":1,\"text\":\"부과금액\"}],\"row\":0}],\"paragraphs\":[\"〔별표 1〕<개정 2018. 11. 7.)\\n\",\"\",\"대형폐기물 수집․운반수수료 품목별 부과기준\\n\",\"               (제2조제7호, 제35조제1항제2호 관련)             (단위 : 원)\\n\",\"\\n\",\"                                                                             \\n\",\"(주) 열거되지 아니한 물품은 표에 열거된 품목 중 유사한 품목수수료에 준함\\n\"],\"row\":{\"cells\":[{\"cell_id\":\"table-1-r62-c0\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":62,\"rowspan\":4,\"text\":\"장롱\"},{\"cell_id\":\"table-1-r62-c1\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":1,\"origin_row\":62,\"rowspan\":2,\"text\":\"120cm 이하\"},{\"cell_id\":\"table-1-r62-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":62,\"rowspan\":2,\"text\":\"10,000\"},{\"cell_id\":\"table-1-r62-c3\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":3,\"origin_row\":62,\"rowspan\":5,\"text\":\"타이어\"},{\"cell_id\":\"table-1-r62-c4\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":4,\"origin_row\":62,\"rowspan\":1,\"text\":\"소형 600㎜ 미만\"},{\"cell_id\":\"table-1-r62-c5\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":5,\"origin_row\":62,\"rowspan\":1,\"text\":\"3,000\"}],\"row\":62},\"section_title\":\"〔별표 1〕<개정 2018. 11. 7.)\",\"table_id\":\"table-1\"}",
+        "source_url": "http://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=160319451&flNm=%5B%EB%B3%84%ED%91%9C+1%5D+%EB%8C%80%ED%98%95%ED%8F%90%EA%B8%B0%EB%AC%BC+%EC%88%98%EC%A7%91+%EC%9A%B4%EB%B0%98%EC%88%98%EC%88%98%EB%A3%8C+%ED%92%88%EB%AA%A9%EB%B3%84+%EB%B6%80%EA%B3%BC%EA%B8%B0%EC%A4%80",
+        "source_location": "table-1/row[62]",
+        "scope_type": "district",
+        "districts": [
+          "서대문구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 5,
+      "score": 0.5056899433251624,
+      "stage_scores": {
+        "vector": 0.5056899433251624
+      }
+    }
+  ],
+  "model_input_chunk_ids": [
+    "chunk-ed3a5df76c77e57758b504f01e8e485e591a4397d250a05f434c771208c730a3",
+    "chunk-1f9def4b82c044470b421022441b5734842bef55ff027debeeeac2f6293a4b86",
+    "chunk-be2d7569a1ba038a6245aceaf1d4751411c7a3e05eb4efd5530bed5ef487ac72",
+    "chunk-ea6ecbecbcbf6248c85a1b3d9f09d26a0e8a95240a7a9a64ac787dc05c736b45",
+    "chunk-c5ed025b1463699a707ccc7ee0dee2ca00d3e5111cc460406c089d3ab0607812"
+  ],
+  "response": {
+    "request_id": "512ef3fd93094122ac28430125cec74d",
+    "run_id": "065856d1ad6748bea647cfb03a6b3c4d",
+    "status": "insufficient_evidence",
+    "answer": "현재 확인한 자료로는 답변하기 어렵습니다.",
+    "citations": [],
+    "places": {
+      "status": "unavailable",
+      "places": [],
+      "error": null
+    },
+    "error": null,
+    "error_code": null
+  },
+  "stages": [
+    {
+      "name": "resolve",
+      "status": "ok",
+      "duration_ms": 0.1990000018849969,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "rewrite",
+      "status": "skipped",
+      "duration_ms": 0.0,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "retrieve",
+      "status": "ok",
+      "duration_ms": 231.36089999752585,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "context",
+      "status": "ok",
+      "duration_ms": 0.05800000508315861,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "generate",
+      "status": "ok",
+      "duration_ms": 1571.333300002152,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "citations",
+      "status": "ok",
+      "duration_ms": 0.004799992893822491,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "place_lookup",
+      "status": "skipped",
+      "duration_ms": 0.0,
+      "error": null,
+      "error_code": null
+    }
+  ],
+  "duration_ms": 1803.1111000018427,
+  "warnings": []
+}

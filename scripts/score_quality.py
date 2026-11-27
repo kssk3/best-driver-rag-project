@@ -3,7 +3,7 @@
 사용: uv run --locked --env-file .env python -m scripts.score_quality \\
   --runs results/local/<실행>/runs.csv --candidates results/local/<실행>/candidates.csv \\
   --grading eval/test-grading.json --cases eval/test.json --output-dir results/local/<새 폴더>
-`--grading`은 여러 번 줄 수 있다(예: eval/dev-scoring-notes.json). 판정 모델 호출이 발생한다(실행당 최대 3회).
+`--grading`은 여러 번 줄 수 있다(예: eval/dev-scoring-notes.json). 판정 모델 호출이 발생한다(실행당 최대 2회).
 """
 
 import argparse

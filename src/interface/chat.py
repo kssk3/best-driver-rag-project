@@ -1,8 +1,10 @@
+import re
 from collections.abc import Callable
 
 import streamlit as st
 
 from src.interface.adapter import Citation, ViewResponse
+from src.retrieval.regions import SEOUL_DISTRICTS
 
 # 실패해도 응답 상태와 answer를 바꾸지 않고 문서 답변을 이어 가는 단계(docs/ERRORS.md)
 RECOVERABLE_STAGES = {"rewrite", "place_lookup"}
@@ -13,6 +15,17 @@ REQUIRED_FIELD_LABELS = {
     "housing_type": "주택 유형",
     "item": "품목",
 }
+
+
+# 되묻기 답은 구 이름과 허용한 끝말로만 이루어져야 확정한다("강남구요", "송파구입니다").
+# 부정·선택 표현은 목록으로 다 막을 수 없으므로("아니에요", "안 돼요", "다른 구로") 그 밖의 말은 모두 받지 않는다.
+_DISTRICT_REPLY = re.compile(
+    rf"\s*({'|'.join(map(re.escape, SEOUL_DISTRICTS))})\s*(?:이?요|입니다|이에요|예요)?\s*[.!]?\s*"
+)
+
+
+class AmbiguousDistrictError(ValueError):
+    """되묻기 답이 구 이름과 허용한 끝말만으로 이루어져 있지 않아 어느 구인지 정할 수 없다."""
 
 
 def build_followup_request(
@@ -30,7 +43,13 @@ def build_followup_request(
     if "district" in conditions:
         # 되묻기에서 사용자가 구를 직접 입력했다. 해석기가 같은 되묻기를 되풀이하지 않도록
         # 확정 표시를 전용 필드로 보낸다(조건에 섞으면 생성기 입력과 W5 검증에 샌다).
-        request["district"] = conditions.pop("district")
+        # 입력 전체가 구 이름과 허용한 끝말일 때만 확정한다. 그 밖의 말("서대문구는 안 돼요",
+        # "서대문구 말고 송파구요")은 요청을 만들지 않고 화면에서 다시 입력받는다.
+        typed = conditions.pop("district")
+        match = _DISTRICT_REPLY.fullmatch(typed)
+        if match is None:
+            raise AmbiguousDistrictError(f"어느 구인지 정할 수 없습니다: {typed}")
+        request["district"] = match.group(1)
         request["district_confirmed"] = True
     request["conditions"] = conditions
     return request
@@ -134,7 +153,11 @@ def _render_clarification(
         submitted = st.form_submit_button("다시 질문하기")
 
     if submitted:
-        request = build_followup_request(question, district, extra_conditions)
+        try:
+            request = build_followup_request(question, district, extra_conditions)
+        except AmbiguousDistrictError:
+            st.warning("구를 하나만 입력해 주세요. 예: 송파구")
+            return
         if on_followup is not None:
             on_followup(request)
         else:

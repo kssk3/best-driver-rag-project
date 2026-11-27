@@ -1,0 +1,231 @@
+{
+  "langfuse_project": "project:cmwx4ub9u0006ps1syc3peguq",
+  "run_id": "f01230910731420dbac55d911d528856",
+  "request_id": "0f031c92c3804f1ea8281b1e1495af98",
+  "run_kind": "rag",
+  "started_at": "2026-11-26T18:51:20.848878Z",
+  "request": {
+    "request_id": "0f031c92c3804f1ea8281b1e1495af98",
+    "question": "송파구에서 대형폐기물을 모바일 앱으로 신청할 수 있나요?",
+    "district": "송파구",
+    "dong": null,
+    "conditions": {},
+    "district_confirmed": false
+  },
+  "options": {
+    "variant": "A",
+    "rewrite_enabled": false,
+    "top_k": 5,
+    "max_context_chars": 12000,
+    "run_kind": "rag",
+    "versions": {
+      "model": "gpt-6-luna",
+      "index": "index-1c25b630ae0878a2c496716730e6c0622ba6995203d7ac0293759bdcb1bf5bef-embed-input-table-text-v2-7a9cfb43ffc4fa0f",
+      "chunking": "preprocessed-v2-row-v1",
+      "embedding": "text-embedding-3-small",
+      "prompt": "b0ec828702879ac2fbcdaabfbb0df5841beb2c8d6ff103472f0f5a03ff636305",
+      "candidate_policy": "vector-v1"
+    }
+  },
+  "resolved_query": {
+    "search_query": "송파구에서 대형폐기물을 모바일 앱으로 신청할 수 있나요?",
+    "district": "송파구",
+    "dong": null,
+    "status": "resolved",
+    "clarification_question": null,
+    "region_status": "no_dong",
+    "candidate_districts": []
+  },
+  "search_query": "송파구에서 대형폐기물을 모바일 앱으로 신청할 수 있나요?",
+  "candidates": [
+    {
+      "chunk": {
+        "chunk_id": "chunk-e5b64aa63d61ad2be2bd2e91a933aa4f16f78cfd87c564cbbc44991e9a3eaa0d",
+        "source_document_id": "songpa-rules:attachment:121237861",
+        "source_document_version": "v1",
+        "title": "별표",
+        "content_format": "json",
+        "content": "{\"header_rows\":[{\"cells\":[{\"cell_id\":\"table-7-r0-c0\",\"colspan\":2,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":0,\"rowspan\":1,\"text\":\"품   목   별\"},{\"cell_id\":\"table-7-r0-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":0,\"rowspan\":1,\"text\":\"규    격\"},{\"cell_id\":\"table-7-r0-c3\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":3,\"origin_row\":0,\"rowspan\":1,\"text\":\"부과금액\"},{\"cell_id\":\"table-7-r0-c4\",\"colspan\":2,\"inherited_from_previous_row\":false,\"origin_col\":4,\"origin_row\":0,\"rowspan\":1,\"text\":\"품   목   별\"},{\"cell_id\":\"table-7-r0-c6\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":6,\"origin_row\":0,\"rowspan\":1,\"text\":\"규    격\"},{\"cell_id\":\"table-7-r0-c7\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":7,\"origin_row\":0,\"rowspan\":1,\"text\":\"부과금액\"}],\"row\":0}],\"paragraphs\":[\"〔별표 6〕<개정 2017.4.6, 2020.03.19.>\\n\",\"대형생활폐기물 수집·운반수수료 품목별 부과기준(제7조 관련)\\n\",\"\\n\",\"\\n\",\"\\n\",\"\\n\",\"\",\"1. 위 품목에 명시되지 않은 품목은 종류 및 규격을 감안하여 유사품목의 수수료를 적용\\n\",\"2. 항아리, 변기, 욕조 등 특수규격봉투(민원성 마대) 처리 선택 가능 \\n\",\"3. 다량배출사업장 폐기물은 수거대상에서 제외\\n\"],\"row\":{\"cells\":[{\"cell_id\":\"table-7-r1-c0\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":0,\"origin_row\":1,\"rowspan\":27,\"text\":\"생\\n활\\n용\\n품\\n류\"},{\"cell_id\":\"table-7-r9-c1\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":1,\"origin_row\":9,\"rowspan\":2,\"text\":\"피  아  노\"},{\"cell_id\":\"table-7-r10-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":10,\"rowspan\":1,\"text\":\"디지털\"},{\"cell_id\":\"table-7-r10-c3\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":3,\"origin_row\":10,\"rowspan\":1,\"text\":\"5,000\"},{\"cell_id\":\"table-7-r1-c4\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":4,\"origin_row\":1,\"rowspan\":27,\"text\":\"기\\n타\\n류\"},{\"cell_id\":\"table-7-r10-c5\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":5,\"origin_row\":10,\"rowspan\":2,\"text\":\"보  일  러\"},{\"cell_id\":\"table-7-r10-c6\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":6,\"origin_row\":10,\"rowspan\":1,\"text\":\"16kcal/h 이상\"},{\"cell_id\":\"table-7-r10-c7\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":7,\"origin_row\":10,\"rowspan\":1,\"text\":\"12,000\"}],\"row\":10},\"section_title\":\"〔별표 6〕<개정 2017.4.6, 2020.03.19.>\",\"table_id\":\"table-7\"}",
+        "source_url": "http://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=121237861&flNm=%EB%B3%84%ED%91%9C",
+        "source_location": "table-7/row[10]",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 1,
+      "score": 0.4231014192808175,
+      "stage_scores": {
+        "vector": 0.4231014192808175
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-8ea42ce6be5f3292e1c3a7a0d5d831fcc5a1f70e88039716f030d9d21060a642",
+        "source_document_id": "songpa-rules:attachment:121237861",
+        "source_document_version": "v1",
+        "title": "별표",
+        "content_format": "json",
+        "content": "{\"header_rows\":[{\"cells\":[{\"cell_id\":\"table-4-r0-c0\",\"colspan\":2,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":0,\"rowspan\":1,\"text\":\"품   목   별\"},{\"cell_id\":\"table-4-r0-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":0,\"rowspan\":1,\"text\":\"규    격\"},{\"cell_id\":\"table-4-r0-c3\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":3,\"origin_row\":0,\"rowspan\":1,\"text\":\"부과금액\"},{\"cell_id\":\"table-4-r0-c4\",\"colspan\":2,\"inherited_from_previous_row\":false,\"origin_col\":4,\"origin_row\":0,\"rowspan\":1,\"text\":\"품   목   별\"},{\"cell_id\":\"table-4-r0-c6\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":6,\"origin_row\":0,\"rowspan\":1,\"text\":\"규    격\"},{\"cell_id\":\"table-4-r0-c7\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":7,\"origin_row\":0,\"rowspan\":1,\"text\":\"부과금액\"}],\"row\":0}],\"paragraphs\":[\"〔별표 6〕<개정 2017.4.6, 2020.03.19.>\\n\",\"대형생활폐기물 수집·운반수수료 품목별 부과기준(제7조 관련)\\n\",\"\\n\",\"\\n\",\"\\n\",\"\\n\",\"\",\"1. 위 품목에 명시되지 않은 품목은 종류 및 규격을 감안하여 유사품목의 수수료를 적용\\n\",\"2. 항아리, 변기, 욕조 등 특수규격봉투(민원성 마대) 처리 선택 가능 \\n\",\"3. 다량배출사업장 폐기물은 수거대상에서 제외\\n\"],\"row\":{\"cells\":[{\"cell_id\":\"table-4-r1-c0\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":0,\"origin_row\":1,\"rowspan\":42,\"text\":\"가\\n전\\n제\\n품\\n류\"},{\"cell_id\":\"table-4-r9-c1\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":1,\"origin_row\":9,\"rowspan\":3,\"text\":\"게임기 오락기\"},{\"cell_id\":\"table-4-r11-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":11,\"rowspan\":1,\"text\":\"50cm 미만\"},{\"cell_id\":\"table-4-r11-c3\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":3,\"origin_row\":11,\"rowspan\":1,\"text\":\"3,000\"},{\"cell_id\":\"table-4-r1-c4\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":4,\"origin_row\":1,\"rowspan\":42,\"text\":\"가\\n전\\n제\\n품\\n류\"},{\"cell_id\":\"table-4-r11-c5\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":5,\"origin_row\":11,\"rowspan\":3,\"text\":\"온   풍   기\"},{\"cell_id\":\"table-4-r11-c6\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":6,\"origin_row\":11,\"rowspan\":1,\"text\":\"264㎡ 이상\"},{\"cell_id\":\"table-4-r11-c7\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":7,\"origin_row\":11,\"rowspan\":1,\"text\":\"8,000\"}],\"row\":11},\"section_title\":\"〔별표 6〕<개정 2017.4.6, 2020.03.19.>\",\"table_id\":\"table-4\"}",
+        "source_url": "http://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=121237861&flNm=%EB%B3%84%ED%91%9C",
+        "source_location": "table-4/row[11]",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 2,
+      "score": 0.41938684007607,
+      "stage_scores": {
+        "vector": 0.41938684007607
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-ac8176ffa1e70beaa30c63e8615604f5e6bc616c19ec34755e0dd0380e3dc0ee",
+        "source_document_id": "songpa-rules:attachment:121237861",
+        "source_document_version": "v1",
+        "title": "별표",
+        "content_format": "json",
+        "content": "{\"header_rows\":[{\"cells\":[{\"cell_id\":\"table-7-r0-c0\",\"colspan\":2,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":0,\"rowspan\":1,\"text\":\"품   목   별\"},{\"cell_id\":\"table-7-r0-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":0,\"rowspan\":1,\"text\":\"규    격\"},{\"cell_id\":\"table-7-r0-c3\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":3,\"origin_row\":0,\"rowspan\":1,\"text\":\"부과금액\"},{\"cell_id\":\"table-7-r0-c4\",\"colspan\":2,\"inherited_from_previous_row\":false,\"origin_col\":4,\"origin_row\":0,\"rowspan\":1,\"text\":\"품   목   별\"},{\"cell_id\":\"table-7-r0-c6\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":6,\"origin_row\":0,\"rowspan\":1,\"text\":\"규    격\"},{\"cell_id\":\"table-7-r0-c7\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":7,\"origin_row\":0,\"rowspan\":1,\"text\":\"부과금액\"}],\"row\":0}],\"paragraphs\":[\"〔별표 6〕<개정 2017.4.6, 2020.03.19.>\\n\",\"대형생활폐기물 수집·운반수수료 품목별 부과기준(제7조 관련)\\n\",\"\\n\",\"\\n\",\"\\n\",\"\\n\",\"\",\"1. 위 품목에 명시되지 않은 품목은 종류 및 규격을 감안하여 유사품목의 수수료를 적용\\n\",\"2. 항아리, 변기, 욕조 등 특수규격봉투(민원성 마대) 처리 선택 가능 \\n\",\"3. 다량배출사업장 폐기물은 수거대상에서 제외\\n\"],\"row\":{\"cells\":[{\"cell_id\":\"table-7-r1-c0\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":0,\"origin_row\":1,\"rowspan\":27,\"text\":\"생\\n활\\n용\\n품\\n류\"},{\"cell_id\":\"table-7-r11-c1\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":1,\"origin_row\":11,\"rowspan\":2,\"text\":\"항  아  리\"},{\"cell_id\":\"table-7-r11-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":11,\"rowspan\":1,\"text\":\"높이 50cm 이상\"},{\"cell_id\":\"table-7-r11-c3\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":3,\"origin_row\":11,\"rowspan\":1,\"text\":\"5,000\"},{\"cell_id\":\"table-7-r1-c4\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":4,\"origin_row\":1,\"rowspan\":27,\"text\":\"기\\n타\\n류\"},{\"cell_id\":\"table-7-r10-c5\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":5,\"origin_row\":10,\"rowspan\":2,\"text\":\"보  일  러\"},{\"cell_id\":\"table-7-r11-c6\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":6,\"origin_row\":11,\"rowspan\":1,\"text\":\"16kcal/h 미만\"},{\"cell_id\":\"table-7-r11-c7\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":7,\"origin_row\":11,\"rowspan\":1,\"text\":\"10,000\"}],\"row\":11},\"section_title\":\"〔별표 6〕<개정 2017.4.6, 2020.03.19.>\",\"table_id\":\"table-7\"}",
+        "source_url": "http://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=121237861&flNm=%EB%B3%84%ED%91%9C",
+        "source_location": "table-7/row[11]",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 3,
+      "score": 0.4096388930615515,
+      "stage_scores": {
+        "vector": 0.4096388930615515
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-55cb6b0e899faa98e4959367262c3ce562520ce9277c3f3c0075ebaf57617a26",
+        "source_document_id": "songpa-rules:attachment:121237861",
+        "source_document_version": "v1",
+        "title": "별표",
+        "content_format": "json",
+        "content": "{\"header_rows\":[{\"cells\":[{\"cell_id\":\"table-4-r0-c0\",\"colspan\":2,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":0,\"rowspan\":1,\"text\":\"품   목   별\"},{\"cell_id\":\"table-4-r0-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":0,\"rowspan\":1,\"text\":\"규    격\"},{\"cell_id\":\"table-4-r0-c3\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":3,\"origin_row\":0,\"rowspan\":1,\"text\":\"부과금액\"},{\"cell_id\":\"table-4-r0-c4\",\"colspan\":2,\"inherited_from_previous_row\":false,\"origin_col\":4,\"origin_row\":0,\"rowspan\":1,\"text\":\"품   목   별\"},{\"cell_id\":\"table-4-r0-c6\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":6,\"origin_row\":0,\"rowspan\":1,\"text\":\"규    격\"},{\"cell_id\":\"table-4-r0-c7\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":7,\"origin_row\":0,\"rowspan\":1,\"text\":\"부과금액\"}],\"row\":0}],\"paragraphs\":[\"〔별표 6〕<개정 2017.4.6, 2020.03.19.>\\n\",\"대형생활폐기물 수집·운반수수료 품목별 부과기준(제7조 관련)\\n\",\"\\n\",\"\\n\",\"\\n\",\"\\n\",\"\",\"1. 위 품목에 명시되지 않은 품목은 종류 및 규격을 감안하여 유사품목의 수수료를 적용\\n\",\"2. 항아리, 변기, 욕조 등 특수규격봉투(민원성 마대) 처리 선택 가능 \\n\",\"3. 다량배출사업장 폐기물은 수거대상에서 제외\\n\"],\"row\":{\"cells\":[{\"cell_id\":\"table-4-r1-c0\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":0,\"origin_row\":1,\"rowspan\":42,\"text\":\"가\\n전\\n제\\n품\\n류\"},{\"cell_id\":\"table-4-r2-c1\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":1,\"origin_row\":2,\"rowspan\":3,\"text\":\"TV\"},{\"cell_id\":\"table-4-r4-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":4,\"rowspan\":1,\"text\":\"25인치 미만\"},{\"cell_id\":\"table-4-r4-c3\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":3,\"origin_row\":4,\"rowspan\":1,\"text\":\"3,000\"},{\"cell_id\":\"table-4-r1-c4\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":4,\"origin_row\":1,\"rowspan\":42,\"text\":\"가\\n전\\n제\\n품\\n류\"},{\"cell_id\":\"table-4-r2-c5\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":5,\"origin_row\":2,\"rowspan\":3,\"text\":\"에   어   컨\"},{\"cell_id\":\"table-4-r4-c6\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":6,\"origin_row\":4,\"rowspan\":1,\"text\":\"66㎡ 미만\"},{\"cell_id\":\"table-4-r4-c7\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":7,\"origin_row\":4,\"rowspan\":1,\"text\":\"4,000\"}],\"row\":4},\"section_title\":\"〔별표 6〕<개정 2017.4.6, 2020.03.19.>\",\"table_id\":\"table-4\"}",
+        "source_url": "http://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=121237861&flNm=%EB%B3%84%ED%91%9C",
+        "source_location": "table-4/row[4]",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 4,
+      "score": 0.4041651250217352,
+      "stage_scores": {
+        "vector": 0.4041651250217352
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-d22e9f6803f87f944532091861a864234ce5fac76eff7106d5a0f3928e206d94",
+        "source_document_id": "songpa-rules:attachment:121237861",
+        "source_document_version": "v1",
+        "title": "별표",
+        "content_format": "json",
+        "content": "{\"header_rows\":[{\"cells\":[{\"cell_id\":\"table-5-r0-c0\",\"colspan\":2,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":0,\"rowspan\":1,\"text\":\"품   목   별\"},{\"cell_id\":\"table-5-r0-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":0,\"rowspan\":1,\"text\":\"규    격\"},{\"cell_id\":\"table-5-r0-c3\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":3,\"origin_row\":0,\"rowspan\":1,\"text\":\"부과금액\"},{\"cell_id\":\"table-5-r0-c4\",\"colspan\":2,\"inherited_from_previous_row\":false,\"origin_col\":4,\"origin_row\":0,\"rowspan\":1,\"text\":\"품   목   별\"},{\"cell_id\":\"table-5-r0-c6\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":6,\"origin_row\":0,\"rowspan\":1,\"text\":\"규    격\"},{\"cell_id\":\"table-5-r0-c7\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":7,\"origin_row\":0,\"rowspan\":1,\"text\":\"부과금액\"}],\"row\":0}],\"paragraphs\":[\"〔별표 6〕<개정 2017.4.6, 2020.03.19.>\\n\",\"대형생활폐기물 수집·운반수수료 품목별 부과기준(제7조 관련)\\n\",\"\\n\",\"\\n\",\"\\n\",\"\\n\",\"\",\"1. 위 품목에 명시되지 않은 품목은 종류 및 규격을 감안하여 유사품목의 수수료를 적용\\n\",\"2. 항아리, 변기, 욕조 등 특수규격봉투(민원성 마대) 처리 선택 가능 \\n\",\"3. 다량배출사업장 폐기물은 수거대상에서 제외\\n\"],\"row\":{\"cells\":[{\"cell_id\":\"table-5-r1-c0\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":0,\"origin_row\":1,\"rowspan\":69,\"text\":\"가\\n구\\n류\"},{\"cell_id\":\"table-5-r2-c1\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":1,\"origin_row\":2,\"rowspan\":6,\"text\":\"거    실    장\\n(유리별도)\"},{\"cell_id\":\"table-5-r6-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":6,\"rowspan\":2,\"text\":\"너비 120cm 미만\"},{\"cell_id\":\"table-5-r6-c3\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":3,\"origin_row\":6,\"rowspan\":2,\"text\":\"4,000\"},{\"cell_id\":\"table-5-r1-c4\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":4,\"origin_row\":1,\"rowspan\":69,\"text\":\"가\\n구\\n류\"},{\"cell_id\":\"table-5-r5-c5\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":5,\"origin_row\":5,\"rowspan\":7,\"text\":\"장   식   장\\n(찬       장)\"},{\"cell_id\":\"table-5-r5-c6\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":6,\"origin_row\":5,\"rowspan\":2,\"text\":\"높이 180cm이상\"},{\"cell_id\":\"table-5-r5-c7\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":7,\"origin_row\":5,\"rowspan\":2,\"text\":\"10,000\"}],\"row\":6},\"section_title\":\"〔별표 6〕<개정 2017.4.6, 2020.03.19.>\",\"table_id\":\"table-5\"}",
+        "source_url": "http://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=121237861&flNm=%EB%B3%84%ED%91%9C",
+        "source_location": "table-5/row[6]",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 5,
+      "score": 0.4038952677826825,
+      "stage_scores": {
+        "vector": 0.4038952677826825
+      }
+    }
+  ],
+  "model_input_chunk_ids": [
+    "chunk-e5b64aa63d61ad2be2bd2e91a933aa4f16f78cfd87c564cbbc44991e9a3eaa0d",
+    "chunk-8ea42ce6be5f3292e1c3a7a0d5d831fcc5a1f70e88039716f030d9d21060a642",
+    "chunk-ac8176ffa1e70beaa30c63e8615604f5e6bc616c19ec34755e0dd0380e3dc0ee",
+    "chunk-55cb6b0e899faa98e4959367262c3ce562520ce9277c3f3c0075ebaf57617a26",
+    "chunk-d22e9f6803f87f944532091861a864234ce5fac76eff7106d5a0f3928e206d94"
+  ],
+  "response": {
+    "request_id": "0f031c92c3804f1ea8281b1e1495af98",
+    "run_id": "f01230910731420dbac55d911d528856",
+    "status": "insufficient_evidence",
+    "answer": "현재 확인한 자료로는 답변하기 어렵습니다.",
+    "citations": [],
+    "places": {
+      "status": "unavailable",
+      "places": [],
+      "error": null
+    },
+    "error": null,
+    "error_code": null
+  },
+  "stages": [
+    {
+      "name": "resolve",
+      "status": "ok",
+      "duration_ms": 0.19559999054763466,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "rewrite",
+      "status": "skipped",
+      "duration_ms": 0.0,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "retrieve",
+      "status": "ok",
+      "duration_ms": 222.15799998957664,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "context",
+      "status": "ok",
+      "duration_ms": 0.09840000711847097,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "generate",
+      "status": "ok",
+      "duration_ms": 1325.4211000021314,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "citations",
+      "status": "ok",
+      "duration_ms": 0.002800006768666208,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "place_lookup",
+      "status": "skipped",
+      "duration_ms": 0.0,
+      "error": null,
+      "error_code": null
+    }
+  ],
+  "duration_ms": 1548.0644999915967,
+  "warnings": []
+}

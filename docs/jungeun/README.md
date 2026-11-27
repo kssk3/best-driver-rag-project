@@ -13,12 +13,10 @@ Python 3.13.14, 통합 기준 dev. 담당 내부 데이터 형식이며 공통 R
 | src/ingestion/clean.py | 본문·부칙 분리와 원문 조건 보존 |
 | src/ingestion/annexes.py | 공식 첨부 다운로드, HWP 표·문단 추출, 검수 재적용 |
 | src/ingestion/search_preparation.py | 검색용 공백·용어 표기 정리와 병합 셀의 행별 연결 |
-| src/ingestion/spots.py | P03 getSpot — 기존 뼈대 |
 | src/query/aliases.py, rewrite.py | P05·P06 별칭·질문 정제 — 기존 뼈대 |
 
 로더·청킹·색인, 공통 contracts/config/runtime/pipeline과 다른 담당자의 코드는
-변경하지 않았다. HTML/Selenium 수집과 getSpot은 구현하지 않았다.
-configs/query, prompts/query와 관련 테스트·표본 폴더는 이후 작업용 빈 위치다.
+변경하지 않았다. HTML/Selenium 수집은 구현하지 않았다.
 
 ## 수집 실행
 
@@ -262,7 +260,7 @@ PDF는 이전 발행 자료로 보존하며, 웹·지도 중 최신 일정의 �
 전체 2,643개 셀을 사람이 개별 승인한 상태로 표현하지 않는다.
 HOP 미리보기는 공식 배포 PDF가 아니며 대형 표 일부에 겹침 경고가 있었다.
 공식 포털의 권리·운영 정보는 조례 원문과 구분해 기록한다.
-공통 로더·청커의 오프라인 연결은 확인했다. 실제 색인·외부 모델 입력·검색 검증은 미실행이다.
+공통 로더·청커의 오프라인 연결은 확인했다. 실제 색인·외부 모델 입력·검색 검증은 이 문서 작성 시점(2026-11-24)에는 미실행이었고, 이후 팀 색인으로 A/B/C 검색과 최종 평가를 실행했다([보고서](../../report.md)).
 
 ## 검사와 인계
 

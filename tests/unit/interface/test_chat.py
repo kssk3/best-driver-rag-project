@@ -351,3 +351,61 @@ def test_primary_failure_keeps_message_even_when_error_codes_collide() -> None:
 
     app = AppTest.from_function(page, default_timeout=10).run()
     assert any("답변 모델에 연결하지 못했습니다" in e.value for e in app.error)
+
+
+@pytest.mark.parametrize(
+    ("typed", "expected"),
+    [
+        ("강남구요", "강남구"),
+        (" 송파구 입니다 ", "송파구"),
+        ("서대문구", "서대문구"),
+        ("송파구이에요.", "송파구"),
+    ],
+)
+def test_followup_district_is_cut_to_the_district_name(
+    typed: str, expected: str
+) -> None:
+    request = build_followup_request("가상 질문", "서대문구", {"district": typed})
+    assert request["district"] == expected
+    assert request["district_confirmed"] is True
+
+
+def test_typed_district_with_a_suffix_no_longer_repeats_the_clarification() -> None:
+    from src.contracts import PipelineRequest
+    from src.retrieval.regions import resolve_request
+
+    request = build_followup_request(
+        "강남구 종량제봉투 어떻게 버려?", "서대문구", {"district": "강남구요"}
+    )
+    resolved = resolve_request(PipelineRequest(**request))
+    assert resolved.region_status == "unsupported"  # "강남구요를 선택하셨는데"가 아니다
+    assert "강남구는 아직 지원하지 않아요" in (resolved.clarification_question or "")
+
+
+def test_followup_with_two_districts_is_rejected_instead_of_confirming_one() -> None:
+    from src.interface.chat import AmbiguousDistrictError
+
+    with pytest.raises(AmbiguousDistrictError):
+        build_followup_request(
+            "가상 질문", "서대문구", {"district": "서대문구 말고 송파구요"}
+        )
+
+
+@pytest.mark.parametrize(
+    "typed",
+    [
+        "송파구 아니고요",
+        "서대문구는 아니에요",
+        "서대문구는 안 돼요",  # 부정 목록에 없던 표현
+        "송파구 말고요",
+        "송파구는 싫어요",
+        "여기요",
+    ],
+)
+def test_followup_reply_that_is_not_just_a_district_is_not_confirmed(
+    typed: str,
+) -> None:
+    from src.interface.chat import AmbiguousDistrictError
+
+    with pytest.raises(AmbiguousDistrictError):
+        build_followup_request("가상 질문", "서대문구", {"district": typed})
