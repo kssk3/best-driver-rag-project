@@ -455,6 +455,131 @@ def test_a_run_recorded_with_conflicting_datasets_is_left_out_as_unverified(
     assert result.groups == [] and result.unverified["faithfulness"] == 1
 
 
+def _run(case, dataset="d1", rewrite=False):
+    return {
+        "dataset_id": dataset,
+        "rewrite_enabled": rewrite,
+        "eligible": True,
+        "case_id": case,
+    }
+
+
+def test_the_same_case_rerun_under_another_run_id_counts_once() -> None:
+    # 같은 데이터셋·문항·방식을 다시 실행하면 run_id(trace)가 달라도 가장 최근 점수 하나만 쓴다.
+    runs = {"r1": _run("c1"), "r2": _run("c1")}
+    roots = {
+        "t1": {"variant": "A", "run_id": "r1", "start": "2026-11-26T00:00:00Z"},
+        "t2": {"variant": "A", "run_id": "r2", "start": "2026-11-27T00:00:00Z"},
+    }
+    old = score("t1", 0.0) | {"timestamp": "2026-11-26T01:00:00Z"}
+    new = score("t2", 1.0) | {"timestamp": "2026-11-27T01:00:00Z"}
+
+    [group] = build_scores([old, new], roots, runs).groups
+
+    assert faithfulness(group)["A"].count == 1
+    assert faithfulness(group)["A"].mean == 1.0
+
+
+def test_rerunning_only_one_variant_does_not_change_the_others() -> None:
+    runs = {"a1": _run("c1"), "b1": _run("c1"), "a2": _run("c1")}
+    roots = {
+        "ta1": {"variant": "A", "run_id": "a1"},
+        "tb1": {"variant": "B", "run_id": "b1"},
+        "ta2": {"variant": "A", "run_id": "a2"},
+    }
+    stamps = {"ta1": "2026-11-26", "tb1": "2026-11-26", "ta2": "2026-11-27"}
+    scores = [
+        score(trace, 0.5) | {"timestamp": stamp} for trace, stamp in stamps.items()
+    ]
+
+    [group] = build_scores(scores, roots, runs).groups
+
+    assert (faithfulness(group)["A"].count, faithfulness(group)["B"].count) == (1, 1)
+
+
+def test_different_cases_and_rewrite_settings_are_not_merged_by_the_dedup() -> None:
+    runs = {
+        "r1": _run("c1"),
+        "r2": _run("c2"),
+        "r3": _run("c1", rewrite=True),
+    }
+    roots = {
+        "t1": {"variant": "C", "run_id": "r1"},
+        "t2": {"variant": "C", "run_id": "r2"},
+        "t3": {"variant": "C", "run_id": "r3"},
+    }
+
+    result = build_scores([score("t1", 1), score("t2", 0), score("t3", 1)], roots, runs)
+
+    counts = {g.rewrite_enabled: faithfulness(g)["C"].count for g in result.groups}
+    assert counts == {False: 2, True: 1}
+
+
+def test_scores_without_a_known_case_stay_one_per_trace_and_are_counted() -> None:
+    bare = {
+        "variant": "A",
+        "dataset_id": "d",
+        "rewrite_enabled": False,
+        "comparison_eligible": True,
+    }
+    result = build_scores([score("t1", 1), score("t2", 0)], {"t1": bare, "t2": bare})
+
+    [group] = result.groups
+    assert faithfulness(group)["A"].count == 2
+    assert result.case_unknown["faithfulness"] == 2
+
+
+def test_score_metadata_supplies_case_and_variant_for_deduplication() -> None:
+    meta = {
+        "dataset_id": "d1",
+        "rewrite_enabled": "false",
+        "comparison_eligible": "true",
+        "case_id": "c1",
+        "variant": "B",
+    }
+    bare_root = {"start": "2026-11-27T00:00:00Z"}  # 복구 루트: variant도 run_id도 없다.
+    first = score("t1", 0.0) | {"metadata": meta, "timestamp": "2026-11-26T00:00:00Z"}
+    second = score("t2", 1.0) | {"metadata": meta, "timestamp": "2026-11-27T00:00:00Z"}
+
+    [group] = build_scores([first, second], {"t1": bare_root, "t2": bare_root}).groups
+
+    assert faithfulness(group)["B"].count == 1 and faithfulness(group)["B"].mean == 1.0
+
+
+def test_extra_result_folders_link_runs_only_when_configured(
+    tmp_path, monkeypatch
+) -> None:
+    shared, extra = tmp_path / "results", tmp_path / "local-results"
+    (shared / "a").mkdir(parents=True)
+    (extra / "b").mkdir(parents=True)
+    (shared / "a" / "runs.csv").write_text(
+        "run_id,dataset_id,rewrite_enabled" + chr(10) + "r-shared,d1,false" + chr(10),
+        encoding="utf-8",
+    )
+    (extra / "b" / "runs.csv").write_text(
+        "run_id,dataset_id,rewrite_enabled" + chr(10) + "r-local,d1,false" + chr(10),
+        encoding="utf-8",
+    )
+
+    monkeypatch.delenv("RAG_RESULTS_INDEX_DIRS", raising=False)
+    assert "r-local" not in langfuse_scores.load_run_index(shared)
+
+    monkeypatch.setenv("RAG_RESULTS_INDEX_DIRS", str(extra))
+    runs = langfuse_scores.load_run_index(shared)
+    assert "r-local" in runs and "r-shared" in runs
+
+
+def test_an_unlinked_score_says_how_to_connect_it_in_the_panel(monkeypatch) -> None:
+    unverified = {**{m: 0 for m in METRIC_NAMES}, "faithfulness": 2}
+    app = open_panel(
+        monkeypatch,
+        lambda: LangfuseScores([], {m: 0 for m in METRIC_NAMES}, unverified),
+    )
+
+    text = " ".join(c.value for c in app.caption)
+    assert "비교 정보" in text and "RAG_RESULTS_INDEX_DIRS" in text
+
+
 def test_old_scores_are_confirmed_through_the_run_id_in_local_records() -> None:
     old_root = {"variant": "B", "run_id": "r1", "start": "2026-11-26T00:00:00Z"}
     runs = {"r1": {"dataset_id": "d9", "rewrite_enabled": False, "eligible": True}}
@@ -484,6 +609,7 @@ def test_run_index_reads_dataset_rewrite_and_eligibility_from_results(tmp_path) 
         "dataset_id": "d1",
         "rewrite_enabled": False,
         "eligible": False,
+        "case_id": None,
     }
     assert runs["r2"]["eligible"] is None  # runs.csv에는 비교 자격이 없다.
 
@@ -492,7 +618,8 @@ def test_loader_joins_scores_to_root_variant(monkeypatch) -> None:
     def fake_pages(path, params):
         if path == langfuse_scores.SCORES_PATH:
             assert params["environment"] == "rag"
-            assert "name" not in params  # 4개 지표를 한 번에 읽고 이름으로 거른다.
+            # 4개 지표만 서버에서 거른다(모르는 이름의 점수가 페이지 상한을 채우지 않게).
+            assert params["name"].split(",") == list(METRIC_NAMES)
             return [score("t1", 1)]
         return [
             {"isRootObservation": True, "traceId": "t1", "startTime": "s",

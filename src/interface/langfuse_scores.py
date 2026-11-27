@@ -63,9 +63,10 @@ class LangfuseScores:
     unlinked: dict[str, int]  # 지표별로 방식(A/B/C)을 알 수 없어 평균에서 뺀 점수 건수
     # 평가 세트·리라이트 여부·비교 자격을 확인할 수 없어 뺀 점수. 섞이면 틀린 평균이 되므로 따로 센다.
     unverified: dict[str, int] = field(default_factory=_zero)
-    ineligible: dict[str, int] = field(
-        default_factory=_zero
-    )  # 비교 대상이 아니라고 기록된 점수
+    # 비교 대상이 아니라고 기록된 점수
+    ineligible: dict[str, int] = field(default_factory=_zero)
+    # 문항(case_id)을 알 수 없어 다시 실행한 점수와의 중복을 확인하지 못한 점수(평균에는 들어간다).
+    case_unknown: dict[str, int] = field(default_factory=_zero)
 
 
 def _flag(value) -> bool | None:
@@ -77,7 +78,17 @@ def _flag(value) -> bool | None:
     return None
 
 
-def load_run_index(results_dir: Path = RESULTS_DIR) -> dict[str, dict]:
+def _extra_dirs() -> list[Path]:
+    """RAG_RESULTS_INDEX_DIRS(쉼표로 구분, 저장소 루트 기준 상대 경로 가능). 기본은 없음이다."""
+    raw = os.environ.get("RAG_RESULTS_INDEX_DIRS", "")
+    return [
+        RESULTS_DIR.parent / part.strip() for part in raw.split(",") if part.strip()
+    ]
+
+
+def load_run_index(
+    results_dir: Path = RESULTS_DIR, extra_dirs: list[Path] | None = None
+) -> dict[str, dict]:
     """저장소 results/*/runs.csv와 scores.csv에서 run_id → 평가 세트·리라이트·비교 자격을 읽는다.
 
     트레이스 메타데이터에 이 값이 없는 옛 점수를 run_id로 이어 확인하는 용도다.
@@ -86,10 +97,18 @@ def load_run_index(results_dir: Path = RESULTS_DIR) -> dict[str, dict]:
     """
     runs: dict[str, dict] = {}
 
+    extras = _extra_dirs() if extra_dirs is None else extra_dirs
+
     def read(name: str):
-        for path in sorted(results_dir.rglob(name)):
-            if "local" in path.relative_to(results_dir).parts:
-                continue  # results/local은 개인 실험 기록이라 쓰지 않는다.
+        # 기본은 공유되는 결과(results/local 제외)다. 추가 폴더는 지정한 것만 그대로 읽는다.
+        paths = [
+            path
+            for path in sorted(results_dir.rglob(name))
+            if "local" not in path.relative_to(results_dir).parts
+        ]
+        for extra in extras:
+            paths += sorted(extra.rglob(name))
+        for path in paths:
             try:
                 with path.open(encoding="utf-8-sig", newline="") as file:
                     yield from csv.DictReader(file)
@@ -102,7 +121,12 @@ def load_run_index(results_dir: Path = RESULTS_DIR) -> dict[str, dict]:
         rewrite = _flag(row.get("rewrite_enabled"))
         info = runs.setdefault(
             row.get("run_id", ""),
-            {"dataset_id": dataset, "rewrite_enabled": rewrite, "eligible": None},
+            {
+                "dataset_id": dataset,
+                "rewrite_enabled": rewrite,
+                "eligible": None,
+                "case_id": row.get("case_id") or None,
+            },
         )
         if (dataset and info["dataset_id"] and dataset != info["dataset_id"]) or (
             rewrite is not None
@@ -164,6 +188,17 @@ def _runs_by_trace(runs: dict[str, dict]) -> dict[str, list[str]]:
     return by_trace
 
 
+def _case_id(root: dict, runs: dict[str, dict], trace_id: str, by_trace) -> str | None:
+    """문항 ID. 루트 메타데이터에 있으면 그것을, 없으면 run 인덱스(run_id 또는 trace ID로 유일하게 일치)에서 얻는다."""
+    if root.get("case_id"):
+        return str(root["case_id"])
+    info = runs.get(str(root.get("run_id"))) or {}
+    if not info:
+        matches = (by_trace or {}).get(trace_id, [])
+        info = runs[matches[0]] if len(matches) == 1 else {}
+    return None if info.get("ambiguous") else info.get("case_id")
+
+
 def _resolve(
     root: dict,
     runs: dict[str, dict],
@@ -213,15 +248,17 @@ def build_scores(
     "comparison_eligible", "start"}, runs는 run_id → load_run_index() 항목이다."""
     runs = runs or {}
     by_trace = _runs_by_trace(runs)
-    values: dict[tuple[str, bool], dict[str, dict[str, list[float]]]] = {}
-    latest: dict[tuple[str, bool], str] = {}
-    unlinked, unverified, ineligible = _zero(), _zero(), _zero()
-    for score in _latest_per_trace_and_metric(scores):
+    unlinked, unverified, ineligible, case_unknown = _zero(), _zero(), _zero(), _zero()
+    # (평가 세트, 리라이트, 문항, 방식, 지표)마다 가장 최근 점수 하나만 쓴다. 같은 데이터셋을 다시 실행해
+    # run_id가 달라도 같은 문항이 두 번 세지지 않고, 일부 방식만 다시 실행해도 다른 방식은 그대로다.
+    chosen: dict[tuple, tuple[str, int, float, str]] = {}
+    for index, score in enumerate(_latest_per_trace_and_metric(scores)):
         name = score.get("name")
         if name not in METRIC_NAMES:
             continue  # 우리가 보여 주는 지표가 아니다(Hit@k 등).
         subject = score.get("subject") or {}
-        root = roots.get(str(subject.get("id")))
+        trace_id = str(subject.get("id"))
+        root = roots.get(trace_id)
         if subject.get("kind") != "trace":
             root = None
         if root is not None and root.get("conflict"):
@@ -229,16 +266,16 @@ def build_scores(
                 1  # 한 trace에 루트가 둘 이상이라 어느 쪽 기준인지 모른다.
             )
             continue
-        value = score.get("value")
-        if (
-            root is None
-            or root.get("variant") not in VARIANTS
-            or not _is_numeric_score(score)
-        ):
+        meta = _score_metadata(score)
+        # 방식(A/B/C)은 루트 metadata를, 없으면 점수 metadata를 쓴다(보관본 복구 루트에는 variant가 없을 수 있다).
+        variant = root.get("variant") if root else None
+        if variant not in VARIANTS:
+            variant = meta.get("variant")
+        if root is None or variant not in VARIANTS or not _is_numeric_score(score):
             unlinked[name] += 1
             continue
         dataset, rewrite, eligible = _resolve(
-            root, runs, _score_metadata(score), name, str(subject.get("id")), by_trace
+            root, runs, meta, name, trace_id, by_trace
         )
         if dataset is None or rewrite is None or eligible is None:
             unverified[name] += 1
@@ -246,12 +283,31 @@ def build_scores(
         if not eligible:
             ineligible[name] += 1
             continue
-        key = (dataset, rewrite)
-        by_metric = values.setdefault(
-            key, {m: {v: [] for v in VARIANTS} for m in METRIC_NAMES}
+        case = (
+            str(meta["case_id"])
+            if meta.get("case_id")
+            else _case_id(root, runs, trace_id, by_trace)
         )
-        by_metric[name][root["variant"]].append(float(value))
-        latest[key] = max(latest.get(key, ""), root.get("start") or "")
+        if case is None:
+            case_unknown[name] += 1  # 문항을 모르면 이 trace 하나를 단위로 둔다.
+        key = (dataset, rewrite, case or f"trace:{trace_id}", variant, name)
+        stamp = str(score.get("timestamp") or score.get("createdAt") or "")
+        if key not in chosen or (stamp, index) > chosen[key][:2]:
+            chosen[key] = (stamp, index, float(score["value"]), root.get("start") or "")
+    values: dict[tuple[str, bool], dict[str, dict[str, list[float]]]] = {}
+    latest: dict[tuple[str, bool], str] = {}
+    for (dataset, rewrite, _case, variant, name), (
+        _,
+        _,
+        value,
+        start,
+    ) in chosen.items():
+        group = (dataset, rewrite)
+        by_metric = values.setdefault(
+            group, {m: {v: [] for v in VARIANTS} for m in METRIC_NAMES}
+        )
+        by_metric[name][variant].append(value)
+        latest[group] = max(latest.get(group, ""), start)
     groups = [
         DatasetGroup(
             key[0],
@@ -268,7 +324,7 @@ def build_scores(
         for key, by_metric in values.items()
     ]
     groups.sort(key=lambda group: group.latest, reverse=True)
-    return LangfuseScores(groups, unlinked, unverified, ineligible)
+    return LangfuseScores(groups, unlinked, unverified, ineligible, case_unknown)
 
 
 def _connect() -> tuple[HTTPSConnection, str, str]:
@@ -350,7 +406,13 @@ def _metadata(raw) -> dict:
 
 def load_langfuse_scores() -> LangfuseScores:
     scores = _pages(
-        SCORES_PATH, {"environment": "rag", "fields": "subject,details", "limit": 100}
+        SCORES_PATH,
+        {
+            "environment": "rag",
+            "name": ",".join(METRIC_NAMES),
+            "fields": "subject,details",
+            "limit": 100,
+        },
     )
     observations = _pages(
         OBSERVATIONS_PATH,
@@ -368,6 +430,7 @@ def load_langfuse_scores() -> LangfuseScores:
                 "variant": metadata.get("variant"),
                 "dataset_id": metadata.get("dataset_id"),
                 "run_id": metadata.get("run_id"),
+                "case_id": metadata.get("case_id"),
                 "rewrite_enabled": metadata.get("rewrite_enabled"),
                 "comparison_eligible": metadata.get("comparison_eligible"),
                 "start": item.get("startTime") or "",

@@ -371,18 +371,27 @@ def render_comparison() -> None:
             f"<span>최근 실행 {escape(group.latest[:10])}</span></div>"
             + metrics_html(group)
         )
-    for counts, reason in (
-        (result.unlinked, "방식(A/B/C)을 알 수 없어"),
-        (result.unverified, "평가 세트·리라이트 여부를 확인할 수 없어"),
-        (result.ineligible, "비교 대상이 아니어서"),
-    ):
-        left_out = [
+
+    def counted(counts) -> str:
+        return ", ".join(
             f"{label} {counts[name]}건"
             for name, label, _ in langfuse_scores.METRICS
             if counts[name]
-        ]
-        if left_out:
-            st.caption(f"※ {reason} 평균에서 뺀 점수: " + ", ".join(left_out))
+        )
+
+    if text := counted(result.unlinked):
+        st.caption(f"※ 방식(A/B/C)을 알 수 없어 평균에서 뺀 점수: {text}")
+    if text := counted(result.unverified):
+        st.caption(
+            f"※ 점수는 올라가 있지만 비교 정보(평가 세트·리라이트)가 없어 제외한 점수: {text}  \n"
+            "원본 결과 폴더를 RAG_RESULTS_INDEX_DIRS(예: results/local)에 지정하면 연결할 수 있습니다."
+        )
+    if text := counted(result.ineligible):
+        st.caption(f"※ 비교 대상이 아니어서 평균에서 뺀 점수: {text}")
+    if text := counted(result.case_unknown):
+        st.caption(
+            f"※ 문항을 알 수 없어 다시 실행한 점수와의 중복을 확인하지 못한 점수: {text}"
+        )
     if st.button("새로고침", key="refresh_scores"):
         cached_scores.clear()
         st.rerun()
