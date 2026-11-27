@@ -1,6 +1,6 @@
 # 폴더 구조와 책임
 
-The [roadmap](../ROADMAP.md) lists the team roles and the shared stages; the merged implementation is tracked by `dev` and the [report](../report.md). The [November 24 handoff](handoff.md) records the original contracts, local index and pipeline. The ownership table below identifies the contacts for changes to these interfaces.
+팀 역할과 작업 단계는 [로드맵](../ROADMAP.md)에서 확인한다. 현재 구현은 `dev`를 기준으로 확인하고, 평가 결과는 [비교 보고서](../report.md)를 참고한다. 최초 공용 규격, 로컬 색인, 파이프라인은 [11월 24일 인계 기록](handoff.md)에 있다. 공용 인터페이스를 변경할 때는 아래 담당 경로를 확인한다.
 
 ## 폴더 배치
 
@@ -16,7 +16,7 @@ The [roadmap](../ROADMAP.md) lists the team roles and the shared stages; the mer
 │  ├─ retrieval/             A/B/C 검색과 지역 해석
 │  ├─ generation/            근거 기반 생성과 응답 정책
 │  ├─ infrastructure/        저장소, 임베딩과 외부 자원 연결
-│  ├─ interface/             Chat, run inspection and score comparison
+│  ├─ interface/             채팅, 응답 검증, 점수 비교
 │  ├─ evaluation/            공통 실행기, 담당별 지표와 비교 분석
 │  └─ observability/         실행 원본 기록과 Langfuse 연결
 ├─ scripts/                  합성 자동 데모, 자료 준비/근거 조회, 색인과 평가 명령, 수집 진입점
@@ -34,7 +34,7 @@ The [roadmap](../ROADMAP.md) lists the team roles and the shared stages; the mer
 └─ docs/                     팀 공통 기준과 재현 문서
 ```
 
-The [Streamlit app](../app.py) calls `pipeline.run(request)` and converts its `RunRecord` with `run_record_to_view`. The team branch in `_build_pipeline` calls `create_a_catalog_runtime` for A or C. The synthetic branch calls `create_demo_pipeline` with the fixture index. See the [launch instructions](../README.md#실행-방법).
+[채팅 실행기](../scripts/run_chat.py)는 기본 팀 색인을 준비하거나 검증한 뒤 선택한 설정 파일 경로를 `RAG_CHAT_SETTINGS`로 [Streamlit 앱](../app.py)에 전달한다. 앱은 `create_a_catalog_runtime`으로 A 또는 C 실행 구성을 만들고, `pipeline.run(request)`의 반환값인 `RunRecord`를 [`run_record_to_view`](../src/interface/adapter.py)로 화면용 형식으로 변환한다. 첫 화면에서 질문과 자치구를 받고 결과 화면에서 답변과 근거를 표시한다. [오프라인 데모 명령](../scripts/demo.py)은 합성 자료로 `create_demo_pipeline`을 실행한다. [실행 방법](../README.md#실행-방법)
 
 ## 담당 경로
 
@@ -74,9 +74,9 @@ The [Streamlit app](../app.py) calls `pipeline.run(request)` and converts its `R
 
 | 파일 | 역할 |
 | --- | --- |
-| `src/retrieval/regions.py` | Resolves district and dong from the request using the [Seoul mapping table](../data/reference/README.md). Ambiguous and conflicting inputs can trigger clarification. |
-| `src/retrieval/search.py` | Applies district filtering. A ranks by vector similarity, B fuses vector and BM25 ranks, and C passes the fused candidates to the configured [reranker](../src/retrieval/rerankers.py). |
-| `src/evaluation/retrieval_metrics.py` | Computes Hit@k against allowed chunk IDs and aggregates eligible cases by configuration. |
+| `src/retrieval/regions.py` | [서울 지역 기준표](../data/reference/README.md)로 구·동을 해석한다. 지역이 모호하거나 입력끼리 충돌하면 지역을 다시 물을 수 있다. |
+| `src/retrieval/search.py` | 자치구로 검색 범위를 제한한다. A는 벡터 유사도로 순위를 정하고, B는 벡터와 BM25 순위를 결합한다. C는 결합한 후보를 설정된 [재정렬기](../src/retrieval/rerankers.py)에 전달한다. |
+| `src/evaluation/retrieval_metrics.py` | 허용 청크 ID와 검색 후보를 대조해 Hit@k를 계산하고 집계 대상 문항을 구성별로 묶는다. |
 
 ### 답변 생성과 품질 추적 (강성수)
 
@@ -84,20 +84,21 @@ The [Streamlit app](../app.py) calls `pipeline.run(request)` and converts its `R
 | --- | --- |
 | `src/generation/answer.py` | 답변 가능·재질문·근거 부족·오류를 구분하고, 인용할 때 원문 출처와 문서 버전을 확인한다. |
 | `src/generation/pipeline_adapter.py` | 공통 요청과 선택된 청크를 생성 입력으로 변환하고, 검증한 인용 청크 ID를 반환한다. |
-| `src/evaluation/answer_experiments/` | Provides the A/B/C evaluation factory, catalog-enabled chat runtime and fixed-evidence experiments. See the [evaluation commands](../eval/README.md). |
-| `src/evaluation/answer_metrics.py` | Scores saved answers for Faithfulness using the chunks recorded as model input. |
-| `src/observability/tracing.py` | Uploads stored Faithfulness results to Langfuse. The [results guide](../results/README.md) covers score uploads and recovery. |
+| `src/evaluation/answer_experiments/` | A/B/C 평가, 품목 사전을 쓰는 채팅, 고정 근거 실험의 실행 구성을 제공한다. [평가 명령](../eval/README.md) |
+| `src/evaluation/answer_metrics.py` | 실제 모델 입력으로 기록된 청크를 근거로 저장된 답변의 근거 충실도를 채점한다. |
+| `src/observability/tracing.py` | 저장된 근거 충실도 점수를 Langfuse로 전송한다. [점수 업로드와 복구 방법](../results/README.md) |
 
 ### 청킹 개선과 화면·관찰 검증 (이승주)
 
 | 파일 | 역할 |
 | --- | --- |
 | `src/ingestion/preprocessed_chunking.py`, `src/ingestion/chunking.py` | 인계된 청커의 후속 개선. 전처리 자료 표·비고·예외가 원문 위치와 함께 보존되는지 확인 |
-| `app.py` | Streamlit 진입점 |
-| `src/interface/chat.py` | 질문과 답변 화면 |
-| `src/interface/inspection.py` | 관찰 검증 패널 |
-| `src/validation.py` | UI 독립 공용 검증 |
-| `src/interface/comparison.py` | Aggregates eligible A/B/C Faithfulness scores for the comparison panel. |
+| `app.py` | 첫 화면, 결과 화면과 대시보드를 표시한다. 사용자가 요청하면 Langfuse 점수를 불러온다. |
+| `src/interface/chat.py` | 응답 상태, 인용 출처와 재질문 입력란을 표시한다. 일반 답변의 본문에서는 숫자 범위의 물결표가 취소선으로 해석되지 않도록 이스케이프하고, 인라인 코드와 코드 블록의 물결표는 그대로 둔다. |
+| `src/interface/inspection.py` | 화면에 표시된 응답의 검증 결과와 검색 후보 순위를 보여 준다. |
+| `src/validation.py` | Streamlit에 의존하지 않는 응답 검증 규칙을 제공한다. |
+| `src/interface/langfuse_scores.py` | Langfuse의 네 가지 지표를 읽고 평가셋·질문 다듬기 설정·검색 방식별로 집계한다. |
+| `src/interface/comparison.py` | 비교 패널에서 사용하는 A/B/C 구분과 방식별 점수 요약의 자료형을 정의한다. |
 
 ### 공통 기반의 최초 구현과 인계 (양석호)
 
@@ -133,18 +134,18 @@ PR #8과 #10의 전처리 자료를 사용한다. 공용 런타임에 주입할 
 
 ```mermaid
 flowchart TD
-    UI["Team chat (A or C)"] --> P["RAGPipeline.run"]
-    E["A/B/C evaluation"] --> P
-    P --> R["Resolve region"]
-    R --> Q["Use original or rewritten search query"]
-    Q --> S["Retrieve and rank candidates"]
-    S --> G["Select context, generate answer and validate citations"]
-    G --> O["Record response and stages"]
+    UI["팀 채팅 (A 또는 C)"] --> P["RAGPipeline.run"]
+    E["A/B/C 평가"] --> P
+    P --> R["구·동 해석"]
+    R --> Q["원질문 또는 변환 질의 사용"]
+    Q --> S["후보 검색과 순위 계산"]
+    S --> G["근거 선택, 답변 생성과 인용 검증"]
+    G --> O["응답과 처리 단계 기록"]
     O --> UI
     O --> E
 ```
 
-The retrieval path is used by team chat and the evaluation runner. The synthetic CLI uses its own callbacks. See the [shared contracts](TEAM-SETUP.md) for clarification and error handling.
+팀 채팅과 평가 실행기는 같은 검색 흐름을 사용한다. 합성 데모 명령은 자체 콜백을 사용한다. 지역 재질문과 오류 처리 규칙은 [공용 연결 기준](TEAM-SETUP.md)을 참고한다.
 
 통합 코드는 검색과 생성 모듈의 공용 호출 지점을 사용한다. 내부 파일 분리와 알고리즘 선택은 각 담당자가 정하며, 공용 입출력, 의존성, DB 구조와 실행 기록 변경은 사용하는 담당자와 맞춘다.
 

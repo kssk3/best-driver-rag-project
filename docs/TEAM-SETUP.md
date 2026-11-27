@@ -10,7 +10,7 @@
 | --- | --- |
 | 공용 요청·응답·콜백 | [자료형](../src/contracts.py), [콜백 인자](../src/runtime.py), [호출 순서](../src/pipeline.py)를 확인한다. `create_runtime`에는 지역 해석기·검색기·생성기를 전달하고 필요하면 질문 다듬기 콜백을 추가한다. `run(request)`가 반환한 `RunRecord`의 `record.response`에서 최종 응답을 읽는다. [연결 테스트](../tests/integration/test_handoff_runtime.py) |
 | 자료 준비·청킹·색인 | [준비 명령](../README.md#실행-방법)과 [준비 코드](../scripts/prepare_data.py)에서 전처리 묶음이 형식별 청크·색인이 되는 경로를 확인한다. [검색 명령](../scripts/search_index.py)은 지정한 구의 근거를 순위순으로 출력한다. 표 행을 수정할 때는 [청킹 테스트](../tests/unit/test_preprocessed_chunking.py)에서 원문 위치와 표의 맥락이 보존되는지 확인한다. |
-| Chat and retrieval | The [chat factory](../src/evaluation/answer_experiments/answer_evaluation_runtimes.py) accepts A or C. The [evaluation factory](../src/evaluation/answer_experiments/abc_runtimes.py) builds A, B and C for the same cases with rewriting off. Both use the [team retriever](../src/retrieval/search.py). |
+| 채팅·검색 | [채팅 실행 구성](../src/evaluation/answer_experiments/answer_evaluation_runtimes.py)은 A 또는 C를 사용한다. [평가 실행 구성](../src/evaluation/answer_experiments/abc_runtimes.py)은 질문 다듬기를 끄고 같은 문항으로 A·B·C를 비교한다. 두 실행 모두 [팀 검색기](../src/retrieval/search.py)를 사용한다. |
 | 지역·질문 다듬기 | [지역 해석기](../src/retrieval/regions.py), [질문 다듬기](../src/query/rewrite.py), [질문 다듬기와 검색 연결 테스트](../tests/unit/query/test_search_rewrite.py)에서 성공·실패 시 실제 검색 질의를 확인한다. [공용 오류 코드](ERRORS.md) |
 | 답변·인용 | [생성 모듈 안내](../src/generation/AGENTS.md), [어댑터](../src/generation/pipeline_adapter.py), [답변 정책](../src/generation/answer.py)과 [고정 근거 테스트](../tests/unit/answer_experiments/test_evidence_pipeline_answers.py)를 확인한다. 검색 후보, 생성기에 전달한 청크, 최종 인용을 차례로 대조한다. 외부 모델에 보낸 요청은 모델 호출부에서 확인한다. |
 | 평가·검증 | [채점 기준](problem.md#평가셋과-최종-80건), [브랜치별 평가셋과 실행 명령](../eval/README.md), [실행기](../src/evaluation/runner.py)를 확인한다. 실행기는 질문·위치·조건으로 요청을 만들고, 모범 답안과 허용 청크 ID는 채점에 사용한다. [CI 검사 명령](CI-AND-DEPENDENCIES.md) |
@@ -19,7 +19,7 @@
 
 설치는 [README](../README.md)의 루트 uv 환경을 사용한다. `.python-version`, `pyproject.toml`과 `uv.lock`을 함께 확인한다. 공용 의존성을 추가할 때 관련 담당자와 실행 가능성을 확인하고 의존성 파일과 잠금 파일을 함께 갱신한다.
 
-Start team chat with `uv run --locked --env-file .env python -m scripts.run_chat` from the repository root. The launcher selects C with catalog rewriting. To select A, pass `--settings configs/team-a-rewrite-chat.json`. With either configuration, the app defaults to team execution. Starting `app.py` without `RAG_CHAT_SETTINGS` shows a setup-guide error; the synthetic demo is no longer offered in the screen. See the [setup and index commands](../README.md).
+저장소 루트에서 `uv run --locked --env-file .env python -m scripts.run_chat`으로 팀 채팅을 시작한다. 기본값은 C 검색과 품목 사전 기반 질문 다듬기다. A 검색을 사용하려면 같은 명령에 `--settings configs/team-a-rewrite-chat.json`을 추가한다. 두 설정은 같은 채팅 화면을 연다. 실행기는 기본 팀 색인을 생성하고 검증할 수 있다. 별도 색인을 가리키는 설정을 사용한다면 그 색인 파일을 미리 준비한다. [실행과 색인 준비 명령](../README.md#실행-방법)
 
 합성 데모는 로컬 JSON 색인과 해시 임베딩을 사용한다. 조례·별표 인계 자료로 실제 색인을 만들 때는 `text-embedding-3-small`을 지정한다. 검색 CLI는 순위와 근거를 출력하고, 파이프라인 답변은 `create_runtime`에 전달한 생성기가 만든다. [환경변수 예시](../.env.example)
 
@@ -49,7 +49,7 @@ PR #24의 [공용 채팅 모듈](../src/infrastructure/chat_models.py)은 `creat
 | 질문에 연희동만 입력하고 구는 선택하지 않음 | 검색기와 생성기 모두 해석된 서대문구·연희동을 받는다. 실행 기록의 원래 요청에는 사용자가 구를 선택하지 않았다는 사실이 남는다. |
 | 사용자가 송파구를 선택 | 선택한 구와 연희동에서 추론한 구가 달라 검색과 생성 전에 지역을 다시 묻는다. |
 
-The [Seoul reference table](../data/reference/README.md) covers administrative and legal dong names. Select `송파구` under `지역` and enter `연희동 페트병 언제 버려요?` to see the resolver ask which district you mean. Enter `송파구` in `지역(구)` and press `다시 질문하기` so the resolver keeps `송파구` and drops `연희동`. The Wirye-dong schedule case is a separate fixed-evidence experiment.
+[서울 지역 기준표](../data/reference/README.md)는 행정동과 법정동 이름을 포함한다. 첫 화면에서 `송파구`를 선택하고 `연희동 페트병 언제 버려요?`를 입력한 뒤 `물어보기`를 누른다. 어느 구를 기준으로 할지 묻는 화면에서 `지역(구)` 드롭다운의 `송파구`를 선택하고 `다시 질문하기`를 누른다. 이후 지역 해석 결과는 송파구로 확정되고, 구와 충돌한 연희동은 해석 결과에서 빠진다. 위례동 수거 일정은 별도의 고정 근거 실험에 해당한다.
 
 ## 질문, 지역과 답변
 
@@ -96,4 +96,8 @@ The [Seoul reference table](../data/reference/README.md) covers administrative a
 
 각 담당자는 공통 예시로 독립 구현하고 준비된 작은 기능부터 통합한다. 화면용 예시, 고정 근거 생성 시험과 실제 RAG 실행은 기록에서 구분한다. 예시 응답만 표시한 상태를 실제 검색 연결로 보고하지 않는다.
 
-The [inspection panel](../src/interface/inspection.py) calls [`check_response`](../src/validation.py) and shows warnings, rules it could not check, and candidate ranks. The separate comparison panel reads the RAGAS scores from Langfuse (`LANGFUSE_BASE_URL`, `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`), and only after the “점수 불러오기” (load scores) button is pressed. It groups scores by dataset and rewrite on/off, then by A/B/C, and averages only scores marked comparison-eligible; scores it cannot attribute are counted separately and left out. The panel links old scores to local run records by `run_id` (or the trace ID); to link scores whose source run only exists in an unshared folder such as `results/local`, set `RAG_RESULTS_INDEX_DIRS` to a comma-separated list of extra result folders (default: none). For a reported result, cite the run or test output and its revision.
+[검증 패널](../src/interface/inspection.py)은 [`check_response`](../src/validation.py)를 호출해 화면에 표시된 응답의 검증 경고, 적용하지 못한 검증 규칙, 검색 후보 순위를 보여 준다.
+
+[비교 패널](../src/interface/langfuse_scores.py)은 `점수 불러오기`를 누르면 Langfuse에서 근거 충실도, 답변 관련성, 근거 정밀도·재현율 점수를 읽는다. 조회에는 `LANGFUSE_BASE_URL`, `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`를 사용한다. 평가셋과 질문 다듬기 ON/OFF로 묶고, 같은 문항·A/B/C 구성·지표에서 가장 최근 점수를 집계한다. 비교 자격을 나타내는 `comparison_eligible`은 근거 충실도에 적용한다. 비교 정보는 충분하지만 문항 ID를 확인할 수 없는 점수는 트레이스 단위로 포함하고 화면에 해당 건수를 표시한다. 평균에서 제외한 점수도 화면에서 확인할 수 있다.
+
+예전에 올린 점수에 비교 정보가 빠져 있으면 `run_id` 또는 트레이스 ID로 `results/` 아래 공유 CSV를 찾아 보완한다. 대응하는 CSV가 `results/local` 같은 별도 경로에 있으면 `RAG_RESULTS_INDEX_DIRS`에 경로를 지정한다. 경로가 여러 개면 쉼표로 구분한다. 검증 결과를 공유할 때는 실행 기록 또는 테스트 출력과 해당 커밋을 함께 남긴다.

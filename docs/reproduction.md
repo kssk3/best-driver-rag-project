@@ -1,6 +1,6 @@
 # 재현 방법과 재실행 기록
 
-다른 팀원이 README만 보고 색인을 만들고, 같은 질문으로 평가를 다시 돌려 결과를 대조하는 절차다. 비밀값(`.env`, 키)은 저장소에 없으므로 각자 준비한다.
+팀 색인을 만들고, 확정된 평가 문항을 다시 실행해 [비교 보고서](../report.md)와 대조하는 절차다. 아래 예시는 저장소 루트에서 POSIX 셸로 실행한다.
 
 ## 준비
 
@@ -8,7 +8,7 @@
 uv sync --locked
 ```
 
-`.env`에 `OPENAI_API_KEY`를 넣는다. Langfuse에 올릴 때만 `LANGFUSE_BASE_URL`, `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`가 더 필요하다([설정](TEAM-SETUP.md#팀-langfuse-설정)). `.env`는 uv가 자동으로 읽지 않으므로 아래 명령처럼 `--env-file .env`를 붙인다. Windows에서는 `PYTHONUTF8=1`을 앞에 둔다.
+임베딩, 채팅, 모델 채점에 사용할 `OPENAI_API_KEY`를 로컬 `.env`에 설정한다. 키가 필요한 명령은 uv에 `--env-file .env`를 전달한다. 점수를 올리거나 Streamlit 비교 패널에서 조회하려면 [팀 Langfuse 설정](TEAM-SETUP.md#팀-langfuse-설정)도 필요하다. Windows에서는 Python을 실행하기 전에 셸 환경에 `PYTHONUTF8=1`을 설정한다. PowerShell에서는 `$env:PYTHONUTF8 = "1"`을 사용한다.
 
 ## 1. 색인 재생성
 
@@ -16,41 +16,62 @@ uv sync --locked
 uv run --locked --env-file .env python -m scripts.prepare_data --bundle data/handoff/jungeun/ordinance-handoff-2026-11-24 --version v1 --output-dir data/processed/ordinance-v2-openai-small --openai-model text-embedding-3-small
 ```
 
-만들어진 청크가 청킹 기준선과 같은지는 [`results/chunking/`](../results/chunking/README.md)의 지문(`chunks_sha256`)과 `scripts.run_chat`이 대조한다. 화면까지 한 번에 띄우려면 `uv run --locked --env-file .env python -m scripts.run_chat`을 쓴다. 색인이 없으면 먼저 만든다.
+색인을 새로 만들 때는 아직 없는 출력 폴더를 지정한다. 기존 팀 색인이 [청킹 기준선](../results/chunking/README.md)과 일치하면 재사용한다. 색인 준비와 화면 실행을 한 번에 하려면 `uv run --locked --env-file .env python -m scripts.run_chat`을 실행한다. 실행기는 기본 JSON 색인의 청크 지문(`chunks_sha256`)을 기준선과 대조한 뒤 Streamlit을 시작한다.
 
 ## 2. 평가 실행과 채점
 
-개발 문항(`eval/dev.json`)과 최종 문항(`eval/test.json`)은 [평가셋 안내](../eval/README.md)를 따른다. 질문 다듬기를 끈 A/B/C를 같은 조건으로 실행한다.
+확정된 [최종 20문항](../eval/test.json)으로 질문 다듬기를 끈 A/B/C를 실행한다. 튜닝에는 [개발 문항](../eval/dev.json)을 사용한다. 아래 명령은 현재 체크아웃에서 새 재현 결과를 만든다. 11월 26일 공식 결과는 [비교 보고서](../report.md)에서 확인한다.
 
 ```sh
-uv run --locked --env-file .env python -m scripts.evaluate --cases eval/test.json --settings configs/abc-answer-eval-settings.json --factory src.evaluation.answer_experiments.abc_runtimes:create_abc_runtimes --output-dir results/local/<새 출력 폴더>
-uv run --locked --env-file .env python -m scripts.score_answers --judge --evaluation results/local/<새 출력 폴더>/evaluation.json --cases-csv results/local/<새 출력 폴더>/cases.csv --output-dir results/local/<채점 출력 폴더>
-uv run --locked --env-file .env python -m scripts.score_relevancy results/local/<새 출력 폴더>
-uv run --locked python -m src.evaluation.comparison results/local/<새 출력 폴더>
-uv run --locked python -m scripts.summarize_runs results/local/<새 출력 폴더>/runs.csv
-uv run --locked --env-file .env python -m scripts.score_quality --runs results/local/<새 출력 폴더>/runs.csv --candidates results/local/<새 출력 폴더>/candidates.csv --cases eval/test.json --grading eval/test-grading.json --output-dir results/local/<품질 채점 폴더>
+run_tag=$(date +%Y%m%d-%H%M%S)
+abc_dir="results/local/abc-off-$run_tag"
+c_rewrite_dir="results/local/c-rewrite-on-$run_tag"
+
+uv run --locked --env-file .env python -m scripts.evaluate \
+  --cases eval/test.json --settings configs/abc-answer-eval-settings.json \
+  --factory src.evaluation.answer_experiments.abc_runtimes:create_abc_runtimes \
+  --output-dir "$abc_dir"
 ```
 
-**질문 다듬기를 켠 C(공식 80건 중 20건)**는 위 A/B/C OFF와 설정·팩토리·출력 폴더가 다르다. 같은 색인과 최종 문항을 쓰고 출력은 반드시 별도 폴더에 둔다.
+같은 셸에서 동일한 색인과 문항으로 질문 다듬기를 켠 C를 실행한다.
 
 ```sh
-uv run --locked --env-file .env python -m scripts.evaluate --cases eval/test.json --settings configs/team-c-rewrite-chat.json --factory src.evaluation.answer_experiments.answer_evaluation_runtimes:create_a_catalog_runtime --output-dir results/local/<C 질문 다듬기 폴더>
-uv run --locked python -m scripts.summarize_runs results/local/<C 질문 다듬기 폴더>/runs.csv
-uv run --locked --env-file .env python -m scripts.score_relevancy results/local/<C 질문 다듬기 폴더>
-uv run --locked python -m src.evaluation.comparison results/local/<C 질문 다듬기 폴더>
-uv run --locked --env-file .env python -m scripts.score_quality --runs results/local/<C 질문 다듬기 폴더>/runs.csv --candidates results/local/<C 질문 다듬기 폴더>/candidates.csv --cases eval/test.json --grading eval/test-grading.json --output-dir results/local/<C 질문 다듬기 품질 폴더>
+uv run --locked --env-file .env python -m scripts.evaluate \
+  --cases eval/test.json --settings configs/team-c-rewrite-chat.json \
+  --factory src.evaluation.answer_experiments.answer_evaluation_runtimes:create_a_catalog_runtime \
+  --output-dir "$c_rewrite_dir"
 ```
 
-`summarize_runs` 출력에서 `C` 한 줄이 `rewrite=true`, `20/20`이면 `variant=C`, `rewrite_enabled=true`인 고유 문항 20개가 맞다. A/B/C OFF 폴더의 같은 출력은 `A·B·C` 세 줄이 모두 `false`다. 두 폴더는 서로 다른 채점 출력 폴더로 따로 채점하고 요약에서 섞지 않는다(채점기는 `(variant, rewrite_enabled)`별로 나눠 집계한다).
+두 실행이 끝나면 저장된 CSV로 문항별 실행 여부를 확인하고 청크 ID 기준 근거 정밀도와 재현율을 계산한다. `summarize_runs`에서 A·B·C 각각 `rewrite=false`로 20/20, C는 `rewrite=true`로 20/20인지 확인한다. 지표를 해석하기 전에 상태별 건수에서 실행 오류가 있는지 살핀다.
 
-`score_quality`는 정답 충족, 근거 적합, 근거 없음 대응을 0/1로 채점해 `quality.csv`에 남긴다(판정 모델 호출, 실행당 최대 2회). 판정 응답을 읽지 못한 행은 0점이 아니라 점수 없음으로 남고 요약에서 따로 센다. 모델을 부르기 전에 실행·후보·문항·채점 자료의 문항 ID와 `dataset_id`를 대조해 맞지 않으면 중단한다(일부 문항만 채점하려면 `--allow-subset`). 모델 판정이어서 사람의 검토가 필요하다.
+```sh
+for run_dir in "$abc_dir" "$c_rewrite_dir"; do
+  uv run --locked python -m scripts.summarize_runs "$run_dir/runs.csv"
+  uv run --locked python -m src.evaluation.comparison "$run_dir"
+done
+```
 
-출력 폴더는 기존 결과를 덮어쓰지 않도록 항상 새 이름을 쓴다. 호출 수와 비용은 [결과 안내](../results/README.md)를 본다.
+아래 채점 명령은 외부 모델을 호출해 각 실행의 근거 충실도(Faithfulness), 답변 관련성(Answer Relevancy), 답변 품질을 계산한다.
+
+```sh
+for run_dir in "$abc_dir" "$c_rewrite_dir"; do
+  uv run --locked --env-file .env python -m scripts.score_answers --judge \
+    --evaluation "$run_dir/evaluation.json" --cases-csv "$run_dir/cases.csv" \
+    --output-dir "${run_dir}-faithfulness"
+  uv run --locked --env-file .env python -m scripts.score_relevancy "$run_dir"
+  uv run --locked --env-file .env python -m scripts.score_quality \
+    --runs "$run_dir/runs.csv" --candidates "$run_dir/candidates.csv" \
+    --cases eval/test.json --grading eval/test-grading.json \
+    --output-dir "${run_dir}-quality"
+done
+```
+
+`score_quality`는 판정 모델을 호출하기 전에 문항 ID와 데이터셋 ID를 대조한다. 일부 문항만 다시 실행해 채점할 때는 `--allow-subset`을 지정한다. 정답 충족, 근거 적합, 근거 없음 대응을 `quality.csv`에 저장한다. 실행 한 건당 판정 모델을 최대 두 번 호출하며 읽을 수 없는 판정 응답은 점수 누락으로 기록한다. 모델 판정은 원문 근거와 대조한다. [호출 수와 비용 안내](../results/README.md)
 
 ## 3. 재실행 기록: 로컬 CSV가 기본, Langfuse는 켜고 올릴 때만
 
 - **기본 증빙은 로컬 기록이다.** `scripts.evaluate`는 `runs.csv`, `candidates.csv`, `cases.csv`, `evaluation.json`을 남기고 채점기는 `quality.csv`(또는 `scores.csv`)를 남긴다. 공식 결과는 `results/final-*`에 있고, 실행별 기록은 실행 ID·구성·문서/색인/모델 버전을 담는다.
-- **Langfuse에는 자동으로 올라가지 않는다.** 실행 추적은 `RAG_LANGFUSE_TRACE=1`을 켠 실행에서만 전송되고(프롬프트·근거 본문 포함, [설정](TEAM-SETUP.md#팀-langfuse-설정)), 점수와 판정 사유는 채점 후 업로드 명령(`scripts.upload_scores`, [업로드와 조회](../results/README.md#진술별-faithfulness-판정-확인))을 따로 실행해야 올라간다. 올리면 누가 언제 어떤 구성으로 돌렸는지 Langfuse에서 실행 단위로 비교할 수 있다.
+- **Langfuse 추적과 점수 업로드는 선택 사항이다.** `RAG_LANGFUSE_TRACE=1`을 켜면 실행 중 프롬프트와 근거 본문을 포함한 추적 기록을 전송한다. 채점 후 `scripts.upload_scores`로 저장된 점수와 판정 사유를 올린다. Streamlit 비교 패널에서 업로드된 점수를 조회할 수 있다. [팀 설정](TEAM-SETUP.md#팀-langfuse-설정) · [업로드와 조회 안내](../results/README.md#진술별-faithfulness-판정-확인)
 - 저장소 안에서 확인할 수 있는 기록은 `results/`의 실행별 CSV다(Git에서 제외되는 `results/local/`은 제외).
 
 ## 사후 실험 재현(보고서 8장·8.1, 정오표)

@@ -121,7 +121,7 @@ _※ 상세 파일 목록과 연결 원칙은 [구조와 책임](docs/architectu
 
 ## 실행 방법
 
-저장소 루트에서 실행한다. Python `3.13.14`, uv `0.13.9` 이상과 `uv.lock`을 사용한다.
+저장소 루트에서 Python `3.13.14`와 uv `0.13.9` 이상을 사용해 `uv.lock`에 고정된 의존성을 설치한다.
 
 ```sh
 uv sync --locked
@@ -129,13 +129,17 @@ uv sync --locked
 
 ### 화면 실행: C 검색기 (권장)
 
-로컬 `.env`에 `OPENAI_API_KEY`를 두고 런처를 실행한다. 기본 팀 색인이 없으면 OpenAI 임베딩으로 만들고, 시작 전에 청크 지문을 [JSON 기준선](results/chunking/chunk_stats.csv)과 대조한다.
+로컬 `.env`에 `OPENAI_API_KEY`를 설정하고 채팅 실행 명령을 입력한다. 기본값은 C 검색(BM25와 벡터 검색을 결합한 뒤 모델로 재정렬)과 품목 사전 기반 질문 다듬기다. 기본 팀 색인이 없으면 OpenAI 임베딩으로 생성한다. Streamlit을 시작하기 전에 청크 지문을 [청킹 기준선 CSV](results/chunking/chunk_stats.csv)의 JSON 행과 대조한다.
 
 ```sh
 uv run --locked --env-file .env python -m scripts.run_chat
 ```
 
-화면은 실제 팀 색인과 OpenAI 키가 있어야 답한다. 실행 설정(`RAG_CHAT_SETTINGS`) 없이 `streamlit run app.py`만 실행하면 안내 오류가 나오고 질문은 받지 않는다. 합성 데모는 화면에서 제거했다.
+1. 첫 화면에서 `서대문구` 또는 `송파구`를 선택하고, 질문을 입력한 뒤 `물어보기`를 누른다.
+2. 결과 화면에서 답변과 인용 출처를 확인한다. 숫자 범위는 `12~25인치`처럼 물결표를 포함해 표시된다. 아래 `검증 패널`에서 같은 응답의 검색 후보 순위와 검증 경고를 확인한다.
+3. 업로드된 평가 점수를 보려면 `비교 패널`에서 `점수 불러오기`를 누른다. 이 기능은 [팀 Langfuse 설정](docs/TEAM-SETUP.md#팀-langfuse-설정)을 사용한다.
+
+다른 채팅 설정을 사용하려면 실행 명령에 `--settings`로 설정 파일을 지정한다. `streamlit run app.py`로 직접 시작하려면 `RAG_CHAT_SETTINGS`를 설정하고 해당 색인을 먼저 준비한다. 합성 데모는 아래 명령으로 실행한다.
 
 ### API 키 없이 연결 검사
 
@@ -143,7 +147,7 @@ uv run --locked --env-file .env python -m scripts.run_chat
 uv run --locked python -m scripts.demo
 ```
 
-합성 문서만 쓰고 외부 호출이 없다. 색인부터 답변, 지역 재질문, 근거 부족, 실행 기록 저장까지 확인한다. 해시 임베딩을 쓰는 연결 검사이며 실제 안내나 검색 품질 결과가 아니다.
+이 명령은 합성 문서와 해시 임베딩으로 색인부터 실행 기록 저장까지 연결을 확인한다. 정상 답변, 자치구 재질문, 근거 부족 응답을 각각 확인하며 외부 API를 호출하지 않는다.
 
 <details>
 <summary>&nbsp;&nbsp;📦&nbsp;uv 환경 준비 · 전처리 자료로 청크 & 색인 만들기 · 색인에서 근거 조회하기</summary>
@@ -167,16 +171,16 @@ uv run --locked python -m scripts.search_index --index data/processed/ordinance-
 </details>
 
 <details>
-<summary>&nbsp;&nbsp;🖥️&nbsp;화면 "실행" 모드 설정 · 질문 다듬기 OFF/ON 비교 실행</summary>
+<summary>&nbsp;&nbsp;🖥️&nbsp;A 검색으로 채팅 실행 · 질문 다듬기 OFF/ON 비교</summary>
 
-[A 검색 실행 설정](configs/team-a-rewrite-chat.json)에 팀 색인 경로와 답변 모델을 지정하면 Streamlit에 **실행** 모드가 표시된다. `pipeline.rewrite_enabled`를 바꿔 저장하거나 색인·품목 사전을 교체하면 다음 질문부터 새 값을 읽는다.
+채팅 화면은 A와 C 검색을 지원한다. A를 사용하려면 [A 검색 설정](configs/team-a-rewrite-chat.json)으로 실행한다. 앱은 질문마다 설정을 읽고, 색인이나 사용 중인 품목 사전 파일이 바뀌면 실행 구성을 다시 불러온다. 사전 기반 질문 다듬기는 설정 파일의 `pipeline.rewrite_enabled`로 켜거나 끈다.
 
 ```sh
-RAG_CHAT_SETTINGS=configs/team-a-rewrite-chat.json \
-  uv run --locked --env-file .env streamlit run app.py
+uv run --locked --env-file .env python -m scripts.run_chat \
+  --settings configs/team-a-rewrite-chat.json
 ```
 
-같은 질문·색인·옵션·모델로 A의 OFF/ON을 한 번에 비교한다. 출력 경로에는 새 이름을 쓴다. `evaluation.json`에 원질문, 실제 검색 질의, 해석된 구·동, 리라이트 상태, 색인·사전 버전이 남고, `runs.csv`와 `candidates.csv`에서 구성별 후보 순위를 비교한다.
+아래 명령은 같은 개발 문항·색인·답변 모델을 사용해 A 검색에서 질문 다듬기를 끈 경우와 켠 경우를 비교한다. 실행할 때마다 새 출력 폴더를 지정한다. `evaluation.json`에는 원질문, 실제 검색 질의, 해석한 구·동, 질문 다듬기 상태, 색인과 사전 버전이 남는다. 구성별 검색 후보 순위는 `runs.csv`와 `candidates.csv`에서 대조한다.
 
 ```sh
 uv run --locked --env-file .env python -m scripts.evaluate \
