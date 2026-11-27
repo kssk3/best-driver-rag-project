@@ -119,3 +119,21 @@ def test_scoreable_row_without_a_run_id_stops_before_paid_scoring(
     with pytest.raises(SystemExit):
         score_relevancy.main([str(tmp_path), "--output", str(tmp_path / "o.csv")])
     assert called == []
+
+
+def test_partial_output_is_removed_when_csv_writing_fails(
+    tmp_path, monkeypatch
+) -> None:
+    with (tmp_path / "runs.csv").open("w", encoding="utf-8", newline="") as file:
+        csv.writer(file).writerows([["run_id"], ["r1"]])
+
+    async def fake(rows):
+        return [
+            {"run_id": "r1", "bad_column": "x"}
+        ]  # 열 이름이 FIELDS와 달라 쓰기에 실패한다
+
+    monkeypatch.setattr(score_relevancy, "_score", fake)
+    out = tmp_path / "o.csv"
+    with pytest.raises(ValueError):
+        score_relevancy.main([str(tmp_path), "--output", str(out)])
+    assert not out.exists()

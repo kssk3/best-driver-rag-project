@@ -355,7 +355,12 @@ def test_primary_failure_keeps_message_even_when_error_codes_collide() -> None:
 
 @pytest.mark.parametrize(
     ("typed", "expected"),
-    [("강남구요", "강남구"), (" 송파구 입니다 ", "송파구"), ("여기요", "여기요")],
+    [
+        ("강남구요", "강남구"),
+        (" 송파구 입니다 ", "송파구"),
+        ("서대문구", "서대문구"),
+        ("송파구이에요.", "송파구"),
+    ],
 )
 def test_followup_district_is_cut_to_the_district_name(
     typed: str, expected: str
@@ -387,9 +392,19 @@ def test_followup_with_two_districts_is_rejected_instead_of_confirming_one() -> 
 
 
 @pytest.mark.parametrize(
-    "typed", ["송파구 아니고요", "송파구 말고요", "송파구는 싫어요"]
+    "typed",
+    [
+        "송파구 아니고요",
+        "서대문구는 아니에요",
+        "서대문구는 안 돼요",  # 부정 목록에 없던 표현
+        "송파구 말고요",
+        "송파구는 싫어요",
+        "여기요",
+    ],
 )
-def test_followup_that_denies_a_district_is_not_confirmed(typed: str) -> None:
+def test_followup_reply_that_is_not_just_a_district_is_not_confirmed(
+    typed: str,
+) -> None:
     from src.interface.chat import AmbiguousDistrictError
 
     with pytest.raises(AmbiguousDistrictError):

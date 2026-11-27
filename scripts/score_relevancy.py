@@ -106,13 +106,15 @@ def main(argv: list[str] | None = None) -> None:
     with path.open("x", encoding="utf-8", newline="") as file:
         try:
             scored = asyncio.run(_score(rows))
-        except BaseException:
+            writer = csv.DictWriter(file, fieldnames=FIELDS)
+            writer.writeheader()
+            writer.writerows(scored)
+        except (
+            BaseException
+        ):  # 쓰다 실패해도 일부만 쓴 파일을 남기지 않는다(다음 실행이 막힌다).
             file.close()
             path.unlink()
             raise
-        writer = csv.DictWriter(file, fieldnames=FIELDS)
-        writer.writeheader()
-        writer.writerows(scored)
     failed = sum(1 for r in scored if r["error"])
     print(f"{len(scored)}행 중 점수 없음 {failed}행 -> {path}")
 
