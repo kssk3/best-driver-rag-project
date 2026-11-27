@@ -184,3 +184,15 @@ def test_recordless_failure_rows_stay_undefined_in_a_retrieval_archive(
     (archive / "runs.csv").write_text(text, encoding="utf-8")
     (row,) = run_scores(archive)
     assert (row["precision"], row["recall"]) == (None, None)
+
+
+def test_several_recordless_failures_with_blank_run_ids_are_allowed(tmp_path) -> None:
+    from src.evaluation.comparison import run_scores
+
+    archive = _archive(tmp_path)
+    lines = (archive / "runs.csv").read_text(encoding="utf-8").splitlines()
+    blank = ["", "d", "c1", "A", "False", "error", "", "", "", ""]
+    text = chr(10).join([*lines, ",".join(blank), ",".join(blank)]) + chr(10)
+    (archive / "runs.csv").write_text(text, encoding="utf-8")
+    rows = run_scores(archive)
+    assert len(rows) == 3 and rows[1]["precision"] is None

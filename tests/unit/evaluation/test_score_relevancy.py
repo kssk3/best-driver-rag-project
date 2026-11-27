@@ -65,9 +65,7 @@ def test_scores_outside_zero_to_one_are_errors_not_successes() -> None:
     assert "variant" in score_relevancy.FIELDS
 
 
-def test_duplicate_or_blank_run_ids_stop_before_paid_scoring(
-    tmp_path, monkeypatch
-) -> None:
+def test_duplicate_run_ids_stop_before_paid_scoring(tmp_path, monkeypatch) -> None:
     called = []
 
     async def fake(rows):
@@ -75,9 +73,23 @@ def test_duplicate_or_blank_run_ids_stop_before_paid_scoring(
         return []
 
     monkeypatch.setattr(score_relevancy, "_score", fake)
-    for ids in (["r1", "r1"], ["r1", ""]):
+    for ids in (["r1", "r1"],):
         with (tmp_path / "runs.csv").open("w", encoding="utf-8", newline="") as file:
             csv.writer(file).writerows([["run_id"], *[[i] for i in ids]])
         with pytest.raises(SystemExit):
             score_relevancy.main([str(tmp_path), "--output", str(tmp_path / "o.csv")])
     assert called == [] and not (tmp_path / "o.csv").exists()
+
+
+def test_blank_run_ids_of_recordless_failures_are_allowed(
+    tmp_path, monkeypatch
+) -> None:
+    with (tmp_path / "runs.csv").open("w", encoding="utf-8", newline="") as file:
+        csv.writer(file).writerows([["run_id"], [""], [""], ["r1"]])
+
+    async def fake(rows):
+        return [{"run_id": r["run_id"], "error": ""} for r in rows]
+
+    monkeypatch.setattr(score_relevancy, "_score", fake)
+    score_relevancy.main([str(tmp_path), "--output", str(tmp_path / "o.csv")])
+    assert (tmp_path / "o.csv").exists()

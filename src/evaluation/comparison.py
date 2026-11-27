@@ -55,7 +55,9 @@ def run_scores(archive: Path, k: int = 5) -> list[dict]:
         for c in case_rows
     }
     runs = _rows(archive / "runs.csv")
-    if len({r["run_id"] for r in runs}) != len(runs):
+    # 기록 없이 실패한 행은 run_id가 비어 있으므로 중복 검사에서 뺀다.
+    ids = [r["run_id"] for r in runs if r["run_id"]]
+    if len(set(ids)) != len(ids):
         raise ValueError("runs.csv에 같은 run_id가 두 번 이상 있습니다.")
     # run_kind가 빈 행은 실행 기록 없이 실패한 행이라 미정의로 남기고, 실제 기록이 rag가 아니면 막는다.
     if any(r["run_kind"] not in ("rag", "") for r in runs):
