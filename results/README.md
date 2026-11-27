@@ -241,6 +241,8 @@ uv run --locked python -m scripts.upload_extra_scores \
 
 **비교용 메타데이터(2026-11-27부터)**: 새로 올리는 Faithfulness 점수의 `metadata`와 새로 만드는 `archived-run` 루트에는 점수 CSV 행에 있는 `dataset_id`, `evaluation_id`, `rewrite_enabled`, `comparison_eligible`이 문자열로 들어간다(값이 비어 있으면 넣지 않는다). 비교 화면은 이 값으로 같은 평가끼리, C ON/OFF를 나눠 묶는다. 이전에 올린 점수와 이미 있던 루트에는 이 값이 없으므로 화면이 로컬 `results/*/runs.csv`와 `run_id`로 확인하고, 확인할 수 없는 점수는 평균에서 빼고 따로 센다.
 
+**알려진 한계(2026-11-27 확인)**: 서버에 이전 방식으로 올라간 점수에는 평가 세트·리라이트 여부 같은 비교 정보가 없어 비교 패널이 "확인 불가"로 제외한다. 이날 팀 Langfuse를 조회하면 Faithfulness 9건은 `variant`와 `dataset_id`만 있고 `rewrite_enabled`·`comparison_eligible`이 없었으며 그 `run_id`가 저장소 `results/`의 어떤 CSV에도 없었고, 나머지 27건은 `variant`가 없는 `archived-run` 루트라 미연결이었다(`front` 세션 확인). 그래서 새 업로더로 점수를 올리기 전에는 비교 패널에 그룹이 보이지 않을 수 있다. 공식 Faithfulness 점수(`results/faithfulness-final-*`)를 서버에 올리는 일은 아직 하지 않았다. 원장 규칙상 이미 올라간 점수에는 메타데이터를 더할 수 없고, 이 PC의 결과 폴더는 `RAG_RESULTS_INDEX_DIRS`로 연결할 수 있다([TEAM-SETUP](../docs/TEAM-SETUP.md)).
+
 기본 실행은 오프라인 검증이다. 같은 명령에서 `uv run --locked --env-file .env`를 사용하고 끝에 `--check`를 붙이면 팀 프로젝트를 읽기만 한다. 원본과 귀속을 확인한 뒤 `--upload`로 누락 점수만 전송한다. 충돌이나 누락된 실행이 있으면 전송 전에 중단한다. 접수 후 같은 입력으로 `--check`를 실행해 서버 일치 건수와 미등록 0개를 확인한다. 부분 접수 후에는 기존 파일의 시각과 내용을 유지해 재시도한다. 합성 실험 4건의 결과는 최종 평가 80건과 따로 집계한다.
 
 #### 접수 후에도 조회되지 않는 추가 점수 한 건 복구
