@@ -3,6 +3,7 @@ from collections.abc import Callable
 import streamlit as st
 
 from src.interface.adapter import Citation, ViewResponse
+from src.retrieval.regions import find_district
 
 # 실패해도 응답 상태와 answer를 바꾸지 않고 문서 답변을 이어 가는 단계(docs/ERRORS.md)
 RECOVERABLE_STAGES = {"rewrite", "place_lookup"}
@@ -30,7 +31,10 @@ def build_followup_request(
     if "district" in conditions:
         # 되묻기에서 사용자가 구를 직접 입력했다. 해석기가 같은 되묻기를 되풀이하지 않도록
         # 확정 표시를 전용 필드로 보낸다(조건에 섞으면 생성기 입력과 W5 검증에 샌다).
-        request["district"] = conditions.pop("district")
+        # "강남구요"처럼 쓴 말에서 구 이름만 뽑는다. 그대로 보내면 해석기가 "강남구요"라는 구를
+        # 골랐다고 보고 같은 되묻기를 되풀이한다. 구 이름이 없으면 입력 그대로 보낸다.
+        typed = conditions.pop("district")
+        request["district"] = find_district(typed) or typed
         request["district_confirmed"] = True
     request["conditions"] = conditions
     return request
