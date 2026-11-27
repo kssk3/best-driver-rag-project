@@ -1,0 +1,139 @@
+import csv
+
+import pytest
+
+from scripts import score_relevancy
+
+
+def test_existing_relevancy_csv_is_never_overwritten_and_run_id_is_kept(
+    tmp_path, monkeypatch
+) -> None:
+    with (tmp_path / "runs.csv").open("w", encoding="utf-8", newline="") as file:
+        csv.writer(file).writerows([["run_id"], ["r1"]])
+    (tmp_path / "relevancy.csv").write_text("원본", encoding="utf-8")
+    called = []
+
+    async def fake(rows):
+        called.append(rows)
+        return [{"run_id": r["run_id"], "error": ""} for r in rows]
+
+    monkeypatch.setattr(score_relevancy, "_score", fake)
+    with pytest.raises(SystemExit):
+        score_relevancy.main([str(tmp_path)])
+    assert (
+        called == []
+        and (tmp_path / "relevancy.csv").read_text(encoding="utf-8") == "원본"
+    )
+    out = tmp_path / "new.csv"
+    score_relevancy.main([str(tmp_path), "--output", str(out)])
+    assert "r1" in out.read_text(encoding="utf-8")
+
+
+def test_output_is_reserved_before_paid_scoring_and_cleaned_up_on_failure(
+    tmp_path, monkeypatch
+) -> None:
+    with (tmp_path / "runs.csv").open("w", encoding="utf-8", newline="") as file:
+        csv.writer(file).writerows([["run_id"], ["r1"]])
+    called = []
+
+    async def boom(rows):
+        called.append(rows)
+        raise RuntimeError("호출 실패")
+
+    monkeypatch.setattr(score_relevancy, "_score", boom)
+    with pytest.raises(FileNotFoundError):  # 없는 폴더는 호출 전에 실패한다
+        score_relevancy.main([str(tmp_path), "--output", str(tmp_path / "x" / "o.csv")])
+    assert called == []
+    out = tmp_path / "o.csv"
+    with pytest.raises(RuntimeError):
+        score_relevancy.main([str(tmp_path), "--output", str(out)])
+    assert not out.exists()  # 실패한 실행이 빈 파일을 남기지 않는다
+
+
+def test_score_row_has_a_utc_timestamp_only_when_scored() -> None:
+    assert "timestamp" in score_relevancy.FIELDS
+
+
+def test_clarification_responses_are_scored_not_marked_absent() -> None:
+    assert "needs_clarification" in score_relevancy.SCORED_STATUSES
+
+
+def test_scores_outside_zero_to_one_are_errors_not_successes() -> None:
+    assert score_relevancy.checked_score(0.5) == ("0.5000", "")
+    for bad in (-0.03, 1.2, float("nan")):
+        assert score_relevancy.checked_score(bad) == ("", "score_out_of_range")
+    assert "variant" in score_relevancy.FIELDS
+
+
+def test_duplicate_run_ids_stop_before_paid_scoring(tmp_path, monkeypatch) -> None:
+    called = []
+
+    async def fake(rows):
+        called.append(rows)
+        return []
+
+    monkeypatch.setattr(score_relevancy, "_score", fake)
+    for ids in (["r1", "r1"],):
+        with (tmp_path / "runs.csv").open("w", encoding="utf-8", newline="") as file:
+            csv.writer(file).writerows([["run_id"], *[[i] for i in ids]])
+        with pytest.raises(SystemExit):
+            score_relevancy.main([str(tmp_path), "--output", str(tmp_path / "o.csv")])
+    assert called == [] and not (tmp_path / "o.csv").exists()
+
+
+def test_blank_run_ids_of_recordless_failures_are_allowed(
+    tmp_path, monkeypatch
+) -> None:
+    with (tmp_path / "runs.csv").open("w", encoding="utf-8", newline="") as file:
+        csv.writer(file).writerows(
+            [
+                ["run_id", "status", "answer"],
+                ["", "error", ""],
+                ["", "error", ""],
+                ["r1", "answered", "답"],
+            ]
+        )
+
+    async def fake(rows):
+        return [{"run_id": r["run_id"], "error": ""} for r in rows]
+
+    monkeypatch.setattr(score_relevancy, "_score", fake)
+    score_relevancy.main([str(tmp_path), "--output", str(tmp_path / "o.csv")])
+    assert (tmp_path / "o.csv").exists()
+
+
+def test_scoreable_row_without_a_run_id_stops_before_paid_scoring(
+    tmp_path, monkeypatch
+) -> None:
+    with (tmp_path / "runs.csv").open("w", encoding="utf-8", newline="") as file:
+        csv.writer(file).writerows(
+            [["run_id", "status", "answer"], ["", "answered", "답"]]
+        )
+    called = []
+
+    async def fake(rows):
+        called.append(rows)
+        return []
+
+    monkeypatch.setattr(score_relevancy, "_score", fake)
+    with pytest.raises(SystemExit):
+        score_relevancy.main([str(tmp_path), "--output", str(tmp_path / "o.csv")])
+    assert called == []
+
+
+def test_partial_output_is_removed_when_csv_writing_fails(
+    tmp_path, monkeypatch
+) -> None:
+    with (tmp_path / "runs.csv").open("w", encoding="utf-8", newline="") as file:
+        csv.writer(file).writerows([["run_id"], ["r1"]])
+
+    async def fake(rows):
+        return [
+            {"run_id": "r1", "bad_column": "x"}
+        ]  # 열 이름이 FIELDS와 달라 쓰기에 실패한다
+
+    monkeypatch.setattr(score_relevancy, "_score", fake)
+    out = tmp_path / "o.csv"
+    with pytest.raises(ValueError):
+        score_relevancy.main([str(tmp_path), "--output", str(out)])
+    assert not out.exists()

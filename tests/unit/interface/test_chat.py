@@ -378,3 +378,43 @@ def test_attachment_citation_shows_parent_ordinance(monkeypatch) -> None:
 
     assert "송파구 폐기물 관리 조례 › 별표" in shown[0]
     assert "›" not in shown[1]
+
+
+def test_followup_district_from_the_select_box_is_confirmed() -> None:
+    request = build_followup_request("가상 질문", "서대문구", {"district": "송파구"})
+    assert request["district"] == "송파구"
+    assert request["district_confirmed"] is True
+    assert "district" not in request["conditions"]
+
+
+def district_page(fixtures: str) -> None:
+    import json  # noqa: F811
+    from dataclasses import replace
+    from pathlib import Path
+
+    from src.interface.adapter import to_view_response
+    from src.interface.chat import render_response
+
+    raw = json.loads(
+        (Path(fixtures) / "sample_responses.json").read_text(encoding="utf-8")
+    )
+    view = replace(
+        to_view_response(raw["needs_clarification"], kind="fixture"),
+        required_fields=["district"],
+    )
+    render_response(view, question="가상 질문", district="서대문구")
+
+
+def test_followup_district_is_chosen_from_supported_districts_only() -> None:
+    app = AppTest.from_function(
+        district_page, args=(str(FIXTURES),), default_timeout=10
+    ).run()
+    assert not app.exception
+    assert not app.text_input  # 자유 입력칸이 아니다
+    assert app.selectbox[0].options == ["서대문구", "송파구"]
+    assert app.selectbox[0].value is None  # 고르기 전에는 비어 있다
+
+    app.selectbox[0].select("송파구")
+    app.button[0].click().run()
+    request = json.loads(app.json[0].value)
+    assert request["district"] == "송파구" and request["district_confirmed"] is True

@@ -6,6 +6,7 @@ import streamlit as st
 
 from src.interface.adapter import Citation, ViewResponse
 from src.interface.theme import avatar_html
+from src.retrieval.regions import SUPPORTED_DISTRICTS
 
 # 실패해도 응답 상태와 answer를 바꾸지 않고 문서 답변을 이어 가는 단계(docs/ERRORS.md)
 RECOVERABLE_STAGES = {"rewrite", "place_lookup"}
@@ -31,7 +32,7 @@ def build_followup_request(
     if "dong" in conditions:
         request["dong"] = conditions.pop("dong")
     if "district" in conditions:
-        # 되묻기에서 사용자가 구를 직접 입력했다. 해석기가 같은 되묻기를 되풀이하지 않도록
+        # 되묻기에서 사용자가 구를 선택 상자에서 골랐다. 해석기가 같은 되묻기를 되풀이하지 않도록
         # 확정 표시를 전용 필드로 보낸다(조건에 섞으면 생성기 입력과 W5 검증에 샌다).
         request["district"] = conditions.pop("district")
         request["district_confirmed"] = True
@@ -57,15 +58,41 @@ PARENT_TITLES = {
 
 def _followup_placeholder(field: str) -> str:
     if field == "district":
-        return "답변의 기준이 될 지역(구)를 기재해 주세요."
+        return "답변의 기준이 될 지역(구)를 선택해 주세요."
     return f"{REQUIRED_FIELD_LABELS.get(field, field)}을(를) 기재해 주세요."
+
+
+def _followup_input(container, field: str) -> str:
+    label = REQUIRED_FIELD_LABELS.get(field, field)
+    key = f"followup:{field}"
+    if field == "district":
+        # 자유 입력이면 "강남구요"나 "서대문구는 안 돼요"가 구로 들어가므로 지원하는 구만 고르게 한다.
+        return (
+            container.selectbox(
+                label,
+                sorted(SUPPORTED_DISTRICTS),
+                index=None,
+                key=key,
+                placeholder=_followup_placeholder(field),
+                label_visibility="collapsed",
+            )
+            or ""
+        )
+    return container.text_input(
+        label,
+        key=key,
+        placeholder=_followup_placeholder(field),
+        label_visibility="collapsed",
+    )
 
 
 def _citation_card(citation: Citation, number: int) -> None:
     """말풍선 안의 인용 한 건. 번호 말머리가 붙은 칩 하나에 제목(링크)만 보인다."""
     label = escape(" ".join((citation.title or citation.chunk_id).split()))
     # 별표는 어느 조례의 것인지 앞에 붙인다(송파구 별표는 제목이 "별표"뿐이다).
-    parent = PARENT_TITLES.get((citation.document_id or "").partition(":attachment:")[0])
+    parent = PARENT_TITLES.get(
+        (citation.document_id or "").partition(":attachment:")[0]
+    )
     if parent and ":attachment:" in (citation.document_id or ""):
         label = f"{escape(parent)} › {label}"
     title = (
@@ -162,12 +189,7 @@ def _render_clarification(
                 else (st.container(), st.container())
             )
             extra_conditions = {
-                field: input_col.text_input(
-                    REQUIRED_FIELD_LABELS.get(field, field),
-                    key=f"followup:{field}",
-                    placeholder=_followup_placeholder(field),
-                    label_visibility="collapsed",
-                )
+                field: _followup_input(input_col, field)
                 for field in view.required_fields
             }
             submitted = button_col.form_submit_button("다시 질문하기")

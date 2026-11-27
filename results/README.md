@@ -152,7 +152,7 @@ uv run --locked --env-file .env python -m scripts.score_relevancy results/<실�
 uv run --locked python -m src.evaluation.comparison results/<실행 폴더>
 ```
 
-`score_relevancy`는 판정 모델과 임베딩을 호출하므로 비용이 든다. 실행 폴더에 `relevancy.csv`를 쓰고, 정보 부족 안내는 0.0으로 나오므로 `status` 열로 구분해 평균을 낸다. 한 행이 실패하면 `score`를 비우고 `error`에 오류 종류만 남긴다. `comparison`은 모델 호출 없이 구성별 평균과 표본 수를 출력하고, 허용 근거가 없는 문항은 평균과 표본 수에서 뺀다. 최종 20문항 결과와 해석은 [비교 보고서 7.6절](../report.md)에 있다.
+`score_relevancy`는 판정 모델과 임베딩을 호출하므로 비용이 든다. 2026-11-27 이전에 만든 `relevancy.csv`는 `run_id`와 `variant`를 `runs.csv`의 (case_id, configuration, rewrite_enabled)로 정확히 대응시켜 나중에 채워 넣었고(조합이 실행마다 하나뿐임을 확인), 채점 시각은 기록이 남아 있지 않아 `timestamp` 열이 없다. 시각을 지어내지 않으므로 이 파일들은 `upload_extra_scores`에 그대로 쓸 수 없고, 업로드하려면 새로 채점해야 한다. 실행 폴더에 `relevancy.csv`를 쓰며(`run_id`, 기록된 검색 방식 `variant`, 점수를 얻은 UTC 시각 `timestamp` 열 포함. 점수가 0~1 밖이면 성공으로 내지 않고 `error=score_out_of_range`로 남긴다. 출력 파일은 호출 전에 먼저 만들어 실패해도 빈 파일을 남기지 않는다, 이미 있으면 호출 전에 중단하므로 보관된 결과 폴더에는 `--output`으로 새 경로를 지정한다), 되묻기와 정보 부족 안내도 채점하며 정보 부족 안내는 0.0으로 나오므로 `status` 열로 구분해 평균을 낸다. 한 행이 실패하면 `score`를 비우고 `error`에 오류 종류만 남긴다. `comparison`은 모델 호출 없이 구성별 평균과 표본 수를 출력하고, 허용 근거가 없는 문항은 평균과 표본 수에서 뺀다. 최종 20문항 결과와 해석은 [비교 보고서 7.6절](../report.md)에 있다.
 
 ### 진술별 Faithfulness 판정 확인
 

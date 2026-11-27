@@ -122,7 +122,7 @@ def test_followup_in_team_mode_is_actually_sent_with_the_confirmed_district(
     pipeline = _AskThenAnswer()
     app = _ask_clarification(monkeypatch, pipeline)
 
-    app.text_input[1].set_value("송파구")
+    app.selectbox[1].select("송파구")
     button(app, "다시 질문하기").click().run()
 
     assert not app.exception
@@ -142,7 +142,7 @@ def test_followup_failure_shows_the_modes_message_and_keeps_the_form(
     pipeline = _AskThenAnswer(fail_on_followup=True)
     app = _ask_clarification(monkeypatch, pipeline)
 
-    app.text_input[1].set_value("송파구")
+    app.selectbox[1].select("송파구")
     button(app, "다시 질문하기").click().run()
 
     assert not app.exception

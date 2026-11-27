@@ -1,4 +1,4 @@
-case_id,configuration,rewrite_enabled,status,score,error
-test-d10-sp-reusable-bag-corrected,A,false,answered,0.6124,
-test-d10-sp-reusable-bag-corrected,B,false,answered,0.7263,
-test-d10-sp-reusable-bag-corrected,C,false,answered,0.7601,
+run_id,case_id,configuration,variant,rewrite_enabled,status,score,error
+a30997b4f6f649199cd2618f0337e9a7,test-d10-sp-reusable-bag-corrected,A,A,false,answered,0.6124,
+d27ccb5a2bca4f79be61959b37594efc,test-d10-sp-reusable-bag-corrected,B,B,false,answered,0.7263,
+062ad6d923f147dbbfacd875771dd7df,test-d10-sp-reusable-bag-corrected,C,C,false,answered,0.7601,

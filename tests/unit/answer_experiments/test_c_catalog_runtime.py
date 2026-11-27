@@ -128,7 +128,7 @@ def test_c_records_the_rerank_and_rewrite_versions(tmp_path, offline):
     assert "llm-rerank-v1" in versions["candidate_policy"]
     assert versions["reranker_model"] == "rank-model"
     assert len(versions["reranker_prompt"]) == 64
-    assert versions["rewrite"] == "catalog-rules-v1"
+    assert versions["rewrite"] == "catalog-rules-v2"
     assert versions["model"] == "answer-model"
 
 
@@ -183,3 +183,15 @@ def test_the_catalog_runtime_rejects_variant_b():
         runtimes.create_a_catalog_runtime(settings)
 
     assert error.value.code == "evaluation.unsupported_configuration"
+
+
+def test_c_selection_query_and_policy_version_are_saved(tmp_path, offline):
+    settings = make_settings(tmp_path, variant="C")
+    pipeline = runtimes.create_a_catalog_runtime(settings)
+    question = "우유팩이랑 유리병 중 우유팩만 버려요."
+    record = pipeline.run(PipelineRequest(question=question, district="서대문구"))
+    assert offline.queries == [question + " (종이팩)"]
+    saved = json.loads((settings.runs_path / f"{record.run_id}.json").read_text())
+    assert saved["search_query"] == question + " (종이팩)"
+    assert saved["options"]["versions"]["rewrite"] == "catalog-rules-v2"
+    assert len(saved["options"]["versions"]["rewrite_catalog"]) == 64

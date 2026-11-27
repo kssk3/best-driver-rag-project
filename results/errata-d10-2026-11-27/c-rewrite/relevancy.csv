@@ -1,2 +1,2 @@
-case_id,configuration,rewrite_enabled,status,score,error
-test-d10-sp-reusable-bag-corrected,configured,true,answered,0.6027,
+run_id,case_id,configuration,variant,rewrite_enabled,status,score,error
+f771fc51fa5d4a72a4b673d7fd829eff,test-d10-sp-reusable-bag-corrected,configured,C,true,answered,0.6027,

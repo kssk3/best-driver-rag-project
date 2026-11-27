@@ -12,7 +12,7 @@ from src.query.errors import (
     RewriteOutputTypeError,
 )
 
-QUERY_REWRITE_PROMPT_VERSION = "query-rewrite-v2"
+QUERY_REWRITE_PROMPT_VERSION = "query-rewrite-v3"
 _QUERY_REWRITE_PROMPT = Path(__file__).resolve().parents[2] / "prompts/query/rewrite.md"
 
 
@@ -28,6 +28,11 @@ def normalize_question(question: str) -> str:
     return result
 
 
+def expected_prompt_query(question: str) -> str:
+    """모델이 출력할 한 줄 본문과 등록 별칭을 계산한다."""
+    return normalize_question(" ".join(question.split()))
+
+
 def rewrite_search_query(query: ResolvedQuery) -> str:
     """지역 보완 결과에서 검색 문장만 정제."""
     return normalize_question(query.search_query)
@@ -41,7 +46,7 @@ def make_prompt_rewriter(
 
     def rewrite(query: ResolvedQuery) -> str:
         question = " ".join(query.search_query.split())
-        expected_query = normalize_question(question)
+        expected_query = expected_prompt_query(query.search_query)
         payload = json.dumps(
             {
                 "question": query.search_query,
