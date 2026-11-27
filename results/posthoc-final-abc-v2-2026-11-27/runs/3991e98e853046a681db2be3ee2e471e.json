@@ -1,0 +1,240 @@
+{
+  "langfuse_project": "project:cmwx4ub9u0006ps1syc3peguq",
+  "run_id": "3991e98e853046a681db2be3ee2e471e",
+  "request_id": "606eecbff8ca4f6aa6fcd93043012bed",
+  "run_kind": "rag",
+  "started_at": "2026-11-26T18:50:13.505865Z",
+  "request": {
+    "request_id": "606eecbff8ca4f6aa6fcd93043012bed",
+    "question": "송파구에서 100리터 종량제 봉투는 어떤 용도로 쓰나요?",
+    "district": "송파구",
+    "dong": null,
+    "conditions": {},
+    "district_confirmed": false
+  },
+  "options": {
+    "variant": "A",
+    "rewrite_enabled": false,
+    "top_k": 5,
+    "max_context_chars": 12000,
+    "run_kind": "rag",
+    "versions": {
+      "model": "gpt-6-luna",
+      "index": "index-1c25b630ae0878a2c496716730e6c0622ba6995203d7ac0293759bdcb1bf5bef-embed-input-table-text-v2-7a9cfb43ffc4fa0f",
+      "chunking": "preprocessed-v2-row-v1",
+      "embedding": "text-embedding-3-small",
+      "prompt": "b0ec828702879ac2fbcdaabfbb0df5841beb2c8d6ff103472f0f5a03ff636305",
+      "candidate_policy": "vector-v1"
+    }
+  },
+  "resolved_query": {
+    "search_query": "송파구에서 100리터 종량제 봉투는 어떤 용도로 쓰나요?",
+    "district": "송파구",
+    "dong": null,
+    "status": "resolved",
+    "clarification_question": null,
+    "region_status": "no_dong",
+    "candidate_districts": []
+  },
+  "search_query": "송파구에서 100리터 종량제 봉투는 어떤 용도로 쓰나요?",
+  "candidates": [
+    {
+      "chunk": {
+        "chunk_id": "chunk-04aafa2d6951f071cc221c34542f7712c753ee242a46f68e5eb7cbf12562b546",
+        "source_document_id": "songpa-rules:attachment:121237861",
+        "source_document_version": "v1",
+        "title": "별표",
+        "content_format": "json",
+        "content": "{\"header_rows\":[{\"cells\":[{\"cell_id\":\"table-1-r0-c0\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":0,\"rowspan\":1,\"text\":\"용  량 (ℓ)\"},{\"cell_id\":\"table-1-r0-c1\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":1,\"origin_row\":0,\"rowspan\":1,\"text\":\"용               도\"}],\"row\":0}],\"paragraphs\":[\"[별표 2] <개정 98․6․12, 09․10․20, 2017.4.6. 2020.03.19.>\\n\",\"규격봉투 용량별 용도(제4조제2호 관련)\\n\",\"\\n\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\"],\"row\":{\"cells\":[{\"cell_id\":\"table-1-r5-c0\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":5,\"rowspan\":1,\"text\":\"50\"},{\"cell_id\":\"table-1-r5-c1\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":1,\"origin_row\":5,\"rowspan\":1,\"text\":\"생활폐기물용, 일반사업장용, 가락시장용, 공공용, 특수규격봉투\"}],\"row\":5},\"section_title\":\"[별표 2] <개정 98․6․12, 09․10․20, 2017.4.6. 2020.03.19.>\",\"table_id\":\"table-1\"}",
+        "source_url": "http://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=121237861&flNm=%EB%B3%84%ED%91%9C",
+        "source_location": "table-1/row[5]",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 1,
+      "score": 0.49075041686949256,
+      "stage_scores": {
+        "vector": 0.49075041686949256
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-1d1aaba67f049a5294f8bdf1f79ce247aa8b182823094146fa3fa0dd6f2181e0",
+        "source_document_id": "songpa-rules:attachment:121237861",
+        "source_document_version": "v1",
+        "title": "별표",
+        "content_format": "json",
+        "content": "{\"header_rows\":[{\"cells\":[{\"cell_id\":\"table-1-r0-c0\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":0,\"rowspan\":1,\"text\":\"용  량 (ℓ)\"},{\"cell_id\":\"table-1-r0-c1\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":1,\"origin_row\":0,\"rowspan\":1,\"text\":\"용               도\"}],\"row\":0}],\"paragraphs\":[\"[별표 2] <개정 98․6․12, 09․10․20, 2017.4.6. 2020.03.19.>\\n\",\"규격봉투 용량별 용도(제4조제2호 관련)\\n\",\"\\n\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\"],\"row\":{\"cells\":[{\"cell_id\":\"table-1-r4-c0\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":4,\"rowspan\":1,\"text\":\"20\"},{\"cell_id\":\"table-1-r4-c1\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":1,\"origin_row\":4,\"rowspan\":1,\"text\":\"생활폐기물용, 일반사업장용, 가락시장용, 공공용, 특수규격봉투\"}],\"row\":4},\"section_title\":\"[별표 2] <개정 98․6․12, 09․10․20, 2017.4.6. 2020.03.19.>\",\"table_id\":\"table-1\"}",
+        "source_url": "http://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=121237861&flNm=%EB%B3%84%ED%91%9C",
+        "source_location": "table-1/row[4]",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 2,
+      "score": 0.48207293190996586,
+      "stage_scores": {
+        "vector": 0.48207293190996586
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-8673b38d0e1e717159c28d0855d2d84334295d207ee26f5cf8ba3b33dbe54fde",
+        "source_document_id": "songpa-rules:attachment:121237861",
+        "source_document_version": "v1",
+        "title": "별표",
+        "content_format": "json",
+        "content": "{\"header_rows\":[{\"cells\":[{\"cell_id\":\"table-1-r0-c0\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":0,\"rowspan\":1,\"text\":\"용  량 (ℓ)\"},{\"cell_id\":\"table-1-r0-c1\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":1,\"origin_row\":0,\"rowspan\":1,\"text\":\"용               도\"}],\"row\":0}],\"paragraphs\":[\"[별표 2] <개정 98․6․12, 09․10․20, 2017.4.6. 2020.03.19.>\\n\",\"규격봉투 용량별 용도(제4조제2호 관련)\\n\",\"\\n\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\"],\"row\":{\"cells\":[{\"cell_id\":\"table-1-r7-c0\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":7,\"rowspan\":1,\"text\":\"100\"},{\"cell_id\":\"table-1-r7-c1\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":1,\"origin_row\":7,\"rowspan\":1,\"text\":\"생활폐기물용, 공공용\"}],\"row\":7},\"section_title\":\"[별표 2] <개정 98․6․12, 09․10․20, 2017.4.6. 2020.03.19.>\",\"table_id\":\"table-1\"}",
+        "source_url": "http://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=121237861&flNm=%EB%B3%84%ED%91%9C",
+        "source_location": "table-1/row[7]",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 3,
+      "score": 0.44934773237734665,
+      "stage_scores": {
+        "vector": 0.44934773237734665
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-0e19a3af9978cc0a92ef5aa9c14357f6fbee0793df4078b5ab9eb3ce953176c9",
+        "source_document_id": "songpa-rules:attachment:121237861",
+        "source_document_version": "v1",
+        "title": "별표",
+        "content_format": "json",
+        "content": "{\"header_rows\":[{\"cells\":[{\"cell_id\":\"table-1-r0-c0\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":0,\"rowspan\":1,\"text\":\"용  량 (ℓ)\"},{\"cell_id\":\"table-1-r0-c1\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":1,\"origin_row\":0,\"rowspan\":1,\"text\":\"용               도\"}],\"row\":0}],\"paragraphs\":[\"[별표 2] <개정 98․6․12, 09․10․20, 2017.4.6. 2020.03.19.>\\n\",\"규격봉투 용량별 용도(제4조제2호 관련)\\n\",\"\\n\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\"],\"row\":{\"cells\":[{\"cell_id\":\"table-1-r6-c0\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":6,\"rowspan\":1,\"text\":\"75\"},{\"cell_id\":\"table-1-r6-c1\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":1,\"origin_row\":6,\"rowspan\":1,\"text\":\"생활폐기물용, 일반사업장용, 가락시장용, 공공용\"}],\"row\":6},\"section_title\":\"[별표 2] <개정 98․6․12, 09․10․20, 2017.4.6. 2020.03.19.>\",\"table_id\":\"table-1\"}",
+        "source_url": "http://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=121237861&flNm=%EB%B3%84%ED%91%9C",
+        "source_location": "table-1/row[6]",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 4,
+      "score": 0.4454731348333132,
+      "stage_scores": {
+        "vector": 0.4454731348333132
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-c76b56540af2282a6fa0b1106c7533127243241fcdc727111c6de6d5d71360d9",
+        "source_document_id": "songpa-rules:attachment:121237861",
+        "source_document_version": "v1",
+        "title": "별표",
+        "content_format": "json",
+        "content": "{\"header_rows\":[{\"cells\":[{\"cell_id\":\"table-1-r0-c0\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":0,\"rowspan\":1,\"text\":\"용  량 (ℓ)\"},{\"cell_id\":\"table-1-r0-c1\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":1,\"origin_row\":0,\"rowspan\":1,\"text\":\"용               도\"}],\"row\":0}],\"paragraphs\":[\"[별표 2] <개정 98․6․12, 09․10․20, 2017.4.6. 2020.03.19.>\\n\",\"규격봉투 용량별 용도(제4조제2호 관련)\\n\",\"\\n\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\"],\"row\":{\"cells\":[{\"cell_id\":\"table-1-r0-c0\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":0,\"rowspan\":1,\"text\":\"용  량 (ℓ)\"},{\"cell_id\":\"table-1-r0-c1\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":1,\"origin_row\":0,\"rowspan\":1,\"text\":\"용               도\"}],\"row\":0},\"section_title\":\"[별표 2] <개정 98․6․12, 09․10․20, 2017.4.6. 2020.03.19.>\",\"table_id\":\"table-1\"}",
+        "source_url": "http://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=121237861&flNm=%EB%B3%84%ED%91%9C",
+        "source_location": "table-1/row[0]",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 5,
+      "score": 0.43736492134251737,
+      "stage_scores": {
+        "vector": 0.43736492134251737
+      }
+    }
+  ],
+  "model_input_chunk_ids": [
+    "chunk-04aafa2d6951f071cc221c34542f7712c753ee242a46f68e5eb7cbf12562b546",
+    "chunk-1d1aaba67f049a5294f8bdf1f79ce247aa8b182823094146fa3fa0dd6f2181e0",
+    "chunk-8673b38d0e1e717159c28d0855d2d84334295d207ee26f5cf8ba3b33dbe54fde",
+    "chunk-0e19a3af9978cc0a92ef5aa9c14357f6fbee0793df4078b5ab9eb3ce953176c9",
+    "chunk-c76b56540af2282a6fa0b1106c7533127243241fcdc727111c6de6d5d71360d9"
+  ],
+  "response": {
+    "request_id": "606eecbff8ca4f6aa6fcd93043012bed",
+    "run_id": "3991e98e853046a681db2be3ee2e471e",
+    "status": "answered",
+    "answer": "송파구의 100리터 종량제 봉투는 생활폐기물용과 공공용으로 사용합니다.",
+    "citations": [
+      {
+        "chunk_id": "chunk-8673b38d0e1e717159c28d0855d2d84334295d207ee26f5cf8ba3b33dbe54fde",
+        "document_id": "songpa-rules:attachment:121237861",
+        "document_version": "v1",
+        "source_url": "http://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=121237861&flNm=%EB%B3%84%ED%91%9C",
+        "source_location": "table-1/row[7]",
+        "title": "별표"
+      }
+    ],
+    "places": {
+      "status": "unavailable",
+      "places": [],
+      "error": null
+    },
+    "error": null,
+    "error_code": null
+  },
+  "stages": [
+    {
+      "name": "resolve",
+      "status": "ok",
+      "duration_ms": 0.2103000006172806,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "rewrite",
+      "status": "skipped",
+      "duration_ms": 0.0,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "retrieve",
+      "status": "ok",
+      "duration_ms": 500.63230001251213,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "context",
+      "status": "ok",
+      "duration_ms": 0.058299992815591395,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "generate",
+      "status": "ok",
+      "duration_ms": 1874.9087000032887,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "citations",
+      "status": "ok",
+      "duration_ms": 0.011500000255182385,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "place_lookup",
+      "status": "skipped",
+      "duration_ms": 0.0,
+      "error": null,
+      "error_code": null
+    }
+  ],
+  "duration_ms": 2375.99849999242,
+  "warnings": []
+}

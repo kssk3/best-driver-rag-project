@@ -1,0 +1,243 @@
+{
+  "langfuse_project": "project:cmwx4ub9u0006ps1syc3peguq",
+  "run_id": "5270bdb9a54440b79879cf4b6efc4fd3",
+  "request_id": "1e5d6ee2accb4ac9877b14551bd1fc23",
+  "run_kind": "rag",
+  "started_at": "2026-11-26T18:51:24.571724Z",
+  "request": {
+    "request_id": "1e5d6ee2accb4ac9877b14551bd1fc23",
+    "question": "송파구에서 대형폐기물을 모바일 앱으로 신청할 수 있나요?",
+    "district": "송파구",
+    "dong": null,
+    "conditions": {},
+    "district_confirmed": false
+  },
+  "options": {
+    "variant": "C",
+    "rewrite_enabled": false,
+    "top_k": 5,
+    "max_context_chars": 12000,
+    "run_kind": "rag",
+    "versions": {
+      "model": "gpt-6-luna",
+      "index": "index-1c25b630ae0878a2c496716730e6c0622ba6995203d7ac0293759bdcb1bf5bef-embed-input-table-text-v2-7a9cfb43ffc4fa0f",
+      "chunking": "preprocessed-v2-row-v1",
+      "embedding": "text-embedding-3-small",
+      "prompt": "b0ec828702879ac2fbcdaabfbb0df5841beb2c8d6ff103472f0f5a03ff636305",
+      "candidate_policy": "vector+bm25/rrf-v1(k=60,depth=20)+llm-rerank-v1(passage_chars=1200)",
+      "reranker_model": "gpt-6-luna",
+      "reranker_prompt": "41e5bb7e69f9509b2d5a45d0dcbc25573973aeba2ee736895c2e5d25fd652413"
+    }
+  },
+  "resolved_query": {
+    "search_query": "송파구에서 대형폐기물을 모바일 앱으로 신청할 수 있나요?",
+    "district": "송파구",
+    "dong": null,
+    "status": "resolved",
+    "clarification_question": null,
+    "region_status": "no_dong",
+    "candidate_districts": []
+  },
+  "search_query": "송파구에서 대형폐기물을 모바일 앱으로 신청할 수 있나요?",
+  "candidates": [
+    {
+      "chunk": {
+        "chunk_id": "chunk-a482ca0127c4c30a5cad3d2bb61487b0db08300bb301abfb63468d07760f23d0",
+        "source_document_id": "songpa-ordinance",
+        "source_document_version": "v1",
+        "title": "서울특별시 송파구 폐기물 관리 조례",
+        "content_format": "json",
+        "content": "{\"text\":\"제10조(생활폐기물배출자의 처리 협조 등) \\n① 생활폐기물배출자가 폐기물을 스스로 처리할 수 없을 때에는 수집·운반이 용이하게 대형폐기물·건설폐기물·그 밖에 생활폐기물로 분류하여 다음 각 호의 기준에 따라 보관 또는 배출하여야 한다.<개정 2011.12.12, 2019.11.7.>\\n1. 대형폐기물: 배출일 전에 배출자의 주소·성명·물품명·크기·수량 등을 구청장에게 신고하여야 하며 구청장이 지정하는 장소에 내어 놓아야 한다. 다만, 폐기물처리업자가 대행수거하는 지역에서는 폐기물처리업자가 이를 대행한다. <개정 98·10·13, 개정 99·5·20>\\n2. 공사장 생활폐기물: 일련의 공사·작업 등으로 발생되는 5톤 미만의 폐기물을 배출하는 자는 종류별·성상별로 분류하여 관급규격봉투인 특수규격봉투에 담아 묶은 후 배출하거나, 폐기물처리업자, 「건설폐기물의 재활용촉진에 관한 법률」 제21조에 따라 건설폐기물수집·운반업의 허가를 받은 자(이하 “건설폐기물수집·운반업자”라 한다) 또는 폐기물(건설폐기물)처리시설의 설치·운영자에게 위탁하여 처리할 수 있다. <개정 2000·6·8, 2008·9·22,2009.11.9, 2011.6.7 >\\n3. 그 밖에 생활폐기물: 관급규격봉투나 용기에 담아 보관 또는 배출하여야 한다.\\n② 구청장은 수집·운반을 용이하게 하기 위하여 폐기물의 종류 및 성상별로 보관·배출방법·배출시간 등을 규칙으로 정하여 보관·배출하게 할수 있다.\\n\",\"unit_type\":\"article\"}",
+        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2053883",
+        "source_location": "조문/조[13] (조문번호 001000)",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 1,
+      "score": 5.0,
+      "stage_scores": {
+        "bm25": 40.58027509151308,
+        "rrf": 0.015384615384615385,
+        "rerank": 5.0
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-3a74a93a48f1e2f6548680e2f64753f7d09b5ba25ad34c0613cd74d52a009b66",
+        "source_document_id": "songpa-ordinance",
+        "source_document_version": "v1",
+        "title": "서울특별시 송파구 폐기물 관리 조례",
+        "content_format": "json",
+        "content": "{\"text\":\"제28조(대형폐기물 수수료의 납기 및 징수방법 등) 제25조제1항제2호에 따른 대형폐기물의 수수료는 배출신고후 수거하기 전에 이를 미리 시중은행및 우체국에  납부하여야 한다. 이 경우 전자지불제도를 활용하여 수수료를 납부할 수 있다. 다만, 수수료를 납부하지 않고 대형폐기물을 버리는 행위를 적발한 때에는 현장에서 징수 후 즉시 처리할 수 있으며, 이 경우 반드시 영수증을 교부하여야 한다.<단서 신설 2003·7·14> .<신설 2006.12.26><개정 98·10·13, 2000·4·4, 2011.12.12, 2015.4.2>\\n\",\"unit_type\":\"article\"}",
+        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2053883",
+        "source_location": "조문/조[38] (조문번호 002800)",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 2,
+      "score": 3.0,
+      "stage_scores": {
+        "bm25": 42.14068173105366,
+        "rrf": 0.015625,
+        "rerank": 3.0
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-8175e54abe5dc057a284310549f7e039e50dbfc7ad73e2e2a4f6528c67cb59be",
+        "source_document_id": "songpa-ordinance",
+        "source_document_version": "v1",
+        "title": "서울특별시 송파구 폐기물 관리 조례",
+        "content_format": "json",
+        "content": "{\"text\":\"제2조(정의) 이 조례에서 사용하는 용어의 정의는 다음과 같다. <개정 2011.12.12>\\n1. \\\"생활폐기물\\\"이란 사업장폐기물 외의 폐기물을 말한다. <개정 2009.11.9>\\n2. <삭제 97·12·1〉\\n3. \\\"사업장 일반폐기물\\\"이란 사업장폐기물 중 건설폐기물과 지정폐기물을 제외한 폐기물을 말한다.<개정 2009.11.9>\\n4. \\\"사업장 생활계폐기물”이란 사업장폐기물 중 「대기환경보전법, 「물환경보전법」 또는 「소음ㆍ진동관리법」에 따른 배출시설의 설치·운영과 관련하여 배출되는 폐기물과 건설폐기물 및 지정폐기물을 제외한 폐기물을 말한다.<개정 2003.7.14, 개정 2009.11.9, 개정 2014.4.2, 2018.6.29., 2025.07.10.>\\n5. “건설폐기물”이란 「건설산업기본법」 제2조제4호에 해당하는 건설공사(이하 “건설공사”라 한다)로 인하여 공사를 착공하는 때부터 완료하는 때까지 건설현장에서 발생되는 5톤 이상의 폐기물로서 「건설폐기물의 재활용촉진에 관한 법률 시행령」에서 정하는 것을 말한다.<개정 2003·7·14, 개정 2009.11.9, 2025.07.10.>\\n6. \\\"대형폐기물\\\"이란 생활폐기물 또는 사업장생활폐기물 중 개별계량과 품명식별이 가능한 가전제품류·가구류 및 생활용품과 그 밖에 쓰레기봉투에 담기 어려운 폐기물로 규칙으로 정한 폐기물을 말한다.<개정 2003·7·14,2006.12.26, 2009.11.9, 2018.6.29.>\\n7.“재활용가능자원”이란 사용되었거나 사용되지 아니하고 버려진 후 수거된 물건과 부산물 중 재사용·재생 이용할 수 있는 것(회수할 수 있는 에너지와 폐열을 포함하되, 방사성물질과 방사성물질로 오염된 물질은 제외한다)을 말한다. <개정 2003·7·14, 2009.11.9, 2019.11.7 >\\n8. \\\"민원성폐기물\\\"이란 일상생활에서 발생되는 생활폐기물로서 소량으로 위탁처리가 어렵고, 폐기물처리시설에서 반입이 규제되거나 재활용이 안되는 폐기물로서 종량제일반규격봉투에 담기 어려운 폐기물을 말한다. <신설 2003.7.14, 2009.11.9 > <개정 2015.4.2>\\n9. \\\"공사장 생활폐기물\\\"이란 생활폐기물 중 일련의 공사·작업 등으로 인하여 5톤 미만 발생되는 폐기물을 말한다. <신설 2003.7.14, 2009.11.9>\\n\",\"unit_type\":\"article\"}",
+        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2053883",
+        "source_location": "조문/조[3] (조문번호 000200)",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 3,
+      "score": 1.0,
+      "stage_scores": {
+        "bm25": 39.75885622313325,
+        "rrf": 0.014925373134328358,
+        "rerank": 1.0
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-6f7913d4a4ef4c3fe723fc2745ea2e98e0cc6f09f9999edc5b50bddec22489be",
+        "source_document_id": "songpa-ordinance",
+        "source_document_version": "v1",
+        "title": "서울특별시 송파구 폐기물 관리 조례",
+        "content_format": "json",
+        "content": "{\"text\":\"제24조(규격봉투의 현금교환) \\n① 종량제폐기물 배출자가 다른 지역으로 전출하는 사유 등으로 규격봉투의 현금교환을 요청할 때에는 이를 판매가격으로 교환하여야 한다. 이 경우 현금교환은 동일한 규격봉투를 판매하는 봉투판매소에서 한다.[전문개정 98·10·13] <개정 2001·3·16, 2003·7·14>\\n② 제1항에 의거 다른 지역의 봉투판매인이 규격봉투를 교환하였을 경우에 폐기물처리업자는 상호정산을 하여야 한다. 다만, 교환된 규격봉투가 판매하기 어렵다고 판단될 경우에는 구에 재 공급을 요청할 수 있다. <신설 2003·7·14>\\n\",\"unit_type\":\"article\"}",
+        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2053883",
+        "source_location": "조문/조[33] (조문번호 002400)",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 4,
+      "score": 0.0,
+      "stage_scores": {
+        "bm25": 48.10918958569856,
+        "rrf": 0.01639344262295082,
+        "rerank": 0.0
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-e5b64aa63d61ad2be2bd2e91a933aa4f16f78cfd87c564cbbc44991e9a3eaa0d",
+        "source_document_id": "songpa-rules:attachment:121237861",
+        "source_document_version": "v1",
+        "title": "별표",
+        "content_format": "json",
+        "content": "{\"header_rows\":[{\"cells\":[{\"cell_id\":\"table-7-r0-c0\",\"colspan\":2,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":0,\"rowspan\":1,\"text\":\"품   목   별\"},{\"cell_id\":\"table-7-r0-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":0,\"rowspan\":1,\"text\":\"규    격\"},{\"cell_id\":\"table-7-r0-c3\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":3,\"origin_row\":0,\"rowspan\":1,\"text\":\"부과금액\"},{\"cell_id\":\"table-7-r0-c4\",\"colspan\":2,\"inherited_from_previous_row\":false,\"origin_col\":4,\"origin_row\":0,\"rowspan\":1,\"text\":\"품   목   별\"},{\"cell_id\":\"table-7-r0-c6\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":6,\"origin_row\":0,\"rowspan\":1,\"text\":\"규    격\"},{\"cell_id\":\"table-7-r0-c7\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":7,\"origin_row\":0,\"rowspan\":1,\"text\":\"부과금액\"}],\"row\":0}],\"paragraphs\":[\"〔별표 6〕<개정 2017.4.6, 2020.03.19.>\\n\",\"대형생활폐기물 수집·운반수수료 품목별 부과기준(제7조 관련)\\n\",\"\\n\",\"\\n\",\"\\n\",\"\\n\",\"\",\"1. 위 품목에 명시되지 않은 품목은 종류 및 규격을 감안하여 유사품목의 수수료를 적용\\n\",\"2. 항아리, 변기, 욕조 등 특수규격봉투(민원성 마대) 처리 선택 가능 \\n\",\"3. 다량배출사업장 폐기물은 수거대상에서 제외\\n\"],\"row\":{\"cells\":[{\"cell_id\":\"table-7-r1-c0\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":0,\"origin_row\":1,\"rowspan\":27,\"text\":\"생\\n활\\n용\\n품\\n류\"},{\"cell_id\":\"table-7-r9-c1\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":1,\"origin_row\":9,\"rowspan\":2,\"text\":\"피  아  노\"},{\"cell_id\":\"table-7-r10-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":10,\"rowspan\":1,\"text\":\"디지털\"},{\"cell_id\":\"table-7-r10-c3\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":3,\"origin_row\":10,\"rowspan\":1,\"text\":\"5,000\"},{\"cell_id\":\"table-7-r1-c4\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":4,\"origin_row\":1,\"rowspan\":27,\"text\":\"기\\n타\\n류\"},{\"cell_id\":\"table-7-r10-c5\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":5,\"origin_row\":10,\"rowspan\":2,\"text\":\"보  일  러\"},{\"cell_id\":\"table-7-r10-c6\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":6,\"origin_row\":10,\"rowspan\":1,\"text\":\"16kcal/h 이상\"},{\"cell_id\":\"table-7-r10-c7\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":7,\"origin_row\":10,\"rowspan\":1,\"text\":\"12,000\"}],\"row\":10},\"section_title\":\"〔별표 6〕<개정 2017.4.6, 2020.03.19.>\",\"table_id\":\"table-7\"}",
+        "source_url": "http://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=121237861&flNm=%EB%B3%84%ED%91%9C",
+        "source_location": "table-7/row[10]",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 5,
+      "score": 0.0,
+      "stage_scores": {
+        "vector": 0.4231014192808175,
+        "rrf": 0.01639344262295082,
+        "rerank": 0.0
+      }
+    }
+  ],
+  "model_input_chunk_ids": [
+    "chunk-a482ca0127c4c30a5cad3d2bb61487b0db08300bb301abfb63468d07760f23d0",
+    "chunk-3a74a93a48f1e2f6548680e2f64753f7d09b5ba25ad34c0613cd74d52a009b66",
+    "chunk-8175e54abe5dc057a284310549f7e039e50dbfc7ad73e2e2a4f6528c67cb59be",
+    "chunk-6f7913d4a4ef4c3fe723fc2745ea2e98e0cc6f09f9999edc5b50bddec22489be",
+    "chunk-e5b64aa63d61ad2be2bd2e91a933aa4f16f78cfd87c564cbbc44991e9a3eaa0d"
+  ],
+  "response": {
+    "request_id": "1e5d6ee2accb4ac9877b14551bd1fc23",
+    "run_id": "5270bdb9a54440b79879cf4b6efc4fd3",
+    "status": "insufficient_evidence",
+    "answer": "현재 확인한 자료로는 답변하기 어렵습니다.",
+    "citations": [],
+    "places": {
+      "status": "unavailable",
+      "places": [],
+      "error": null
+    },
+    "error": null,
+    "error_code": null
+  },
+  "stages": [
+    {
+      "name": "resolve",
+      "status": "ok",
+      "duration_ms": 0.22539999918080866,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "rewrite",
+      "status": "skipped",
+      "duration_ms": 0.0,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "retrieve",
+      "status": "ok",
+      "duration_ms": 3056.7052999977022,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "context",
+      "status": "ok",
+      "duration_ms": 0.08799998613540083,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "generate",
+      "status": "ok",
+      "duration_ms": 1257.389799997327,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "citations",
+      "status": "ok",
+      "duration_ms": 0.0045000051613897085,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "place_lookup",
+      "status": "skipped",
+      "duration_ms": 0.0,
+      "error": null,
+      "error_code": null
+    }
+  ],
+  "duration_ms": 4314.582299994072,
+  "warnings": []
+}

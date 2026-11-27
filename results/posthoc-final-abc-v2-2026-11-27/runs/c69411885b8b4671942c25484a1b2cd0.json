@@ -1,0 +1,240 @@
+{
+  "langfuse_project": "project:cmwx4ub9u0006ps1syc3peguq",
+  "run_id": "c69411885b8b4671942c25484a1b2cd0",
+  "request_id": "67c4dc4dd27142a2a2bb6f5c5f332491",
+  "run_kind": "rag",
+  "started_at": "2026-11-26T18:50:39.622891Z",
+  "request": {
+    "request_id": "67c4dc4dd27142a2a2bb6f5c5f332491",
+    "question": "서대문구에서 이사 가게 돼서 쓰레기봉투를 현금으로 바꾸려면 어디로 가야 하나요?",
+    "district": "서대문구",
+    "dong": null,
+    "conditions": {},
+    "district_confirmed": false
+  },
+  "options": {
+    "variant": "A",
+    "rewrite_enabled": false,
+    "top_k": 5,
+    "max_context_chars": 12000,
+    "run_kind": "rag",
+    "versions": {
+      "model": "gpt-6-luna",
+      "index": "index-1c25b630ae0878a2c496716730e6c0622ba6995203d7ac0293759bdcb1bf5bef-embed-input-table-text-v2-7a9cfb43ffc4fa0f",
+      "chunking": "preprocessed-v2-row-v1",
+      "embedding": "text-embedding-3-small",
+      "prompt": "b0ec828702879ac2fbcdaabfbb0df5841beb2c8d6ff103472f0f5a03ff636305",
+      "candidate_policy": "vector-v1"
+    }
+  },
+  "resolved_query": {
+    "search_query": "서대문구에서 이사 가게 돼서 쓰레기봉투를 현금으로 바꾸려면 어디로 가야 하나요?",
+    "district": "서대문구",
+    "dong": null,
+    "status": "resolved",
+    "clarification_question": null,
+    "region_status": "no_dong",
+    "candidate_districts": []
+  },
+  "search_query": "서대문구에서 이사 가게 돼서 쓰레기봉투를 현금으로 바꾸려면 어디로 가야 하나요?",
+  "candidates": [
+    {
+      "chunk": {
+        "chunk_id": "chunk-4d6d4d15a72220ff1f823041ab7be5d201bb051e2f020b568a736716d50814bb",
+        "source_document_id": "seodaemun-ordinance",
+        "source_document_version": "v1",
+        "title": "서울특별시 서대문구 폐기물 관리 조례",
+        "content_format": "json",
+        "content": "{\"text\":\"제34조(규격봉투의 현금교환) 종량제 폐기물 배출자가 다른 지역으로 전출하는 사유 등으로 규격봉투의 현금교환을 요청할 때에는 이를 판매가격으로 교환하여야 한다. 이 경우 현금교환은 동일한 규격봉투를 판매하는 봉투판매소에서 한다.\\n\",\"unit_type\":\"article\"}",
+        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2101297",
+        "source_location": "조문/조[41] (조문번호 003400)",
+        "scope_type": "district",
+        "districts": [
+          "서대문구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 1,
+      "score": 0.38937269929987095,
+      "stage_scores": {
+        "vector": 0.38937269929987095
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-4e0b870e483ab5a4b69b52019e5fa7418ea0fb3bf2a14404de883d902509727b",
+        "source_document_id": "seodaemun-rules",
+        "source_document_version": "v1",
+        "title": "서울특별시 서대문구 폐기물 관리 조례 시행규칙",
+        "content_format": "json",
+        "content": "{\"text\":\"제9조(무단투기행위신고자 포상금 지급 등) \\n① 조례 제7조에 따른 폐기물 무단투기행위(이하 “투기행위”라 한다) 신고방법은 전화, 방문 또는 서면 등으로 하되, 신고내용은 아래 각 호의 내용이 포함되어야 한다. 이 경우 포상금을 지급받고자 하는 사람은 위반행위를 발견한 날부터 14일 이내에 구청장 또는 관할 동장에게 신고하여야 한다.\\n1. 투기행위자의 성명 및 주소 또는 거주지\\n2. 투기행위 일시 및 장소\\n3. 투기행위 내용\\n4. 그 밖의 참고자료\\n② 구청장 또는 관할 동장에게 투기행위가 신고·접수되면 담당공무원은 현장에 출장하여 신고 사실을 조사한 후 사진촬영 등을 통하여 증거를 유지하며, 투기행위자의 자인서 등을 받아야 한다.\\n③ 신고를 받은 부서에서는 별지 제4호서식의 폐기물 무단투기 신고(접수)처리대장을 기록·관리하여야 한다.\\n④ 신고포상금의 지급대상은 법 시행령 제38조의4의 과태료 부과항목과 같으며, 지급금액은 과태료 부과액의 20%로 한다.  <개정 2021. 12. 29.>\\n⑤ 포상금 지급 시기는 투기행위자에 대하여 과태료를 부과한 날부터 1개월 내에 투기행위 신고자에게 지급하도록 한다.\\n⑥ 신고포상금의 지급방법은 투기행위 신고자의 은행계좌에 입금하는 것을 원칙으로 하되, 현물(종량제봉투 등)로도 지급할 수 있다.\\n\",\"unit_type\":\"article\"}",
+        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2101385",
+        "source_location": "조문/조[9] (조문번호 000900)",
+        "scope_type": "district",
+        "districts": [
+          "서대문구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 2,
+      "score": 0.3853795107748518,
+      "stage_scores": {
+        "vector": 0.3853795107748518
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-58ed9c612b5780cfad0a84d03070891b559f842929b31fcf163e0943c1bdeae4",
+        "source_document_id": "seodaemun-ordinance",
+        "source_document_version": "v1",
+        "title": "서울특별시 서대문구 폐기물 관리 조례",
+        "content_format": "json",
+        "content": "{\"text\":\"제40조(가산금 등) \\n① 제33조에 따른 규격봉투대금을 납부기한 내에  완납하지 아니할 때에는 서대문구 일반회계의 금고 업무를 취급하기 위하여 금고로 지정된 금융기관의 일반 연체이자율을 준용한다. <개정 2011. 8. 10.>\\n② 제38조에 따른 폐기물의 반입수수료를 납부기한 내에 완납하지 아니한 때에는 체납액의 100분의 5에 해당하는 금액의 가산금을 징수한다. <개정 2011. 8. 10.>\\n\",\"unit_type\":\"article\"}",
+        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2101297",
+        "source_location": "조문/조[48] (조문번호 004000)",
+        "scope_type": "district",
+        "districts": [
+          "서대문구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 3,
+      "score": 0.3826472674861128,
+      "stage_scores": {
+        "vector": 0.3826472674861128
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-945e8875adc0d6263d6fa543dd21b55d3233fdf9d24b5455119f09aa8e13e137",
+        "source_document_id": "seodaemun-ordinance:attachment:160319459",
+        "source_document_version": "v1",
+        "title": "[별표 5] 봉투판매소(대행업체) 계약조건(제29조 관련)",
+        "content_format": "json",
+        "content": "{\"header_rows\":[{\"cells\":[{\"cell_id\":\"table-1-r0-c0\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":0,\"rowspan\":1,\"text\":\"구    분\"},{\"cell_id\":\"table-1-r0-c1\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":1,\"origin_row\":0,\"rowspan\":1,\"text\":\"구  비  서  류\"}],\"row\":0}],\"paragraphs\":[\"〔별표 5〕 <개정 2011. 8. 10.>\\n\",\"\",\"봉투판매소(대행업체) 계약조건(제29조 관련)\\n\",\"\",\"1. 봉투판매소 계약조건\\n\",\"\\n\",\"\",\"2. 대행업체 계약조건\\n\",\"\\n\"],\"row\":{\"cells\":[{\"cell_id\":\"table-1-r1-c0\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":1,\"rowspan\":1,\"text\":\"보증인 설정의 경우\"},{\"cell_id\":\"table-1-r1-c1\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":1,\"origin_row\":1,\"rowspan\":1,\"text\":\"서울시 내 거주 30,000원 이상 재산세납부자 1명 이상이\\n 연대보증한 재정보증서 1부.\"}],\"row\":1},\"section_title\":\"〔별표 5〕 <개정 2011. 8. 10.>\",\"table_id\":\"table-1\"}",
+        "source_url": "http://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=160319459&flNm=%5B%EB%B3%84%ED%91%9C+5%5D+%EB%B4%89%ED%88%AC%ED%8C%90%EB%A7%A4%EC%86%8C%28%EB%8C%80%ED%96%89%EC%97%85%EC%B2%B4%29+%EA%B3%84%EC%95%BD%EC%A1%B0%EA%B1%B4%28%EC%A0%9C29%EC%A1%B0+%EA%B4%80%EB%A0%A8%29",
+        "source_location": "table-1/row[1]",
+        "scope_type": "district",
+        "districts": [
+          "서대문구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 4,
+      "score": 0.3822366924214085,
+      "stage_scores": {
+        "vector": 0.3822366924214085
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-a3b853fdbd1d4b942995e1d329a7fade091b1edd987010c7e4ed28711e4964d9",
+        "source_document_id": "seodaemun-ordinance:attachment:160319459",
+        "source_document_version": "v1",
+        "title": "[별표 5] 봉투판매소(대행업체) 계약조건(제29조 관련)",
+        "content_format": "json",
+        "content": "{\"header_rows\":[{\"cells\":[{\"cell_id\":\"table-2-r0-c0\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":0,\"rowspan\":1,\"text\":\"구    분\"},{\"cell_id\":\"table-2-r0-c1\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":1,\"origin_row\":0,\"rowspan\":1,\"text\":\"구  비  서  류\"}],\"row\":0}],\"paragraphs\":[\"〔별표 5〕 <개정 2011. 8. 10.>\\n\",\"\",\"봉투판매소(대행업체) 계약조건(제29조 관련)\\n\",\"\",\"1. 봉투판매소 계약조건\\n\",\"\\n\",\"\",\"2. 대행업체 계약조건\\n\",\"\\n\"],\"row\":{\"cells\":[{\"cell_id\":\"table-2-r1-c0\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":1,\"rowspan\":1,\"text\":\"보증인 설정의 경우\"},{\"cell_id\":\"table-2-r1-c1\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":1,\"origin_row\":1,\"rowspan\":1,\"text\":\"서울시 내 거주 100,000원 이상 재산세납부자 2명 이상이\\n 연대보증한 재정보증서 1부.\"}],\"row\":1},\"section_title\":\"〔별표 5〕 <개정 2011. 8. 10.>\",\"table_id\":\"table-2\"}",
+        "source_url": "http://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=160319459&flNm=%5B%EB%B3%84%ED%91%9C+5%5D+%EB%B4%89%ED%88%AC%ED%8C%90%EB%A7%A4%EC%86%8C%28%EB%8C%80%ED%96%89%EC%97%85%EC%B2%B4%29+%EA%B3%84%EC%95%BD%EC%A1%B0%EA%B1%B4%28%EC%A0%9C29%EC%A1%B0+%EA%B4%80%EB%A0%A8%29",
+        "source_location": "table-2/row[1]",
+        "scope_type": "district",
+        "districts": [
+          "서대문구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 5,
+      "score": 0.3803153397919878,
+      "stage_scores": {
+        "vector": 0.3803153397919878
+      }
+    }
+  ],
+  "model_input_chunk_ids": [
+    "chunk-4d6d4d15a72220ff1f823041ab7be5d201bb051e2f020b568a736716d50814bb",
+    "chunk-4e0b870e483ab5a4b69b52019e5fa7418ea0fb3bf2a14404de883d902509727b",
+    "chunk-58ed9c612b5780cfad0a84d03070891b559f842929b31fcf163e0943c1bdeae4",
+    "chunk-945e8875adc0d6263d6fa543dd21b55d3233fdf9d24b5455119f09aa8e13e137",
+    "chunk-a3b853fdbd1d4b942995e1d329a7fade091b1edd987010c7e4ed28711e4964d9"
+  ],
+  "response": {
+    "request_id": "67c4dc4dd27142a2a2bb6f5c5f332491",
+    "run_id": "c69411885b8b4671942c25484a1b2cd0",
+    "status": "answered",
+    "answer": "이사로 다른 지역에 전출하는 경우, 가지고 계신 봉투와 동일한 규격봉투를 판매하는 봉투판매소에 가시면 판매가격으로 현금 교환할 수 있습니다.",
+    "citations": [
+      {
+        "chunk_id": "chunk-4d6d4d15a72220ff1f823041ab7be5d201bb051e2f020b568a736716d50814bb",
+        "document_id": "seodaemun-ordinance",
+        "document_version": "v1",
+        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2101297",
+        "source_location": "조문/조[41] (조문번호 003400)",
+        "title": "서울특별시 서대문구 폐기물 관리 조례"
+      }
+    ],
+    "places": {
+      "status": "unavailable",
+      "places": [],
+      "error": null
+    },
+    "error": null,
+    "error_code": null
+  },
+  "stages": [
+    {
+      "name": "resolve",
+      "status": "ok",
+      "duration_ms": 0.20209999638609588,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "rewrite",
+      "status": "skipped",
+      "duration_ms": 0.0,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "retrieve",
+      "status": "ok",
+      "duration_ms": 466.3068000081694,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "context",
+      "status": "ok",
+      "duration_ms": 0.060699996538460255,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "generate",
+      "status": "ok",
+      "duration_ms": 1577.8834000084316,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "citations",
+      "status": "ok",
+      "duration_ms": 0.012100004823878407,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "place_lookup",
+      "status": "skipped",
+      "duration_ms": 0.0,
+      "error": null,
+      "error_code": null
+    }
+  ],
+  "duration_ms": 2044.643899993389,
+  "warnings": []
+}

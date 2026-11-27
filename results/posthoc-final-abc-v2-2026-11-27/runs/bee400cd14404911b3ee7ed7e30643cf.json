@@ -1,0 +1,253 @@
+{
+  "langfuse_project": "project:cmwx4ub9u0006ps1syc3peguq",
+  "run_id": "bee400cd14404911b3ee7ed7e30643cf",
+  "request_id": "c7b52043a2b54734a02cc2873d5398e6",
+  "run_kind": "rag",
+  "started_at": "2026-11-26T18:50:34.864422Z",
+  "request": {
+    "request_id": "c7b52043a2b54734a02cc2873d5398e6",
+    "question": "서대문구 50리터 종량제 봉투(생활폐기물용) 가격이 얼마예요?",
+    "district": "서대문구",
+    "dong": null,
+    "conditions": {},
+    "district_confirmed": false
+  },
+  "options": {
+    "variant": "C",
+    "rewrite_enabled": false,
+    "top_k": 5,
+    "max_context_chars": 12000,
+    "run_kind": "rag",
+    "versions": {
+      "model": "gpt-6-luna",
+      "index": "index-1c25b630ae0878a2c496716730e6c0622ba6995203d7ac0293759bdcb1bf5bef-embed-input-table-text-v2-7a9cfb43ffc4fa0f",
+      "chunking": "preprocessed-v2-row-v1",
+      "embedding": "text-embedding-3-small",
+      "prompt": "b0ec828702879ac2fbcdaabfbb0df5841beb2c8d6ff103472f0f5a03ff636305",
+      "candidate_policy": "vector+bm25/rrf-v1(k=60,depth=20)+llm-rerank-v1(passage_chars=1200)",
+      "reranker_model": "gpt-6-luna",
+      "reranker_prompt": "41e5bb7e69f9509b2d5a45d0dcbc25573973aeba2ee736895c2e5d25fd652413"
+    }
+  },
+  "resolved_query": {
+    "search_query": "서대문구 50리터 종량제 봉투(생활폐기물용) 가격이 얼마예요?",
+    "district": "서대문구",
+    "dong": null,
+    "status": "resolved",
+    "clarification_question": null,
+    "region_status": "no_dong",
+    "candidate_districts": []
+  },
+  "search_query": "서대문구 50리터 종량제 봉투(생활폐기물용) 가격이 얼마예요?",
+  "candidates": [
+    {
+      "chunk": {
+        "chunk_id": "chunk-e61b067043e68cc8daf9e11708aecb979b78462e2b35a564da92cb757fcb95f6",
+        "source_document_id": "seodaemun-ordinance:attachment:160319457",
+        "source_document_version": "v1",
+        "title": "[별표 4] 규격봉투 가격(제23조제2항 관련)",
+        "content_format": "json",
+        "content": "{\"header_rows\":[{\"cells\":[{\"cell_id\":\"table-1-r0-c0\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":0,\"rowspan\":1,\"text\":\"구  분\"},{\"cell_id\":\"table-1-r0-c1\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":1,\"origin_row\":0,\"rowspan\":1,\"text\":\"생활폐기물용\"},{\"cell_id\":\"table-1-r0-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":0,\"rowspan\":1,\"text\":\"사업장 생활폐기물용\"}],\"row\":0}],\"paragraphs\":[\"〔별표 4〕 <개정 2025. 12. 31.>\\n\",\"\",\"규격봉투 가격(제23조제2항 관련)\\n\",\"\",\"□ 일반규격봉투\\n\",\"                                                                     (단위 : 원)\\n\",\"\\n\",\"\",\"□ 특수규격봉투\\n\",\"                                                                     (단위 : 원)\\n\",\"\\n\",\"\",\"□ 재사용봉투\\n\",\"                                                                   (단위 : 원)\\n\",\"\\n\",\"\",\"\"],\"row\":{\"cells\":[{\"cell_id\":\"table-1-r6-c0\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":6,\"rowspan\":1,\"text\":\"50ℓ\"},{\"cell_id\":\"table-1-r6-c1\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":1,\"origin_row\":6,\"rowspan\":1,\"text\":\"1,250\"},{\"cell_id\":\"table-1-r6-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":6,\"rowspan\":1,\"text\":\"2,000\"}],\"row\":6},\"section_title\":\"〔별표 4〕 <개정 2025. 12. 31.>\",\"table_id\":\"table-1\"}",
+        "source_url": "http://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=160319457&flNm=%5B%EB%B3%84%ED%91%9C+4%5D+%EA%B7%9C%EA%B2%A9%EB%B4%89%ED%88%AC+%EA%B0%80%EA%B2%A9%28%EC%A0%9C23%EC%A1%B0%EC%A0%9C2%ED%95%AD+%EA%B4%80%EB%A0%A8%29",
+        "source_location": "table-1/row[6]",
+        "scope_type": "district",
+        "districts": [
+          "서대문구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 1,
+      "score": 10.0,
+      "stage_scores": {
+        "vector": 0.5472459952249996,
+        "bm25": 45.93983495629616,
+        "rrf": 0.031746031746031744,
+        "rerank": 10.0
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-96f1f051bec0d0994fe7c171527df0daf2708575e24b22772131b80d8a47f945",
+        "source_document_id": "seodaemun-rules:attachment:160561041",
+        "source_document_version": "v1",
+        "title": "[별표 3] 종량제 규격봉투 용량별 용도(제4조제2호 관련)",
+        "content_format": "json",
+        "content": "{\"header_rows\":[{\"cells\":[{\"cell_id\":\"table-1-r0-c0\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":0,\"rowspan\":1,\"text\":\"구  분\"},{\"cell_id\":\"table-1-r0-c1\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":1,\"origin_row\":0,\"rowspan\":1,\"text\":\"용  량\"},{\"cell_id\":\"table-1-r0-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":0,\"rowspan\":1,\"text\":\"용  도\"}],\"row\":0}],\"paragraphs\":[\"〔별표 3〕 <개정 2025. 12. 31.>\\n\",\"종량제 규격봉투 용량별 용도(제4조제2호 관련)\\n\",\"\",\"\\n\"],\"row\":{\"cells\":[{\"cell_id\":\"table-1-r1-c0\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":0,\"origin_row\":1,\"rowspan\":7,\"text\":\"일\\n반\\n규\\n격\\n봉\\n투\"},{\"cell_id\":\"table-1-r6-c1\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":1,\"origin_row\":6,\"rowspan\":1,\"text\":\"50ℓ\"},{\"cell_id\":\"table-1-r6-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":6,\"rowspan\":1,\"text\":\"생활폐기물용, 사업장생활계폐기물용\"}],\"row\":6},\"section_title\":\"〔별표 3〕 <개정 2025. 12. 31.>\",\"table_id\":\"table-1\"}",
+        "source_url": "http://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=160561041&flNm=%5B%EB%B3%84%ED%91%9C+3%5D+%EC%A2%85%EB%9F%89%EC%A0%9C+%EA%B7%9C%EA%B2%A9%EB%B4%89%ED%88%AC+%EC%9A%A9%EB%9F%89%EB%B3%84+%EC%9A%A9%EB%8F%84%28%EC%A0%9C4%EC%A1%B0%EC%A0%9C2%ED%98%B8+%EA%B4%80%EB%A0%A8%29",
+        "source_location": "table-1/row[6]",
+        "scope_type": "district",
+        "districts": [
+          "서대문구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 2,
+      "score": 6.0,
+      "stage_scores": {
+        "bm25": 45.110797244687994,
+        "rrf": 0.015625,
+        "rerank": 6.0
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-6944be3c99e93c796a717de8a00837b031c92b635f7c2827303d3bd5361170d5",
+        "source_document_id": "seodaemun-ordinance",
+        "source_document_version": "v1",
+        "title": "서울특별시 서대문구 폐기물 관리 조례",
+        "content_format": "json",
+        "content": "{\"text\":\"제23조(종량제 실시) \\n① 구청장은 폐기물 관할 구역 안에서 배출되는 폐기물 중 생활폐기물과 사업장생활계폐기물 및 영업장에서 배출되는 연탄재(이하 “종량제 폐기물”이라 한다)는 폐기물 수수료 종량제를 실시한다. 다만, 재활용 가능품, 대형폐기물은 제외한다. 다만, 종량제 폐기물 중 음식물류폐기물 수수료는「서울특별시 서대문구 음식물류 폐기물 발생 억제, 수집·운반 및 재활용에 관한 조례」제9조제2항에 따른다.  <개정 2011. 8. 10., 2015. 6. 3.>\\n② 제1항에 따른 종량제 폐기물의 수수료는 별표 4의 규격봉투가격에 따른다. <개정 2011. 8. 10.>\\n③ 종량제 폐기물용 규격봉투 판매가격은 배출량에 따라 차등 적용할 수 있다.  <개정 2011. 8. 10.>\\n\",\"unit_type\":\"article\"}",
+        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2101297",
+        "source_location": "조문/조[29] (조문번호 002300)",
+        "scope_type": "district",
+        "districts": [
+          "서대문구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 3,
+      "score": 5.0,
+      "stage_scores": {
+        "bm25": 48.84125715794353,
+        "rrf": 0.01639344262295082,
+        "rerank": 5.0
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-dba96c3bd7ddf5146347882f75fea18c6473f8f088149738cafa3d67e3e292cb",
+        "source_document_id": "seodaemun-rules:attachment:160561043",
+        "source_document_version": "v1",
+        "title": "[별표 4] 종량제 규격봉투의 판매이윤 및 공급수수료(제5조제2항 관련)",
+        "content_format": "json",
+        "content": "{\"header_rows\":[{\"cells\":[{\"cell_id\":\"table-1-r0-c0\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":0,\"rowspan\":1,\"text\":\"구  분\"},{\"cell_id\":\"table-1-r0-c1\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":1,\"origin_row\":0,\"rowspan\":1,\"text\":\"용  량\"},{\"cell_id\":\"table-1-r0-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":0,\"rowspan\":1,\"text\":\"판매이윤\"}],\"row\":0}],\"paragraphs\":[\"〔별표 4〕<개정 2025. 12. 31.>\\n\",\"종량제 규격봉투의 판매이윤 및 공급수수료(제5조제2항 관련)\\n\",\"\",\"○ 생활폐기물 규격봉투 판매이윤\\n\",\"                                                                   (단위 : 원)\\n\",\"\\n\",\"\",\"○ 사업장생활계폐기물 규격봉투 공급수수료\\n\",\"                                                              (단위 : 원)\\n\",\"\\n\",\"○ 음식물폐기물 규격봉투 및 전용용기 납부필증 판매이윤\\n\",\"\",\"                                                             (단위 : 원)\\n\",\"\\n\",\"\"],\"row\":{\"cells\":[{\"cell_id\":\"table-1-r1-c0\",\"colspan\":1,\"inherited_from_previous_row\":true,\"origin_col\":0,\"origin_row\":1,\"rowspan\":7,\"text\":\"생 활 용\\n봉    투\"},{\"cell_id\":\"table-1-r6-c1\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":1,\"origin_row\":6,\"rowspan\":1,\"text\":\"50ℓ\"},{\"cell_id\":\"table-1-r6-c2\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":2,\"origin_row\":6,\"rowspan\":1,\"text\":\"113\"}],\"row\":6},\"section_title\":\"〔별표 4〕<개정 2025. 12. 31.>\",\"table_id\":\"table-1\"}",
+        "source_url": "http://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=160561043&flNm=%5B%EB%B3%84%ED%91%9C+4%5D+%EC%A2%85%EB%9F%89%EC%A0%9C+%EA%B7%9C%EA%B2%A9%EB%B4%89%ED%88%AC%EC%9D%98+%ED%8C%90%EB%A7%A4%EC%9D%B4%EC%9C%A4+%EB%B0%8F+%EA%B3%B5%EA%B8%89%EC%88%98%EC%88%98%EB%A3%8C%28%EC%A0%9C5%EC%A1%B0%EC%A0%9C2%ED%95%AD+%EA%B4%80%EB%A0%A8%29",
+        "source_location": "table-1/row[6]",
+        "scope_type": "district",
+        "districts": [
+          "서대문구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 4,
+      "score": 5.0,
+      "stage_scores": {
+        "vector": 0.5462733758908371,
+        "rrf": 0.015625,
+        "rerank": 5.0
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-8eff79d1f4ce853cf2debec1d2e10b3c095b7d7fc5bd8c06a087b36664340b72",
+        "source_document_id": "seodaemun-rules",
+        "source_document_version": "v1",
+        "title": "서울특별시 서대문구 폐기물 관리 조례 시행규칙",
+        "content_format": "json",
+        "content": "{\"text\":\"제5조(판매이윤 등) \\n① 조례 제23조에 따른 종량제 규격봉투의 가격은 판매이윤 등을 합산한 금액으로 다음과 같이 한다.\\n1. 생활폐기물용 규격봉투의 가격은 수집·운반수수료, 반입수수료, 판매이윤 및 제작비를 합산한 금액으로 한다.\\n2. 사업장생활계폐기물용 규격봉투의 가격은 수집·운반수수료, 반입수수료, 공급수수료 및 제작비를 합산한 금액으로 한다.\\n② 조례 제30조제1항에 따른 생활폐기물용 규격봉투의 가격 중 판매 이윤과 사업장생활계폐기물용 규격봉투의 가격 중 공급수수료는 별표 4와 같다.\\n③ 종량제 규격봉투의 제작비는 조달구매단가, 혹은 일반경쟁입찰시의 낙찰가격 등 실제 제조구매가격으로 한다.\\n④ 수도권매립지의 반입수수료는 김포 수도권매립지 운영관리 합의 고시가격에 따른다.\\n⑤ 수집·운반수수료는 제작비와 반입수수료 고시가격이 변동될 경우 그에 따라 달라질 수 있다.\\n\",\"unit_type\":\"article\"}",
+        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2101385",
+        "source_location": "조문/조[5] (조문번호 000500)",
+        "scope_type": "district",
+        "districts": [
+          "서대문구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 5,
+      "score": 2.0,
+      "stage_scores": {
+        "bm25": 47.98671194462624,
+        "rrf": 0.016129032258064516,
+        "rerank": 2.0
+      }
+    }
+  ],
+  "model_input_chunk_ids": [
+    "chunk-e61b067043e68cc8daf9e11708aecb979b78462e2b35a564da92cb757fcb95f6",
+    "chunk-96f1f051bec0d0994fe7c171527df0daf2708575e24b22772131b80d8a47f945",
+    "chunk-6944be3c99e93c796a717de8a00837b031c92b635f7c2827303d3bd5361170d5",
+    "chunk-dba96c3bd7ddf5146347882f75fea18c6473f8f088149738cafa3d67e3e292cb",
+    "chunk-8eff79d1f4ce853cf2debec1d2e10b3c095b7d7fc5bd8c06a087b36664340b72"
+  ],
+  "response": {
+    "request_id": "c7b52043a2b54734a02cc2873d5398e6",
+    "run_id": "bee400cd14404911b3ee7ed7e30643cf",
+    "status": "answered",
+    "answer": "서대문구 50리터 생활폐기물용 종량제 봉투는 1,250원입니다.",
+    "citations": [
+      {
+        "chunk_id": "chunk-e61b067043e68cc8daf9e11708aecb979b78462e2b35a564da92cb757fcb95f6",
+        "document_id": "seodaemun-ordinance:attachment:160319457",
+        "document_version": "v1",
+        "source_url": "http://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=160319457&flNm=%5B%EB%B3%84%ED%91%9C+4%5D+%EA%B7%9C%EA%B2%A9%EB%B4%89%ED%88%AC+%EA%B0%80%EA%B2%A9%28%EC%A0%9C23%EC%A1%B0%EC%A0%9C2%ED%95%AD+%EA%B4%80%EB%A0%A8%29",
+        "source_location": "table-1/row[6]",
+        "title": "[별표 4] 규격봉투 가격(제23조제2항 관련)"
+      }
+    ],
+    "places": {
+      "status": "unavailable",
+      "places": [],
+      "error": null
+    },
+    "error": null,
+    "error_code": null
+  },
+  "stages": [
+    {
+      "name": "resolve",
+      "status": "ok",
+      "duration_ms": 0.37369999336078763,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "rewrite",
+      "status": "skipped",
+      "duration_ms": 0.0,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "retrieve",
+      "status": "ok",
+      "duration_ms": 3374.6117999980925,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "context",
+      "status": "ok",
+      "duration_ms": 0.05190000229049474,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "generate",
+      "status": "ok",
+      "duration_ms": 1380.9558000066318,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "citations",
+      "status": "ok",
+      "duration_ms": 0.010899995686486363,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "place_lookup",
+      "status": "skipped",
+      "duration_ms": 0.0,
+      "error": null,
+      "error_code": null
+    }
+  ],
+  "duration_ms": 4756.184300000314,
+  "warnings": []
+}

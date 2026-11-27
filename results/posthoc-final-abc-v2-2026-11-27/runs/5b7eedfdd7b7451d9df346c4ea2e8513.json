@@ -1,0 +1,240 @@
+{
+  "langfuse_project": "project:cmwx4ub9u0006ps1syc3peguq",
+  "run_id": "5b7eedfdd7b7451d9df346c4ea2e8513",
+  "request_id": "18d6541bb68748c3b32be0bc600c4854",
+  "run_kind": "rag",
+  "started_at": "2026-11-26T18:50:58.972341Z",
+  "request": {
+    "request_id": "18d6541bb68748c3b32be0bc600c4854",
+    "question": "송파구는 재사용 종량제봉투를 만들어 파나요?",
+    "district": "송파구",
+    "dong": null,
+    "conditions": {},
+    "district_confirmed": false
+  },
+  "options": {
+    "variant": "A",
+    "rewrite_enabled": false,
+    "top_k": 5,
+    "max_context_chars": 12000,
+    "run_kind": "rag",
+    "versions": {
+      "model": "gpt-6-luna",
+      "index": "index-1c25b630ae0878a2c496716730e6c0622ba6995203d7ac0293759bdcb1bf5bef-embed-input-table-text-v2-7a9cfb43ffc4fa0f",
+      "chunking": "preprocessed-v2-row-v1",
+      "embedding": "text-embedding-3-small",
+      "prompt": "b0ec828702879ac2fbcdaabfbb0df5841beb2c8d6ff103472f0f5a03ff636305",
+      "candidate_policy": "vector-v1"
+    }
+  },
+  "resolved_query": {
+    "search_query": "송파구는 재사용 종량제봉투를 만들어 파나요?",
+    "district": "송파구",
+    "dong": null,
+    "status": "resolved",
+    "clarification_question": null,
+    "region_status": "no_dong",
+    "candidate_districts": []
+  },
+  "search_query": "송파구는 재사용 종량제봉투를 만들어 파나요?",
+  "candidates": [
+    {
+      "chunk": {
+        "chunk_id": "chunk-225a2d424691e440b65fda01dc6c8eac1393e3834339b4ccfee961965979d3b2",
+        "source_document_id": "songpa-ordinance",
+        "source_document_version": "v1",
+        "title": "서울특별시 송파구 폐기물 관리 조례",
+        "content_format": "json",
+        "content": "{\"text\":\"제17조의2(재사용 종량제봉투 제작) \\n① 구청장은 1회용 비닐봉투 사용량을 줄이기 위하여 1회용 비닐봉투 대용으로 재사용 종량제봉투를 제작할 수 있고, 봉투의 디자인, 용량 및 크기 등은 단체표준 규격에 따라 제작하여야 한다.<신설 2011.6.7>\\n② 구청장은 유통매장에서 재사용 종량제봉투 구입이 편리하도록 판매방법 개선 및 고객홍보를 추진하여야 한다.<신설 2011.6.7>\\n③ 구청장은 재사용 종량제봉투 판매확대를 위하여 판매업소의 명칭, 로고 등 상업광고를 게재할 수 있으며 이에 따른 제반비용 분담에 관한 사항은 별도로 정한다.<신설 2011.6.7>\\n\",\"unit_type\":\"article\"}",
+        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2053883",
+        "source_location": "조문/조[26] (조문번호 001702)",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 1,
+      "score": 0.47842833093683773,
+      "stage_scores": {
+        "vector": 0.47842833093683773
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-06782553a0d8e4e6d484dd0bf092846e83edde8719bb0311a8e7fee7078708a2",
+        "source_document_id": "songpa-ordinance",
+        "source_document_version": "v1",
+        "title": "서울특별시 송파구 폐기물 관리 조례",
+        "content_format": "json",
+        "content": "{\"text\":\"제19조(규격봉투의 공급 및 구입 등) \\n① 삭제<2000·6·8>\\n② 골목길등 공동 청소용으로 필요한 경우 구청장은 공공용봉투의 필요량을 사용할 수 있다. <개정 2001·3·16>\\n③ 종량제 폐기물을 배출하는 자는 구청장이 지정하는 판매소(이하 \\\"봉투판매소\\\"라 한다)에서 규격봉투를 직접 구입 사용하여야 하되, 사업장생활폐기물을 배출하는 자는 폐기물처리업자로부터 직접 공급받아 사용할 수 있다. <개정 98·10·13, 99·5·20, 2000·6·8, 2001·3·16, 2015.4.2>\\n\",\"unit_type\":\"article\"}",
+        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2053883",
+        "source_location": "조문/조[28] (조문번호 001900)",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 2,
+      "score": 0.395720739203793,
+      "stage_scores": {
+        "vector": 0.395720739203793
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-1eb44438da720404c8dc030ac283fff33fb069ee93a5773ce5a03c8052e53c45",
+        "source_document_id": "songpa-rules",
+        "source_document_version": "v1",
+        "title": "서울특별시 송파구 폐기물 관리 조례 시행규칙",
+        "content_format": "json",
+        "content": "{\"text\":\"제4조의2 (종량제 실시) ①조례 제14조제1항에 따른 종량제실시가 쓰레기 감량 및 자원화, 폐기물수거, 종량제원칙을 훼손하지 아니한 경우, 용기에 담아 배출하게 할 수 있다. <개정 2015.10.22.>\\n②제1항에 따른 용기에 담아 배출하는 경우 조례 제14조제2항을 준용하되, 규격봉투 제작비를 제외한다. <신설 2003·8·4> <개정 2015.10.22.>\\n\",\"unit_type\":\"article\"}",
+        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=1481479",
+        "source_location": "조문/조[5] (조문번호 000402)",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 3,
+      "score": 0.3880235544434712,
+      "stage_scores": {
+        "vector": 0.3880235544434712
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-08cd739b2c441fe6bab49c0c30ea8f0080500b0b717e6af4fa5ff95c7ca1b458",
+        "source_document_id": "songpa-ordinance",
+        "source_document_version": "v1",
+        "title": "서울특별시 송파구 폐기물 관리 조례",
+        "content_format": "json",
+        "content": "{\"text\":\"제14조(종량제 실시) \\n① 구청장은 관할구역 안에서 배출되는 폐기물 중 생활폐기물과 사업장생활폐기물은 폐기물수수료 종량제를 실시한다. 다만, 연탄재, 재활용가능자원, 대형폐기물은 제외하며, 구청장은 필요한 경우 종량제 시행에 관한 사항을 따로 정할 수 있다. <개정 2009.11.9>\\n② 제1항에 따른 폐기물(이하 \\\"종량제 폐기물\\\" 이라 한다)의 수수료는 별표 3의 규격봉투 가격에 따른다. 다만, 위례동은 인접 지방자치단체와 공동 생활권을 이루고 있는 특성을 고려하여 별도의 가격을 규칙으로 정할 수 있다. <개정 2011.12.12, 2018.6.29.>\\n\",\"unit_type\":\"article\"}",
+        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2053883",
+        "source_location": "조문/조[22] (조문번호 001400)",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 4,
+      "score": 0.38081609123938226,
+      "stage_scores": {
+        "vector": 0.38081609123938226
+      }
+    },
+    {
+      "chunk": {
+        "chunk_id": "chunk-1d1aaba67f049a5294f8bdf1f79ce247aa8b182823094146fa3fa0dd6f2181e0",
+        "source_document_id": "songpa-rules:attachment:121237861",
+        "source_document_version": "v1",
+        "title": "별표",
+        "content_format": "json",
+        "content": "{\"header_rows\":[{\"cells\":[{\"cell_id\":\"table-1-r0-c0\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":0,\"rowspan\":1,\"text\":\"용  량 (ℓ)\"},{\"cell_id\":\"table-1-r0-c1\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":1,\"origin_row\":0,\"rowspan\":1,\"text\":\"용               도\"}],\"row\":0}],\"paragraphs\":[\"[별표 2] <개정 98․6․12, 09․10․20, 2017.4.6. 2020.03.19.>\\n\",\"규격봉투 용량별 용도(제4조제2호 관련)\\n\",\"\\n\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\"],\"row\":{\"cells\":[{\"cell_id\":\"table-1-r4-c0\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":0,\"origin_row\":4,\"rowspan\":1,\"text\":\"20\"},{\"cell_id\":\"table-1-r4-c1\",\"colspan\":1,\"inherited_from_previous_row\":false,\"origin_col\":1,\"origin_row\":4,\"rowspan\":1,\"text\":\"생활폐기물용, 일반사업장용, 가락시장용, 공공용, 특수규격봉투\"}],\"row\":4},\"section_title\":\"[별표 2] <개정 98․6․12, 09․10․20, 2017.4.6. 2020.03.19.>\",\"table_id\":\"table-1\"}",
+        "source_url": "http://www.law.go.kr/flDownload.do?gubun=ELIS&flSeq=121237861&flNm=%EB%B3%84%ED%91%9C",
+        "source_location": "table-1/row[4]",
+        "scope_type": "district",
+        "districts": [
+          "송파구"
+        ],
+        "conditions": [],
+        "chunking_version": "preprocessed-v2-row-v1"
+      },
+      "rank": 5,
+      "score": 0.37129696115960026,
+      "stage_scores": {
+        "vector": 0.37129696115960026
+      }
+    }
+  ],
+  "model_input_chunk_ids": [
+    "chunk-225a2d424691e440b65fda01dc6c8eac1393e3834339b4ccfee961965979d3b2",
+    "chunk-06782553a0d8e4e6d484dd0bf092846e83edde8719bb0311a8e7fee7078708a2",
+    "chunk-1eb44438da720404c8dc030ac283fff33fb069ee93a5773ce5a03c8052e53c45",
+    "chunk-08cd739b2c441fe6bab49c0c30ea8f0080500b0b717e6af4fa5ff95c7ca1b458",
+    "chunk-1d1aaba67f049a5294f8bdf1f79ce247aa8b182823094146fa3fa0dd6f2181e0"
+  ],
+  "response": {
+    "request_id": "18d6541bb68748c3b32be0bc600c4854",
+    "run_id": "5b7eedfdd7b7451d9df346c4ea2e8513",
+    "status": "answered",
+    "answer": "네. 송파구 조례는 구청장이 재사용 종량제봉투를 제작할 수 있도록 하고, 유통매장에서 구입하기 쉽도록 판매방법 개선과 홍보를 추진하도록 규정하고 있습니다. 다만 이 근거만으로 현재 실제 판매 중인지는 확인되지 않습니다.",
+    "citations": [
+      {
+        "chunk_id": "chunk-225a2d424691e440b65fda01dc6c8eac1393e3834339b4ccfee961965979d3b2",
+        "document_id": "songpa-ordinance",
+        "document_version": "v1",
+        "source_url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2053883",
+        "source_location": "조문/조[26] (조문번호 001702)",
+        "title": "서울특별시 송파구 폐기물 관리 조례"
+      }
+    ],
+    "places": {
+      "status": "unavailable",
+      "places": [],
+      "error": null
+    },
+    "error": null,
+    "error_code": null
+  },
+  "stages": [
+    {
+      "name": "resolve",
+      "status": "ok",
+      "duration_ms": 0.185500000952743,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "rewrite",
+      "status": "skipped",
+      "duration_ms": 0.0,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "retrieve",
+      "status": "ok",
+      "duration_ms": 202.7280000038445,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "context",
+      "status": "ok",
+      "duration_ms": 0.05740000051446259,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "generate",
+      "status": "ok",
+      "duration_ms": 2534.6071000094526,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "citations",
+      "status": "ok",
+      "duration_ms": 0.01030000566970557,
+      "error": null,
+      "error_code": null
+    },
+    {
+      "name": "place_lookup",
+      "status": "skipped",
+      "duration_ms": 0.0,
+      "error": null,
+      "error_code": null
+    }
+  ],
+  "duration_ms": 2737.736600000062,
+  "warnings": []
+}

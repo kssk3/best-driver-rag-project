@@ -41,7 +41,7 @@ uv run --locked --env-file .env python -m scripts.score_quality --runs results/l
 
 `summarize_runs` 출력에서 `C` 한 줄이 `rewrite=true`, `20/20`이면 `variant=C`, `rewrite_enabled=true`인 고유 문항 20개가 맞다. A/B/C OFF 폴더의 같은 출력은 `A·B·C` 세 줄이 모두 `false`다. 두 폴더는 서로 다른 채점 출력 폴더로 따로 채점하고 요약에서 섞지 않는다(채점기는 `(variant, rewrite_enabled)`별로 나눠 집계한다).
 
-`score_quality`는 정답 충족, 근거 적합, 근거 없음 대응을 0/1로 채점해 `quality.csv`에 남긴다(판정 모델 호출, 실행당 최대 3회). 판정 응답을 읽지 못한 행은 0점이 아니라 점수 없음으로 남고 요약에서 따로 센다. 모델을 부르기 전에 실행·후보·문항·채점 자료의 문항 ID와 `dataset_id`를 대조해 맞지 않으면 중단한다(일부 문항만 채점하려면 `--allow-subset`). 모델 판정이어서 사람의 검토가 필요하다.
+`score_quality`는 정답 충족, 근거 적합, 근거 없음 대응을 0/1로 채점해 `quality.csv`에 남긴다(판정 모델 호출, 실행당 최대 2회). 판정 응답을 읽지 못한 행은 0점이 아니라 점수 없음으로 남고 요약에서 따로 센다. 모델을 부르기 전에 실행·후보·문항·채점 자료의 문항 ID와 `dataset_id`를 대조해 맞지 않으면 중단한다(일부 문항만 채점하려면 `--allow-subset`). 모델 판정이어서 사람의 검토가 필요하다.
 
 출력 폴더는 기존 결과를 덮어쓰지 않도록 항상 새 이름을 쓴다. 호출 수와 비용은 [결과 안내](../results/README.md)를 본다.
 
@@ -50,6 +50,14 @@ uv run --locked --env-file .env python -m scripts.score_quality --runs results/l
 - **기본 증빙은 로컬 기록이다.** `scripts.evaluate`는 `runs.csv`, `candidates.csv`, `cases.csv`, `evaluation.json`을 남기고 채점기는 `quality.csv`(또는 `scores.csv`)를 남긴다. 공식 결과는 `results/final-*`에 있고, 실행별 기록은 실행 ID·구성·문서/색인/모델 버전을 담는다.
 - **Langfuse에는 자동으로 올라가지 않는다.** 실행 추적은 `RAG_LANGFUSE_TRACE=1`을 켠 실행에서만 전송되고(프롬프트·근거 본문 포함, [설정](TEAM-SETUP.md#팀-langfuse-설정)), 점수와 판정 사유는 채점 후 업로드 명령(`scripts.upload_scores`, [업로드와 조회](../results/README.md#진술별-faithfulness-판정-확인))을 따로 실행해야 올라간다. 올리면 누가 언제 어떤 구성으로 돌렸는지 Langfuse에서 실행 단위로 비교할 수 있다.
 - 저장소 안에서 확인할 수 있는 기록은 `results/`의 실행별 CSV다(Git에서 제외되는 `results/local/`은 제외).
+
+## 사후 실험 재현(보고서 8장·8.1, 정오표)
+
+이 실험은 공식 결과(`results/final-*`)를 바꾸지 않는다. 새 출력 폴더를 쓰고 OpenAI 키(`.env`)가 필요하며 외부 모델 호출 비용이 든다.
+
+- 표 행 임베딩 입력 실험(8장): `uv run --locked --env-file .env python -m scripts.exp_embed_input --output-dir results/local/<새 폴더>` 이 명령은 변환 색인 `index-variant.json`과 `hits.csv`, `meta.json`을 만든다. 결과 예시는 `results/embed-input-exp-v2-2026-11-27/`다.
+- 최종 문항 사후 재실행(8.1): 위 변환 색인을 `index_path`로 가리키는 설정 파일을 만들어 `uv run --locked --env-file .env python -m scripts.exp_posthoc_final --settings <설정> <scripts.evaluate와 같은 인자>`를 실행한다. 기본 색인을 가리키면 시작 전에 중단된다. 채점은 2장의 `score_quality`와 같다.
+- 정오표(7.4): `eval/errata/`의 정정판 문항·채점 자료(`test-d10-corrected*.json` 등)를 `scripts.evaluate`와 `score_quality --grading`에 넘겨 같은 방식으로 실행한다. 결과 예시는 `results/errata-*/`다.
 
 ## 독립 환경 재현 (AI 수행, 타인 재현이 아님)
 
@@ -66,7 +74,7 @@ uv run --locked --env-file .env python -m scripts.score_quality --runs results/l
 
 **하지 않은 것**: Streamlit 화면과 `scripts.run_chat`, 채점(`score_answers`, `score_quality`), 테스트 실행, Windows 아닌 OS, `.env` 파일을 쓰는 경로. 타인 재현에서는 이 중 화면 실행과 `PYTHONUTF8` 없이 도는 Windows 한국어 환경(채점 테스트가 `cp949` 오류)을 우선 확인해야 한다.
 
-**팀원이 재현하려면**: 이 브랜치가 `dev`에 병합돼야 `eval/test.json`과 이 문서가 새 클론에 들어온다. 병합 전에는 브랜치를 받아야 한다.
+**팀원이 재현하려면**: `eval/test.json`과 이 문서는 PR #48 병합(`f2ace36`)으로 `dev`에 들어 있으므로 `dev`를 클론하면 된다.
 
 ## 타인 재현 기록
 
