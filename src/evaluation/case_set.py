@@ -1,6 +1,6 @@
 """최종 평가 문항 관리: 문항 구성과 채점 자료를 점검한다.
 
-최종 20문항은 문항 파일(EvaluationCase 목록)과 채점 자료(필수 사실, 원문 위치, 판정 이유)로 나눠 둔다.
+시험용 20문항(AI 초안, 최종셋 아님)은 문항 파일(EvaluationCase 목록)과 채점 자료(필수 사실, 원문 위치, 판정 이유)로 나눠 둔다.
 채점 자료는 채점에만 쓰며 검색, 질문 다듬기, 생성 입력에 넘기지 않는다.
 이 모듈은 두 파일이 발제의 구성(직접 검색 10, 표현·조건 7, 근거 없음 3)과 맞는지 확인할 뿐이다.
 """
@@ -16,7 +16,7 @@ from src.evaluation.runner import (
     load_evaluation_cases,
 )
 
-# 최종 20문항 = 직접 검색 10 + 표현 변형·조건 구분 7 + 근거 없음 3
+# 시험용 20문항 = 직접 검색 10 + 표현 변형·조건 구분 7 + 근거 없음 3
 EXPECTED_COUNTS = {"direct": 10, "variation": 7, "no_evidence": 3}
 ANSWERABLE = ("direct", "variation")
 

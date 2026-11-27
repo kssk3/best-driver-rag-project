@@ -2,7 +2,7 @@
 
 담당: 이명지
 상태: Hit@k 계산과 구성별 집계(hit_rate_by_configuration).
-    A/B/C 검색, 질문 정제 ON/OFF, OpenSearch를 같은 기준으로 비교한다.
+    A/B/C 검색과 질문 정제 ON/OFF를 같은 기준으로 비교한다.
 
 Hit@k: 검색 상위 k개 안에 정답 근거(allowed_chunk_ids)가 하나라도 있으면 1, 없으면 0.
 여러 문항의 Hit@k 평균이 그 검색 구성의 Hit@k 점수다 (예: 17문항 중 12개 → 12/17).
