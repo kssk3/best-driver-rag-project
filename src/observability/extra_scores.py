@@ -170,6 +170,15 @@ def prepare_scores(preview: Path, archive: Path, expected_traces: int):
                 "run_id": run["run_id"],
                 "variant": run.get("variant"),
             }
+            # 비교 화면이 점수를 같은 평가끼리 묶도록 원본 runs.csv의 평가 세트·리라이트 여부를 남긴다.
+            # 이 지표들은 Faithfulness의 comparison_eligible과 따로 평가하므로 그 값은 넣지 않는다.
+            grouping = {
+                key: run[key]
+                for key in ("dataset_id", "rewrite_enabled")
+                if run.get(key) not in (None, "")
+            }
+            if grouping:
+                payload["metadata"] = grouping
             if score.name == RELEVANCY and run["status"] != "answered":
                 payload["comment"] = (
                     f"보류 안내 문구 평가 ({run['status']}). {score.comment}"
