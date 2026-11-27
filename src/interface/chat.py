@@ -1,5 +1,6 @@
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
+from html import escape
 
 import streamlit as st
 
@@ -69,12 +70,15 @@ def _followup_placeholder(field: str) -> str:
     return f"{REQUIRED_FIELD_LABELS.get(field, field)}을(를) 기재해 주세요."
 
 
-def _citation_card(citation: Citation) -> None:
-    """말풍선 안의 근거 한 건. 제목은 링크로, 위치와 문서 버전은 작은 글씨로 따로 보인다."""
-    label = (
-        (citation.title or citation.chunk_id).replace("[", "\\[").replace("]", "\\]")
+def _citation_card(citation: Citation, number: int) -> None:
+    """말풍선 안의 인용 한 건. 번호 말머리가 붙은 칩 하나에 제목(링크)과 위치·문서 버전이 들어간다."""
+    label = escape(citation.title or citation.chunk_id)
+    title = (
+        f'<a href="{escape(citation.source_url)}" target="_blank" rel="noopener noreferrer">{label}</a>'
+        if is_safe_url(citation.source_url)
+        else f"{label} (원문 링크 없음)"
     )
-    meta = [
+    meta = " · ".join(
         text
         for text in (
             f"위치: {citation.source_location}" if citation.source_location else "",
@@ -83,14 +87,12 @@ def _citation_card(citation: Citation) -> None:
             else "",
         )
         if text
-    ]
-    with st.container():
-        if is_safe_url(citation.source_url):
-            st.markdown(f"[{label}]({citation.source_url})")
-        else:
-            st.markdown(f"{label} (원문 링크 없음)")
-        if meta:
-            st.caption(" · ".join(meta))
+    )
+    meta_html = f'<span class="cite-meta">{escape(meta)}</span>' if meta else ""
+    st.html(
+        f'<div class="cite"><b class="cite-no">{number}</b>'
+        f'<span class="cite-body">{title}{meta_html}</span></div>'
+    )
 
 
 @contextmanager
@@ -147,8 +149,8 @@ def _render_answered(view: ViewResponse) -> None:
             st.warning("인용된 근거가 없습니다.")
             return
 
-        for citation in view.citations:
-            _citation_card(citation)
+        for number, citation in enumerate(view.citations, 1):
+            _citation_card(citation, number)
 
 
 def _render_clarification(
