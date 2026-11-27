@@ -31,6 +31,32 @@ FIELDS = [
 ]
 
 
+REQUIRED = (
+    "run_id",
+    "case_id",
+    "status",
+    "answer",
+    "original_question",
+    "rewrite_enabled",
+)
+
+
+def label(row: dict) -> str:
+    """구성 이름. 옛 기록은 configuration 열 없이 variant만 있다."""
+    return row.get("configuration") or row.get("variant") or ""
+
+
+def missing_columns(rows: list[dict]) -> list[str]:
+    """유료 호출 전에 필요한 열이 있는지 본다."""
+    if not rows:
+        return ["(행 없음)"]
+    have = set(rows[0])
+    missing = [c for c in REQUIRED if c not in have]
+    if "configuration" not in have and "variant" not in have:
+        missing.append("configuration 또는 variant")
+    return missing
+
+
 def checked_score(value: float) -> tuple[str, str]:
     """(점수 문자열, 오류). 업로드 검증은 0~1만 받으므로 범위 밖 값은 성공으로 내보내지 않는다."""
     if math.isfinite(value) and 0 <= value <= 1:
@@ -69,8 +95,8 @@ async def _score(rows: list[dict]) -> list[dict]:
             {
                 "run_id": row["run_id"],
                 "case_id": row["case_id"],
-                "configuration": row["configuration"],
-                "variant": row.get("variant") or row["configuration"],
+                "configuration": label(row),
+                "variant": row.get("variant") or label(row),
                 "rewrite_enabled": row["rewrite_enabled"],
                 "status": row["status"],
                 "score": score,
@@ -93,6 +119,8 @@ def main(argv: list[str] | None = None) -> None:
         raise SystemExit(f"{path}가 이미 있습니다. --output으로 새 경로를 지정하세요.")
     with (args.archive / "runs.csv").open(encoding="utf-8-sig", newline="") as file:
         rows = list(csv.DictReader(file))
+    if problems := missing_columns(rows):
+        raise SystemExit(f"runs.csv에 필요한 열이 없습니다: {', '.join(problems)}")
     # 기록 없이 실패한 행은 run_id가 비어 있으므로(채점 대상 아님) 중복 검사에서 뺀다.
     if any(
         not r["run_id"].strip() and r["status"] in SCORED_STATUSES and r["answer"]
