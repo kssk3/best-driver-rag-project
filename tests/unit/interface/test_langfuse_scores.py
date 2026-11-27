@@ -131,6 +131,15 @@ def test_datasets_are_not_mixed_and_newest_comes_first() -> None:
     assert faithfulness(result.groups[0])["A"].mean == 0.0
 
 
+def test_missing_dataset_id_groups_by_evaluation_id() -> None:
+    old = root("B", None, "2026-11-24T00:00:00Z") | {"evaluation_id": "e5321726abc"}
+    result = build_scores([score("t1", 1)], {"t1": old})
+
+    assert [(g.dataset_id, g.by_evaluation) for g in result.groups] == [
+        ("e5321726abc", True)
+    ]
+
+
 def test_loader_joins_scores_to_root_variant(monkeypatch) -> None:
     def fake_pages(path, params):
         if path == langfuse_scores.SCORES_PATH:

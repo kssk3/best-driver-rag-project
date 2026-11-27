@@ -347,7 +347,7 @@ def render_comparison() -> None:
         st.info("방식별로 집계할 점수가 아직 없습니다.")
     for group in result.groups:
         st.html(
-            f'<div class="mx-head">데이터셋 <b>{escape(group.dataset_id[:8])}</b>'
+            f'<div class="mx-head">{"평가" if group.by_evaluation else "데이터셋"} <b>{escape(group.dataset_id[:8])}</b>'
             f"<span>최근 실행 {escape(group.latest[:10])}</span></div>"
             + metrics_html(group)
         )

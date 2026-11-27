@@ -44,6 +44,8 @@ class DatasetGroup:
     latest: str  # 가장 최근 실행 시각(UTC ISO 문자열)
     # 지표 이름 → 방식(A/B/C)별 건수·평균
     metrics: dict[str, list[VariantSummary]]
+    # dataset_id가 없는 옛 실행은 evaluation_id로 묶는다. 화면에서 "데이터셋"과 "평가"를 구별한다.
+    by_evaluation: bool = False
 
 
 @dataclass(frozen=True)
@@ -56,6 +58,7 @@ def build_scores(scores: list[dict], roots: dict[str, dict]) -> LangfuseScores:
     """순수 집계. roots는 traceId → {"variant", "dataset_id", "start"}."""
     values: dict[str, dict[str, dict[str, list[float]]]] = {}
     latest: dict[str, str] = {}
+    evaluation_keys: set[str] = set()
     unlinked = {m: 0 for m in METRIC_NAMES}
     for score in scores:
         name = score.get("name")
@@ -74,7 +77,9 @@ def build_scores(scores: list[dict], roots: dict[str, dict]) -> LangfuseScores:
         ):
             unlinked[name] += 1
             continue
-        dataset = root.get("dataset_id") or UNKNOWN_DATASET
+        dataset = root.get("dataset_id") or root.get("evaluation_id") or UNKNOWN_DATASET
+        if not root.get("dataset_id") and root.get("evaluation_id"):
+            evaluation_keys.add(dataset)
         by_metric = values.setdefault(
             dataset, {m: {v: [] for v in VARIANTS} for m in METRIC_NAMES}
         )
@@ -91,6 +96,7 @@ def build_scores(scores: list[dict], roots: dict[str, dict]) -> LangfuseScores:
                 ]
                 for metric, by_variant in by_metric.items()
             },
+            dataset in evaluation_keys,
         )
         for dataset, by_metric in values.items()
     ]
@@ -175,6 +181,7 @@ def load_langfuse_scores() -> LangfuseScores:
             roots[item["traceId"]] = {
                 "variant": metadata.get("variant"),
                 "dataset_id": metadata.get("dataset_id"),
+                "evaluation_id": metadata.get("evaluation_id"),
                 "start": item.get("startTime") or "",
             }
     return build_scores(scores, roots)
